@@ -1,0 +1,122 @@
+.metrics-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.metric-card {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-md);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.3s ease;
+}
+
+.card-decor-pattern {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-lg);
+}
+
+.metric-card:hover .card-decor-pattern {
+  transform: scale(1.1) translateX(-4px);
+}
+
+.metric-card.dark-theme {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
+  border: none;
+  box-shadow: 0 10px 24px rgba(9, 11, 46, 0.18);
+}
+
+.metric-card.dark-theme:hover {
+  box-shadow: 0 16px 36px rgba(9, 11, 46, 0.3), var(--shadow-glow);
+}
+
+.metric-card.light-theme:hover {
+  border-color: rgba(47, 107, 244, 0.25);
+}
+
+.metric-card.alert-card:hover {
+  border-color: rgba(214, 47, 57, 0.25);
+}
+
+.metric-title {
+  font-size: 11px; /* Increased from 10px */
+  font-weight: 800; /* Bolder */
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+.dark-theme .metric-title {
+  color: #A5B4FC;
+}
+
+.light-theme .metric-title {
+  color: var(--text-muted);
+}
+
+.metric-value {
+  font-size: 32px; /* Increased from 28px */
+  font-weight: 850; /* Strong bold */
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.dark-theme .metric-value {
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+}
+
+.light-theme .metric-value {
+  color: var(--navy-dark);
+}
+
+.metric-subtext {
+  font-size: 13px; /* Increased from 11px */
+  font-weight: 700;
+  margin-top: 10px;
+  color: var(--text-muted);
+}
+
+.dark-theme .metric-subtext {
+  color: #CBD5E1;
+}
+
+.metric-subtext.overrun {
+  color: var(--color-accent-red);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.overrun-arrow-pulsing {
+  font-size: 10px;
+  animation: bounceArrow 1.5s infinite ease-in-out;
+  display: inline-block;
+}
+
+@keyframes bounceArrow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}

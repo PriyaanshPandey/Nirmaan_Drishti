@@ -1,0 +1,414 @@
+.portfolio-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.portfolio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.portfolio-title {
+  font-size: 34px; /* Increased from 28px */
+  font-weight: 850; /* Match dashboard title */
+  color: var(--navy-dark);
+  letter-spacing: -0.03em;
+}
+
+.portfolio-subtitle {
+  font-size: 14px; /* Increased from 13px */
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.portfolio-cta-group {
+  display: flex;
+  gap: 12px;
+}
+
+.export-csv-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  color: var(--navy-dark);
+  border-radius: 8px;
+  padding: 12px 20px; /* Thicker button padding */
+  font-family: inherit;
+  font-size: 14px; /* Increased from 13px */
+  font-weight: 800; /* Bolder */
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.export-csv-btn:hover {
+  background-color: var(--bg-main);
+  border-color: rgba(148, 163, 184, 0.9);
+}
+
+.new-project-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #090B2E;
+  border: none;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 12px 22px; /* Thicker button padding */
+  font-family: inherit;
+  font-size: 14px; /* Increased from 13px */
+  font-weight: 850; /* Boldest */
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(9, 11, 46, 0.15);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.new-project-btn:hover {
+  background-color: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(9, 11, 46, 0.25);
+}
+
+/* Filter Card Layout */
+.filter-card {
+  background-color: #ffffff;
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-box-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-light);
+}
+
+.search-input {
+  width: 100%;
+  background-color: #F8FAFC;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 10px;
+  padding: 12px 16px 12px 46px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--navy-dark);
+  transition: all 0.22s ease;
+}
+
+.search-input:focus {
+  background-color: #ffffff;
+  border-color: var(--color-on-track);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 107, 244, 0.08);
+}
+
+.filters-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.filter-select-group {
+  display: flex;
+  gap: 16px;
+  flex-grow: 1;
+}
+
+.select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.select-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-light);
+  letter-spacing: 0.05em;
+  margin-left: 2px;
+}
+
+.filter-select {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--navy-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  outline: none;
+}
+
+.filter-select:hover {
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+.filter-select:focus {
+  border-color: var(--color-on-track);
+}
+
+.more-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #EBF3FF;
+  border: none;
+  color: #1E4EBF;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.more-filters-btn:hover {
+  background-color: #DCE9FF;
+  transform: translateY(-1px);
+}
+
+/* Projects Table Card */
+.table-card {
+  background-color: #ffffff;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.portfolio-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.portfolio-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.portfolio-table th {
+  font-size: 12px; /* Increased from 11px */
+  font-weight: 800;
+  color: var(--text-light);
+  letter-spacing: 0.08em;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  background-color: #FAFCFF;
+}
+
+.portfolio-table td {
+  padding: 22px 24px; /* Thicker padding */
+  border-bottom: 1px solid rgba(241, 245, 249, 0.8);
+  vertical-align: middle;
+  font-size: 14px; /* Increased from 13px */
+  transition: all 0.2s ease;
+}
+
+.portfolio-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.portfolio-row:hover {
+  background-color: rgba(244, 247, 251, 0.6);
+}
+
+.project-name-primary {
+  font-size: 16px; /* Increased from 14px */
+  font-weight: 850; /* Match row highlights */
+  color: var(--navy-dark);
+}
+
+.project-name-sub {
+  font-size: 12px; /* Increased from 11px */
+  font-weight: 600;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+.td-ministry-text {
+  font-weight: 750;
+  color: var(--text-muted);
+}
+
+.project-cost-val {
+  font-size: 15px; /* Increased from 13px */
+  font-weight: 850;
+  color: var(--navy-dark);
+}
+
+.project-cost-sub {
+  font-size: 12px; /* Increased from 11px */
+  font-weight: 750;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.project-cost-sub.cost-alert {
+  color: var(--color-accent-red);
+  font-weight: 850;
+}
+
+.progress-cell-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-cell-val {
+  font-size: 13px; /* Increased from 12px */
+  font-weight: 850;
+  color: var(--navy-dark);
+  width: 36px;
+  text-align: right;
+}
+
+.progress-cell-bar-bg {
+  flex-grow: 1;
+  height: 8px; /* Thicker track */
+  background-color: #EEF2F6;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-cell-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+}
+
+/* Schedule Status Badges */
+.portfolio-badge {
+  display: inline-block;
+  padding: 6px 12px; /* Increased size */
+  border-radius: 6px;
+  font-size: 11px; /* Increased from 10px */
+  font-weight: 850;
+  text-align: center;
+  letter-spacing: 0.03em;
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-critical-status {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.badge-delayed-status {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.badge-ontrack-status {
+  background-color: #DCFCE7;
+  color: #166534;
+  border: 1px solid #86EFAC;
+}
+
+/* Risk indicator bar in table */
+.risk-indicator-bar-wrapper {
+  background-color: #EEF2F6;
+  height: 8px; /* Thicker track */
+  border-radius: 100px;
+  width: 100%;
+  max-width: 60px;
+  overflow: hidden;
+}
+
+.risk-indicator-fill {
+  height: 100%;
+  border-radius: 100px;
+}
+
+.table-empty-state {
+  text-align: center;
+  padding: 40px !important;
+  color: var(--text-light);
+  font-weight: 600;
+}
+
+/* Pagination Row Styling */
+.portfolio-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.pagination-info {
+  font-size: 13px; /* Increased from 12px */
+  font-weight: 750;
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.pagination-arrow-btn,
+.pagination-num-btn {
+  background-color: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 6px;
+  width: 34px; /* Larger controls */
+  height: 34px;
+  font-family: inherit;
+  font-size: 13px; /* Increased from 12px */
+  font-weight: 750;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.pagination-arrow-btn:hover:not(:disabled),
+.pagination-num-btn:hover:not(:disabled) {
+  background-color: var(--bg-main);
+  border-color: rgba(203, 213, 225, 0.9);
+  color: var(--navy-dark);
+}
+
+.pagination-num-btn.active {
+  background-color: var(--navy-active);
+  color: #ffffff;
+  border-color: var(--navy-active);
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-arrow-btn:disabled,
+.pagination-num-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

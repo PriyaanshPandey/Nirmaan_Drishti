@@ -1,0 +1,117 @@
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 12px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 34px; /* Increased from 28px */
+  font-weight: 850; /* Ultra bold */
+  color: var(--navy-dark);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.header-subtitle {
+  font-size: 14px; /* Increased from 13px */
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.date-indicator {
+  font-size: 12px; /* Increased from 10px */
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.date-highlight {
+  font-weight: 850;
+  color: var(--navy-dark);
+}
+
+.insight-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #EBF3FF;
+  border: 1px solid #B9D5FF;
+  border-radius: 100px;
+  padding: 8px 16px; /* Larger padding */
+  box-shadow: 0 4px 12px rgba(47, 107, 244, 0.08);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.insight-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(47, 107, 244, 0.15);
+  background-color: #E2ECFF;
+  border-color: #94BEFF;
+}
+
+.badge-dot {
+  width: 8px; /* Slightly larger */
+  height: 8px;
+  background-color: var(--color-on-track);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(47, 107, 244, 0.2);
+  animation: pulseDot 2s infinite;
+}
+
+.badge-text {
+  font-size: 12px; /* Increased from 11px */
+  font-weight: 800; /* Ultra bold */
+  color: #1E4EBF;
+}
+
+@keyframes pulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(47, 107, 244, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(47, 107, 244, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(47, 107, 244, 0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .header-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+}

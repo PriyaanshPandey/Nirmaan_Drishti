@@ -1,0 +1,140 @@
+.interventions-card {
+  height: 100%;
+}
+
+.interventions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.view-all-link {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 13px; /* Increased from 11px */
+  font-weight: 800; /* Ultra bold */
+  color: var(--color-on-track);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.view-all-link:hover {
+  background-color: #EBF3FF;
+  transform: translateY(-1px);
+}
+
+.view-all-link:active {
+  transform: translateY(0);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.interventions-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.interventions-table th {
+  font-size: 11px; /* Increased from 9px */
+  font-weight: 800; /* Boldest */
+  color: var(--text-light);
+  letter-spacing: 0.08em;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.interventions-table td {
+  padding: 14px 10px; /* Increased padding */
+  font-size: 14px; /* Increased from 12px */
+  font-weight: 700; /* Bolder */
+  border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+.interventions-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.interventions-table tbody tr:hover {
+  background-color: rgba(244, 247, 251, 0.7);
+}
+
+.interventions-table tr:last-child td {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.td-project {
+  font-weight: 800;
+  color: var(--navy-dark);
+}
+
+.risk-badge {
+  display: inline-block;
+  padding: 5px 12px; /* Increased size */
+  border-radius: 100px;
+  font-size: 11px; /* Increased from 10px */
+  font-weight: 850;
+  text-align: center;
+  width: 66px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.badge-critical {
+  background-color: var(--color-accent-red);
+  color: #ffffff;
+}
+
+.badge-warning {
+  background-color: var(--color-at-risk);
+  color: #ffffff;
+}
+
+.badge-info {
+  background-color: var(--color-monitoring);
+  color: #ffffff;
+}
+
+.td-concern {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.td-action {
+  text-align: right;
+}
+
+.review-btn {
+  background-color: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 8px; /* Slightly rounder */
+  padding: 6px 14px; /* Enlarged */
+  font-family: inherit;
+  font-size: 12px; /* Increased from 11px */
+  font-weight: 800; /* Ultra bold */
+  color: var(--navy-dark);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.review-btn:hover {
+  background-color: var(--navy-active);
+  color: #ffffff;
+  border-color: var(--navy-active);
+  transform: scale(1.05) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(10, 13, 48, 0.15);
+}
+
+.review-btn:active {
+  transform: scale(0.98) translateY(0);
+}
