@@ -1,0 +1,62 @@
+# PAIMANA ML Configuration
+# All thresholds, model parameters, and paths are configurable here.
+
+data:
+  default_csv_path: "data/input/PAIMANA_Master.csv"
+  training_dir: "data/training"
+
+cost:
+  # Additional cost escalation threshold in percentage points (primary target: > 0 pp)
+  additional_escalation_threshold_pct: 0.0
+  # Major cost escalation threshold in percentage points
+  major_escalation_threshold_pct: 5.0
+  significant_overrun_pct: 0.0
+
+schedule:
+  # Additional schedule delay threshold in months (primary target: > 0 months)
+  additional_delay_threshold_months: 0.0
+  # Major delay threshold in months
+  major_delay_threshold_months: 3.0
+
+prediction:
+  # Forecasting horizons in months
+  horizons: [3, 6]
+
+walk_forward:
+  # Minimum train months before first validation fold
+  min_train_months: 1
+  min_positive_examples: 10
+  min_negative_examples: 10
+
+models:
+  xgboost:
+    n_estimators: 150
+    max_depth: 5
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+  logistic_regression:
+    max_iter: 1000
+    C: 1.0
+    random_state: 42
+  ridge:
+    alpha: 1.0
+    random_state: 42
+  calibration:
+    enabled: true
+    method: "sigmoid"  # Platt scaling
+
+output:
+  models_dir: "models"
+  results_dir: "results"
+
+llm:
+  provider: "qwen"
+  model_name: "qwen/qwen3-8b" # Configurable: qwen/qwen3-8b, qwen-plus, Qwen/Qwen2.5-7B-Instruct
+  api_base: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1" # OpenAI-compatible endpoint
+  temperature: 0.2
+  max_tokens: 800
+  timeout_seconds: 30
+
+version: "2.1.0"

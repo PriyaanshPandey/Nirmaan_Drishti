@@ -1,0 +1,4601 @@
+model,feature,mean_abs_shap
+cost_classifier_3m,ministry_department_Ministry of Road Transport & Highways,0.9895
+cost_classifier_3m,cumulative_expenditure_crore,0.6144
+cost_classifier_3m,physical_progress_pct,0.3646
+cost_classifier_3m,revised_cost_crore,0.2813
+cost_classifier_3m,progress_minus_expenditure_gap,0.2489
+cost_classifier_3m,sector_Coal,0.2409
+cost_classifier_3m,planned_remaining_months,0.226
+cost_classifier_3m,revised_remaining_months,0.1868
+cost_classifier_3m,physical_financial_gap_pct,0.1637
+cost_classifier_3m,expenditure_ratio_pct,0.1582
+cost_classifier_3m,project_age_months,0.1572
+cost_classifier_3m,progress_velocity_3m,0.1529
+cost_classifier_3m,sector_Roads & Highways,0.1443
+cost_classifier_3m,progress_trend_slope,0.1279
+cost_classifier_3m,extension_rate_pct,0.1247
+cost_classifier_3m,original_cost_crore,0.1165
+cost_classifier_3m,original_duration_months,0.1154
+cost_classifier_3m,days_to_original_target,0.1125
+cost_classifier_3m,physical_to_expenditure_ratio,0.1004
+cost_classifier_3m,remaining_budget_crore,0.0907
+cost_classifier_3m,cost_overrun_trend_slope,0.0815
+cost_classifier_3m,state_Uttar Pradesh,0.0793
+cost_classifier_3m,physical_progress_delta_3m,0.0789
+cost_classifier_3m,expenditure_ratio_delta_3m,0.0789
+cost_classifier_3m,risk_signal_count,0.0785
+cost_classifier_3m,"ministry_department_Department of Water Resources, River Development & GR",0.0763
+cost_classifier_3m,expenditure_velocity_crore_month,0.065
+cost_classifier_3m,remaining_work_pct,0.057
+cost_classifier_3m,state_Chhattisgarh,0.0564
+cost_classifier_3m,cost_overrun_pct,0.0561
+cost_classifier_3m,cost_escalation_crore,0.0491
+cost_classifier_3m,days_to_revised_target,0.0469
+cost_classifier_3m,consecutive_stagnant_months,0.0464
+cost_classifier_3m,sector_Transmission & Distribution,0.0402
+cost_classifier_3m,schedule_status_ON_TRACK,0.0396
+cost_classifier_3m,schedule_extension_delta_1m,0.0394
+cost_classifier_3m,schedule_extension_months,0.0331
+cost_classifier_3m,state_Odisha,0.0313
+cost_classifier_3m,agency_Airport Authority of India [AAI],0.0282
+cost_classifier_3m,cost_escalation_ratio,0.0232
+cost_classifier_3m,sector_Urban Public Transport,0.0221
+cost_classifier_3m,agency_MinistryofPetroleumNaturalGas,0.0219
+cost_classifier_3m,ministry_department_Ministry of Housing & Urban Affairs,0.0201
+cost_classifier_3m,expenditure_ratio_delta_1m,0.019
+cost_classifier_3m,state_Bihar,0.0185
+cost_classifier_3m,agency_Ministry of Petroleum & Natural Gas,0.0172
+cost_classifier_3m,sector_Railways,0.017
+cost_classifier_3m,agency_Ministry of Education,0.0158
+cost_classifier_3m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0137
+cost_classifier_3m,state_Uttarakhand,0.0137
+cost_classifier_3m,agency_CR,0.0124
+cost_classifier_3m,agency_National Highways Authority of India [NHAI],0.0119
+cost_classifier_3m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0118
+cost_classifier_3m,expenditure_minus_progress_gap,0.0116
+cost_classifier_3m,state_Karnataka,0.0115
+cost_classifier_3m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0113
+cost_classifier_3m,sector_Electricity Generation,0.0111
+cost_classifier_3m,agency_East Coast Railway [ECoR] - II,0.011
+cost_classifier_3m,agency_Central Railway [CR] - II,0.0108
+cost_classifier_3m,physical_progress_delta_1m,0.0101
+cost_classifier_3m,sector_Healthcare,0.0096
+cost_classifier_3m,extension_count,0.0091
+cost_classifier_3m,sector_Oil & Gas,0.009
+cost_classifier_3m,agency_Rail Vikas Nigam Limited,0.0078
+cost_classifier_3m,state_Rajasthan,0.0075
+cost_classifier_3m,agency_South Western Railway [SWR] - II,0.0071
+cost_classifier_3m,"state_Jammu and
+Kashmir",0.0069
+cost_classifier_3m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0067
+cost_classifier_3m,agency_National Thermal Power Corporation [NTPC],0.0066
+cost_classifier_3m,agency_RVNL - II,0.0065
+cost_classifier_3m,"state_Multi-States
+(Bihar, Jharkhand)",0.0065
+cost_classifier_3m,state_Kerala,0.0063
+cost_classifier_3m,ministry_department_Ministry of Petroleum & Natural Gas,0.0061
+cost_classifier_3m,agency_South Central Railway [SCR] - II,0.0058
+cost_classifier_3m,state_Jharkhand,0.0058
+cost_classifier_3m,agency_Railway,0.005
+cost_classifier_3m,agency_Western Railway [WR] - II,0.004
+cost_classifier_3m,agency_ministry of housing and urban affairs,0.004
+cost_classifier_3m,cost_overrun_delta_3m,0.0039
+cost_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0036
+cost_classifier_3m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0034
+cost_classifier_3m,state_Madhya Pradesh,0.0032
+cost_classifier_3m,ministry_department_Ministry of Civil Aviation,0.003
+cost_classifier_3m,ministry_department_Ministry of Coal,0.003
+cost_classifier_3m,state_Punjab,0.003
+cost_classifier_3m,schedule_status_EXTENDED,0.003
+cost_classifier_3m,agency_Hindustan Petroleum Corporation Limited,0.0026
+cost_classifier_3m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0025
+cost_classifier_3m,state_Andhra Pradesh,0.0024
+cost_classifier_3m,sector_Water Resources,0.0023
+cost_classifier_3m,agency_South East Central Railway [SECR] - II,0.0021
+cost_classifier_3m,ministry_department_Ministry of Labour and Employment,0.0021
+cost_classifier_3m,state_Haryana,0.0021
+cost_classifier_3m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.002
+cost_classifier_3m,sector_Waste & Water,0.002
+cost_classifier_3m,overdue_days,0.0019
+cost_classifier_3m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0019
+cost_classifier_3m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0018
+cost_classifier_3m,state_West Bengal,0.0018
+cost_classifier_3m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0014
+cost_classifier_3m,agency_Indian Railway Construction International Limited [IRCON],0.0014
+cost_classifier_3m,ministry_department_Ministry of Railways,0.0014
+cost_classifier_3m,agency_Hindustan Copper Limited [HCL],0.0013
+cost_classifier_3m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0012
+cost_classifier_3m,agency_East Central Railway [ECR] - I,0.0012
+cost_classifier_3m,sector_Energy Storage,0.0012
+cost_classifier_3m,state_Assam,0.0012
+cost_classifier_3m,agency_Ministry of Health & Family Welfare,0.0011
+cost_classifier_3m,agency_Northen Railway [NR],0.0011
+cost_classifier_3m,ministry_department_Department of Higher Education,0.0011
+cost_classifier_3m,state_Tamil Nadu,0.0011
+cost_classifier_3m,agency_Indian Oil Corporation Limited [IOCL],0.0008
+cost_classifier_3m,agency_PMSSY AND Institute of NATIONAL Importance,0.0008
+cost_classifier_3m,ministry_department_Ministry of Steel,0.0007
+cost_classifier_3m,agency_Adani Airport Holdings Limited,0.0006
+cost_classifier_3m,agency_National Mineral Development Corporation Limited [NMDC],0.0006
+cost_classifier_3m,agency_Employee's State Insurance Company [ESIC],0.0004
+cost_classifier_3m,ministry_department_Department of Telecommunications,0.0004
+cost_classifier_3m,sector_Steel,0.0004
+cost_classifier_3m,agency_South Eastern Coalfields Limited [SECL],0.0003
+cost_classifier_3m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0002
+cost_classifier_3m,agency_CAO/C/II/NR,0.0001
+cost_classifier_3m,progress_expenditure_mismatch_flag,0.0
+cost_classifier_3m,high_expenditure_low_progress_flag,0.0
+cost_classifier_3m,cost_overrun_delta_1m,0.0
+cost_classifier_3m,cost_overrun_negative_flag,0.0
+cost_classifier_3m,is_overdue_flag,0.0
+cost_classifier_3m,is_extended_flag,0.0
+cost_classifier_3m,agency_Adani Transmission Limited,0.0
+cost_classifier_3m,agency_BCCL - CIL,0.0
+cost_classifier_3m,agency_BSNL,0.0
+cost_classifier_3m,agency_Banaras Hindu University,0.0
+cost_classifier_3m,agency_Bengaluru Metro Rail,0.0
+cost_classifier_3m,agency_Bharat Coking Coal Limited [BCCL],0.0
+cost_classifier_3m,agency_CAO/C/NCR,0.0
+cost_classifier_3m,agency_CAO/C/NR,0.0
+cost_classifier_3m,agency_CAO/C/SECR,0.0
+cost_classifier_3m,agency_CAO/C/SER,0.0
+cost_classifier_3m,agency_CCL - CIL,0.0
+cost_classifier_3m,agency_CERL,0.0
+cost_classifier_3m,agency_CORE,0.0
+cost_classifier_3m,agency_CPM/ICF,0.0
+cost_classifier_3m,agency_CSPCC Projects,0.0
+cost_classifier_3m,agency_Central Coalfields Limited [CCL],0.0
+cost_classifier_3m,agency_Central Organisation for Railway Electrification [CORE],0.0
+cost_classifier_3m,agency_Central Public Works Department - CPWD,0.0
+cost_classifier_3m,agency_Central Public Works Department [CPWD],0.0
+cost_classifier_3m,agency_Central Railway,0.0
+cost_classifier_3m,agency_Central Railways,0.0
+cost_classifier_3m,agency_Central Tribal University of Andhra Pradesh,0.0
+cost_classifier_3m,agency_Central University of Gujarat,0.0
+cost_classifier_3m,agency_Central University of Punjab,0.0
+cost_classifier_3m,"agency_Central University, Himachal Pradesh",0.0
+cost_classifier_3m,agency_CentralRailway,0.0
+cost_classifier_3m,agency_Chennai Metro Rail Limited [CMRL],0.0
+cost_classifier_3m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+cost_classifier_3m,agency_Construction NER,0.0
+cost_classifier_3m,agency_DFCCIL,0.0
+cost_classifier_3m,agency_Damodar Valley Corporation,0.0
+cost_classifier_3m,agency_Deendayal Port Trust,0.0
+cost_classifier_3m,agency_Deendayal Port Trust [DPT],0.0
+cost_classifier_3m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+cost_classifier_3m,agency_Delhi University,0.0
+cost_classifier_3m,agency_Department of Sports & Youth Affairs,0.0
+cost_classifier_3m,agency_Department of Telecommunications,0.0
+cost_classifier_3m,agency_Department of Telecommunications [DoT],0.0
+cost_classifier_3m,"agency_Department of Water Resources, River Development & GR",0.0
+cost_classifier_3m,agency_Department of Water Resources-JH,0.0
+cost_classifier_3m,agency_Department of Water Resources-MH,0.0
+cost_classifier_3m,agency_Department of Water Resources-PB,0.0
+cost_classifier_3m,agency_Department of water resources-MH - II,0.0
+cost_classifier_3m,agency_ECL - CIL,0.0
+cost_classifier_3m,agency_EDTK[MC]/RB,0.0
+cost_classifier_3m,agency_East Central Railway [ECR] - II,0.0
+cost_classifier_3m,agency_Eastern Coal Fields Limited [ECL],0.0
+cost_classifier_3m,agency_Eastern Railway [ER] - I,0.0
+cost_classifier_3m,agency_GAIL Gas,0.0
+cost_classifier_3m,agency_GM/C/ NFR,0.0
+cost_classifier_3m,agency_Gas Authority of India Limited [GAIL],0.0
+cost_classifier_3m,agency_Gujarat,0.0
+cost_classifier_3m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+cost_classifier_3m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+cost_classifier_3m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+cost_classifier_3m,agency_IISC Bangalore,0.0
+cost_classifier_3m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+cost_classifier_3m,"agency_Indian Institute of Management, Jammu",0.0
+cost_classifier_3m,"agency_Indian Institute of Management, Sirmaur",0.0
+cost_classifier_3m,"agency_Indian Institute of Technology, Bhilai",0.0
+cost_classifier_3m,"agency_Indian Institute of Technology, Bombay",0.0
+cost_classifier_3m,"agency_Indian Institute of Technology, Hyderabad",0.0
+cost_classifier_3m,"agency_Indian Institute of Technology, Indore",0.0
+cost_classifier_3m,"agency_Indian Institute of Technology, Kharagpur",0.0
+cost_classifier_3m,"agency_Indian Institute of Technology, Mandi",0.0
+cost_classifier_3m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+cost_classifier_3m,agency_Indian Railway,0.0
+cost_classifier_3m,"agency_Indian intitue of Management, Amritsar",0.0
+cost_classifier_3m,agency_Inland Waterways Authority of India [IWAI],0.0
+cost_classifier_3m,agency_Irrigation & Water Resources-UP,0.0
+cost_classifier_3m,agency_Irrigation and CAD-TG,0.0
+cost_classifier_3m,agency_Irrigation-UK,0.0
+cost_classifier_3m,agency_M/S SRC company Infra Private Limited,0.0
+cost_classifier_3m,agency_MCL - CIL,0.0
+cost_classifier_3m,agency_MIS MoCoal Integration Logins,0.0
+cost_classifier_3m,agency_MRIDC,0.0
+cost_classifier_3m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+cost_classifier_3m,agency_Mahanadi Coalfields Limited [MCL],0.0
+cost_classifier_3m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+cost_classifier_3m,"agency_Medical Education, Ministry of Health and Family Welfare",0.0
+cost_classifier_3m,"agency_Metro Railway, Kolkata",0.0
+cost_classifier_3m,agency_Ministry of Coal,0.0
+cost_classifier_3m,agency_Ministry of Housing & Urban Affairs,0.0
+cost_classifier_3m,agency_Ministry of Mines,0.0
+cost_classifier_3m,agency_Ministry of Petroleum and Natural Gas,0.0
+cost_classifier_3m,agency_Ministry of Railways,0.0
+cost_classifier_3m,agency_MoRTH,0.0
+cost_classifier_3m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+cost_classifier_3m,agency_Mumbai Port Trust [MPT],0.0
+cost_classifier_3m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+cost_classifier_3m,agency_NER,0.0
+cost_classifier_3m,agency_NHAI,0.0
+cost_classifier_3m,agency_NHIDCL,0.0
+cost_classifier_3m,agency_NIT Mizoram,0.0
+cost_classifier_3m,agency_NIT Nagaland,0.0
+cost_classifier_3m,agency_NIT Patna,0.0
+cost_classifier_3m,agency_NIT Rourkela,0.0
+cost_classifier_3m,agency_NIT Sikkim,0.0
+cost_classifier_3m,agency_NLC India Limited [NLCIL],0.0
+cost_classifier_3m,agency_NRL,0.0
+cost_classifier_3m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+cost_classifier_3m,agency_National Aluminium Company Limited [NALCO],0.0
+cost_classifier_3m,agency_National Buildings Construction Corporation [NBCC],0.0
+cost_classifier_3m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+cost_classifier_3m,agency_National Communication Academy - Finance [Erstwhile NICF],0.0
+cost_classifier_3m,agency_National High Speed Rail Corporation [NHSRC],0.0
+cost_classifier_3m,agency_National Industrial Corridor Development Corporation,0.0
+cost_classifier_3m,agency_National Institute of Technology Delhi,0.0
+cost_classifier_3m,agency_National Institute of Technology Uttarakhand,0.0
+cost_classifier_3m,"agency_National Institute of Technology, Arunachal Pradesh",0.0
+cost_classifier_3m,"agency_National Institute of Technology, Meghalaya",0.0
+cost_classifier_3m,"agency_National Institute of Technology, Puducherry",0.0
+cost_classifier_3m,agency_National Mission for Clean Ganga,0.0
+cost_classifier_3m,agency_New Mangalore Port Authority,0.0
+cost_classifier_3m,agency_North Central Railway,0.0
+cost_classifier_3m,agency_North Eastern Electric Power Corporation Limited,0.0
+cost_classifier_3m,agency_North Eastern Railway [NER],0.0
+cost_classifier_3m,agency_North Western Railway [NWR],0.0
+cost_classifier_3m,agency_Northeast Frontier Railway [NFR],0.0
+cost_classifier_3m,agency_Northeast Frontier Railway [NFR] - II,0.0
+cost_classifier_3m,agency_Northern Coalfields Limited [NCL],0.0
+cost_classifier_3m,agency_Northern Railways,0.0
+cost_classifier_3m,agency_PCE/NCR,0.0
+cost_classifier_3m,agency_PCE/WR,0.0
+cost_classifier_3m,agency_Paradip Port Trust [PPT],0.0
+cost_classifier_3m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+cost_classifier_3m,agency_RCIL,0.0
+cost_classifier_3m,agency_RVNL,0.0
+cost_classifier_3m,agency_RVNL - I,0.0
+cost_classifier_3m,agency_Rail Land Development Authority,0.0
+cost_classifier_3m,agency_Reliance Industries Ltd,0.0
+cost_classifier_3m,agency_SECL - CIL,0.0
+cost_classifier_3m,agency_SECR,0.0
+cost_classifier_3m,agency_SR-ERS,0.0
+cost_classifier_3m,agency_Sikkim University,0.0
+cost_classifier_3m,agency_Singareni Collieries Company Limited [SCCL],0.0
+cost_classifier_3m,agency_Smart City Mission,0.0
+cost_classifier_3m,agency_South Central Railway [SCR] - I,0.0
+cost_classifier_3m,agency_South East Central Railway,0.0
+cost_classifier_3m,agency_South Eastern Central Railway,0.0
+cost_classifier_3m,agency_South Eastern Railway - JH,0.0
+cost_classifier_3m,agency_South Eastern Railway [SER] - I,0.0
+cost_classifier_3m,agency_Southern Railway [SR] - II,0.0
+cost_classifier_3m,agency_Southern Railways [SR] - construction,0.0
+cost_classifier_3m,agency_Steel Authority of India Limited [SAIL],0.0
+cost_classifier_3m,agency_Sterlite Power,0.0
+cost_classifier_3m,agency_THDC India Limited,0.0
+cost_classifier_3m,agency_Tezpur University,0.0
+cost_classifier_3m,agency_UNKNOWN,0.0
+cost_classifier_3m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+cost_classifier_3m,agency_WCL - CIL,0.0
+cost_classifier_3m,agency_WPO/Patna,0.0
+cost_classifier_3m,agency_WR,0.0
+cost_classifier_3m,agency_Water Resources Department-MN,0.0
+cost_classifier_3m,agency_Water Resources-AP,0.0
+cost_classifier_3m,agency_Water Resources-BR,0.0
+cost_classifier_3m,agency_Water Resources-CT,0.0
+cost_classifier_3m,agency_Water Resources-KA,0.0
+cost_classifier_3m,agency_Water Resources-MP,0.0
+cost_classifier_3m,agency_Water Resources-OR,0.0
+cost_classifier_3m,agency_Water resource-mp,0.0
+cost_classifier_3m,agency_West Central Railway WCR I,0.0
+cost_classifier_3m,agency_West Central Railway [WCR] - II,0.0
+cost_classifier_3m,agency_Western Coalfields Limited [WCL],0.0
+cost_classifier_3m,agency_Western Railway,0.0
+cost_classifier_3m,agency_Western Railway WR - II,0.0
+cost_classifier_3m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+cost_classifier_3m,ministry_department_Department of Sports,0.0
+cost_classifier_3m,ministry_department_Ministry of Health & Family Welfare,0.0
+cost_classifier_3m,ministry_department_Ministry of Mines,0.0
+cost_classifier_3m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0
+cost_classifier_3m,ministry_department_Ministry of Power,0.0
+cost_classifier_3m,sector_Aviation & Aviation Infrastructure,0.0
+cost_classifier_3m,sector_Construction,0.0
+cost_classifier_3m,sector_Education,0.0
+cost_classifier_3m,sector_Inland Waterways,0.0
+cost_classifier_3m,sector_Logistics Infrastructure,0.0
+cost_classifier_3m,sector_Metals & Mining,0.0
+cost_classifier_3m,sector_Real Estate,0.0
+cost_classifier_3m,sector_Shipping,0.0
+cost_classifier_3m,sector_Telecommunication,0.0
+cost_classifier_3m,"sector_Tourism, Hospitality & Wellness",0.0
+cost_classifier_3m,"state_Andaman &
+Nicobar",0.0
+cost_classifier_3m,state_Arunachal Pradesh,0.0
+cost_classifier_3m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+cost_classifier_3m,state_Delhi,0.0
+cost_classifier_3m,state_Goa,0.0
+cost_classifier_3m,state_Gujarat,0.0
+cost_classifier_3m,state_Himachal Pradesh,0.0
+cost_classifier_3m,state_Ladakh,0.0
+cost_classifier_3m,state_Maharashtra,0.0
+cost_classifier_3m,state_Manipur,0.0
+cost_classifier_3m,state_Meghalaya,0.0
+cost_classifier_3m,state_Mizoram,0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0
+cost_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+cost_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+cost_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+cost_classifier_3m,"state_Multi-States
+(Assam,
+Nagaland)",0.0
+cost_classifier_3m,"state_Multi-States
+(Assam, Bihar,
+West Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+cost_classifier_3m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+cost_classifier_3m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+cost_classifier_3m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+cost_classifier_3m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Haryana, Punjab)",0.0
+cost_classifier_3m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Haryana, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+cost_classifier_3m,"state_Multi-States
+(Jammu and
+Kashmir, Ladakh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+cost_classifier_3m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+cost_classifier_3m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Jharkhand, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+cost_classifier_3m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+cost_classifier_3m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+cost_classifier_3m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+cost_classifier_3m,"state_Multi-States
+(Kerala,
+Puducherry)",0.0
+cost_classifier_3m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0
+cost_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+cost_classifier_3m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+cost_classifier_3m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+cost_classifier_3m,"state_Multi-States (Delhi,
+Haryana)",0.0
+cost_classifier_3m,"state_Multi-States (Delhi,
+Haryana,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+cost_classifier_3m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+cost_classifier_3m,"state_Multi-States (Goa,
+Karnataka)",0.0
+cost_classifier_3m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+cost_classifier_3m,"state_Multi-States (Uttar
+Pradesh,
+Uttarakhand)",0.0
+cost_classifier_3m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+cost_classifier_3m,state_Nagaland,0.0
+cost_classifier_3m,state_Offshore,0.0
+cost_classifier_3m,state_PAN India,0.0
+cost_classifier_3m,state_Puducherry,0.0
+cost_classifier_3m,state_Sikkim,0.0
+cost_classifier_3m,state_Telangana,0.0
+cost_classifier_3m,state_Tripura,0.0
+cost_classifier_3m,state_UNKNOWN,0.0
+cost_classifier_3m,schedule_status_COMPLETED,0.0
+cost_classifier_3m,schedule_status_OVERDUE,0.0
+cost_classifier_6m,cumulative_expenditure_crore,0.5243
+cost_classifier_6m,physical_progress_pct,0.3492
+cost_classifier_6m,revised_cost_crore,0.2864
+cost_classifier_6m,sector_Coal,0.2833
+cost_classifier_6m,physical_to_expenditure_ratio,0.2114
+cost_classifier_6m,original_cost_crore,0.2009
+cost_classifier_6m,original_duration_months,0.1949
+cost_classifier_6m,project_age_months,0.1769
+cost_classifier_6m,planned_remaining_months,0.1665
+cost_classifier_6m,remaining_work_pct,0.1349
+cost_classifier_6m,extension_rate_pct,0.1342
+cost_classifier_6m,remaining_budget_crore,0.1256
+cost_classifier_6m,days_to_revised_target,0.1163
+cost_classifier_6m,cost_escalation_crore,0.1144
+cost_classifier_6m,cost_overrun_pct,0.1053
+cost_classifier_6m,physical_financial_gap_pct,0.1037
+cost_classifier_6m,progress_velocity_3m,0.1037
+cost_classifier_6m,expenditure_ratio_pct,0.1
+cost_classifier_6m,progress_minus_expenditure_gap,0.0831
+cost_classifier_6m,expenditure_velocity_crore_month,0.0829
+cost_classifier_6m,days_to_original_target,0.0794
+cost_classifier_6m,state_Chhattisgarh,0.0785
+cost_classifier_6m,physical_progress_delta_1m,0.0772
+cost_classifier_6m,expenditure_ratio_delta_1m,0.0738
+cost_classifier_6m,"ministry_department_Department of Water Resources, River Development & GR",0.068
+cost_classifier_6m,cost_overrun_trend_slope,0.067
+cost_classifier_6m,revised_remaining_months,0.0645
+cost_classifier_6m,progress_trend_slope,0.0624
+cost_classifier_6m,state_Uttar Pradesh,0.0605
+cost_classifier_6m,ministry_department_Ministry of Housing & Urban Affairs,0.057
+cost_classifier_6m,schedule_status_ON_TRACK,0.0445
+cost_classifier_6m,state_Bihar,0.0432
+cost_classifier_6m,consecutive_stagnant_months,0.039
+cost_classifier_6m,sector_Transmission & Distribution,0.0379
+cost_classifier_6m,cost_escalation_ratio,0.0339
+cost_classifier_6m,schedule_extension_months,0.0338
+cost_classifier_6m,agency_Airport Authority of India [AAI],0.0329
+cost_classifier_6m,agency_Ministry of Petroleum & Natural Gas,0.0318
+cost_classifier_6m,expenditure_minus_progress_gap,0.0273
+cost_classifier_6m,physical_progress_delta_3m,0.0265
+cost_classifier_6m,expenditure_ratio_delta_3m,0.0263
+cost_classifier_6m,state_Jharkhand,0.0253
+cost_classifier_6m,risk_signal_count,0.0245
+cost_classifier_6m,agency_Central Railway [CR] - II,0.0245
+cost_classifier_6m,agency_MinistryofPetroleumNaturalGas,0.0228
+cost_classifier_6m,agency_East Coast Railway [ECoR] - II,0.0207
+cost_classifier_6m,state_Rajasthan,0.0201
+cost_classifier_6m,state_Punjab,0.02
+cost_classifier_6m,state_Karnataka,0.0194
+cost_classifier_6m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0174
+cost_classifier_6m,agency_Hindustan Petroleum Corporation Limited,0.0173
+cost_classifier_6m,agency_ministry of housing and urban affairs,0.0173
+cost_classifier_6m,schedule_extension_delta_1m,0.0164
+cost_classifier_6m,agency_National Thermal Power Corporation [NTPC],0.016
+cost_classifier_6m,ministry_department_Ministry of Health & Family Welfare,0.0139
+cost_classifier_6m,overdue_days,0.0135
+cost_classifier_6m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0128
+cost_classifier_6m,ministry_department_Ministry of Railways,0.0116
+cost_classifier_6m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0113
+cost_classifier_6m,state_Gujarat,0.0111
+cost_classifier_6m,extension_count,0.0109
+cost_classifier_6m,agency_South East Central Railway [SECR] - II,0.0107
+cost_classifier_6m,state_Kerala,0.0103
+cost_classifier_6m,agency_CR,0.0099
+cost_classifier_6m,sector_Electricity Generation,0.0099
+cost_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0096
+cost_classifier_6m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0082
+cost_classifier_6m,agency_Ministry of Education,0.008
+cost_classifier_6m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0077
+cost_classifier_6m,state_Odisha,0.0077
+cost_classifier_6m,agency_South Western Railway [SWR] - II,0.0076
+cost_classifier_6m,state_Madhya Pradesh,0.0076
+cost_classifier_6m,sector_Railways,0.007
+cost_classifier_6m,state_Uttarakhand,0.0069
+cost_classifier_6m,state_Assam,0.0061
+cost_classifier_6m,agency_Adani Airport Holdings Limited,0.0055
+cost_classifier_6m,state_Maharashtra,0.0054
+cost_classifier_6m,agency_RVNL - II,0.005
+cost_classifier_6m,state_Delhi,0.0049
+cost_classifier_6m,agency_PCE/WR,0.0048
+cost_classifier_6m,state_West Bengal,0.0042
+cost_classifier_6m,sector_Metals & Mining,0.0041
+cost_classifier_6m,sector_Water Resources,0.0039
+cost_classifier_6m,"state_Andaman &
+Nicobar",0.0039
+cost_classifier_6m,agency_Western Railway [WR] - II,0.0038
+cost_classifier_6m,ministry_department_Ministry of Power,0.0034
+cost_classifier_6m,state_Himachal Pradesh,0.0034
+cost_classifier_6m,agency_CAO/C/NR,0.0032
+cost_classifier_6m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.0032
+cost_classifier_6m,agency_Indian Railway Construction International Limited [IRCON],0.0031
+cost_classifier_6m,agency_East Central Railway [ECR] - II,0.003
+cost_classifier_6m,sector_Oil & Gas,0.0029
+cost_classifier_6m,state_Telangana,0.0028
+cost_classifier_6m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0027
+cost_classifier_6m,agency_Northen Railway [NR],0.0026
+cost_classifier_6m,sector_Urban Public Transport,0.0025
+cost_classifier_6m,is_extended_flag,0.0024
+cost_classifier_6m,agency_National Mineral Development Corporation Limited [NMDC],0.0024
+cost_classifier_6m,sector_Healthcare,0.0024
+cost_classifier_6m,agency_South Central Railway [SCR] - II,0.0019
+cost_classifier_6m,ministry_department_Ministry of Steel,0.0018
+cost_classifier_6m,sector_Energy Storage,0.0016
+cost_classifier_6m,agency_Central Railways,0.0013
+cost_classifier_6m,agency_Rail Vikas Nigam Limited,0.0012
+cost_classifier_6m,agency_Railway,0.0012
+cost_classifier_6m,cost_overrun_delta_3m,0.0011
+cost_classifier_6m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0011
+cost_classifier_6m,ministry_department_Ministry of Coal,0.0011
+cost_classifier_6m,"state_Multi-States
+(Bihar, Jharkhand)",0.0009
+cost_classifier_6m,agency_Hindustan Copper Limited [HCL],0.0008
+cost_classifier_6m,agency_WR,0.0007
+cost_classifier_6m,agency_South Eastern Railway [SER] - I,0.0005
+cost_classifier_6m,sector_Steel,0.0003
+cost_classifier_6m,cost_overrun_delta_1m,0.0002
+cost_classifier_6m,progress_expenditure_mismatch_flag,0.0
+cost_classifier_6m,high_expenditure_low_progress_flag,0.0
+cost_classifier_6m,cost_overrun_negative_flag,0.0
+cost_classifier_6m,is_overdue_flag,0.0
+cost_classifier_6m,agency_Adani Transmission Limited,0.0
+cost_classifier_6m,agency_BCCL - CIL,0.0
+cost_classifier_6m,agency_BSNL,0.0
+cost_classifier_6m,agency_Banaras Hindu University,0.0
+cost_classifier_6m,agency_Bengaluru Metro Rail,0.0
+cost_classifier_6m,agency_Bharat Coking Coal Limited [BCCL],0.0
+cost_classifier_6m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+cost_classifier_6m,agency_CAO/C/II/NR,0.0
+cost_classifier_6m,agency_CAO/C/NCR,0.0
+cost_classifier_6m,agency_CAO/C/SECR,0.0
+cost_classifier_6m,agency_CAO/C/SER,0.0
+cost_classifier_6m,agency_CCL - CIL,0.0
+cost_classifier_6m,agency_CORE,0.0
+cost_classifier_6m,agency_CPM/ICF,0.0
+cost_classifier_6m,agency_CSPCC Projects,0.0
+cost_classifier_6m,agency_Central Coalfields Limited [CCL],0.0
+cost_classifier_6m,agency_Central Organisation for Railway Electrification [CORE],0.0
+cost_classifier_6m,agency_Central Public Works Department - CPWD,0.0
+cost_classifier_6m,agency_Central Public Works Department [CPWD],0.0
+cost_classifier_6m,agency_Central Railway,0.0
+cost_classifier_6m,agency_Central Tribal University of Andhra Pradesh,0.0
+cost_classifier_6m,agency_Central University of Gujarat,0.0
+cost_classifier_6m,agency_Central University of Punjab,0.0
+cost_classifier_6m,"agency_Central University, Himachal Pradesh",0.0
+cost_classifier_6m,agency_CentralRailway,0.0
+cost_classifier_6m,agency_Chennai Metro Rail Limited [CMRL],0.0
+cost_classifier_6m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+cost_classifier_6m,agency_Construction NER,0.0
+cost_classifier_6m,agency_DFCCIL,0.0
+cost_classifier_6m,agency_Damodar Valley Corporation,0.0
+cost_classifier_6m,agency_Deendayal Port Trust,0.0
+cost_classifier_6m,agency_Deendayal Port Trust [DPT],0.0
+cost_classifier_6m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+cost_classifier_6m,agency_Delhi University,0.0
+cost_classifier_6m,agency_Department of Sports & Youth Affairs,0.0
+cost_classifier_6m,agency_Department of Telecommunications,0.0
+cost_classifier_6m,agency_Department of Telecommunications [DoT],0.0
+cost_classifier_6m,"agency_Department of Water Resources, River Development & GR",0.0
+cost_classifier_6m,agency_Department of Water Resources-JH,0.0
+cost_classifier_6m,agency_Department of Water Resources-MH,0.0
+cost_classifier_6m,agency_Department of Water Resources-PB,0.0
+cost_classifier_6m,agency_Department of water resources-MH - II,0.0
+cost_classifier_6m,agency_ECL - CIL,0.0
+cost_classifier_6m,agency_East Central Railway [ECR] - I,0.0
+cost_classifier_6m,agency_Eastern Coal Fields Limited [ECL],0.0
+cost_classifier_6m,agency_Eastern Railway [ER] - I,0.0
+cost_classifier_6m,agency_Employee's State Insurance Company [ESIC],0.0
+cost_classifier_6m,agency_GM/C/ NFR,0.0
+cost_classifier_6m,agency_Gas Authority of India Limited [GAIL],0.0
+cost_classifier_6m,agency_Gujarat,0.0
+cost_classifier_6m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+cost_classifier_6m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+cost_classifier_6m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+cost_classifier_6m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+cost_classifier_6m,"agency_Indian Institute of Management, Jammu",0.0
+cost_classifier_6m,"agency_Indian Institute of Management, Sirmaur",0.0
+cost_classifier_6m,"agency_Indian Institute of Technology, Bhilai",0.0
+cost_classifier_6m,"agency_Indian Institute of Technology, Hyderabad",0.0
+cost_classifier_6m,"agency_Indian Institute of Technology, Indore",0.0
+cost_classifier_6m,"agency_Indian Institute of Technology, Kharagpur",0.0
+cost_classifier_6m,"agency_Indian Institute of Technology, Mandi",0.0
+cost_classifier_6m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0
+cost_classifier_6m,agency_Indian Oil Corporation Limited [IOCL],0.0
+cost_classifier_6m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+cost_classifier_6m,"agency_Indian intitue of Management, Amritsar",0.0
+cost_classifier_6m,agency_Inland Waterways Authority of India [IWAI],0.0
+cost_classifier_6m,agency_Irrigation & Water Resources-UP,0.0
+cost_classifier_6m,agency_Irrigation and CAD-TG,0.0
+cost_classifier_6m,agency_Irrigation-UK,0.0
+cost_classifier_6m,agency_M/S SRC company Infra Private Limited,0.0
+cost_classifier_6m,agency_MCL - CIL,0.0
+cost_classifier_6m,agency_MIS MoCoal Integration Logins,0.0
+cost_classifier_6m,agency_MRIDC,0.0
+cost_classifier_6m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+cost_classifier_6m,agency_Mahanadi Coalfields Limited [MCL],0.0
+cost_classifier_6m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+cost_classifier_6m,"agency_Metro Railway, Kolkata",0.0
+cost_classifier_6m,agency_Ministry of Coal,0.0
+cost_classifier_6m,agency_Ministry of Health & Family Welfare,0.0
+cost_classifier_6m,agency_Ministry of Housing & Urban Affairs,0.0
+cost_classifier_6m,agency_Ministry of Mines,0.0
+cost_classifier_6m,agency_Ministry of Petroleum and Natural Gas,0.0
+cost_classifier_6m,agency_Ministry of Railways,0.0
+cost_classifier_6m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+cost_classifier_6m,agency_Mumbai Port Trust [MPT],0.0
+cost_classifier_6m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+cost_classifier_6m,agency_NER,0.0
+cost_classifier_6m,agency_NIT Mizoram,0.0
+cost_classifier_6m,agency_NIT Nagaland,0.0
+cost_classifier_6m,agency_NIT Patna,0.0
+cost_classifier_6m,agency_NIT Sikkim,0.0
+cost_classifier_6m,agency_NLC India Limited [NLCIL],0.0
+cost_classifier_6m,agency_NRL,0.0
+cost_classifier_6m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+cost_classifier_6m,agency_National Aluminium Company Limited [NALCO],0.0
+cost_classifier_6m,agency_National Buildings Construction Corporation [NBCC],0.0
+cost_classifier_6m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+cost_classifier_6m,agency_National High Speed Rail Corporation [NHSRC],0.0
+cost_classifier_6m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0
+cost_classifier_6m,agency_National Industrial Corridor Development Corporation,0.0
+cost_classifier_6m,agency_National Institute of Technology Delhi,0.0
+cost_classifier_6m,agency_National Institute of Technology Uttarakhand,0.0
+cost_classifier_6m,"agency_National Institute of Technology, Arunachal Pradesh",0.0
+cost_classifier_6m,"agency_National Institute of Technology, Meghalaya",0.0
+cost_classifier_6m,"agency_National Institute of Technology, Puducherry",0.0
+cost_classifier_6m,agency_National Mission for Clean Ganga,0.0
+cost_classifier_6m,agency_New Mangalore Port Authority,0.0
+cost_classifier_6m,agency_North Central Railway,0.0
+cost_classifier_6m,agency_North Eastern Electric Power Corporation Limited,0.0
+cost_classifier_6m,agency_North Eastern Railway [NER],0.0
+cost_classifier_6m,agency_North Western Railway [NWR],0.0
+cost_classifier_6m,agency_Northeast Frontier Railway [NFR],0.0
+cost_classifier_6m,agency_Northern Coalfields Limited [NCL],0.0
+cost_classifier_6m,agency_Northern Railways,0.0
+cost_classifier_6m,agency_PCE/NCR,0.0
+cost_classifier_6m,agency_PMSSY AND Institute of NATIONAL Importance,0.0
+cost_classifier_6m,agency_Paradip Port Trust [PPT],0.0
+cost_classifier_6m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+cost_classifier_6m,agency_RCIL,0.0
+cost_classifier_6m,agency_RVNL,0.0
+cost_classifier_6m,agency_RVNL - I,0.0
+cost_classifier_6m,agency_Rail Land Development Authority,0.0
+cost_classifier_6m,agency_Reliance Industries Ltd,0.0
+cost_classifier_6m,agency_SECL - CIL,0.0
+cost_classifier_6m,agency_SECR,0.0
+cost_classifier_6m,agency_SR-ERS,0.0
+cost_classifier_6m,agency_Sikkim University,0.0
+cost_classifier_6m,agency_Singareni Collieries Company Limited [SCCL],0.0
+cost_classifier_6m,agency_Smart City Mission,0.0
+cost_classifier_6m,agency_South Central Railway [SCR] - I,0.0
+cost_classifier_6m,agency_South East Central Railway,0.0
+cost_classifier_6m,agency_South Eastern Coalfields Limited [SECL],0.0
+cost_classifier_6m,agency_South Eastern Railway - JH,0.0
+cost_classifier_6m,agency_Southern Railway [SR] - II,0.0
+cost_classifier_6m,agency_Southern Railways [SR] - construction,0.0
+cost_classifier_6m,agency_Steel Authority of India Limited [SAIL],0.0
+cost_classifier_6m,agency_Sterlite Power,0.0
+cost_classifier_6m,agency_THDC India Limited,0.0
+cost_classifier_6m,agency_Tezpur University,0.0
+cost_classifier_6m,agency_UNKNOWN,0.0
+cost_classifier_6m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+cost_classifier_6m,agency_WCL - CIL,0.0
+cost_classifier_6m,agency_WPO/Patna,0.0
+cost_classifier_6m,agency_Water Resources Department-MN,0.0
+cost_classifier_6m,agency_Water Resources-AP,0.0
+cost_classifier_6m,agency_Water Resources-BR,0.0
+cost_classifier_6m,agency_Water Resources-CT,0.0
+cost_classifier_6m,agency_Water Resources-KA,0.0
+cost_classifier_6m,agency_Water Resources-MP,0.0
+cost_classifier_6m,agency_Water Resources-OR,0.0
+cost_classifier_6m,agency_Water resource-mp,0.0
+cost_classifier_6m,agency_West Central Railway WCR I,0.0
+cost_classifier_6m,agency_West Central Railway [WCR] - II,0.0
+cost_classifier_6m,agency_Western Coalfields Limited [WCL],0.0
+cost_classifier_6m,agency_Western Railway,0.0
+cost_classifier_6m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+cost_classifier_6m,ministry_department_Department of Higher Education,0.0
+cost_classifier_6m,ministry_department_Department of Sports,0.0
+cost_classifier_6m,ministry_department_Department of Telecommunications,0.0
+cost_classifier_6m,ministry_department_Ministry of Civil Aviation,0.0
+cost_classifier_6m,ministry_department_Ministry of Labour and Employment,0.0
+cost_classifier_6m,ministry_department_Ministry of Mines,0.0
+cost_classifier_6m,ministry_department_Ministry of Petroleum & Natural Gas,0.0
+cost_classifier_6m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0
+cost_classifier_6m,sector_Aviation & Aviation Infrastructure,0.0
+cost_classifier_6m,sector_Construction,0.0
+cost_classifier_6m,sector_Education,0.0
+cost_classifier_6m,sector_Inland Waterways,0.0
+cost_classifier_6m,sector_Real Estate,0.0
+cost_classifier_6m,sector_Shipping,0.0
+cost_classifier_6m,sector_Telecommunication,0.0
+cost_classifier_6m,"sector_Tourism, Hospitality & Wellness",0.0
+cost_classifier_6m,sector_Waste & Water,0.0
+cost_classifier_6m,state_Andhra Pradesh,0.0
+cost_classifier_6m,state_Arunachal Pradesh,0.0
+cost_classifier_6m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+cost_classifier_6m,state_Goa,0.0
+cost_classifier_6m,state_Haryana,0.0
+cost_classifier_6m,"state_Jammu and
+Kashmir",0.0
+cost_classifier_6m,state_Ladakh,0.0
+cost_classifier_6m,state_Manipur,0.0
+cost_classifier_6m,state_Meghalaya,0.0
+cost_classifier_6m,state_Mizoram,0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0
+cost_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+cost_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+cost_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+cost_classifier_6m,"state_Multi-States
+(Assam,
+Nagaland)",0.0
+cost_classifier_6m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+cost_classifier_6m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+cost_classifier_6m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+cost_classifier_6m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+cost_classifier_6m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+cost_classifier_6m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+cost_classifier_6m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+cost_classifier_6m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+cost_classifier_6m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+cost_classifier_6m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+cost_classifier_6m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+cost_classifier_6m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0
+cost_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+cost_classifier_6m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+cost_classifier_6m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+cost_classifier_6m,"state_Multi-States (Delhi,
+Haryana)",0.0
+cost_classifier_6m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+cost_classifier_6m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+cost_classifier_6m,"state_Multi-States (Goa,
+Karnataka)",0.0
+cost_classifier_6m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+cost_classifier_6m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+cost_classifier_6m,state_Nagaland,0.0
+cost_classifier_6m,state_Offshore,0.0
+cost_classifier_6m,state_PAN India,0.0
+cost_classifier_6m,state_Puducherry,0.0
+cost_classifier_6m,state_Sikkim,0.0
+cost_classifier_6m,state_Tamil Nadu,0.0
+cost_classifier_6m,state_Tripura,0.0
+cost_classifier_6m,state_UNKNOWN,0.0
+cost_classifier_6m,schedule_status_COMPLETED,0.0
+cost_classifier_6m,schedule_status_EXTENDED,0.0
+cost_classifier_6m,schedule_status_OVERDUE,0.0
+cost_regressor_3m,agency_Central Railway [CR] - II,0.2407
+cost_regressor_3m,expenditure_ratio_pct,0.2009
+cost_regressor_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.1741
+cost_regressor_3m,original_duration_months,0.1735
+cost_regressor_3m,planned_remaining_months,0.167
+cost_regressor_3m,agency_Western Railway [WR] - II,0.1502
+cost_regressor_3m,original_cost_crore,0.1171
+cost_regressor_3m,revised_remaining_months,0.0897
+cost_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0662
+cost_regressor_3m,schedule_extension_months,0.0569
+cost_regressor_3m,remaining_budget_crore,0.0564
+cost_regressor_3m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0507
+cost_regressor_3m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.0499
+cost_regressor_3m,agency_National Thermal Power Corporation [NTPC],0.044
+cost_regressor_3m,progress_minus_expenditure_gap,0.0423
+cost_regressor_3m,progress_velocity_3m,0.0385
+cost_regressor_3m,ministry_department_Ministry of Health & Family Welfare,0.0376
+cost_regressor_3m,cumulative_expenditure_crore,0.0359
+cost_regressor_3m,physical_financial_gap_pct,0.0348
+cost_regressor_3m,project_age_months,0.0333
+cost_regressor_3m,cost_overrun_trend_slope,0.0291
+cost_regressor_3m,agency_Indian Railway Construction International Limited [IRCON],0.0216
+cost_regressor_3m,revised_cost_crore,0.0198
+cost_regressor_3m,physical_to_expenditure_ratio,0.0178
+cost_regressor_3m,cost_escalation_crore,0.0168
+cost_regressor_3m,extension_rate_pct,0.0162
+cost_regressor_3m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0127
+cost_regressor_3m,days_to_original_target,0.0121
+cost_regressor_3m,agency_Adani Airport Holdings Limited,0.0119
+cost_regressor_3m,physical_progress_pct,0.0107
+cost_regressor_3m,cost_overrun_pct,0.0104
+cost_regressor_3m,agency_Southern Railways [SR] - construction,0.0102
+cost_regressor_3m,expenditure_velocity_crore_month,0.0098
+cost_regressor_3m,agency_Hindustan Copper Limited [HCL],0.0083
+cost_regressor_3m,sector_Electricity Generation,0.0081
+cost_regressor_3m,ministry_department_Ministry of Power,0.0078
+cost_regressor_3m,state_Himachal Pradesh,0.0078
+cost_regressor_3m,agency_Rail Vikas Nigam Limited,0.0075
+cost_regressor_3m,physical_progress_delta_1m,0.0063
+cost_regressor_3m,cost_overrun_delta_1m,0.0052
+cost_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0044
+cost_regressor_3m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0042
+cost_regressor_3m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0042
+cost_regressor_3m,state_Chhattisgarh,0.0042
+cost_regressor_3m,"state_Multi-States
+(Bihar, Jharkhand)",0.004
+cost_regressor_3m,agency_South Eastern Railway [SER] - I,0.0038
+cost_regressor_3m,progress_trend_slope,0.0033
+cost_regressor_3m,risk_signal_count,0.0028
+cost_regressor_3m,expenditure_ratio_delta_1m,0.0024
+cost_regressor_3m,cost_overrun_delta_3m,0.0022
+cost_regressor_3m,remaining_work_pct,0.002
+cost_regressor_3m,"agency_National Institute of Technology, Meghalaya",0.0014
+cost_regressor_3m,days_to_revised_target,0.0012
+cost_regressor_3m,consecutive_stagnant_months,0.0012
+cost_regressor_3m,agency_Railway,0.0011
+cost_regressor_3m,ministry_department_Ministry of Civil Aviation,0.0011
+cost_regressor_3m,expenditure_ratio_delta_3m,0.001
+cost_regressor_3m,agency_ministry of housing and urban affairs,0.001
+cost_regressor_3m,state_Madhya Pradesh,0.0008
+cost_regressor_3m,agency_South Central Railway [SCR] - II,0.0007
+cost_regressor_3m,"state_Jammu and
+Kashmir",0.0007
+cost_regressor_3m,physical_progress_delta_3m,0.0005
+cost_regressor_3m,agency_East Central Railway [ECR] - I,0.0005
+cost_regressor_3m,schedule_extension_delta_1m,0.0003
+cost_regressor_3m,cost_escalation_ratio,0.0002
+cost_regressor_3m,agency_Ministry of Health & Family Welfare,0.0002
+cost_regressor_3m,state_Assam,0.0002
+cost_regressor_3m,state_Maharashtra,0.0001
+cost_regressor_3m,schedule_status_ON_TRACK,0.0001
+cost_regressor_3m,progress_expenditure_mismatch_flag,0.0
+cost_regressor_3m,high_expenditure_low_progress_flag,0.0
+cost_regressor_3m,overdue_days,0.0
+cost_regressor_3m,extension_count,0.0
+cost_regressor_3m,expenditure_minus_progress_gap,0.0
+cost_regressor_3m,cost_overrun_negative_flag,0.0
+cost_regressor_3m,is_overdue_flag,0.0
+cost_regressor_3m,is_extended_flag,0.0
+cost_regressor_3m,agency_Adani Transmission Limited,0.0
+cost_regressor_3m,agency_Airport Authority of India [AAI],0.0
+cost_regressor_3m,agency_BCCL - CIL,0.0
+cost_regressor_3m,agency_BSNL,0.0
+cost_regressor_3m,agency_Banaras Hindu University,0.0
+cost_regressor_3m,agency_Bengaluru Metro Rail,0.0
+cost_regressor_3m,agency_Bharat Coking Coal Limited [BCCL],0.0
+cost_regressor_3m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+cost_regressor_3m,agency_CAO/C/II/NR,0.0
+cost_regressor_3m,agency_CAO/C/NCR,0.0
+cost_regressor_3m,agency_CAO/C/NR,0.0
+cost_regressor_3m,agency_CAO/C/SECR,0.0
+cost_regressor_3m,agency_CAO/C/SER,0.0
+cost_regressor_3m,agency_CCL - CIL,0.0
+cost_regressor_3m,agency_CERL,0.0
+cost_regressor_3m,agency_CORE,0.0
+cost_regressor_3m,agency_CPM/ICF,0.0
+cost_regressor_3m,agency_CR,0.0
+cost_regressor_3m,agency_CSPCC Projects,0.0
+cost_regressor_3m,agency_Central Coalfields Limited [CCL],0.0
+cost_regressor_3m,agency_Central Organisation for Railway Electrification [CORE],0.0
+cost_regressor_3m,agency_Central Public Works Department - CPWD,0.0
+cost_regressor_3m,agency_Central Public Works Department [CPWD],0.0
+cost_regressor_3m,agency_Central Railway,0.0
+cost_regressor_3m,agency_Central Railways,0.0
+cost_regressor_3m,agency_Central Tribal University of Andhra Pradesh,0.0
+cost_regressor_3m,agency_Central University of Gujarat,0.0
+cost_regressor_3m,agency_Central University of Punjab,0.0
+cost_regressor_3m,"agency_Central University, Himachal Pradesh",0.0
+cost_regressor_3m,agency_CentralRailway,0.0
+cost_regressor_3m,agency_Chennai Metro Rail Limited [CMRL],0.0
+cost_regressor_3m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+cost_regressor_3m,agency_Construction NER,0.0
+cost_regressor_3m,agency_DFCCIL,0.0
+cost_regressor_3m,agency_Damodar Valley Corporation,0.0
+cost_regressor_3m,agency_Deendayal Port Trust,0.0
+cost_regressor_3m,agency_Deendayal Port Trust [DPT],0.0
+cost_regressor_3m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+cost_regressor_3m,agency_Delhi University,0.0
+cost_regressor_3m,agency_Department of Sports & Youth Affairs,0.0
+cost_regressor_3m,agency_Department of Telecommunications,0.0
+cost_regressor_3m,agency_Department of Telecommunications [DoT],0.0
+cost_regressor_3m,"agency_Department of Water Resources, River Development & GR",0.0
+cost_regressor_3m,agency_Department of Water Resources-JH,0.0
+cost_regressor_3m,agency_Department of Water Resources-MH,0.0
+cost_regressor_3m,agency_Department of Water Resources-PB,0.0
+cost_regressor_3m,agency_Department of water resources-MH - II,0.0
+cost_regressor_3m,agency_ECL - CIL,0.0
+cost_regressor_3m,agency_EDTK[MC]/RB,0.0
+cost_regressor_3m,agency_East Central Railway [ECR] - II,0.0
+cost_regressor_3m,agency_East Coast Railway [ECoR] - II,0.0
+cost_regressor_3m,agency_Eastern Coal Fields Limited [ECL],0.0
+cost_regressor_3m,agency_Eastern Railway [ER] - I,0.0
+cost_regressor_3m,agency_Employee's State Insurance Company [ESIC],0.0
+cost_regressor_3m,agency_GAIL Gas,0.0
+cost_regressor_3m,agency_GM/C/ NFR,0.0
+cost_regressor_3m,agency_Gas Authority of India Limited [GAIL],0.0
+cost_regressor_3m,agency_Gujarat,0.0
+cost_regressor_3m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+cost_regressor_3m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+cost_regressor_3m,agency_Hindustan Petroleum Corporation Limited,0.0
+cost_regressor_3m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+cost_regressor_3m,agency_IISC Bangalore,0.0
+cost_regressor_3m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+cost_regressor_3m,"agency_Indian Institute of Management, Jammu",0.0
+cost_regressor_3m,"agency_Indian Institute of Management, Sirmaur",0.0
+cost_regressor_3m,"agency_Indian Institute of Technology, Bhilai",0.0
+cost_regressor_3m,"agency_Indian Institute of Technology, Bombay",0.0
+cost_regressor_3m,"agency_Indian Institute of Technology, Hyderabad",0.0
+cost_regressor_3m,"agency_Indian Institute of Technology, Indore",0.0
+cost_regressor_3m,"agency_Indian Institute of Technology, Kharagpur",0.0
+cost_regressor_3m,"agency_Indian Institute of Technology, Mandi",0.0
+cost_regressor_3m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0
+cost_regressor_3m,agency_Indian Oil Corporation Limited [IOCL],0.0
+cost_regressor_3m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+cost_regressor_3m,agency_Indian Railway,0.0
+cost_regressor_3m,"agency_Indian intitue of Management, Amritsar",0.0
+cost_regressor_3m,agency_Inland Waterways Authority of India [IWAI],0.0
+cost_regressor_3m,agency_Irrigation & Water Resources-UP,0.0
+cost_regressor_3m,agency_Irrigation and CAD-TG,0.0
+cost_regressor_3m,agency_Irrigation-UK,0.0
+cost_regressor_3m,agency_M/S SRC company Infra Private Limited,0.0
+cost_regressor_3m,agency_MCL - CIL,0.0
+cost_regressor_3m,agency_MIS MoCoal Integration Logins,0.0
+cost_regressor_3m,agency_MRIDC,0.0
+cost_regressor_3m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+cost_regressor_3m,agency_Mahanadi Coalfields Limited [MCL],0.0
+cost_regressor_3m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0
+cost_regressor_3m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+cost_regressor_3m,"agency_Medical Education, Ministry of Health and Family Welfare",0.0
+cost_regressor_3m,"agency_Metro Railway, Kolkata",0.0
+cost_regressor_3m,agency_Ministry of Coal,0.0
+cost_regressor_3m,agency_Ministry of Education,0.0
+cost_regressor_3m,agency_Ministry of Housing & Urban Affairs,0.0
+cost_regressor_3m,agency_Ministry of Mines,0.0
+cost_regressor_3m,agency_Ministry of Petroleum & Natural Gas,0.0
+cost_regressor_3m,agency_Ministry of Petroleum and Natural Gas,0.0
+cost_regressor_3m,agency_Ministry of Railways,0.0
+cost_regressor_3m,agency_MinistryofPetroleumNaturalGas,0.0
+cost_regressor_3m,agency_MoRTH,0.0
+cost_regressor_3m,agency_Mumbai Port Trust [MPT],0.0
+cost_regressor_3m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+cost_regressor_3m,agency_NER,0.0
+cost_regressor_3m,agency_NHAI,0.0
+cost_regressor_3m,agency_NHIDCL,0.0
+cost_regressor_3m,agency_NIT Mizoram,0.0
+cost_regressor_3m,agency_NIT Nagaland,0.0
+cost_regressor_3m,agency_NIT Patna,0.0
+cost_regressor_3m,agency_NIT Rourkela,0.0
+cost_regressor_3m,agency_NIT Sikkim,0.0
+cost_regressor_3m,agency_NLC India Limited [NLCIL],0.0
+cost_regressor_3m,agency_NRL,0.0
+cost_regressor_3m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+cost_regressor_3m,agency_National Aluminium Company Limited [NALCO],0.0
+cost_regressor_3m,agency_National Buildings Construction Corporation [NBCC],0.0
+cost_regressor_3m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+cost_regressor_3m,agency_National Communication Academy - Finance [Erstwhile NICF],0.0
+cost_regressor_3m,agency_National High Speed Rail Corporation [NHSRC],0.0
+cost_regressor_3m,agency_National Highways Authority of India [NHAI],0.0
+cost_regressor_3m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0
+cost_regressor_3m,agency_National Industrial Corridor Development Corporation,0.0
+cost_regressor_3m,agency_National Institute of Technology Delhi,0.0
+cost_regressor_3m,agency_National Institute of Technology Uttarakhand,0.0
+cost_regressor_3m,"agency_National Institute of Technology, Arunachal Pradesh",0.0
+cost_regressor_3m,"agency_National Institute of Technology, Puducherry",0.0
+cost_regressor_3m,agency_National Mineral Development Corporation Limited [NMDC],0.0
+cost_regressor_3m,agency_National Mission for Clean Ganga,0.0
+cost_regressor_3m,agency_New Mangalore Port Authority,0.0
+cost_regressor_3m,agency_North Central Railway,0.0
+cost_regressor_3m,agency_North Eastern Electric Power Corporation Limited,0.0
+cost_regressor_3m,agency_North Eastern Railway [NER],0.0
+cost_regressor_3m,agency_North Western Railway [NWR],0.0
+cost_regressor_3m,agency_Northeast Frontier Railway [NFR],0.0
+cost_regressor_3m,agency_Northeast Frontier Railway [NFR] - II,0.0
+cost_regressor_3m,agency_Northen Railway [NR],0.0
+cost_regressor_3m,agency_Northern Coalfields Limited [NCL],0.0
+cost_regressor_3m,agency_Northern Railways,0.0
+cost_regressor_3m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0
+cost_regressor_3m,agency_PCE/NCR,0.0
+cost_regressor_3m,agency_PCE/WR,0.0
+cost_regressor_3m,agency_PMSSY AND Institute of NATIONAL Importance,0.0
+cost_regressor_3m,agency_Paradip Port Trust [PPT],0.0
+cost_regressor_3m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+cost_regressor_3m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0
+cost_regressor_3m,agency_RCIL,0.0
+cost_regressor_3m,agency_RVNL,0.0
+cost_regressor_3m,agency_RVNL - I,0.0
+cost_regressor_3m,agency_RVNL - II,0.0
+cost_regressor_3m,agency_Rail Land Development Authority,0.0
+cost_regressor_3m,agency_Reliance Industries Ltd,0.0
+cost_regressor_3m,agency_SECL - CIL,0.0
+cost_regressor_3m,agency_SECR,0.0
+cost_regressor_3m,agency_SR-ERS,0.0
+cost_regressor_3m,agency_Sikkim University,0.0
+cost_regressor_3m,agency_Singareni Collieries Company Limited [SCCL],0.0
+cost_regressor_3m,agency_Smart City Mission,0.0
+cost_regressor_3m,agency_South Central Railway [SCR] - I,0.0
+cost_regressor_3m,agency_South East Central Railway,0.0
+cost_regressor_3m,agency_South East Central Railway [SECR] - II,0.0
+cost_regressor_3m,agency_South Eastern Central Railway,0.0
+cost_regressor_3m,agency_South Eastern Coalfields Limited [SECL],0.0
+cost_regressor_3m,agency_South Eastern Railway - JH,0.0
+cost_regressor_3m,agency_South Western Railway [SWR] - II,0.0
+cost_regressor_3m,agency_Southern Railway [SR] - II,0.0
+cost_regressor_3m,agency_Steel Authority of India Limited [SAIL],0.0
+cost_regressor_3m,agency_Sterlite Power,0.0
+cost_regressor_3m,agency_THDC India Limited,0.0
+cost_regressor_3m,agency_Tezpur University,0.0
+cost_regressor_3m,agency_UNKNOWN,0.0
+cost_regressor_3m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+cost_regressor_3m,agency_WCL - CIL,0.0
+cost_regressor_3m,agency_WPO/Patna,0.0
+cost_regressor_3m,agency_WR,0.0
+cost_regressor_3m,agency_Water Resources Department-MN,0.0
+cost_regressor_3m,agency_Water Resources-AP,0.0
+cost_regressor_3m,agency_Water Resources-BR,0.0
+cost_regressor_3m,agency_Water Resources-CT,0.0
+cost_regressor_3m,agency_Water Resources-KA,0.0
+cost_regressor_3m,agency_Water Resources-MP,0.0
+cost_regressor_3m,agency_Water Resources-OR,0.0
+cost_regressor_3m,agency_Water resource-mp,0.0
+cost_regressor_3m,agency_West Central Railway WCR I,0.0
+cost_regressor_3m,agency_West Central Railway [WCR] - II,0.0
+cost_regressor_3m,agency_Western Coalfields Limited [WCL],0.0
+cost_regressor_3m,agency_Western Railway,0.0
+cost_regressor_3m,agency_Western Railway WR - II,0.0
+cost_regressor_3m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+cost_regressor_3m,ministry_department_Department of Higher Education,0.0
+cost_regressor_3m,ministry_department_Department of Sports,0.0
+cost_regressor_3m,ministry_department_Department of Telecommunications,0.0
+cost_regressor_3m,"ministry_department_Department of Water Resources, River Development & GR",0.0
+cost_regressor_3m,ministry_department_Ministry of Coal,0.0
+cost_regressor_3m,ministry_department_Ministry of Housing & Urban Affairs,0.0
+cost_regressor_3m,ministry_department_Ministry of Labour and Employment,0.0
+cost_regressor_3m,ministry_department_Ministry of Mines,0.0
+cost_regressor_3m,ministry_department_Ministry of Petroleum & Natural Gas,0.0
+cost_regressor_3m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0
+cost_regressor_3m,ministry_department_Ministry of Railways,0.0
+cost_regressor_3m,ministry_department_Ministry of Road Transport & Highways,0.0
+cost_regressor_3m,ministry_department_Ministry of Steel,0.0
+cost_regressor_3m,sector_Aviation & Aviation Infrastructure,0.0
+cost_regressor_3m,sector_Coal,0.0
+cost_regressor_3m,sector_Construction,0.0
+cost_regressor_3m,sector_Education,0.0
+cost_regressor_3m,sector_Energy Storage,0.0
+cost_regressor_3m,sector_Healthcare,0.0
+cost_regressor_3m,sector_Inland Waterways,0.0
+cost_regressor_3m,sector_Logistics Infrastructure,0.0
+cost_regressor_3m,sector_Metals & Mining,0.0
+cost_regressor_3m,sector_Oil & Gas,0.0
+cost_regressor_3m,sector_Railways,0.0
+cost_regressor_3m,sector_Real Estate,0.0
+cost_regressor_3m,sector_Roads & Highways,0.0
+cost_regressor_3m,sector_Shipping,0.0
+cost_regressor_3m,sector_Steel,0.0
+cost_regressor_3m,sector_Telecommunication,0.0
+cost_regressor_3m,"sector_Tourism, Hospitality & Wellness",0.0
+cost_regressor_3m,sector_Transmission & Distribution,0.0
+cost_regressor_3m,sector_Urban Public Transport,0.0
+cost_regressor_3m,sector_Waste & Water,0.0
+cost_regressor_3m,sector_Water Resources,0.0
+cost_regressor_3m,"state_Andaman &
+Nicobar",0.0
+cost_regressor_3m,state_Andhra Pradesh,0.0
+cost_regressor_3m,state_Arunachal Pradesh,0.0
+cost_regressor_3m,state_Bihar,0.0
+cost_regressor_3m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+cost_regressor_3m,state_Delhi,0.0
+cost_regressor_3m,state_Goa,0.0
+cost_regressor_3m,state_Gujarat,0.0
+cost_regressor_3m,state_Haryana,0.0
+cost_regressor_3m,state_Jharkhand,0.0
+cost_regressor_3m,state_Karnataka,0.0
+cost_regressor_3m,state_Kerala,0.0
+cost_regressor_3m,state_Ladakh,0.0
+cost_regressor_3m,state_Manipur,0.0
+cost_regressor_3m,state_Meghalaya,0.0
+cost_regressor_3m,state_Mizoram,0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0
+cost_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+cost_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+cost_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Assam,
+Nagaland)",0.0
+cost_regressor_3m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Assam, Bihar,
+West Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+cost_regressor_3m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+cost_regressor_3m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+cost_regressor_3m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+cost_regressor_3m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+cost_regressor_3m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+cost_regressor_3m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Haryana, Punjab)",0.0
+cost_regressor_3m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Haryana, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+cost_regressor_3m,"state_Multi-States
+(Jammu and
+Kashmir, Ladakh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+cost_regressor_3m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+cost_regressor_3m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Jharkhand, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+cost_regressor_3m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+cost_regressor_3m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+cost_regressor_3m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+cost_regressor_3m,"state_Multi-States
+(Kerala,
+Puducherry)",0.0
+cost_regressor_3m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0
+cost_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+cost_regressor_3m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+cost_regressor_3m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+cost_regressor_3m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States (Delhi,
+Haryana)",0.0
+cost_regressor_3m,"state_Multi-States (Delhi,
+Haryana,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+cost_regressor_3m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+cost_regressor_3m,"state_Multi-States (Goa,
+Karnataka)",0.0
+cost_regressor_3m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+cost_regressor_3m,"state_Multi-States (Uttar
+Pradesh,
+Uttarakhand)",0.0
+cost_regressor_3m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+cost_regressor_3m,state_Nagaland,0.0
+cost_regressor_3m,state_Odisha,0.0
+cost_regressor_3m,state_Offshore,0.0
+cost_regressor_3m,state_PAN India,0.0
+cost_regressor_3m,state_Puducherry,0.0
+cost_regressor_3m,state_Punjab,0.0
+cost_regressor_3m,state_Rajasthan,0.0
+cost_regressor_3m,state_Sikkim,0.0
+cost_regressor_3m,state_Tamil Nadu,0.0
+cost_regressor_3m,state_Telangana,0.0
+cost_regressor_3m,state_Tripura,0.0
+cost_regressor_3m,state_UNKNOWN,0.0
+cost_regressor_3m,state_Uttar Pradesh,0.0
+cost_regressor_3m,state_Uttarakhand,0.0
+cost_regressor_3m,state_West Bengal,0.0
+cost_regressor_3m,schedule_status_COMPLETED,0.0
+cost_regressor_3m,schedule_status_EXTENDED,0.0
+cost_regressor_3m,schedule_status_OVERDUE,0.0
+cost_regressor_6m,agency_Central Railway [CR] - II,0.5179
+cost_regressor_6m,cumulative_expenditure_crore,0.4385
+cost_regressor_6m,remaining_budget_crore,0.4166
+cost_regressor_6m,original_duration_months,0.3637
+cost_regressor_6m,agency_Western Railway [WR] - II,0.2789
+cost_regressor_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.2637
+cost_regressor_6m,planned_remaining_months,0.2017
+cost_regressor_6m,original_cost_crore,0.1925
+cost_regressor_6m,schedule_extension_months,0.182
+cost_regressor_6m,revised_remaining_months,0.1766
+cost_regressor_6m,progress_minus_expenditure_gap,0.1653
+cost_regressor_6m,ministry_department_Ministry of Health & Family Welfare,0.1232
+cost_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.1204
+cost_regressor_6m,cost_escalation_crore,0.1171
+cost_regressor_6m,state_Himachal Pradesh,0.113
+cost_regressor_6m,project_age_months,0.1039
+cost_regressor_6m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.093
+cost_regressor_6m,physical_financial_gap_pct,0.0922
+cost_regressor_6m,agency_National Thermal Power Corporation [NTPC],0.0828
+cost_regressor_6m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.079
+cost_regressor_6m,physical_progress_pct,0.0719
+cost_regressor_6m,expenditure_minus_progress_gap,0.0648
+cost_regressor_6m,expenditure_ratio_pct,0.0569
+cost_regressor_6m,days_to_revised_target,0.0565
+cost_regressor_6m,physical_to_expenditure_ratio,0.0508
+cost_regressor_6m,agency_South Eastern Railway [SER] - I,0.0506
+cost_regressor_6m,agency_Hindustan Copper Limited [HCL],0.0426
+cost_regressor_6m,agency_Adani Airport Holdings Limited,0.0423
+cost_regressor_6m,revised_cost_crore,0.0418
+cost_regressor_6m,physical_progress_delta_3m,0.0405
+cost_regressor_6m,remaining_work_pct,0.0399
+cost_regressor_6m,ministry_department_Department of Telecommunications,0.0378
+cost_regressor_6m,agency_Southern Railways [SR] - construction,0.0377
+cost_regressor_6m,extension_rate_pct,0.034
+cost_regressor_6m,agency_Department of Telecommunications,0.0327
+cost_regressor_6m,sector_Electricity Generation,0.0307
+cost_regressor_6m,agency_Department of Telecommunications [DoT],0.0298
+cost_regressor_6m,progress_velocity_3m,0.0256
+cost_regressor_6m,agency_ministry of housing and urban affairs,0.0247
+cost_regressor_6m,cost_overrun_trend_slope,0.0241
+cost_regressor_6m,overdue_days,0.0237
+cost_regressor_6m,state_Meghalaya,0.0221
+cost_regressor_6m,"state_Multi-States
+(Odisha, West
+Bengal)",0.022
+cost_regressor_6m,expenditure_ratio_delta_1m,0.021
+cost_regressor_6m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0192
+cost_regressor_6m,risk_signal_count,0.0189
+cost_regressor_6m,extension_count,0.0174
+cost_regressor_6m,ministry_department_Ministry of Railways,0.0169
+cost_regressor_6m,state_Chhattisgarh,0.0165
+cost_regressor_6m,ministry_department_Ministry of Power,0.0164
+cost_regressor_6m,agency_Railway,0.0157
+cost_regressor_6m,physical_progress_delta_1m,0.0148
+cost_regressor_6m,cost_overrun_pct,0.0147
+cost_regressor_6m,cost_overrun_delta_3m,0.0115
+cost_regressor_6m,days_to_original_target,0.0104
+cost_regressor_6m,cost_overrun_delta_1m,0.0098
+cost_regressor_6m,progress_trend_slope,0.0083
+cost_regressor_6m,agency_Department of water resources-MH - II,0.0077
+cost_regressor_6m,expenditure_velocity_crore_month,0.0076
+cost_regressor_6m,sector_Telecommunication,0.0076
+cost_regressor_6m,agency_Indian Railway Construction International Limited [IRCON],0.0057
+cost_regressor_6m,"agency_National Institute of Technology, Meghalaya",0.0048
+cost_regressor_6m,agency_Rail Vikas Nigam Limited,0.0047
+cost_regressor_6m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0046
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0043
+cost_regressor_6m,expenditure_ratio_delta_3m,0.0041
+cost_regressor_6m,agency_East Central Railway [ECR] - I,0.0037
+cost_regressor_6m,agency_WR,0.0028
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0027
+cost_regressor_6m,consecutive_stagnant_months,0.0022
+cost_regressor_6m,cost_escalation_ratio,0.0018
+cost_regressor_6m,agency_THDC India Limited,0.0016
+cost_regressor_6m,schedule_extension_delta_1m,0.0015
+cost_regressor_6m,state_Maharashtra,0.0012
+cost_regressor_6m,ministry_department_Ministry of Civil Aviation,0.0011
+cost_regressor_6m,state_Madhya Pradesh,0.0006
+cost_regressor_6m,"state_Multi-States
+(Bihar, Jharkhand)",0.0006
+cost_regressor_6m,state_Tamil Nadu,0.0004
+cost_regressor_6m,progress_expenditure_mismatch_flag,0.0
+cost_regressor_6m,high_expenditure_low_progress_flag,0.0
+cost_regressor_6m,cost_overrun_negative_flag,0.0
+cost_regressor_6m,is_overdue_flag,0.0
+cost_regressor_6m,is_extended_flag,0.0
+cost_regressor_6m,agency_Adani Transmission Limited,0.0
+cost_regressor_6m,agency_Airport Authority of India [AAI],0.0
+cost_regressor_6m,agency_BCCL - CIL,0.0
+cost_regressor_6m,agency_BSNL,0.0
+cost_regressor_6m,agency_Banaras Hindu University,0.0
+cost_regressor_6m,agency_Bengaluru Metro Rail,0.0
+cost_regressor_6m,agency_Bharat Coking Coal Limited [BCCL],0.0
+cost_regressor_6m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+cost_regressor_6m,agency_CAO/C/II/NR,0.0
+cost_regressor_6m,agency_CAO/C/NCR,0.0
+cost_regressor_6m,agency_CAO/C/NR,0.0
+cost_regressor_6m,agency_CAO/C/SECR,0.0
+cost_regressor_6m,agency_CAO/C/SER,0.0
+cost_regressor_6m,agency_CCL - CIL,0.0
+cost_regressor_6m,agency_CORE,0.0
+cost_regressor_6m,agency_CPM/ICF,0.0
+cost_regressor_6m,agency_CR,0.0
+cost_regressor_6m,agency_CSPCC Projects,0.0
+cost_regressor_6m,agency_Central Coalfields Limited [CCL],0.0
+cost_regressor_6m,agency_Central Organisation for Railway Electrification [CORE],0.0
+cost_regressor_6m,agency_Central Public Works Department - CPWD,0.0
+cost_regressor_6m,agency_Central Public Works Department [CPWD],0.0
+cost_regressor_6m,agency_Central Railway,0.0
+cost_regressor_6m,agency_Central Railways,0.0
+cost_regressor_6m,agency_Central Tribal University of Andhra Pradesh,0.0
+cost_regressor_6m,agency_Central University of Gujarat,0.0
+cost_regressor_6m,agency_Central University of Punjab,0.0
+cost_regressor_6m,"agency_Central University, Himachal Pradesh",0.0
+cost_regressor_6m,agency_CentralRailway,0.0
+cost_regressor_6m,agency_Chennai Metro Rail Limited [CMRL],0.0
+cost_regressor_6m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+cost_regressor_6m,agency_Construction NER,0.0
+cost_regressor_6m,agency_DFCCIL,0.0
+cost_regressor_6m,agency_Damodar Valley Corporation,0.0
+cost_regressor_6m,agency_Deendayal Port Trust,0.0
+cost_regressor_6m,agency_Deendayal Port Trust [DPT],0.0
+cost_regressor_6m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+cost_regressor_6m,agency_Delhi University,0.0
+cost_regressor_6m,agency_Department of Sports & Youth Affairs,0.0
+cost_regressor_6m,"agency_Department of Water Resources, River Development & GR",0.0
+cost_regressor_6m,agency_Department of Water Resources-JH,0.0
+cost_regressor_6m,agency_Department of Water Resources-MH,0.0
+cost_regressor_6m,agency_Department of Water Resources-PB,0.0
+cost_regressor_6m,agency_ECL - CIL,0.0
+cost_regressor_6m,agency_East Central Railway [ECR] - II,0.0
+cost_regressor_6m,agency_East Coast Railway [ECoR] - II,0.0
+cost_regressor_6m,agency_Eastern Coal Fields Limited [ECL],0.0
+cost_regressor_6m,agency_Eastern Railway [ER] - I,0.0
+cost_regressor_6m,agency_Employee's State Insurance Company [ESIC],0.0
+cost_regressor_6m,agency_GM/C/ NFR,0.0
+cost_regressor_6m,agency_Gas Authority of India Limited [GAIL],0.0
+cost_regressor_6m,agency_Gujarat,0.0
+cost_regressor_6m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+cost_regressor_6m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+cost_regressor_6m,agency_Hindustan Petroleum Corporation Limited,0.0
+cost_regressor_6m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+cost_regressor_6m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+cost_regressor_6m,"agency_Indian Institute of Management, Jammu",0.0
+cost_regressor_6m,"agency_Indian Institute of Management, Sirmaur",0.0
+cost_regressor_6m,"agency_Indian Institute of Technology, Bhilai",0.0
+cost_regressor_6m,"agency_Indian Institute of Technology, Hyderabad",0.0
+cost_regressor_6m,"agency_Indian Institute of Technology, Indore",0.0
+cost_regressor_6m,"agency_Indian Institute of Technology, Kharagpur",0.0
+cost_regressor_6m,"agency_Indian Institute of Technology, Mandi",0.0
+cost_regressor_6m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0
+cost_regressor_6m,agency_Indian Oil Corporation Limited [IOCL],0.0
+cost_regressor_6m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+cost_regressor_6m,"agency_Indian intitue of Management, Amritsar",0.0
+cost_regressor_6m,agency_Inland Waterways Authority of India [IWAI],0.0
+cost_regressor_6m,agency_Irrigation & Water Resources-UP,0.0
+cost_regressor_6m,agency_Irrigation and CAD-TG,0.0
+cost_regressor_6m,agency_Irrigation-UK,0.0
+cost_regressor_6m,agency_M/S SRC company Infra Private Limited,0.0
+cost_regressor_6m,agency_MCL - CIL,0.0
+cost_regressor_6m,agency_MIS MoCoal Integration Logins,0.0
+cost_regressor_6m,agency_MRIDC,0.0
+cost_regressor_6m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+cost_regressor_6m,agency_Mahanadi Coalfields Limited [MCL],0.0
+cost_regressor_6m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0
+cost_regressor_6m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+cost_regressor_6m,"agency_Metro Railway, Kolkata",0.0
+cost_regressor_6m,agency_Ministry of Coal,0.0
+cost_regressor_6m,agency_Ministry of Education,0.0
+cost_regressor_6m,agency_Ministry of Health & Family Welfare,0.0
+cost_regressor_6m,agency_Ministry of Housing & Urban Affairs,0.0
+cost_regressor_6m,agency_Ministry of Mines,0.0
+cost_regressor_6m,agency_Ministry of Petroleum & Natural Gas,0.0
+cost_regressor_6m,agency_Ministry of Petroleum and Natural Gas,0.0
+cost_regressor_6m,agency_Ministry of Railways,0.0
+cost_regressor_6m,agency_MinistryofPetroleumNaturalGas,0.0
+cost_regressor_6m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+cost_regressor_6m,agency_Mumbai Port Trust [MPT],0.0
+cost_regressor_6m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+cost_regressor_6m,agency_NER,0.0
+cost_regressor_6m,agency_NIT Mizoram,0.0
+cost_regressor_6m,agency_NIT Nagaland,0.0
+cost_regressor_6m,agency_NIT Patna,0.0
+cost_regressor_6m,agency_NIT Sikkim,0.0
+cost_regressor_6m,agency_NLC India Limited [NLCIL],0.0
+cost_regressor_6m,agency_NRL,0.0
+cost_regressor_6m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+cost_regressor_6m,agency_National Aluminium Company Limited [NALCO],0.0
+cost_regressor_6m,agency_National Buildings Construction Corporation [NBCC],0.0
+cost_regressor_6m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+cost_regressor_6m,agency_National High Speed Rail Corporation [NHSRC],0.0
+cost_regressor_6m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0
+cost_regressor_6m,agency_National Industrial Corridor Development Corporation,0.0
+cost_regressor_6m,agency_National Institute of Technology Delhi,0.0
+cost_regressor_6m,agency_National Institute of Technology Uttarakhand,0.0
+cost_regressor_6m,"agency_National Institute of Technology, Arunachal Pradesh",0.0
+cost_regressor_6m,"agency_National Institute of Technology, Puducherry",0.0
+cost_regressor_6m,agency_National Mineral Development Corporation Limited [NMDC],0.0
+cost_regressor_6m,agency_National Mission for Clean Ganga,0.0
+cost_regressor_6m,agency_New Mangalore Port Authority,0.0
+cost_regressor_6m,agency_North Central Railway,0.0
+cost_regressor_6m,agency_North Eastern Electric Power Corporation Limited,0.0
+cost_regressor_6m,agency_North Eastern Railway [NER],0.0
+cost_regressor_6m,agency_North Western Railway [NWR],0.0
+cost_regressor_6m,agency_Northeast Frontier Railway [NFR],0.0
+cost_regressor_6m,agency_Northen Railway [NR],0.0
+cost_regressor_6m,agency_Northern Coalfields Limited [NCL],0.0
+cost_regressor_6m,agency_Northern Railways,0.0
+cost_regressor_6m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0
+cost_regressor_6m,agency_PCE/NCR,0.0
+cost_regressor_6m,agency_PCE/WR,0.0
+cost_regressor_6m,agency_PMSSY AND Institute of NATIONAL Importance,0.0
+cost_regressor_6m,agency_Paradip Port Trust [PPT],0.0
+cost_regressor_6m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+cost_regressor_6m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0
+cost_regressor_6m,agency_RCIL,0.0
+cost_regressor_6m,agency_RVNL,0.0
+cost_regressor_6m,agency_RVNL - I,0.0
+cost_regressor_6m,agency_RVNL - II,0.0
+cost_regressor_6m,agency_Rail Land Development Authority,0.0
+cost_regressor_6m,agency_Reliance Industries Ltd,0.0
+cost_regressor_6m,agency_SECL - CIL,0.0
+cost_regressor_6m,agency_SECR,0.0
+cost_regressor_6m,agency_SR-ERS,0.0
+cost_regressor_6m,agency_Sikkim University,0.0
+cost_regressor_6m,agency_Singareni Collieries Company Limited [SCCL],0.0
+cost_regressor_6m,agency_Smart City Mission,0.0
+cost_regressor_6m,agency_South Central Railway [SCR] - I,0.0
+cost_regressor_6m,agency_South Central Railway [SCR] - II,0.0
+cost_regressor_6m,agency_South East Central Railway,0.0
+cost_regressor_6m,agency_South East Central Railway [SECR] - II,0.0
+cost_regressor_6m,agency_South Eastern Coalfields Limited [SECL],0.0
+cost_regressor_6m,agency_South Eastern Railway - JH,0.0
+cost_regressor_6m,agency_South Western Railway [SWR] - II,0.0
+cost_regressor_6m,agency_Southern Railway [SR] - II,0.0
+cost_regressor_6m,agency_Steel Authority of India Limited [SAIL],0.0
+cost_regressor_6m,agency_Sterlite Power,0.0
+cost_regressor_6m,agency_Tezpur University,0.0
+cost_regressor_6m,agency_UNKNOWN,0.0
+cost_regressor_6m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+cost_regressor_6m,agency_WCL - CIL,0.0
+cost_regressor_6m,agency_WPO/Patna,0.0
+cost_regressor_6m,agency_Water Resources Department-MN,0.0
+cost_regressor_6m,agency_Water Resources-AP,0.0
+cost_regressor_6m,agency_Water Resources-BR,0.0
+cost_regressor_6m,agency_Water Resources-CT,0.0
+cost_regressor_6m,agency_Water Resources-KA,0.0
+cost_regressor_6m,agency_Water Resources-MP,0.0
+cost_regressor_6m,agency_Water Resources-OR,0.0
+cost_regressor_6m,agency_Water resource-mp,0.0
+cost_regressor_6m,agency_West Central Railway WCR I,0.0
+cost_regressor_6m,agency_West Central Railway [WCR] - II,0.0
+cost_regressor_6m,agency_Western Coalfields Limited [WCL],0.0
+cost_regressor_6m,agency_Western Railway,0.0
+cost_regressor_6m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+cost_regressor_6m,ministry_department_Department of Higher Education,0.0
+cost_regressor_6m,ministry_department_Department of Sports,0.0
+cost_regressor_6m,"ministry_department_Department of Water Resources, River Development & GR",0.0
+cost_regressor_6m,ministry_department_Ministry of Coal,0.0
+cost_regressor_6m,ministry_department_Ministry of Housing & Urban Affairs,0.0
+cost_regressor_6m,ministry_department_Ministry of Labour and Employment,0.0
+cost_regressor_6m,ministry_department_Ministry of Mines,0.0
+cost_regressor_6m,ministry_department_Ministry of Petroleum & Natural Gas,0.0
+cost_regressor_6m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0
+cost_regressor_6m,ministry_department_Ministry of Steel,0.0
+cost_regressor_6m,sector_Aviation & Aviation Infrastructure,0.0
+cost_regressor_6m,sector_Coal,0.0
+cost_regressor_6m,sector_Construction,0.0
+cost_regressor_6m,sector_Education,0.0
+cost_regressor_6m,sector_Energy Storage,0.0
+cost_regressor_6m,sector_Healthcare,0.0
+cost_regressor_6m,sector_Inland Waterways,0.0
+cost_regressor_6m,sector_Metals & Mining,0.0
+cost_regressor_6m,sector_Oil & Gas,0.0
+cost_regressor_6m,sector_Railways,0.0
+cost_regressor_6m,sector_Real Estate,0.0
+cost_regressor_6m,sector_Shipping,0.0
+cost_regressor_6m,sector_Steel,0.0
+cost_regressor_6m,"sector_Tourism, Hospitality & Wellness",0.0
+cost_regressor_6m,sector_Transmission & Distribution,0.0
+cost_regressor_6m,sector_Urban Public Transport,0.0
+cost_regressor_6m,sector_Waste & Water,0.0
+cost_regressor_6m,sector_Water Resources,0.0
+cost_regressor_6m,"state_Andaman &
+Nicobar",0.0
+cost_regressor_6m,state_Andhra Pradesh,0.0
+cost_regressor_6m,state_Arunachal Pradesh,0.0
+cost_regressor_6m,state_Assam,0.0
+cost_regressor_6m,state_Bihar,0.0
+cost_regressor_6m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+cost_regressor_6m,state_Delhi,0.0
+cost_regressor_6m,state_Goa,0.0
+cost_regressor_6m,state_Gujarat,0.0
+cost_regressor_6m,state_Haryana,0.0
+cost_regressor_6m,"state_Jammu and
+Kashmir",0.0
+cost_regressor_6m,state_Jharkhand,0.0
+cost_regressor_6m,state_Karnataka,0.0
+cost_regressor_6m,state_Kerala,0.0
+cost_regressor_6m,state_Ladakh,0.0
+cost_regressor_6m,state_Manipur,0.0
+cost_regressor_6m,state_Mizoram,0.0
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0
+cost_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+cost_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+cost_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+cost_regressor_6m,"state_Multi-States
+(Assam,
+Nagaland)",0.0
+cost_regressor_6m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+cost_regressor_6m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+cost_regressor_6m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+cost_regressor_6m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+cost_regressor_6m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+cost_regressor_6m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+cost_regressor_6m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+cost_regressor_6m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+cost_regressor_6m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+cost_regressor_6m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+cost_regressor_6m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+cost_regressor_6m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+cost_regressor_6m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+cost_regressor_6m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0
+cost_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+cost_regressor_6m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+cost_regressor_6m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+cost_regressor_6m,"state_Multi-States (Delhi,
+Haryana)",0.0
+cost_regressor_6m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+cost_regressor_6m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+cost_regressor_6m,"state_Multi-States (Goa,
+Karnataka)",0.0
+cost_regressor_6m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+cost_regressor_6m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+cost_regressor_6m,state_Nagaland,0.0
+cost_regressor_6m,state_Odisha,0.0
+cost_regressor_6m,state_Offshore,0.0
+cost_regressor_6m,state_PAN India,0.0
+cost_regressor_6m,state_Puducherry,0.0
+cost_regressor_6m,state_Punjab,0.0
+cost_regressor_6m,state_Rajasthan,0.0
+cost_regressor_6m,state_Sikkim,0.0
+cost_regressor_6m,state_Telangana,0.0
+cost_regressor_6m,state_Tripura,0.0
+cost_regressor_6m,state_UNKNOWN,0.0
+cost_regressor_6m,state_Uttar Pradesh,0.0
+cost_regressor_6m,state_Uttarakhand,0.0
+cost_regressor_6m,state_West Bengal,0.0
+cost_regressor_6m,schedule_status_COMPLETED,0.0
+cost_regressor_6m,schedule_status_EXTENDED,0.0
+cost_regressor_6m,schedule_status_ON_TRACK,0.0
+cost_regressor_6m,schedule_status_OVERDUE,0.0
+time_classifier_3m,days_to_revised_target,1.3502
+time_classifier_3m,ministry_department_Ministry of Road Transport & Highways,0.4896
+time_classifier_3m,revised_remaining_months,0.2645
+time_classifier_3m,planned_remaining_months,0.1531
+time_classifier_3m,remaining_budget_crore,0.1188
+time_classifier_3m,sector_Roads & Highways,0.105
+time_classifier_3m,original_duration_months,0.0971
+time_classifier_3m,days_to_original_target,0.0891
+time_classifier_3m,ministry_department_Ministry of Railways,0.0706
+time_classifier_3m,physical_progress_pct,0.0687
+time_classifier_3m,revised_cost_crore,0.0658
+time_classifier_3m,original_cost_crore,0.065
+time_classifier_3m,progress_velocity_3m,0.0617
+time_classifier_3m,agency_Power Grid Corporation of India Limited [POWERGRID],0.059
+time_classifier_3m,expenditure_velocity_crore_month,0.0581
+time_classifier_3m,physical_financial_gap_pct,0.0574
+time_classifier_3m,progress_trend_slope,0.0573
+time_classifier_3m,cost_overrun_pct,0.0532
+time_classifier_3m,cumulative_expenditure_crore,0.0464
+time_classifier_3m,ministry_department_Ministry of Power,0.0383
+time_classifier_3m,ministry_department_Ministry of Petroleum & Natural Gas,0.0377
+time_classifier_3m,agency_National Highways Authority of India [NHAI],0.0368
+time_classifier_3m,project_age_months,0.0355
+time_classifier_3m,progress_minus_expenditure_gap,0.0339
+time_classifier_3m,expenditure_ratio_delta_3m,0.032
+time_classifier_3m,cost_escalation_crore,0.0291
+time_classifier_3m,extension_rate_pct,0.028
+time_classifier_3m,physical_to_expenditure_ratio,0.0259
+time_classifier_3m,agency_Western Coalfields Limited [WCL],0.0259
+time_classifier_3m,remaining_work_pct,0.024
+time_classifier_3m,sector_Oil & Gas,0.0225
+time_classifier_3m,state_Telangana,0.0218
+time_classifier_3m,expenditure_ratio_pct,0.0211
+time_classifier_3m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0186
+time_classifier_3m,sector_Railways,0.0173
+time_classifier_3m,consecutive_stagnant_months,0.0172
+time_classifier_3m,state_West Bengal,0.017
+time_classifier_3m,ministry_department_Ministry of Health & Family Welfare,0.0152
+time_classifier_3m,"state_Jammu and
+Kashmir",0.0147
+time_classifier_3m,schedule_extension_months,0.0138
+time_classifier_3m,ministry_department_Ministry of Coal,0.0137
+time_classifier_3m,expenditure_ratio_delta_1m,0.0136
+time_classifier_3m,sector_Urban Public Transport,0.0132
+time_classifier_3m,schedule_extension_delta_1m,0.013
+time_classifier_3m,agency_Eastern Coal Fields Limited [ECL],0.0101
+time_classifier_3m,"ministry_department_Department of Water Resources, River Development & GR",0.0098
+time_classifier_3m,agency_Ministry of Housing & Urban Affairs,0.0097
+time_classifier_3m,cost_escalation_ratio,0.0095
+time_classifier_3m,ministry_department_Ministry of Housing & Urban Affairs,0.0089
+time_classifier_3m,extension_count,0.0087
+time_classifier_3m,state_Maharashtra,0.0087
+time_classifier_3m,overdue_days,0.0086
+time_classifier_3m,sector_Electricity Generation,0.0082
+time_classifier_3m,sector_Water Resources,0.0082
+time_classifier_3m,agency_UNKNOWN,0.0081
+time_classifier_3m,physical_progress_delta_1m,0.0077
+time_classifier_3m,schedule_status_ON_TRACK,0.0074
+time_classifier_3m,state_Uttarakhand,0.0073
+time_classifier_3m,ministry_department_Ministry of Civil Aviation,0.007
+time_classifier_3m,agency_National Thermal Power Corporation [NTPC],0.0067
+time_classifier_3m,agency_Western Railway,0.0065
+time_classifier_3m,physical_progress_delta_3m,0.0064
+time_classifier_3m,sector_Transmission & Distribution,0.006
+time_classifier_3m,risk_signal_count,0.0057
+time_classifier_3m,state_Assam,0.0054
+time_classifier_3m,state_Manipur,0.0054
+time_classifier_3m,agency_MoRTH,0.0053
+time_classifier_3m,state_Karnataka,0.0053
+time_classifier_3m,schedule_status_OVERDUE,0.0053
+time_classifier_3m,agency_South Central Railway [SCR] - II,0.0052
+time_classifier_3m,state_Nagaland,0.0051
+time_classifier_3m,agency_Central Railway [CR] - II,0.0047
+time_classifier_3m,sector_Coal,0.0046
+time_classifier_3m,state_Uttar Pradesh,0.0046
+time_classifier_3m,ministry_department_Ministry of Mines,0.0043
+time_classifier_3m,expenditure_minus_progress_gap,0.004
+time_classifier_3m,agency_Singareni Collieries Company Limited [SCCL],0.004
+time_classifier_3m,state_Gujarat,0.004
+time_classifier_3m,agency_Employee's State Insurance Company [ESIC],0.0039
+time_classifier_3m,agency_South Eastern Coalfields Limited [SECL],0.0039
+time_classifier_3m,agency_Ministry of Coal,0.0037
+time_classifier_3m,agency_North Eastern Railway [NER],0.0037
+time_classifier_3m,agency_NHIDCL,0.0036
+time_classifier_3m,agency_RVNL - II,0.0036
+time_classifier_3m,agency_North Central Railway,0.003
+time_classifier_3m,agency_South Western Railway [SWR] - II,0.0029
+time_classifier_3m,cost_overrun_delta_3m,0.0028
+time_classifier_3m,schedule_status_EXTENDED,0.0028
+time_classifier_3m,state_Haryana,0.0026
+time_classifier_3m,state_Odisha,0.0026
+time_classifier_3m,state_Rajasthan,0.0026
+time_classifier_3m,agency_NRL,0.0024
+time_classifier_3m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.0023
+time_classifier_3m,state_Bihar,0.0022
+time_classifier_3m,agency_ECL - CIL,0.0021
+time_classifier_3m,ministry_department_Department of Higher Education,0.002
+time_classifier_3m,cost_overrun_trend_slope,0.0019
+time_classifier_3m,agency_East Central Railway [ECR] - I,0.0019
+time_classifier_3m,agency_PCE/WR,0.0015
+time_classifier_3m,state_Chhattisgarh,0.0015
+time_classifier_3m,agency_NLC India Limited [NLCIL],0.0013
+time_classifier_3m,agency_RVNL - I,0.0013
+time_classifier_3m,state_Mizoram,0.0013
+time_classifier_3m,sector_Aviation & Aviation Infrastructure,0.0012
+time_classifier_3m,agency_National Capital Region Transport Corporation [NCRTC],0.001
+time_classifier_3m,sector_Education,0.001
+time_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.001
+time_classifier_3m,agency_East Coast Railway [ECoR] - II,0.0009
+time_classifier_3m,agency_THDC India Limited,0.0009
+time_classifier_3m,ministry_department_Department of Telecommunications,0.0008
+time_classifier_3m,ministry_department_Ministry of Steel,0.0008
+time_classifier_3m,state_Himachal Pradesh,0.0008
+time_classifier_3m,state_Jharkhand,0.0008
+time_classifier_3m,state_Sikkim,0.0008
+time_classifier_3m,state_Tripura,0.0008
+time_classifier_3m,agency_Department of Telecommunications [DoT],0.0007
+time_classifier_3m,ministry_department_Ministry of Labour and Employment,0.0007
+time_classifier_3m,sector_Energy Storage,0.0007
+time_classifier_3m,"state_Multi-States (Delhi,
+Rajasthan)",0.0007
+time_classifier_3m,state_Punjab,0.0007
+time_classifier_3m,agency_Eastern Railway [ER] - I,0.0006
+time_classifier_3m,agency_Ministry of Petroleum & Natural Gas,0.0006
+time_classifier_3m,agency_SECR,0.0006
+time_classifier_3m,agency_National Aluminium Company Limited [NALCO],0.0005
+time_classifier_3m,sector_Steel,0.0004
+time_classifier_3m,state_Delhi,0.0004
+time_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0004
+time_classifier_3m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0003
+time_classifier_3m,sector_Waste & Water,0.0003
+time_classifier_3m,state_Andhra Pradesh,0.0003
+time_classifier_3m,state_Arunachal Pradesh,0.0003
+time_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0003
+time_classifier_3m,agency_Airport Authority of India [AAI],0.0002
+time_classifier_3m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0002
+time_classifier_3m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0002
+time_classifier_3m,agency_MinistryofPetroleumNaturalGas,0.0002
+time_classifier_3m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0002
+time_classifier_3m,agency_National Mission for Clean Ganga,0.0002
+time_classifier_3m,agency_ministry of housing and urban affairs,0.0002
+time_classifier_3m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0002
+time_classifier_3m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0002
+time_classifier_3m,cost_overrun_delta_1m,0.0001
+time_classifier_3m,state_Kerala,0.0001
+time_classifier_3m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0001
+time_classifier_3m,progress_expenditure_mismatch_flag,0.0
+time_classifier_3m,high_expenditure_low_progress_flag,0.0
+time_classifier_3m,cost_overrun_negative_flag,0.0
+time_classifier_3m,is_overdue_flag,0.0
+time_classifier_3m,is_extended_flag,0.0
+time_classifier_3m,agency_Adani Airport Holdings Limited,0.0
+time_classifier_3m,agency_Adani Transmission Limited,0.0
+time_classifier_3m,agency_BCCL - CIL,0.0
+time_classifier_3m,agency_BSNL,0.0
+time_classifier_3m,agency_Banaras Hindu University,0.0
+time_classifier_3m,agency_Bengaluru Metro Rail,0.0
+time_classifier_3m,agency_Bharat Coking Coal Limited [BCCL],0.0
+time_classifier_3m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+time_classifier_3m,agency_CAO/C/II/NR,0.0
+time_classifier_3m,agency_CAO/C/NCR,0.0
+time_classifier_3m,agency_CAO/C/NR,0.0
+time_classifier_3m,agency_CAO/C/SECR,0.0
+time_classifier_3m,agency_CAO/C/SER,0.0
+time_classifier_3m,agency_CCL - CIL,0.0
+time_classifier_3m,agency_CERL,0.0
+time_classifier_3m,agency_CORE,0.0
+time_classifier_3m,agency_CPM/ICF,0.0
+time_classifier_3m,agency_CR,0.0
+time_classifier_3m,agency_CSPCC Projects,0.0
+time_classifier_3m,agency_Central Coalfields Limited [CCL],0.0
+time_classifier_3m,agency_Central Organisation for Railway Electrification [CORE],0.0
+time_classifier_3m,agency_Central Public Works Department - CPWD,0.0
+time_classifier_3m,agency_Central Public Works Department [CPWD],0.0
+time_classifier_3m,agency_Central Railway,0.0
+time_classifier_3m,agency_Central Railways,0.0
+time_classifier_3m,agency_Central Tribal University of Andhra Pradesh,0.0
+time_classifier_3m,agency_Central University of Gujarat,0.0
+time_classifier_3m,agency_Central University of Punjab,0.0
+time_classifier_3m,"agency_Central University, Himachal Pradesh",0.0
+time_classifier_3m,agency_CentralRailway,0.0
+time_classifier_3m,agency_Chennai Metro Rail Limited [CMRL],0.0
+time_classifier_3m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+time_classifier_3m,agency_Construction NER,0.0
+time_classifier_3m,agency_DFCCIL,0.0
+time_classifier_3m,agency_Damodar Valley Corporation,0.0
+time_classifier_3m,agency_Deendayal Port Trust,0.0
+time_classifier_3m,agency_Deendayal Port Trust [DPT],0.0
+time_classifier_3m,agency_Delhi University,0.0
+time_classifier_3m,agency_Department of Sports & Youth Affairs,0.0
+time_classifier_3m,agency_Department of Telecommunications,0.0
+time_classifier_3m,"agency_Department of Water Resources, River Development & GR",0.0
+time_classifier_3m,agency_Department of Water Resources-JH,0.0
+time_classifier_3m,agency_Department of Water Resources-MH,0.0
+time_classifier_3m,agency_Department of Water Resources-PB,0.0
+time_classifier_3m,agency_Department of water resources-MH - II,0.0
+time_classifier_3m,agency_EDTK[MC]/RB,0.0
+time_classifier_3m,agency_East Central Railway [ECR] - II,0.0
+time_classifier_3m,agency_GAIL Gas,0.0
+time_classifier_3m,agency_GM/C/ NFR,0.0
+time_classifier_3m,agency_Gas Authority of India Limited [GAIL],0.0
+time_classifier_3m,agency_Gujarat,0.0
+time_classifier_3m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+time_classifier_3m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+time_classifier_3m,agency_Hindustan Copper Limited [HCL],0.0
+time_classifier_3m,agency_Hindustan Petroleum Corporation Limited,0.0
+time_classifier_3m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+time_classifier_3m,agency_IISC Bangalore,0.0
+time_classifier_3m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+time_classifier_3m,"agency_Indian Institute of Management, Jammu",0.0
+time_classifier_3m,"agency_Indian Institute of Management, Sirmaur",0.0
+time_classifier_3m,"agency_Indian Institute of Technology, Bhilai",0.0
+time_classifier_3m,"agency_Indian Institute of Technology, Bombay",0.0
+time_classifier_3m,"agency_Indian Institute of Technology, Hyderabad",0.0
+time_classifier_3m,"agency_Indian Institute of Technology, Indore",0.0
+time_classifier_3m,"agency_Indian Institute of Technology, Kharagpur",0.0
+time_classifier_3m,"agency_Indian Institute of Technology, Mandi",0.0
+time_classifier_3m,agency_Indian Oil Corporation Limited [IOCL],0.0
+time_classifier_3m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+time_classifier_3m,agency_Indian Railway,0.0
+time_classifier_3m,agency_Indian Railway Construction International Limited [IRCON],0.0
+time_classifier_3m,"agency_Indian intitue of Management, Amritsar",0.0
+time_classifier_3m,agency_Inland Waterways Authority of India [IWAI],0.0
+time_classifier_3m,agency_Irrigation & Water Resources-UP,0.0
+time_classifier_3m,agency_Irrigation and CAD-TG,0.0
+time_classifier_3m,agency_Irrigation-UK,0.0
+time_classifier_3m,agency_M/S SRC company Infra Private Limited,0.0
+time_classifier_3m,agency_MCL - CIL,0.0
+time_classifier_3m,agency_MIS MoCoal Integration Logins,0.0
+time_classifier_3m,agency_MRIDC,0.0
+time_classifier_3m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+time_classifier_3m,agency_Mahanadi Coalfields Limited [MCL],0.0
+time_classifier_3m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0
+time_classifier_3m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+time_classifier_3m,"agency_Medical Education, Ministry of Health and Family Welfare",0.0
+time_classifier_3m,"agency_Metro Railway, Kolkata",0.0
+time_classifier_3m,agency_Ministry of Education,0.0
+time_classifier_3m,agency_Ministry of Health & Family Welfare,0.0
+time_classifier_3m,agency_Ministry of Mines,0.0
+time_classifier_3m,agency_Ministry of Petroleum and Natural Gas,0.0
+time_classifier_3m,agency_Ministry of Railways,0.0
+time_classifier_3m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+time_classifier_3m,agency_Mumbai Port Trust [MPT],0.0
+time_classifier_3m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+time_classifier_3m,agency_NER,0.0
+time_classifier_3m,agency_NHAI,0.0
+time_classifier_3m,agency_NIT Mizoram,0.0
+time_classifier_3m,agency_NIT Nagaland,0.0
+time_classifier_3m,agency_NIT Patna,0.0
+time_classifier_3m,agency_NIT Rourkela,0.0
+time_classifier_3m,agency_NIT Sikkim,0.0
+time_classifier_3m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+time_classifier_3m,agency_National Buildings Construction Corporation [NBCC],0.0
+time_classifier_3m,agency_National Communication Academy - Finance [Erstwhile NICF],0.0
+time_classifier_3m,agency_National High Speed Rail Corporation [NHSRC],0.0
+time_classifier_3m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0
+time_classifier_3m,agency_National Industrial Corridor Development Corporation,0.0
+time_classifier_3m,agency_National Institute of Technology Delhi,0.0
+time_classifier_3m,agency_National Institute of Technology Uttarakhand,0.0
+time_classifier_3m,"agency_National Institute of Technology, Arunachal Pradesh",0.0
+time_classifier_3m,"agency_National Institute of Technology, Meghalaya",0.0
+time_classifier_3m,"agency_National Institute of Technology, Puducherry",0.0
+time_classifier_3m,agency_National Mineral Development Corporation Limited [NMDC],0.0
+time_classifier_3m,agency_New Mangalore Port Authority,0.0
+time_classifier_3m,agency_North Eastern Electric Power Corporation Limited,0.0
+time_classifier_3m,agency_North Western Railway [NWR],0.0
+time_classifier_3m,agency_Northeast Frontier Railway [NFR],0.0
+time_classifier_3m,agency_Northeast Frontier Railway [NFR] - II,0.0
+time_classifier_3m,agency_Northen Railway [NR],0.0
+time_classifier_3m,agency_Northern Coalfields Limited [NCL],0.0
+time_classifier_3m,agency_Northern Railways,0.0
+time_classifier_3m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0
+time_classifier_3m,agency_PCE/NCR,0.0
+time_classifier_3m,agency_PMSSY AND Institute of NATIONAL Importance,0.0
+time_classifier_3m,agency_Paradip Port Trust [PPT],0.0
+time_classifier_3m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+time_classifier_3m,agency_RCIL,0.0
+time_classifier_3m,agency_RVNL,0.0
+time_classifier_3m,agency_Rail Land Development Authority,0.0
+time_classifier_3m,agency_Rail Vikas Nigam Limited,0.0
+time_classifier_3m,agency_Railway,0.0
+time_classifier_3m,agency_Reliance Industries Ltd,0.0
+time_classifier_3m,agency_SECL - CIL,0.0
+time_classifier_3m,agency_SR-ERS,0.0
+time_classifier_3m,agency_Sikkim University,0.0
+time_classifier_3m,agency_Smart City Mission,0.0
+time_classifier_3m,agency_South Central Railway [SCR] - I,0.0
+time_classifier_3m,agency_South East Central Railway,0.0
+time_classifier_3m,agency_South East Central Railway [SECR] - II,0.0
+time_classifier_3m,agency_South Eastern Central Railway,0.0
+time_classifier_3m,agency_South Eastern Railway - JH,0.0
+time_classifier_3m,agency_South Eastern Railway [SER] - I,0.0
+time_classifier_3m,agency_Southern Railway [SR] - II,0.0
+time_classifier_3m,agency_Southern Railways [SR] - construction,0.0
+time_classifier_3m,agency_Steel Authority of India Limited [SAIL],0.0
+time_classifier_3m,agency_Sterlite Power,0.0
+time_classifier_3m,agency_Tezpur University,0.0
+time_classifier_3m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+time_classifier_3m,agency_WCL - CIL,0.0
+time_classifier_3m,agency_WPO/Patna,0.0
+time_classifier_3m,agency_WR,0.0
+time_classifier_3m,agency_Water Resources Department-MN,0.0
+time_classifier_3m,agency_Water Resources-AP,0.0
+time_classifier_3m,agency_Water Resources-BR,0.0
+time_classifier_3m,agency_Water Resources-CT,0.0
+time_classifier_3m,agency_Water Resources-KA,0.0
+time_classifier_3m,agency_Water Resources-MP,0.0
+time_classifier_3m,agency_Water Resources-OR,0.0
+time_classifier_3m,agency_Water resource-mp,0.0
+time_classifier_3m,agency_West Central Railway WCR I,0.0
+time_classifier_3m,agency_West Central Railway [WCR] - II,0.0
+time_classifier_3m,agency_Western Railway WR - II,0.0
+time_classifier_3m,agency_Western Railway [WR] - II,0.0
+time_classifier_3m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+time_classifier_3m,ministry_department_Department of Sports,0.0
+time_classifier_3m,sector_Construction,0.0
+time_classifier_3m,sector_Healthcare,0.0
+time_classifier_3m,sector_Inland Waterways,0.0
+time_classifier_3m,sector_Logistics Infrastructure,0.0
+time_classifier_3m,sector_Metals & Mining,0.0
+time_classifier_3m,sector_Real Estate,0.0
+time_classifier_3m,sector_Shipping,0.0
+time_classifier_3m,sector_Telecommunication,0.0
+time_classifier_3m,"sector_Tourism, Hospitality & Wellness",0.0
+time_classifier_3m,"state_Andaman &
+Nicobar",0.0
+time_classifier_3m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+time_classifier_3m,state_Goa,0.0
+time_classifier_3m,state_Ladakh,0.0
+time_classifier_3m,state_Madhya Pradesh,0.0
+time_classifier_3m,state_Meghalaya,0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0
+time_classifier_3m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+time_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+time_classifier_3m,"state_Multi-States
+(Assam,
+Nagaland)",0.0
+time_classifier_3m,"state_Multi-States
+(Assam, Bihar,
+West Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+time_classifier_3m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Jharkhand)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+time_classifier_3m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+time_classifier_3m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+time_classifier_3m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Haryana, Punjab)",0.0
+time_classifier_3m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Haryana, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+time_classifier_3m,"state_Multi-States
+(Jammu and
+Kashmir, Ladakh)",0.0
+time_classifier_3m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+time_classifier_3m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+time_classifier_3m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Jharkhand, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+time_classifier_3m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+time_classifier_3m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+time_classifier_3m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+time_classifier_3m,"state_Multi-States
+(Kerala,
+Puducherry)",0.0
+time_classifier_3m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0
+time_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_3m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+time_classifier_3m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+time_classifier_3m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+time_classifier_3m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States (Delhi,
+Haryana)",0.0
+time_classifier_3m,"state_Multi-States (Delhi,
+Haryana,
+Rajasthan)",0.0
+time_classifier_3m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+time_classifier_3m,"state_Multi-States (Goa,
+Karnataka)",0.0
+time_classifier_3m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+time_classifier_3m,"state_Multi-States (Uttar
+Pradesh,
+Uttarakhand)",0.0
+time_classifier_3m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+time_classifier_3m,state_Offshore,0.0
+time_classifier_3m,state_PAN India,0.0
+time_classifier_3m,state_Puducherry,0.0
+time_classifier_3m,state_Tamil Nadu,0.0
+time_classifier_3m,state_UNKNOWN,0.0
+time_classifier_3m,schedule_status_COMPLETED,0.0
+time_classifier_6m,days_to_revised_target,1.2468
+time_classifier_6m,revised_remaining_months,0.4966
+time_classifier_6m,original_duration_months,0.1487
+time_classifier_6m,remaining_budget_crore,0.1293
+time_classifier_6m,cumulative_expenditure_crore,0.0936
+time_classifier_6m,physical_financial_gap_pct,0.0926
+time_classifier_6m,extension_rate_pct,0.0899
+time_classifier_6m,planned_remaining_months,0.0839
+time_classifier_6m,days_to_original_target,0.0831
+time_classifier_6m,state_Telangana,0.0825
+time_classifier_6m,ministry_department_Ministry of Railways,0.0813
+time_classifier_6m,ministry_department_Ministry of Power,0.0802
+time_classifier_6m,physical_to_expenditure_ratio,0.0708
+time_classifier_6m,original_cost_crore,0.0696
+time_classifier_6m,revised_cost_crore,0.0571
+time_classifier_6m,expenditure_ratio_pct,0.0569
+time_classifier_6m,agency_Western Coalfields Limited [WCL],0.0569
+time_classifier_6m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0567
+time_classifier_6m,progress_minus_expenditure_gap,0.0538
+time_classifier_6m,ministry_department_Ministry of Petroleum & Natural Gas,0.0496
+time_classifier_6m,project_age_months,0.0477
+time_classifier_6m,state_Bihar,0.0454
+time_classifier_6m,physical_progress_pct,0.0453
+time_classifier_6m,schedule_extension_months,0.0391
+time_classifier_6m,cost_escalation_crore,0.0388
+time_classifier_6m,expenditure_ratio_delta_3m,0.0381
+time_classifier_6m,cost_overrun_pct,0.0367
+time_classifier_6m,sector_Oil & Gas,0.0365
+time_classifier_6m,agency_UNKNOWN,0.0273
+time_classifier_6m,state_Maharashtra,0.0272
+time_classifier_6m,expenditure_velocity_crore_month,0.026
+time_classifier_6m,agency_Central Railway [CR] - II,0.0213
+time_classifier_6m,remaining_work_pct,0.0207
+time_classifier_6m,state_West Bengal,0.02
+time_classifier_6m,consecutive_stagnant_months,0.0192
+time_classifier_6m,progress_trend_slope,0.019
+time_classifier_6m,sector_Railways,0.0187
+time_classifier_6m,state_Uttarakhand,0.018
+time_classifier_6m,agency_RVNL - II,0.0173
+time_classifier_6m,agency_South Central Railway [SCR] - II,0.0168
+time_classifier_6m,agency_National Thermal Power Corporation [NTPC],0.0152
+time_classifier_6m,state_Gujarat,0.0147
+time_classifier_6m,physical_progress_delta_3m,0.0136
+time_classifier_6m,sector_Transmission & Distribution,0.0135
+time_classifier_6m,state_Odisha,0.0134
+time_classifier_6m,agency_South Western Railway [SWR] - II,0.013
+time_classifier_6m,"state_Jammu and
+Kashmir",0.0122
+time_classifier_6m,sector_Urban Public Transport,0.0121
+time_classifier_6m,progress_velocity_3m,0.012
+time_classifier_6m,agency_North Central Railway,0.012
+time_classifier_6m,expenditure_ratio_delta_1m,0.0112
+time_classifier_6m,sector_Water Resources,0.0112
+time_classifier_6m,agency_Western Railway,0.0109
+time_classifier_6m,extension_count,0.0102
+time_classifier_6m,"ministry_department_Department of Water Resources, River Development & GR",0.0101
+time_classifier_6m,sector_Electricity Generation,0.0097
+time_classifier_6m,state_Chhattisgarh,0.0093
+time_classifier_6m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0089
+time_classifier_6m,cost_escalation_ratio,0.0083
+time_classifier_6m,agency_North Eastern Railway [NER],0.0081
+time_classifier_6m,cost_overrun_trend_slope,0.0076
+time_classifier_6m,agency_Employee's State Insurance Company [ESIC],0.0076
+time_classifier_6m,state_Jharkhand,0.0075
+time_classifier_6m,state_Sikkim,0.0075
+time_classifier_6m,physical_progress_delta_1m,0.0068
+time_classifier_6m,sector_Coal,0.0054
+time_classifier_6m,ministry_department_Ministry of Housing & Urban Affairs,0.0053
+time_classifier_6m,agency_Eastern Coal Fields Limited [ECL],0.0052
+time_classifier_6m,schedule_status_ON_TRACK,0.005
+time_classifier_6m,risk_signal_count,0.0046
+time_classifier_6m,agency_ECL - CIL,0.0046
+time_classifier_6m,sector_Waste & Water,0.004
+time_classifier_6m,agency_Singareni Collieries Company Limited [SCCL],0.0037
+time_classifier_6m,state_Rajasthan,0.0037
+time_classifier_6m,state_Tamil Nadu,0.0037
+time_classifier_6m,schedule_status_EXTENDED,0.0037
+time_classifier_6m,agency_PCE/WR,0.0035
+time_classifier_6m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.0035
+time_classifier_6m,agency_Ministry of Housing & Urban Affairs,0.0034
+time_classifier_6m,sector_Inland Waterways,0.003
+time_classifier_6m,expenditure_minus_progress_gap,0.0029
+time_classifier_6m,ministry_department_Ministry of Coal,0.0028
+time_classifier_6m,sector_Energy Storage,0.0027
+time_classifier_6m,overdue_days,0.0026
+time_classifier_6m,schedule_extension_delta_1m,0.0026
+time_classifier_6m,agency_MinistryofPetroleumNaturalGas,0.0025
+time_classifier_6m,ministry_department_Department of Higher Education,0.0023
+time_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0023
+time_classifier_6m,agency_Airport Authority of India [AAI],0.0017
+time_classifier_6m,agency_East Central Railway [ECR] - I,0.0017
+time_classifier_6m,ministry_department_Ministry of Civil Aviation,0.0017
+time_classifier_6m,ministry_department_Ministry of Labour and Employment,0.0016
+time_classifier_6m,agency_NLC India Limited [NLCIL],0.0013
+time_classifier_6m,sector_Steel,0.0013
+time_classifier_6m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0013
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0011
+time_classifier_6m,state_Karnataka,0.0009
+time_classifier_6m,agency_Indian Railway Construction International Limited [IRCON],0.0008
+time_classifier_6m,ministry_department_Ministry of Mines,0.0008
+time_classifier_6m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0007
+time_classifier_6m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0006
+time_classifier_6m,agency_Ministry of Coal,0.0006
+time_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0006
+time_classifier_6m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0006
+time_classifier_6m,sector_Metals & Mining,0.0005
+time_classifier_6m,agency_CAO/C/NR,0.0004
+time_classifier_6m,agency_Inland Waterways Authority of India [IWAI],0.0004
+time_classifier_6m,state_Haryana,0.0004
+time_classifier_6m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0003
+time_classifier_6m,agency_MRIDC,0.0002
+time_classifier_6m,agency_Ministry of Petroleum & Natural Gas,0.0002
+time_classifier_6m,state_Assam,0.0002
+time_classifier_6m,state_Himachal Pradesh,0.0002
+time_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0002
+time_classifier_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0002
+time_classifier_6m,progress_expenditure_mismatch_flag,0.0
+time_classifier_6m,high_expenditure_low_progress_flag,0.0
+time_classifier_6m,cost_overrun_delta_1m,0.0
+time_classifier_6m,cost_overrun_delta_3m,0.0
+time_classifier_6m,cost_overrun_negative_flag,0.0
+time_classifier_6m,is_overdue_flag,0.0
+time_classifier_6m,is_extended_flag,0.0
+time_classifier_6m,agency_Adani Airport Holdings Limited,0.0
+time_classifier_6m,agency_Adani Transmission Limited,0.0
+time_classifier_6m,agency_BCCL - CIL,0.0
+time_classifier_6m,agency_BSNL,0.0
+time_classifier_6m,agency_Banaras Hindu University,0.0
+time_classifier_6m,agency_Bengaluru Metro Rail,0.0
+time_classifier_6m,agency_Bharat Coking Coal Limited [BCCL],0.0
+time_classifier_6m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+time_classifier_6m,agency_CAO/C/II/NR,0.0
+time_classifier_6m,agency_CAO/C/NCR,0.0
+time_classifier_6m,agency_CAO/C/SECR,0.0
+time_classifier_6m,agency_CAO/C/SER,0.0
+time_classifier_6m,agency_CCL - CIL,0.0
+time_classifier_6m,agency_CORE,0.0
+time_classifier_6m,agency_CPM/ICF,0.0
+time_classifier_6m,agency_CR,0.0
+time_classifier_6m,agency_CSPCC Projects,0.0
+time_classifier_6m,agency_Central Coalfields Limited [CCL],0.0
+time_classifier_6m,agency_Central Organisation for Railway Electrification [CORE],0.0
+time_classifier_6m,agency_Central Public Works Department - CPWD,0.0
+time_classifier_6m,agency_Central Public Works Department [CPWD],0.0
+time_classifier_6m,agency_Central Railway,0.0
+time_classifier_6m,agency_Central Railways,0.0
+time_classifier_6m,agency_Central Tribal University of Andhra Pradesh,0.0
+time_classifier_6m,agency_Central University of Gujarat,0.0
+time_classifier_6m,agency_Central University of Punjab,0.0
+time_classifier_6m,"agency_Central University, Himachal Pradesh",0.0
+time_classifier_6m,agency_CentralRailway,0.0
+time_classifier_6m,agency_Chennai Metro Rail Limited [CMRL],0.0
+time_classifier_6m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+time_classifier_6m,agency_Construction NER,0.0
+time_classifier_6m,agency_DFCCIL,0.0
+time_classifier_6m,agency_Damodar Valley Corporation,0.0
+time_classifier_6m,agency_Deendayal Port Trust,0.0
+time_classifier_6m,agency_Deendayal Port Trust [DPT],0.0
+time_classifier_6m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+time_classifier_6m,agency_Delhi University,0.0
+time_classifier_6m,agency_Department of Sports & Youth Affairs,0.0
+time_classifier_6m,agency_Department of Telecommunications,0.0
+time_classifier_6m,agency_Department of Telecommunications [DoT],0.0
+time_classifier_6m,"agency_Department of Water Resources, River Development & GR",0.0
+time_classifier_6m,agency_Department of Water Resources-JH,0.0
+time_classifier_6m,agency_Department of Water Resources-MH,0.0
+time_classifier_6m,agency_Department of Water Resources-PB,0.0
+time_classifier_6m,agency_Department of water resources-MH - II,0.0
+time_classifier_6m,agency_East Central Railway [ECR] - II,0.0
+time_classifier_6m,agency_East Coast Railway [ECoR] - II,0.0
+time_classifier_6m,agency_Eastern Railway [ER] - I,0.0
+time_classifier_6m,agency_GM/C/ NFR,0.0
+time_classifier_6m,agency_Gas Authority of India Limited [GAIL],0.0
+time_classifier_6m,agency_Gujarat,0.0
+time_classifier_6m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+time_classifier_6m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+time_classifier_6m,agency_Hindustan Copper Limited [HCL],0.0
+time_classifier_6m,agency_Hindustan Petroleum Corporation Limited,0.0
+time_classifier_6m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+time_classifier_6m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+time_classifier_6m,"agency_Indian Institute of Management, Jammu",0.0
+time_classifier_6m,"agency_Indian Institute of Management, Sirmaur",0.0
+time_classifier_6m,"agency_Indian Institute of Technology, Bhilai",0.0
+time_classifier_6m,"agency_Indian Institute of Technology, Hyderabad",0.0
+time_classifier_6m,"agency_Indian Institute of Technology, Indore",0.0
+time_classifier_6m,"agency_Indian Institute of Technology, Kharagpur",0.0
+time_classifier_6m,"agency_Indian Institute of Technology, Mandi",0.0
+time_classifier_6m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0
+time_classifier_6m,agency_Indian Oil Corporation Limited [IOCL],0.0
+time_classifier_6m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+time_classifier_6m,"agency_Indian intitue of Management, Amritsar",0.0
+time_classifier_6m,agency_Irrigation & Water Resources-UP,0.0
+time_classifier_6m,agency_Irrigation and CAD-TG,0.0
+time_classifier_6m,agency_Irrigation-UK,0.0
+time_classifier_6m,agency_M/S SRC company Infra Private Limited,0.0
+time_classifier_6m,agency_MCL - CIL,0.0
+time_classifier_6m,agency_MIS MoCoal Integration Logins,0.0
+time_classifier_6m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+time_classifier_6m,agency_Mahanadi Coalfields Limited [MCL],0.0
+time_classifier_6m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0
+time_classifier_6m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+time_classifier_6m,"agency_Metro Railway, Kolkata",0.0
+time_classifier_6m,agency_Ministry of Education,0.0
+time_classifier_6m,agency_Ministry of Health & Family Welfare,0.0
+time_classifier_6m,agency_Ministry of Mines,0.0
+time_classifier_6m,agency_Ministry of Petroleum and Natural Gas,0.0
+time_classifier_6m,agency_Ministry of Railways,0.0
+time_classifier_6m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+time_classifier_6m,agency_Mumbai Port Trust [MPT],0.0
+time_classifier_6m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+time_classifier_6m,agency_NER,0.0
+time_classifier_6m,agency_NIT Mizoram,0.0
+time_classifier_6m,agency_NIT Nagaland,0.0
+time_classifier_6m,agency_NIT Patna,0.0
+time_classifier_6m,agency_NIT Sikkim,0.0
+time_classifier_6m,agency_NRL,0.0
+time_classifier_6m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+time_classifier_6m,agency_National Aluminium Company Limited [NALCO],0.0
+time_classifier_6m,agency_National Buildings Construction Corporation [NBCC],0.0
+time_classifier_6m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+time_classifier_6m,agency_National High Speed Rail Corporation [NHSRC],0.0
+time_classifier_6m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0
+time_classifier_6m,agency_National Industrial Corridor Development Corporation,0.0
+time_classifier_6m,agency_National Institute of Technology Delhi,0.0
+time_classifier_6m,agency_National Institute of Technology Uttarakhand,0.0
+time_classifier_6m,"agency_National Institute of Technology, Arunachal Pradesh",0.0
+time_classifier_6m,"agency_National Institute of Technology, Meghalaya",0.0
+time_classifier_6m,"agency_National Institute of Technology, Puducherry",0.0
+time_classifier_6m,agency_National Mineral Development Corporation Limited [NMDC],0.0
+time_classifier_6m,agency_National Mission for Clean Ganga,0.0
+time_classifier_6m,agency_New Mangalore Port Authority,0.0
+time_classifier_6m,agency_North Eastern Electric Power Corporation Limited,0.0
+time_classifier_6m,agency_North Western Railway [NWR],0.0
+time_classifier_6m,agency_Northeast Frontier Railway [NFR],0.0
+time_classifier_6m,agency_Northen Railway [NR],0.0
+time_classifier_6m,agency_Northern Coalfields Limited [NCL],0.0
+time_classifier_6m,agency_Northern Railways,0.0
+time_classifier_6m,agency_PCE/NCR,0.0
+time_classifier_6m,agency_PMSSY AND Institute of NATIONAL Importance,0.0
+time_classifier_6m,agency_Paradip Port Trust [PPT],0.0
+time_classifier_6m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+time_classifier_6m,agency_RCIL,0.0
+time_classifier_6m,agency_RVNL,0.0
+time_classifier_6m,agency_RVNL - I,0.0
+time_classifier_6m,agency_Rail Land Development Authority,0.0
+time_classifier_6m,agency_Rail Vikas Nigam Limited,0.0
+time_classifier_6m,agency_Railway,0.0
+time_classifier_6m,agency_Reliance Industries Ltd,0.0
+time_classifier_6m,agency_SECL - CIL,0.0
+time_classifier_6m,agency_SECR,0.0
+time_classifier_6m,agency_SR-ERS,0.0
+time_classifier_6m,agency_Sikkim University,0.0
+time_classifier_6m,agency_Smart City Mission,0.0
+time_classifier_6m,agency_South Central Railway [SCR] - I,0.0
+time_classifier_6m,agency_South East Central Railway,0.0
+time_classifier_6m,agency_South East Central Railway [SECR] - II,0.0
+time_classifier_6m,agency_South Eastern Coalfields Limited [SECL],0.0
+time_classifier_6m,agency_South Eastern Railway - JH,0.0
+time_classifier_6m,agency_South Eastern Railway [SER] - I,0.0
+time_classifier_6m,agency_Southern Railway [SR] - II,0.0
+time_classifier_6m,agency_Southern Railways [SR] - construction,0.0
+time_classifier_6m,agency_Steel Authority of India Limited [SAIL],0.0
+time_classifier_6m,agency_Sterlite Power,0.0
+time_classifier_6m,agency_THDC India Limited,0.0
+time_classifier_6m,agency_Tezpur University,0.0
+time_classifier_6m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+time_classifier_6m,agency_WCL - CIL,0.0
+time_classifier_6m,agency_WPO/Patna,0.0
+time_classifier_6m,agency_WR,0.0
+time_classifier_6m,agency_Water Resources Department-MN,0.0
+time_classifier_6m,agency_Water Resources-AP,0.0
+time_classifier_6m,agency_Water Resources-BR,0.0
+time_classifier_6m,agency_Water Resources-CT,0.0
+time_classifier_6m,agency_Water Resources-KA,0.0
+time_classifier_6m,agency_Water Resources-MP,0.0
+time_classifier_6m,agency_Water Resources-OR,0.0
+time_classifier_6m,agency_Water resource-mp,0.0
+time_classifier_6m,agency_West Central Railway WCR I,0.0
+time_classifier_6m,agency_West Central Railway [WCR] - II,0.0
+time_classifier_6m,agency_Western Railway [WR] - II,0.0
+time_classifier_6m,agency_ministry of housing and urban affairs,0.0
+time_classifier_6m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+time_classifier_6m,ministry_department_Department of Sports,0.0
+time_classifier_6m,ministry_department_Department of Telecommunications,0.0
+time_classifier_6m,ministry_department_Ministry of Health & Family Welfare,0.0
+time_classifier_6m,ministry_department_Ministry of Steel,0.0
+time_classifier_6m,sector_Aviation & Aviation Infrastructure,0.0
+time_classifier_6m,sector_Construction,0.0
+time_classifier_6m,sector_Education,0.0
+time_classifier_6m,sector_Healthcare,0.0
+time_classifier_6m,sector_Real Estate,0.0
+time_classifier_6m,sector_Shipping,0.0
+time_classifier_6m,sector_Telecommunication,0.0
+time_classifier_6m,"sector_Tourism, Hospitality & Wellness",0.0
+time_classifier_6m,"state_Andaman &
+Nicobar",0.0
+time_classifier_6m,state_Andhra Pradesh,0.0
+time_classifier_6m,state_Arunachal Pradesh,0.0
+time_classifier_6m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+time_classifier_6m,state_Delhi,0.0
+time_classifier_6m,state_Goa,0.0
+time_classifier_6m,state_Kerala,0.0
+time_classifier_6m,state_Ladakh,0.0
+time_classifier_6m,state_Madhya Pradesh,0.0
+time_classifier_6m,state_Manipur,0.0
+time_classifier_6m,state_Meghalaya,0.0
+time_classifier_6m,state_Mizoram,0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0
+time_classifier_6m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+time_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+time_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+time_classifier_6m,"state_Multi-States
+(Assam,
+Nagaland)",0.0
+time_classifier_6m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+time_classifier_6m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, Jharkhand)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+time_classifier_6m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+time_classifier_6m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+time_classifier_6m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+time_classifier_6m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+time_classifier_6m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+time_classifier_6m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+time_classifier_6m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+time_classifier_6m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+time_classifier_6m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+time_classifier_6m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0
+time_classifier_6m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+time_classifier_6m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+time_classifier_6m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+time_classifier_6m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States (Delhi,
+Haryana)",0.0
+time_classifier_6m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+time_classifier_6m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+time_classifier_6m,"state_Multi-States (Goa,
+Karnataka)",0.0
+time_classifier_6m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+time_classifier_6m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+time_classifier_6m,state_Nagaland,0.0
+time_classifier_6m,state_Offshore,0.0
+time_classifier_6m,state_PAN India,0.0
+time_classifier_6m,state_Puducherry,0.0
+time_classifier_6m,state_Punjab,0.0
+time_classifier_6m,state_Tripura,0.0
+time_classifier_6m,state_UNKNOWN,0.0
+time_classifier_6m,state_Uttar Pradesh,0.0
+time_classifier_6m,schedule_status_COMPLETED,0.0
+time_classifier_6m,schedule_status_OVERDUE,0.0
+time_regressor_3m,days_to_revised_target,3.0284
+time_regressor_3m,overdue_days,1.7298
+time_regressor_3m,ministry_department_Ministry of Road Transport & Highways,0.9817
+time_regressor_3m,planned_remaining_months,0.5678
+time_regressor_3m,agency_National Highways Authority of India [NHAI],0.3794
+time_regressor_3m,physical_progress_pct,0.3721
+time_regressor_3m,schedule_status_OVERDUE,0.3634
+time_regressor_3m,remaining_budget_crore,0.2718
+time_regressor_3m,project_age_months,0.2289
+time_regressor_3m,sector_Roads & Highways,0.2209
+time_regressor_3m,revised_cost_crore,0.1993
+time_regressor_3m,physical_financial_gap_pct,0.1706
+time_regressor_3m,progress_velocity_3m,0.1622
+time_regressor_3m,ministry_department_Ministry of Health & Family Welfare,0.1221
+time_regressor_3m,cost_overrun_pct,0.1109
+time_regressor_3m,revised_remaining_months,0.1061
+time_regressor_3m,agency_Eastern Coal Fields Limited [ECL],0.1015
+time_regressor_3m,expenditure_velocity_crore_month,0.0873
+time_regressor_3m,remaining_work_pct,0.0781
+time_regressor_3m,schedule_extension_months,0.0725
+time_regressor_3m,days_to_original_target,0.0716
+time_regressor_3m,original_duration_months,0.0683
+time_regressor_3m,extension_rate_pct,0.0626
+time_regressor_3m,is_overdue_flag,0.0585
+time_regressor_3m,state_West Bengal,0.0547
+time_regressor_3m,physical_to_expenditure_ratio,0.0536
+time_regressor_3m,original_cost_crore,0.0508
+time_regressor_3m,cumulative_expenditure_crore,0.0461
+time_regressor_3m,expenditure_ratio_pct,0.0454
+time_regressor_3m,progress_minus_expenditure_gap,0.0441
+time_regressor_3m,state_Mizoram,0.0408
+time_regressor_3m,agency_MoRTH,0.0375
+time_regressor_3m,"state_Jammu and
+Kashmir",0.0351
+time_regressor_3m,ministry_department_Ministry of Railways,0.0333
+time_regressor_3m,progress_trend_slope,0.0323
+time_regressor_3m,agency_NHIDCL,0.0299
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.0268
+time_regressor_3m,agency_NIT Mizoram,0.0259
+time_regressor_3m,cost_escalation_ratio,0.0256
+time_regressor_3m,state_Haryana,0.0248
+time_regressor_3m,sector_Oil & Gas,0.0202
+time_regressor_3m,cost_escalation_crore,0.0179
+time_regressor_3m,state_Telangana,0.0178
+time_regressor_3m,state_Maharashtra,0.0174
+time_regressor_3m,ministry_department_Ministry of Petroleum & Natural Gas,0.0166
+time_regressor_3m,sector_Railways,0.0158
+time_regressor_3m,state_Uttar Pradesh,0.0157
+time_regressor_3m,agency_ECL - CIL,0.0155
+time_regressor_3m,state_Assam,0.0151
+time_regressor_3m,physical_progress_delta_1m,0.0145
+time_regressor_3m,physical_progress_delta_3m,0.0137
+time_regressor_3m,agency_Southern Railway [SR] - II,0.0135
+time_regressor_3m,agency_Airport Authority of India [AAI],0.0128
+time_regressor_3m,agency_RVNL - II,0.0123
+time_regressor_3m,"state_Multi-States
+(Assam,
+Nagaland)",0.0123
+time_regressor_3m,consecutive_stagnant_months,0.0122
+time_regressor_3m,expenditure_ratio_delta_1m,0.0117
+time_regressor_3m,agency_Western Railway,0.0115
+time_regressor_3m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0101
+time_regressor_3m,agency_NHAI,0.0098
+time_regressor_3m,agency_UNKNOWN,0.0096
+time_regressor_3m,state_Karnataka,0.009
+time_regressor_3m,agency_South Eastern Coalfields Limited [SECL],0.0077
+time_regressor_3m,extension_count,0.0076
+time_regressor_3m,risk_signal_count,0.0074
+time_regressor_3m,state_Bihar,0.0074
+time_regressor_3m,agency_EDTK[MC]/RB,0.0072
+time_regressor_3m,state_Tamil Nadu,0.007
+time_regressor_3m,state_Chhattisgarh,0.0064
+time_regressor_3m,"ministry_department_Department of Water Resources, River Development & GR",0.0048
+time_regressor_3m,state_Jharkhand,0.0046
+time_regressor_3m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0042
+time_regressor_3m,agency_National Buildings Construction Corporation [NBCC],0.0041
+time_regressor_3m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0041
+time_regressor_3m,state_Rajasthan,0.0041
+time_regressor_3m,expenditure_ratio_delta_3m,0.0037
+time_regressor_3m,sector_Healthcare,0.0037
+time_regressor_3m,state_Gujarat,0.0036
+time_regressor_3m,sector_Coal,0.0034
+time_regressor_3m,agency_WPO/Patna,0.003
+time_regressor_3m,state_Arunachal Pradesh,0.003
+time_regressor_3m,"agency_National Institute of Technology, Arunachal Pradesh",0.0028
+time_regressor_3m,agency_Central Railway [CR] - II,0.0025
+time_regressor_3m,sector_Real Estate,0.0024
+time_regressor_3m,state_Punjab,0.0024
+time_regressor_3m,state_Uttarakhand,0.0024
+time_regressor_3m,agency_Ministry of Health & Family Welfare,0.0023
+time_regressor_3m,agency_SR-ERS,0.0023
+time_regressor_3m,agency_RVNL - I,0.0019
+time_regressor_3m,state_Madhya Pradesh,0.0018
+time_regressor_3m,agency_Southern Railways [SR] - construction,0.0017
+time_regressor_3m,schedule_status_COMPLETED,0.0017
+time_regressor_3m,is_extended_flag,0.0012
+time_regressor_3m,agency_PMSSY AND Institute of NATIONAL Importance,0.0011
+time_regressor_3m,sector_Water Resources,0.001
+time_regressor_3m,ministry_department_Ministry of Mines,0.0009
+time_regressor_3m,state_Meghalaya,0.0009
+time_regressor_3m,schedule_extension_delta_1m,0.0008
+time_regressor_3m,state_Andhra Pradesh,0.0008
+time_regressor_3m,state_Sikkim,0.0008
+time_regressor_3m,agency_NRL,0.0007
+time_regressor_3m,state_Himachal Pradesh,0.0007
+time_regressor_3m,sector_Urban Public Transport,0.0006
+time_regressor_3m,state_Nagaland,0.0006
+time_regressor_3m,schedule_status_EXTENDED,0.0006
+time_regressor_3m,state_Kerala,0.0005
+time_regressor_3m,state_Odisha,0.0005
+time_regressor_3m,agency_GAIL Gas,0.0004
+time_regressor_3m,agency_ministry of housing and urban affairs,0.0003
+time_regressor_3m,state_Manipur,0.0003
+time_regressor_3m,agency_Hindustan Copper Limited [HCL],0.0002
+time_regressor_3m,agency_Ministry of Housing & Urban Affairs,0.0001
+time_regressor_3m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0001
+time_regressor_3m,progress_expenditure_mismatch_flag,0.0
+time_regressor_3m,high_expenditure_low_progress_flag,0.0
+time_regressor_3m,cost_overrun_delta_1m,0.0
+time_regressor_3m,cost_overrun_delta_3m,0.0
+time_regressor_3m,cost_overrun_trend_slope,0.0
+time_regressor_3m,expenditure_minus_progress_gap,0.0
+time_regressor_3m,cost_overrun_negative_flag,0.0
+time_regressor_3m,agency_Adani Airport Holdings Limited,0.0
+time_regressor_3m,agency_Adani Transmission Limited,0.0
+time_regressor_3m,agency_BCCL - CIL,0.0
+time_regressor_3m,agency_BSNL,0.0
+time_regressor_3m,agency_Banaras Hindu University,0.0
+time_regressor_3m,agency_Bengaluru Metro Rail,0.0
+time_regressor_3m,agency_Bharat Coking Coal Limited [BCCL],0.0
+time_regressor_3m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+time_regressor_3m,agency_CAO/C/II/NR,0.0
+time_regressor_3m,agency_CAO/C/NCR,0.0
+time_regressor_3m,agency_CAO/C/NR,0.0
+time_regressor_3m,agency_CAO/C/SECR,0.0
+time_regressor_3m,agency_CAO/C/SER,0.0
+time_regressor_3m,agency_CCL - CIL,0.0
+time_regressor_3m,agency_CERL,0.0
+time_regressor_3m,agency_CORE,0.0
+time_regressor_3m,agency_CPM/ICF,0.0
+time_regressor_3m,agency_CR,0.0
+time_regressor_3m,agency_CSPCC Projects,0.0
+time_regressor_3m,agency_Central Coalfields Limited [CCL],0.0
+time_regressor_3m,agency_Central Organisation for Railway Electrification [CORE],0.0
+time_regressor_3m,agency_Central Public Works Department - CPWD,0.0
+time_regressor_3m,agency_Central Public Works Department [CPWD],0.0
+time_regressor_3m,agency_Central Railway,0.0
+time_regressor_3m,agency_Central Railways,0.0
+time_regressor_3m,agency_Central Tribal University of Andhra Pradesh,0.0
+time_regressor_3m,agency_Central University of Gujarat,0.0
+time_regressor_3m,agency_Central University of Punjab,0.0
+time_regressor_3m,"agency_Central University, Himachal Pradesh",0.0
+time_regressor_3m,agency_CentralRailway,0.0
+time_regressor_3m,agency_Chennai Metro Rail Limited [CMRL],0.0
+time_regressor_3m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+time_regressor_3m,agency_Construction NER,0.0
+time_regressor_3m,agency_DFCCIL,0.0
+time_regressor_3m,agency_Damodar Valley Corporation,0.0
+time_regressor_3m,agency_Deendayal Port Trust,0.0
+time_regressor_3m,agency_Deendayal Port Trust [DPT],0.0
+time_regressor_3m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+time_regressor_3m,agency_Delhi University,0.0
+time_regressor_3m,agency_Department of Sports & Youth Affairs,0.0
+time_regressor_3m,agency_Department of Telecommunications,0.0
+time_regressor_3m,agency_Department of Telecommunications [DoT],0.0
+time_regressor_3m,"agency_Department of Water Resources, River Development & GR",0.0
+time_regressor_3m,agency_Department of Water Resources-JH,0.0
+time_regressor_3m,agency_Department of Water Resources-MH,0.0
+time_regressor_3m,agency_Department of Water Resources-PB,0.0
+time_regressor_3m,agency_Department of water resources-MH - II,0.0
+time_regressor_3m,agency_East Central Railway [ECR] - I,0.0
+time_regressor_3m,agency_East Central Railway [ECR] - II,0.0
+time_regressor_3m,agency_East Coast Railway [ECoR] - II,0.0
+time_regressor_3m,agency_Eastern Railway [ER] - I,0.0
+time_regressor_3m,agency_Employee's State Insurance Company [ESIC],0.0
+time_regressor_3m,agency_GM/C/ NFR,0.0
+time_regressor_3m,agency_Gas Authority of India Limited [GAIL],0.0
+time_regressor_3m,agency_Gujarat,0.0
+time_regressor_3m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+time_regressor_3m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+time_regressor_3m,agency_Hindustan Petroleum Corporation Limited,0.0
+time_regressor_3m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+time_regressor_3m,agency_IISC Bangalore,0.0
+time_regressor_3m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+time_regressor_3m,"agency_Indian Institute of Management, Jammu",0.0
+time_regressor_3m,"agency_Indian Institute of Management, Sirmaur",0.0
+time_regressor_3m,"agency_Indian Institute of Technology, Bhilai",0.0
+time_regressor_3m,"agency_Indian Institute of Technology, Bombay",0.0
+time_regressor_3m,"agency_Indian Institute of Technology, Hyderabad",0.0
+time_regressor_3m,"agency_Indian Institute of Technology, Indore",0.0
+time_regressor_3m,"agency_Indian Institute of Technology, Kharagpur",0.0
+time_regressor_3m,"agency_Indian Institute of Technology, Mandi",0.0
+time_regressor_3m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0
+time_regressor_3m,agency_Indian Oil Corporation Limited [IOCL],0.0
+time_regressor_3m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+time_regressor_3m,agency_Indian Railway,0.0
+time_regressor_3m,agency_Indian Railway Construction International Limited [IRCON],0.0
+time_regressor_3m,"agency_Indian intitue of Management, Amritsar",0.0
+time_regressor_3m,agency_Inland Waterways Authority of India [IWAI],0.0
+time_regressor_3m,agency_Irrigation & Water Resources-UP,0.0
+time_regressor_3m,agency_Irrigation and CAD-TG,0.0
+time_regressor_3m,agency_Irrigation-UK,0.0
+time_regressor_3m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0
+time_regressor_3m,agency_M/S SRC company Infra Private Limited,0.0
+time_regressor_3m,agency_MCL - CIL,0.0
+time_regressor_3m,agency_MIS MoCoal Integration Logins,0.0
+time_regressor_3m,agency_MRIDC,0.0
+time_regressor_3m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+time_regressor_3m,agency_Mahanadi Coalfields Limited [MCL],0.0
+time_regressor_3m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0
+time_regressor_3m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+time_regressor_3m,"agency_Medical Education, Ministry of Health and Family Welfare",0.0
+time_regressor_3m,"agency_Metro Railway, Kolkata",0.0
+time_regressor_3m,agency_Ministry of Coal,0.0
+time_regressor_3m,agency_Ministry of Education,0.0
+time_regressor_3m,agency_Ministry of Mines,0.0
+time_regressor_3m,agency_Ministry of Petroleum & Natural Gas,0.0
+time_regressor_3m,agency_Ministry of Petroleum and Natural Gas,0.0
+time_regressor_3m,agency_Ministry of Railways,0.0
+time_regressor_3m,agency_MinistryofPetroleumNaturalGas,0.0
+time_regressor_3m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+time_regressor_3m,agency_Mumbai Port Trust [MPT],0.0
+time_regressor_3m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+time_regressor_3m,agency_NER,0.0
+time_regressor_3m,agency_NIT Nagaland,0.0
+time_regressor_3m,agency_NIT Patna,0.0
+time_regressor_3m,agency_NIT Rourkela,0.0
+time_regressor_3m,agency_NIT Sikkim,0.0
+time_regressor_3m,agency_NLC India Limited [NLCIL],0.0
+time_regressor_3m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+time_regressor_3m,agency_National Aluminium Company Limited [NALCO],0.0
+time_regressor_3m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+time_regressor_3m,agency_National Communication Academy - Finance [Erstwhile NICF],0.0
+time_regressor_3m,agency_National High Speed Rail Corporation [NHSRC],0.0
+time_regressor_3m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0
+time_regressor_3m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0
+time_regressor_3m,agency_National Industrial Corridor Development Corporation,0.0
+time_regressor_3m,agency_National Institute of Technology Delhi,0.0
+time_regressor_3m,agency_National Institute of Technology Uttarakhand,0.0
+time_regressor_3m,"agency_National Institute of Technology, Meghalaya",0.0
+time_regressor_3m,"agency_National Institute of Technology, Puducherry",0.0
+time_regressor_3m,agency_National Mineral Development Corporation Limited [NMDC],0.0
+time_regressor_3m,agency_National Mission for Clean Ganga,0.0
+time_regressor_3m,agency_National Thermal Power Corporation [NTPC],0.0
+time_regressor_3m,agency_New Mangalore Port Authority,0.0
+time_regressor_3m,agency_North Central Railway,0.0
+time_regressor_3m,agency_North Eastern Electric Power Corporation Limited,0.0
+time_regressor_3m,agency_North Eastern Railway [NER],0.0
+time_regressor_3m,agency_North Western Railway [NWR],0.0
+time_regressor_3m,agency_Northeast Frontier Railway [NFR],0.0
+time_regressor_3m,agency_Northeast Frontier Railway [NFR] - II,0.0
+time_regressor_3m,agency_Northen Railway [NR],0.0
+time_regressor_3m,agency_Northern Coalfields Limited [NCL],0.0
+time_regressor_3m,agency_Northern Railways,0.0
+time_regressor_3m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0
+time_regressor_3m,agency_PCE/NCR,0.0
+time_regressor_3m,agency_PCE/WR,0.0
+time_regressor_3m,agency_Paradip Port Trust [PPT],0.0
+time_regressor_3m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+time_regressor_3m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0
+time_regressor_3m,agency_RCIL,0.0
+time_regressor_3m,agency_RVNL,0.0
+time_regressor_3m,agency_Rail Land Development Authority,0.0
+time_regressor_3m,agency_Rail Vikas Nigam Limited,0.0
+time_regressor_3m,agency_Railway,0.0
+time_regressor_3m,agency_Reliance Industries Ltd,0.0
+time_regressor_3m,agency_SECL - CIL,0.0
+time_regressor_3m,agency_SECR,0.0
+time_regressor_3m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.0
+time_regressor_3m,agency_Sikkim University,0.0
+time_regressor_3m,agency_Singareni Collieries Company Limited [SCCL],0.0
+time_regressor_3m,agency_Smart City Mission,0.0
+time_regressor_3m,agency_South Central Railway [SCR] - I,0.0
+time_regressor_3m,agency_South Central Railway [SCR] - II,0.0
+time_regressor_3m,agency_South East Central Railway,0.0
+time_regressor_3m,agency_South East Central Railway [SECR] - II,0.0
+time_regressor_3m,agency_South Eastern Central Railway,0.0
+time_regressor_3m,agency_South Eastern Railway - JH,0.0
+time_regressor_3m,agency_South Eastern Railway [SER] - I,0.0
+time_regressor_3m,agency_South Western Railway [SWR] - II,0.0
+time_regressor_3m,agency_Steel Authority of India Limited [SAIL],0.0
+time_regressor_3m,agency_Sterlite Power,0.0
+time_regressor_3m,agency_THDC India Limited,0.0
+time_regressor_3m,agency_Tezpur University,0.0
+time_regressor_3m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+time_regressor_3m,agency_WCL - CIL,0.0
+time_regressor_3m,agency_WR,0.0
+time_regressor_3m,agency_Water Resources Department-MN,0.0
+time_regressor_3m,agency_Water Resources-AP,0.0
+time_regressor_3m,agency_Water Resources-BR,0.0
+time_regressor_3m,agency_Water Resources-CT,0.0
+time_regressor_3m,agency_Water Resources-KA,0.0
+time_regressor_3m,agency_Water Resources-MP,0.0
+time_regressor_3m,agency_Water Resources-OR,0.0
+time_regressor_3m,agency_Water resource-mp,0.0
+time_regressor_3m,agency_West Central Railway WCR I,0.0
+time_regressor_3m,agency_West Central Railway [WCR] - II,0.0
+time_regressor_3m,agency_Western Coalfields Limited [WCL],0.0
+time_regressor_3m,agency_Western Railway WR - II,0.0
+time_regressor_3m,agency_Western Railway [WR] - II,0.0
+time_regressor_3m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+time_regressor_3m,ministry_department_Department of Higher Education,0.0
+time_regressor_3m,ministry_department_Department of Sports,0.0
+time_regressor_3m,ministry_department_Department of Telecommunications,0.0
+time_regressor_3m,ministry_department_Ministry of Civil Aviation,0.0
+time_regressor_3m,ministry_department_Ministry of Coal,0.0
+time_regressor_3m,ministry_department_Ministry of Housing & Urban Affairs,0.0
+time_regressor_3m,ministry_department_Ministry of Labour and Employment,0.0
+time_regressor_3m,ministry_department_Ministry of Power,0.0
+time_regressor_3m,ministry_department_Ministry of Steel,0.0
+time_regressor_3m,sector_Aviation & Aviation Infrastructure,0.0
+time_regressor_3m,sector_Construction,0.0
+time_regressor_3m,sector_Education,0.0
+time_regressor_3m,sector_Electricity Generation,0.0
+time_regressor_3m,sector_Energy Storage,0.0
+time_regressor_3m,sector_Inland Waterways,0.0
+time_regressor_3m,sector_Logistics Infrastructure,0.0
+time_regressor_3m,sector_Metals & Mining,0.0
+time_regressor_3m,sector_Shipping,0.0
+time_regressor_3m,sector_Steel,0.0
+time_regressor_3m,sector_Telecommunication,0.0
+time_regressor_3m,"sector_Tourism, Hospitality & Wellness",0.0
+time_regressor_3m,sector_Transmission & Distribution,0.0
+time_regressor_3m,sector_Waste & Water,0.0
+time_regressor_3m,"state_Andaman &
+Nicobar",0.0
+time_regressor_3m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+time_regressor_3m,state_Delhi,0.0
+time_regressor_3m,state_Goa,0.0
+time_regressor_3m,state_Ladakh,0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+time_regressor_3m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+time_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+time_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+time_regressor_3m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Assam, Bihar,
+West Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+time_regressor_3m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Jharkhand)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+time_regressor_3m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+time_regressor_3m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+time_regressor_3m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Haryana, Punjab)",0.0
+time_regressor_3m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Haryana, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+time_regressor_3m,"state_Multi-States
+(Jammu and
+Kashmir, Ladakh)",0.0
+time_regressor_3m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+time_regressor_3m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+time_regressor_3m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Jharkhand, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+time_regressor_3m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+time_regressor_3m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+time_regressor_3m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+time_regressor_3m,"state_Multi-States
+(Kerala,
+Puducherry)",0.0
+time_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0
+time_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+time_regressor_3m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+time_regressor_3m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_3m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+time_regressor_3m,"state_Multi-States (Delhi,
+Haryana)",0.0
+time_regressor_3m,"state_Multi-States (Delhi,
+Haryana,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+time_regressor_3m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+time_regressor_3m,"state_Multi-States (Goa,
+Karnataka)",0.0
+time_regressor_3m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+time_regressor_3m,"state_Multi-States (Uttar
+Pradesh,
+Uttarakhand)",0.0
+time_regressor_3m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+time_regressor_3m,state_Offshore,0.0
+time_regressor_3m,state_PAN India,0.0
+time_regressor_3m,state_Puducherry,0.0
+time_regressor_3m,state_Tripura,0.0
+time_regressor_3m,state_UNKNOWN,0.0
+time_regressor_3m,schedule_status_ON_TRACK,0.0
+time_regressor_6m,days_to_revised_target,2.8786
+time_regressor_6m,state_Mizoram,0.6692
+time_regressor_6m,revised_remaining_months,0.6289
+time_regressor_6m,planned_remaining_months,0.6255
+time_regressor_6m,physical_financial_gap_pct,0.5209
+time_regressor_6m,progress_minus_expenditure_gap,0.489
+time_regressor_6m,ministry_department_Ministry of Health & Family Welfare,0.3629
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Tamil Nadu)",0.2608
+time_regressor_6m,overdue_days,0.235
+time_regressor_6m,remaining_budget_crore,0.2102
+time_regressor_6m,original_duration_months,0.1638
+time_regressor_6m,project_age_months,0.1555
+time_regressor_6m,agency_Eastern Coal Fields Limited [ECL],0.1365
+time_regressor_6m,schedule_extension_months,0.1265
+time_regressor_6m,state_West Bengal,0.1105
+time_regressor_6m,physical_progress_pct,0.1079
+time_regressor_6m,agency_Airport Authority of India [AAI],0.1001
+time_regressor_6m,is_overdue_flag,0.0955
+time_regressor_6m,ministry_department_Ministry of Railways,0.0921
+time_regressor_6m,sector_Oil & Gas,0.085
+time_regressor_6m,state_Telangana,0.0779
+time_regressor_6m,ministry_department_Ministry of Petroleum & Natural Gas,0.072
+time_regressor_6m,agency_RVNL - II,0.0706
+time_regressor_6m,"state_Multi-States
+(Assam,
+Nagaland)",0.0704
+time_regressor_6m,agency_ministry of housing and urban affairs,0.0655
+time_regressor_6m,state_Uttarakhand,0.0566
+time_regressor_6m,cumulative_expenditure_crore,0.0518
+time_regressor_6m,agency_South Eastern Coalfields Limited [SECL],0.0473
+time_regressor_6m,physical_to_expenditure_ratio,0.0391
+time_regressor_6m,state_Bihar,0.0385
+time_regressor_6m,agency_UNKNOWN,0.0352
+time_regressor_6m,expenditure_ratio_pct,0.0341
+time_regressor_6m,"state_Multi-States (Delhi,
+Gujarat, Madhya
+Pradesh,
+Maharashtra,
+Rajasthan)",0.0333
+time_regressor_6m,agency_Power Grid Corporation of India Limited [POWERGRID],0.0303
+time_regressor_6m,original_cost_crore,0.0289
+time_regressor_6m,agency_ECL - CIL,0.0271
+time_regressor_6m,agency_Western Railway,0.0251
+time_regressor_6m,agency_Central Railway [CR] - II,0.025
+time_regressor_6m,extension_rate_pct,0.0243
+time_regressor_6m,remaining_work_pct,0.024
+time_regressor_6m,ministry_department_Department of Higher Education,0.024
+time_regressor_6m,days_to_original_target,0.0223
+time_regressor_6m,schedule_extension_delta_1m,0.02
+time_regressor_6m,revised_cost_crore,0.0189
+time_regressor_6m,agency_Southern Railway [SR] - II,0.0189
+time_regressor_6m,progress_trend_slope,0.0179
+time_regressor_6m,cost_escalation_crore,0.0156
+time_regressor_6m,cost_overrun_pct,0.015
+time_regressor_6m,agency_Southern Railways [SR] - construction,0.0147
+time_regressor_6m,"agency_National Institute of Technology, Arunachal Pradesh",0.0139
+time_regressor_6m,cost_escalation_ratio,0.0136
+time_regressor_6m,agency_Hindustan Copper Limited [HCL],0.0117
+time_regressor_6m,agency_National Buildings Construction Corporation [NBCC],0.0115
+time_regressor_6m,ministry_department_Ministry of Civil Aviation,0.0115
+time_regressor_6m,sector_Healthcare,0.01
+time_regressor_6m,physical_progress_delta_3m,0.0097
+time_regressor_6m,agency_SR-ERS,0.0086
+time_regressor_6m,agency_National Mineral Development Corporation Limited [NMDC],0.0082
+time_regressor_6m,ministry_department_Ministry of Coal,0.0081
+time_regressor_6m,agency_Ministry of Health & Family Welfare,0.008
+time_regressor_6m,progress_velocity_3m,0.0075
+time_regressor_6m,agency_NIT Mizoram,0.007
+time_regressor_6m,sector_Coal,0.0068
+time_regressor_6m,state_Rajasthan,0.0063
+time_regressor_6m,agency_RVNL,0.0062
+time_regressor_6m,expenditure_velocity_crore_month,0.0059
+time_regressor_6m,agency_SECR,0.0054
+time_regressor_6m,"state_Jammu and
+Kashmir",0.0053
+time_regressor_6m,state_Tamil Nadu,0.0042
+time_regressor_6m,sector_Water Resources,0.0041
+time_regressor_6m,consecutive_stagnant_months,0.0039
+time_regressor_6m,"state_Multi-States (Goa,
+Karnataka)",0.0039
+time_regressor_6m,sector_Real Estate,0.0038
+time_regressor_6m,agency_Ministry of Petroleum & Natural Gas,0.0036
+time_regressor_6m,"agency_National Institute of Technology, Meghalaya",0.0031
+time_regressor_6m,sector_Education,0.0027
+time_regressor_6m,physical_progress_delta_1m,0.0024
+time_regressor_6m,state_Gujarat,0.002
+time_regressor_6m,risk_signal_count,0.0016
+time_regressor_6m,expenditure_ratio_delta_3m,0.0016
+time_regressor_6m,agency_RVNL - I,0.0016
+time_regressor_6m,state_Odisha,0.0015
+time_regressor_6m,agency_Ministry of Education,0.0014
+time_regressor_6m,"state_Multi-States
+(Bihar, West
+Bengal)",0.0014
+time_regressor_6m,expenditure_ratio_delta_1m,0.0011
+time_regressor_6m,agency_Deendayal Port Trust [DPT],0.0011
+time_regressor_6m,agency_East Central Railway [ECR] - I,0.0011
+time_regressor_6m,agency_East Coast Railway [ECoR] - II,0.0011
+time_regressor_6m,state_Haryana,0.0004
+time_regressor_6m,state_Maharashtra,0.0004
+time_regressor_6m,"state_Multi-States
+(Kerala, Tamil
+Nadu)",0.0002
+time_regressor_6m,progress_expenditure_mismatch_flag,0.0
+time_regressor_6m,high_expenditure_low_progress_flag,0.0
+time_regressor_6m,extension_count,0.0
+time_regressor_6m,cost_overrun_delta_1m,0.0
+time_regressor_6m,cost_overrun_delta_3m,0.0
+time_regressor_6m,cost_overrun_trend_slope,0.0
+time_regressor_6m,expenditure_minus_progress_gap,0.0
+time_regressor_6m,cost_overrun_negative_flag,0.0
+time_regressor_6m,is_extended_flag,0.0
+time_regressor_6m,agency_Adani Airport Holdings Limited,0.0
+time_regressor_6m,agency_Adani Transmission Limited,0.0
+time_regressor_6m,agency_BCCL - CIL,0.0
+time_regressor_6m,agency_BSNL,0.0
+time_regressor_6m,agency_Banaras Hindu University,0.0
+time_regressor_6m,agency_Bengaluru Metro Rail,0.0
+time_regressor_6m,agency_Bharat Coking Coal Limited [BCCL],0.0
+time_regressor_6m,agency_Bharat Petroleum Corporation Limited [BPCL],0.0
+time_regressor_6m,agency_CAO/C/II/NR,0.0
+time_regressor_6m,agency_CAO/C/NCR,0.0
+time_regressor_6m,agency_CAO/C/NR,0.0
+time_regressor_6m,agency_CAO/C/SECR,0.0
+time_regressor_6m,agency_CAO/C/SER,0.0
+time_regressor_6m,agency_CCL - CIL,0.0
+time_regressor_6m,agency_CORE,0.0
+time_regressor_6m,agency_CPM/ICF,0.0
+time_regressor_6m,agency_CR,0.0
+time_regressor_6m,agency_CSPCC Projects,0.0
+time_regressor_6m,agency_Central Coalfields Limited [CCL],0.0
+time_regressor_6m,agency_Central Organisation for Railway Electrification [CORE],0.0
+time_regressor_6m,agency_Central Public Works Department - CPWD,0.0
+time_regressor_6m,agency_Central Public Works Department [CPWD],0.0
+time_regressor_6m,agency_Central Railway,0.0
+time_regressor_6m,agency_Central Railways,0.0
+time_regressor_6m,agency_Central Tribal University of Andhra Pradesh,0.0
+time_regressor_6m,agency_Central University of Gujarat,0.0
+time_regressor_6m,agency_Central University of Punjab,0.0
+time_regressor_6m,"agency_Central University, Himachal Pradesh",0.0
+time_regressor_6m,agency_CentralRailway,0.0
+time_regressor_6m,agency_Chennai Metro Rail Limited [CMRL],0.0
+time_regressor_6m,agency_Chennai Petroleum Corporation Limited [CPCL],0.0
+time_regressor_6m,agency_Construction NER,0.0
+time_regressor_6m,agency_DFCCIL,0.0
+time_regressor_6m,agency_Damodar Valley Corporation,0.0
+time_regressor_6m,agency_Deendayal Port Trust,0.0
+time_regressor_6m,agency_Delhi Metro Rail Corporation Limited [DMRC],0.0
+time_regressor_6m,agency_Delhi University,0.0
+time_regressor_6m,agency_Department of Sports & Youth Affairs,0.0
+time_regressor_6m,agency_Department of Telecommunications,0.0
+time_regressor_6m,agency_Department of Telecommunications [DoT],0.0
+time_regressor_6m,"agency_Department of Water Resources, River Development & GR",0.0
+time_regressor_6m,agency_Department of Water Resources-JH,0.0
+time_regressor_6m,agency_Department of Water Resources-MH,0.0
+time_regressor_6m,agency_Department of Water Resources-PB,0.0
+time_regressor_6m,agency_Department of water resources-MH - II,0.0
+time_regressor_6m,agency_East Central Railway [ECR] - II,0.0
+time_regressor_6m,agency_Eastern Railway [ER] - I,0.0
+time_regressor_6m,agency_Employee's State Insurance Company [ESIC],0.0
+time_regressor_6m,agency_GM/C/ NFR,0.0
+time_regressor_6m,agency_Gas Authority of India Limited [GAIL],0.0
+time_regressor_6m,agency_Gujarat,0.0
+time_regressor_6m,agency_Gujarat Metro Rail Corporation Limited [GMRCL],0.0
+time_regressor_6m,"agency_Haldia Dock Complex, Syama Prasad Mookerjee Port Authority",0.0
+time_regressor_6m,agency_Hindustan Petroleum Corporation Limited,0.0
+time_regressor_6m,agency_Hindustan Petroleum Corporation Limited [HPCL],0.0
+time_regressor_6m,agency_INDIAN INSTITUTE OF TECHNOLOGY PALAKKAD,0.0
+time_regressor_6m,"agency_Indian Institute of Management, Jammu",0.0
+time_regressor_6m,"agency_Indian Institute of Management, Sirmaur",0.0
+time_regressor_6m,"agency_Indian Institute of Technology, Bhilai",0.0
+time_regressor_6m,"agency_Indian Institute of Technology, Hyderabad",0.0
+time_regressor_6m,"agency_Indian Institute of Technology, Indore",0.0
+time_regressor_6m,"agency_Indian Institute of Technology, Kharagpur",0.0
+time_regressor_6m,"agency_Indian Institute of Technology, Mandi",0.0
+time_regressor_6m,"agency_Indian Institutes of Science Education and Research, Behrampur",0.0
+time_regressor_6m,agency_Indian Oil Corporation Limited [IOCL],0.0
+time_regressor_6m,agency_Indian Port Rail & Ropeway Corporation Ltd. [IPRCL],0.0
+time_regressor_6m,agency_Indian Railway Construction International Limited [IRCON],0.0
+time_regressor_6m,"agency_Indian intitue of Management, Amritsar",0.0
+time_regressor_6m,agency_Inland Waterways Authority of India [IWAI],0.0
+time_regressor_6m,agency_Irrigation & Water Resources-UP,0.0
+time_regressor_6m,agency_Irrigation and CAD-TG,0.0
+time_regressor_6m,agency_Irrigation-UK,0.0
+time_regressor_6m,agency_Karnataka Rail Infrastructure Development Company Limited [K-RIDE],0.0
+time_regressor_6m,agency_M/S SRC company Infra Private Limited,0.0
+time_regressor_6m,agency_MCL - CIL,0.0
+time_regressor_6m,agency_MIS MoCoal Integration Logins,0.0
+time_regressor_6m,agency_MRIDC,0.0
+time_regressor_6m,agency_Madhya Pradesh Metro Rail Co Limited [MPMRCL],0.0
+time_regressor_6m,agency_Mahanadi Coalfields Limited [MCL],0.0
+time_regressor_6m,agency_Maharashtra Metro Rail Corporation Limited [MMRCL],0.0
+time_regressor_6m,agency_Mangalore Refinary and Petrochemicals Limited,0.0
+time_regressor_6m,"agency_Metro Railway, Kolkata",0.0
+time_regressor_6m,agency_Ministry of Coal,0.0
+time_regressor_6m,agency_Ministry of Housing & Urban Affairs,0.0
+time_regressor_6m,agency_Ministry of Mines,0.0
+time_regressor_6m,agency_Ministry of Petroleum and Natural Gas,0.0
+time_regressor_6m,agency_Ministry of Railways,0.0
+time_regressor_6m,agency_MinistryofPetroleumNaturalGas,0.0
+time_regressor_6m,agency_Mumbai Metro Rail Corporation Limited [MMRC],0.0
+time_regressor_6m,agency_Mumbai Port Trust [MPT],0.0
+time_regressor_6m,agency_Mumbai Rail Vikas Corporation Ltd.[MRVC],0.0
+time_regressor_6m,agency_NER,0.0
+time_regressor_6m,agency_NIT Nagaland,0.0
+time_regressor_6m,agency_NIT Patna,0.0
+time_regressor_6m,agency_NIT Sikkim,0.0
+time_regressor_6m,agency_NLC India Limited [NLCIL],0.0
+time_regressor_6m,agency_NRL,0.0
+time_regressor_6m,"agency_Narmada and Water Resources, Water Supply and Kalpsar Department-GJ",0.0
+time_regressor_6m,agency_National Aluminium Company Limited [NALCO],0.0
+time_regressor_6m,agency_National Capital Region Transport Corporation [NCRTC],0.0
+time_regressor_6m,agency_National High Speed Rail Corporation [NHSRC],0.0
+time_regressor_6m,agency_National Highways & Infrastructure Development Corporation Ltd. [NHIDCL],0.0
+time_regressor_6m,agency_National Hydroelectric Power Corporation Limited [NHPC],0.0
+time_regressor_6m,agency_National Industrial Corridor Development Corporation,0.0
+time_regressor_6m,agency_National Institute of Technology Delhi,0.0
+time_regressor_6m,agency_National Institute of Technology Uttarakhand,0.0
+time_regressor_6m,"agency_National Institute of Technology, Puducherry",0.0
+time_regressor_6m,agency_National Mission for Clean Ganga,0.0
+time_regressor_6m,agency_National Thermal Power Corporation [NTPC],0.0
+time_regressor_6m,agency_New Mangalore Port Authority,0.0
+time_regressor_6m,agency_North Central Railway,0.0
+time_regressor_6m,agency_North Eastern Electric Power Corporation Limited,0.0
+time_regressor_6m,agency_North Eastern Railway [NER],0.0
+time_regressor_6m,agency_North Western Railway [NWR],0.0
+time_regressor_6m,agency_Northeast Frontier Railway [NFR],0.0
+time_regressor_6m,agency_Northen Railway [NR],0.0
+time_regressor_6m,agency_Northern Coalfields Limited [NCL],0.0
+time_regressor_6m,agency_Northern Railways,0.0
+time_regressor_6m,agency_Oil and Natural Gas Corporation Limited [ONGC],0.0
+time_regressor_6m,agency_PCE/NCR,0.0
+time_regressor_6m,agency_PCE/WR,0.0
+time_regressor_6m,agency_PMSSY AND Institute of NATIONAL Importance,0.0
+time_regressor_6m,agency_Paradip Port Trust [PPT],0.0
+time_regressor_6m,agency_Patna Metro Rail Corporation Ltd. [PMRCL],0.0
+time_regressor_6m,agency_RCIL,0.0
+time_regressor_6m,agency_Rail Land Development Authority,0.0
+time_regressor_6m,agency_Rail Vikas Nigam Limited,0.0
+time_regressor_6m,agency_Railway,0.0
+time_regressor_6m,agency_Reliance Industries Ltd,0.0
+time_regressor_6m,agency_SECL - CIL,0.0
+time_regressor_6m,agency_Satluj Jal Vidyut Nigam [SJVN] Thermal Limited,0.0
+time_regressor_6m,agency_Sikkim University,0.0
+time_regressor_6m,agency_Singareni Collieries Company Limited [SCCL],0.0
+time_regressor_6m,agency_Smart City Mission,0.0
+time_regressor_6m,agency_South Central Railway [SCR] - I,0.0
+time_regressor_6m,agency_South Central Railway [SCR] - II,0.0
+time_regressor_6m,agency_South East Central Railway,0.0
+time_regressor_6m,agency_South East Central Railway [SECR] - II,0.0
+time_regressor_6m,agency_South Eastern Railway - JH,0.0
+time_regressor_6m,agency_South Eastern Railway [SER] - I,0.0
+time_regressor_6m,agency_South Western Railway [SWR] - II,0.0
+time_regressor_6m,agency_Steel Authority of India Limited [SAIL],0.0
+time_regressor_6m,agency_Sterlite Power,0.0
+time_regressor_6m,agency_THDC India Limited,0.0
+time_regressor_6m,agency_Tezpur University,0.0
+time_regressor_6m,agency_Uttar Pradesh metro rail corporation [UPMRC],0.0
+time_regressor_6m,agency_WCL - CIL,0.0
+time_regressor_6m,agency_WPO/Patna,0.0
+time_regressor_6m,agency_WR,0.0
+time_regressor_6m,agency_Water Resources Department-MN,0.0
+time_regressor_6m,agency_Water Resources-AP,0.0
+time_regressor_6m,agency_Water Resources-BR,0.0
+time_regressor_6m,agency_Water Resources-CT,0.0
+time_regressor_6m,agency_Water Resources-KA,0.0
+time_regressor_6m,agency_Water Resources-MP,0.0
+time_regressor_6m,agency_Water Resources-OR,0.0
+time_regressor_6m,agency_Water resource-mp,0.0
+time_regressor_6m,agency_West Central Railway WCR I,0.0
+time_regressor_6m,agency_West Central Railway [WCR] - II,0.0
+time_regressor_6m,agency_Western Coalfields Limited [WCL],0.0
+time_regressor_6m,agency_Western Railway [WR] - II,0.0
+time_regressor_6m,ministry_department_Department for Promotion of Industry & Internal Trade,0.0
+time_regressor_6m,ministry_department_Department of Sports,0.0
+time_regressor_6m,ministry_department_Department of Telecommunications,0.0
+time_regressor_6m,"ministry_department_Department of Water Resources, River Development & GR",0.0
+time_regressor_6m,ministry_department_Ministry of Housing & Urban Affairs,0.0
+time_regressor_6m,ministry_department_Ministry of Labour and Employment,0.0
+time_regressor_6m,ministry_department_Ministry of Mines,0.0
+time_regressor_6m,"ministry_department_Ministry of Ports, Shipping and Waterways",0.0
+time_regressor_6m,ministry_department_Ministry of Power,0.0
+time_regressor_6m,ministry_department_Ministry of Steel,0.0
+time_regressor_6m,sector_Aviation & Aviation Infrastructure,0.0
+time_regressor_6m,sector_Construction,0.0
+time_regressor_6m,sector_Electricity Generation,0.0
+time_regressor_6m,sector_Energy Storage,0.0
+time_regressor_6m,sector_Inland Waterways,0.0
+time_regressor_6m,sector_Metals & Mining,0.0
+time_regressor_6m,sector_Railways,0.0
+time_regressor_6m,sector_Shipping,0.0
+time_regressor_6m,sector_Steel,0.0
+time_regressor_6m,sector_Telecommunication,0.0
+time_regressor_6m,"sector_Tourism, Hospitality & Wellness",0.0
+time_regressor_6m,sector_Transmission & Distribution,0.0
+time_regressor_6m,sector_Urban Public Transport,0.0
+time_regressor_6m,sector_Waste & Water,0.0
+time_regressor_6m,"state_Andaman &
+Nicobar",0.0
+time_regressor_6m,state_Andhra Pradesh,0.0
+time_regressor_6m,state_Arunachal Pradesh,0.0
+time_regressor_6m,state_Assam,0.0
+time_regressor_6m,state_Chhattisgarh,0.0
+time_regressor_6m,"state_Dadra & Nagar
+Haveli and Daman
+& Diu",0.0
+time_regressor_6m,state_Delhi,0.0
+time_regressor_6m,state_Goa,0.0
+time_regressor_6m,state_Himachal Pradesh,0.0
+time_regressor_6m,state_Jharkhand,0.0
+time_regressor_6m,state_Karnataka,0.0
+time_regressor_6m,state_Kerala,0.0
+time_regressor_6m,state_Ladakh,0.0
+time_regressor_6m,state_Madhya Pradesh,0.0
+time_regressor_6m,state_Manipur,0.0
+time_regressor_6m,state_Meghalaya,0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Bihar,
+Chhattisgarh,
+Jharkhand,
+Madhya Pradesh,
+Maharashtra,
+Odisha,
+Telangana, Uttar
+Pradesh, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Jharkhand,
+Maharashtra,
+Odisha)",0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Chhattisgarh,
+Odisha)",0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Karnataka)",0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Maharashtra,
+Telangana)",0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Odisha)",0.0
+time_regressor_6m,"state_Multi-States
+(Andhra Pradesh,
+Telangana)",0.0
+time_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam)",0.0
+time_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Assam,
+Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Sikkim,
+Tripura, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Gujarat,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Arunachal
+Pradesh, Sikkim)",0.0
+time_regressor_6m,"state_Multi-States
+(Assam, Bihar,
+Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Assam, Manipur,
+Meghalaya,
+Mizoram,
+Nagaland, Tripura)",0.0
+time_regressor_6m,"state_Multi-States
+(Assam, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Delhi,
+Jharkhand, Uttar
+Pradesh, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Gujarat,
+Himachal Pradesh,
+Jammu and
+Kashmir, Ladakh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Jharkhand)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Jharkhand,
+Uttar Pradesh,
+West Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Madhya
+Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Odisha,
+West Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Bihar, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Chhattisgarh,
+Madhya Pradesh,
+Maharashtra,
+Odisha)",0.0
+time_regressor_6m,"state_Multi-States
+(Chhattisgarh,
+Maharashtra)",0.0
+time_regressor_6m,"state_Multi-States
+(Chhattisgarh,
+Odisha)",0.0
+time_regressor_6m,"state_Multi-States
+(Dadra & Nagar
+Haveli and Daman
+& Diu, Gujarat,
+Maharashtra)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat,
+Maharashtra)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat, Haryana,
+Maharashtra,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat, Haryana,
+Punjab,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat, Haryana,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Gujarat, Madhya
+Pradesh, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Haryana,
+Himachal Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Haryana,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Haryana, Punjab,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Himachal
+Pradesh, Punjab)",0.0
+time_regressor_6m,"state_Multi-States
+(Jammu and
+Kashmir, Punjab)",0.0
+time_regressor_6m,"state_Multi-States
+(Jharkhand,
+Odisha)",0.0
+time_regressor_6m,"state_Multi-States
+(Jharkhand,
+Odisha, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Jharkhand, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Karnataka,
+Kerala, Tamil
+Nadu)",0.0
+time_regressor_6m,"state_Multi-States
+(Karnataka,
+Maharashtra)",0.0
+time_regressor_6m,"state_Multi-States
+(Karnataka,
+Maharashtra,
+Telangana, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Karnataka,
+Telangana)",0.0
+time_regressor_6m,"state_Multi-States
+(Karnataka, Tamil
+Nadu)",0.0
+time_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Maharashtra)",0.0
+time_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Madhya Pradesh,
+Uttar Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Maharashtra,
+Telangana)",0.0
+time_regressor_6m,"state_Multi-States
+(Odisha, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States
+(Puducherry, Tamil
+Nadu)",0.0
+time_regressor_6m,"state_Multi-States
+(Punjab,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States
+(Rajasthan, Uttar
+Pradesh)",0.0
+time_regressor_6m,"state_Multi-States
+(Sikkim, West
+Bengal)",0.0
+time_regressor_6m,"state_Multi-States (Delhi,
+Haryana)",0.0
+time_regressor_6m,"state_Multi-States (Delhi,
+Rajasthan)",0.0
+time_regressor_6m,"state_Multi-States (Delhi,
+Uttar Pradesh)",0.0
+time_regressor_6m,"state_Multi-States (Goa,
+Karnataka,
+Maharashtra,
+Telangana)",0.0
+time_regressor_6m,"state_Multi-States (Uttar
+Pradesh, West
+Bengal)",0.0
+time_regressor_6m,state_Nagaland,0.0
+time_regressor_6m,state_Offshore,0.0
+time_regressor_6m,state_PAN India,0.0
+time_regressor_6m,state_Puducherry,0.0
+time_regressor_6m,state_Punjab,0.0
+time_regressor_6m,state_Sikkim,0.0
+time_regressor_6m,state_Tripura,0.0
+time_regressor_6m,state_UNKNOWN,0.0
+time_regressor_6m,state_Uttar Pradesh,0.0
+time_regressor_6m,schedule_status_COMPLETED,0.0
+time_regressor_6m,schedule_status_EXTENDED,0.0
+time_regressor_6m,schedule_status_ON_TRACK,0.0
+time_regressor_6m,schedule_status_OVERDUE,0.0
