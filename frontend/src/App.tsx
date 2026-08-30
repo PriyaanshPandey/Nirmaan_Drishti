@@ -16,6 +16,7 @@ import { ProjectDistribution } from './components/ProjectDistribution';
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [previousTab, setPreviousTab] = useState<string>('projects');
 
   const handleTabChange = (tab: string) => {
     if (tab === activeTab) return;
@@ -24,7 +25,16 @@ function App() {
   };
 
   const handleSelectProject = (id: string) => {
+    setPreviousTab(activeTab);
     setSelectedProjectId(id);
+    setActiveTab('projects');
+  };
+
+  const handleBack = () => {
+    setSelectedProjectId(null);
+    if (previousTab && previousTab !== 'projects') {
+      setActiveTab(previousTab);
+    }
   };
 
   return (
@@ -48,7 +58,7 @@ function App() {
                 <DonutChart />
               </div>
               <div className="grid-col-3">
-                <PriorityInterventions />
+                <PriorityInterventions onSelectProject={handleSelectProject} />
               </div>
             </section>
 
@@ -61,7 +71,7 @@ function App() {
                 <DelayFactors />
               </div>
               <div className="grid-col-3">
-                <AIActionCenter />
+                <AIActionCenter onNavigateTab={handleTabChange} />
               </div>
             </section>
           </main>
@@ -73,7 +83,7 @@ function App() {
           {selectedProjectId ? (
             <ProjectDetails 
               projectId={selectedProjectId} 
-              onBack={() => setSelectedProjectId(null)} 
+              onBack={handleBack} 
             />
           ) : (
             <ProjectPortfolio 
@@ -85,7 +95,10 @@ function App() {
 
       {activeTab === 'insights' && (
         <main className="insights-content">
-          <AIInsights />
+          <AIInsights 
+            onSelectProject={handleSelectProject} 
+            onNavigateTab={handleTabChange}
+          />
         </main>
       )}
 
