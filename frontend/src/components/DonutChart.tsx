@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './DonutChart.css';
 import { AnimatedCounter } from './AnimatedCounter';
+import { api } from '../services/api';
 
 interface ChartSegment {
   id: string;
@@ -11,28 +12,68 @@ interface ChartSegment {
 }
 
 export const DonutChart: React.FC = () => {
-  const data: ChartSegment[] = [
-    { id: 'on-track', name: 'On Track', count: 1090, color: 'var(--color-on-track)', percentage: 55.0 },
-    { id: 'monitoring', name: 'Monitoring', count: 376, color: 'var(--color-monitoring)', percentage: 19.0 },
-    { id: 'at-risk', name: 'At Risk', count: 247, color: 'var(--color-at-risk)', percentage: 12.5 },
-    { id: 'critical', name: 'Critical Delay', count: 268, color: 'var(--color-critical-dark)', percentage: 13.5 },
-  ];
-
+  const [data, setData] = useState<ChartSegment[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
   const [hoveredSegment, setHoveredSegment] = useState<ChartSegment | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const t = setTimeout(() => setMounted(true), 100);
-    return () => clearTimeout(t);
+
+    api.getDashboardSummary().then((res) => {
+      if (!isMounted) return;
+      if (res && res.health_distribution && res.health_distribution.length > 0) {
+        setData(res.health_distribution.map(d => ({
+          id: d.id,
+          name: d.name,
+          count: d.count,
+          color: d.color,
+          percentage: d.percentage,
+        })));
+        setError(false);
+      } else {
+        setError(true);
+      }
+      setLoading(false);
+    }).catch(() => {
+      if (isMounted) {
+        setError(true);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(t);
+    };
   }, []);
 
   // Circle dimensions
   const radius = 50;
   const strokeWidth = 14;
   const circumference = 2 * Math.PI * radius; // ~314.159
+
+  if (loading) {
+    return (
+      <div className="card donut-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
+        <div style={{ color: '#94A3B8', fontSize: '13px' }}>Loading health distribution...</div>
+      </div>
+    );
+  }
+
+  if (error || !data || data.length === 0) {
+    return (
+      <div className="card donut-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
+        <h2 className="card-title" style={{ marginBottom: '8px' }}>Project Health Distribution</h2>
+        <div style={{ color: '#EF4444', fontSize: '13px' }}>Unable to load data from backend.</div>
+      </div>
+    );
+  }
   
   let accumulatedPercentage = 0;
-  const totalProjects = 1981;
+  const totalProjects = data.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
     <div className="card donut-card">
@@ -54,16 +95,14 @@ export const DonutChart: React.FC = () => {
               strokeWidth={strokeWidth}
             />
             
-            {data.map((segment, idx) => {
+            {data.map((segment) => {
               const strokeLength = (segment.percentage / 100) * circumference;
               const strokeOffset = circumference - (accumulatedPercentage / 100) * circumference;
               
               accumulatedPercentage += segment.percentage;
-              
+
               const isHovered = hoveredSegment?.id === segment.id;
-              // Animate from full circumference (hidden) → target offset
-              const animatedOffset = mounted ? strokeOffset : circumference;
-              
+
               return (
                 <circle
                   key={segment.id}
@@ -73,13 +112,14 @@ export const DonutChart: React.FC = () => {
                   fill="transparent"
                   stroke={segment.color}
                   strokeWidth={isHovered ? strokeWidth + 3 : strokeWidth}
-                  strokeDasharray={`${strokeLength} ${circumference - strokeLength}`}
-                  strokeDashoffset={animatedOffset}
-                  transform="rotate(-90 70 70)"
+                  strokeDasharray={`${mounted ? strokeLength : 0} ${circumference}`}
+                  strokeDashoffset={strokeOffset}
                   className="donut-segment"
                   style={{
-                    transition: `stroke-dashoffset 0.9s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.12}s, stroke-width 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s ease`,
-                    opacity: hoveredSegment && !isHovered ? 0.5 : 1,
+                    transformOrigin: 'center',
+                    transform: 'rotate(-90deg)',
+                    transition: 'stroke-dasharray 1s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.2s ease',
+                    cursor: 'pointer'
                   }}
                   onMouseEnter={() => setHoveredSegment(segment)}
                   onMouseLeave={() => setHoveredSegment(null)}
@@ -88,48 +128,46 @@ export const DonutChart: React.FC = () => {
             })}
           </svg>
 
-          {/* Interactive center hole label (adds high character) */}
-          <div className="donut-center-label">
-            {hoveredSegment ? (
-              <>
-                <span className="center-value" style={{ color: hoveredSegment.color }}>
-                  {hoveredSegment.percentage}%
-                </span>
-                <span className="center-text">{hoveredSegment.name}</span>
-              </>
-            ) : (
-              <>
-                <span className="center-value">
-                  <AnimatedCounter value={totalProjects} />
-                </span>
-                <span className="center-text">Total Projects</span>
-              </>
-            )}
+          {/* Central Counter Display */}
+          <div className="donut-center-text">
+            <span className="donut-center-value">
+              <AnimatedCounter value={hoveredSegment ? hoveredSegment.count : totalProjects} />
+            </span>
+            <span className="donut-center-label">
+              {hoveredSegment ? hoveredSegment.name : 'TOTAL'}
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* 2x2 Legend Grid */}
-      <div className="donut-legend-grid">
-        {data.map((item) => {
-          const isDimmed = hoveredSegment && hoveredSegment.id !== item.id;
-          return (
+        {/* Legend */}
+        <div className="donut-legend">
+          {data.map((segment) => (
             <div 
-              key={item.id} 
-              className={`legend-item ${isDimmed ? 'dimmed' : ''}`}
-              onMouseEnter={() => setHoveredSegment(item)}
+              key={segment.id} 
+              className={`legend-item ${hoveredSegment?.id === segment.id ? 'active' : ''}`}
+              onMouseEnter={() => setHoveredSegment(segment)}
               onMouseLeave={() => setHoveredSegment(null)}
             >
-              <span className="legend-dot" style={{ backgroundColor: item.color }}></span>
+              <div className="legend-indicator" style={{ backgroundColor: segment.color }} />
               <div className="legend-info">
-                <span className="legend-name">{item.name}</span>
-                <span className="legend-value">{item.count.toLocaleString()}</span>
+                <div className="legend-name-row">
+                  <span className="legend-name">{segment.name}</span>
+                  <span className="legend-count">{segment.count}</span>
+                </div>
+                <div className="legend-bar-bg">
+                  <div 
+                    className="legend-bar-fill" 
+                    style={{ 
+                      width: `${segment.percentage}%`,
+                      backgroundColor: segment.color 
+                    }} 
+                  />
+                </div>
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
     </div>
   );
 };
-

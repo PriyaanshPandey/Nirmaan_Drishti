@@ -62,10 +62,22 @@ def load_all_models(models_dir: str = None) -> Dict[str, Any]:
         "time_reg_6m_preprocessor": "preprocessing/time_reg_6m_preprocessor.pkl",
     }
 
+    def _patch_transformer(obj):
+        if hasattr(obj, 'transformers_'):
+            for _, trans, _ in obj.transformers_:
+                _patch_transformer(trans)
+        elif hasattr(obj, 'steps'):
+            for _, step in obj.steps:
+                _patch_transformer(step)
+        elif hasattr(obj, '_fit_dtype') and not hasattr(obj, '_fill_dtype'):
+            obj._fill_dtype = obj._fit_dtype
+
     for name, fname in {**model_files, **preprocessor_files}.items():
         path = models_dir / fname
         if path.exists():
-            models[name] = joblib.load(path)
+            obj = joblib.load(path)
+            _patch_transformer(obj)
+            models[name] = obj
         else:
             print(f"[WARNING] Model not found: {name} ({path})")
 

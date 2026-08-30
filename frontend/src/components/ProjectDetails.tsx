@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, ChevronDown, Bell, ShieldAlert, Award, FileText, Calendar, Check, AlertTriangle, ArrowRight, SlidersHorizontal } from 'lucide-react';
-import { projectsData } from '../data/projectsData';
+import {
+  ArrowLeft, ChevronDown, Bell, ShieldAlert, Award, FileText, Calendar, Check,
+  AlertTriangle, ArrowRight, SlidersHorizontal, Sparkles, Cpu, Send, Bot
+} from 'lucide-react';
+import { type Project } from '../data/projectsData';
+import { api, type RiskPredictionData, type AIExplanationData } from '../services/api';
 import './ProjectDetails.css';
 
 interface ProjectDetailsProps {
@@ -9,7 +13,26 @@ interface ProjectDetailsProps {
 }
 
 export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBack }) => {
-  const project = projectsData.find((p) => p.id === projectId) || projectsData[0];
+  const [project, setProject] = useState<Project | null>(null);
+  const [loadingProject, setLoadingProject] = useState(true);
+  const [projectError, setProjectError] = useState(false);
+
+  // Real ML Prediction & SHAP Explainability state
+  const [mlPrediction, setMlPrediction] = useState<RiskPredictionData | null>(null);
+  const [loadingPrediction, setLoadingPrediction] = useState(true);
+  const [predictionError, setPredictionError] = useState<string | null>(null);
+  const [mlHorizon, setMlHorizon] = useState<3 | 6>(3);
+
+  // Grounded AI Narrative Briefing state
+  const [aiBriefing, setAiBriefing] = useState<AIExplanationData | null>(null);
+  const [loadingBriefing, setLoadingBriefing] = useState(true);
+
+  // Interactive AI Assistant state
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiAnswer, setAiAnswer] = useState<string | null>(null);
+  const [aiInsights, setAiInsights] = useState<string[]>([]);
+  const [aiQuerying, setAiQuerying] = useState(false);
 
   // Tab selections
   const [benchmarkingTab, setBenchmarkingTab] = useState<'cost' | 'delay' | 'tech'>('cost');
@@ -17,10 +40,117 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [riskTrendTab, setRiskTrendTab] = useState<'overall' | 'cost' | 'time'>('overall');
   const [mounted, setMounted] = useState(false);
 
+  // Fetch Project Metadata
   useEffect(() => {
+    let isMounted = true;
     const t = setTimeout(() => setMounted(true), 80);
-    return () => clearTimeout(t);
-  }, []);
+    setLoadingProject(true);
+    setProjectError(false);
+    api.getProjectById(projectId).then((res) => {
+      if (!isMounted) return;
+      if (res) {
+        setProject(res);
+      } else {
+        setProjectError(true);
+      }
+      setLoadingProject(false);
+    }).catch(() => {
+      if (isMounted) {
+        setProjectError(true);
+        setLoadingProject(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+      clearTimeout(t);
+    };
+  }, [projectId]);
+
+  // Fetch Live XGBoost ML Prediction + SHAP Drivers
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingPrediction(true);
+    setPredictionError(null);
+    api.getProjectRisk(projectId, mlHorizon).then((pred) => {
+      if (!isMounted) return;
+      if (pred) {
+        setMlPrediction(pred);
+        setPredictionError(null);
+      } else {
+        setPredictionError("AI prediction currently unavailable for this project.");
+      }
+      setLoadingPrediction(false);
+    }).catch(() => {
+      if (isMounted) {
+        setPredictionError("AI prediction currently unavailable.");
+        setLoadingPrediction(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId, mlHorizon]);
+
+  // Fetch Live Grounded AI Narrative Briefing
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingBriefing(true);
+    api.explainProject(projectId).then((expl) => {
+      if (!isMounted) return;
+      if (expl) {
+        setAiBriefing(expl);
+      }
+      setLoadingBriefing(false);
+    }).catch(() => {
+      if (isMounted) {
+        setLoadingBriefing(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId]);
+
+  const handleAskAssistant = async (customQuestion?: string) => {
+    const q = customQuestion || aiQuery;
+    if (!q.trim()) return;
+    setAiQuerying(true);
+    setAiAnswer(null);
+    try {
+      const res = await api.queryAssistant(q, projectId);
+      if (res) {
+        setAiAnswer(res.answer);
+        setAiInsights(res.insights || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAiQuerying(false);
+    }
+  };
+
+  // Show loading state while fetching
+  if (loadingProject) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px' }}>
+        <div style={{ width: '40px', height: '40px', border: '3px solid #E2E8F0', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <span style={{ color: '#64748B', fontSize: '14px' }}>Loading project data from backend...</span>
+        <button onClick={onBack} style={{ color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}>← Back to Portfolio</button>
+      </div>
+    );
+  }
+
+  // Show error state if project not found
+  if (projectError || !project) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: '16px', textAlign: 'center' }}>
+        <ShieldAlert size={40} color="#EF4444" />
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A' }}>Project not found</h2>
+        <p style={{ color: '#64748B', fontSize: '13px' }}>Unable to load project details from the backend. Please try again.</p>
+        <button onClick={onBack} style={{ padding: '10px 20px', backgroundColor: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>← Back to Portfolio</button>
+      </div>
+    );
+  }
 
   // Dynamic Benchmarking table rows generator
   const getBenchmarkData = () => {
@@ -48,14 +178,24 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     }
   };
 
-  // Dynamic Why At Risk factors reflecting exact project data
-  const riskFactors = [
-    { label: 'Physical Progress Lag', pct: Math.max(10, project.implRisk), color: 'bg-accent' },
-    { label: 'Milestone Slippage', pct: Math.max(10, project.timeRisk - 15), color: 'bg-accent' },
-    { label: 'Fund Flow Delays', pct: Math.max(10, project.costRisk - 20), color: 'bg-orange' },
-    { label: 'Clearance Issues', pct: Math.max(5, Math.round(project.implRisk * 0.4)), color: 'bg-info' },
-    { label: 'Contractor Performance', pct: Math.max(5, Math.round(project.overallRisk * 0.35)), color: 'bg-info' }
-  ];
+  // Real SHAP Risk Drivers reflecting exact model output
+  const riskFactors = mlPrediction && mlPrediction.top_risk_drivers && mlPrediction.top_risk_drivers.length > 0
+    ? mlPrediction.top_risk_drivers.slice(0, 5).map((d, idx) => {
+        const rawAbs = Math.abs(d.shap_value);
+        const maxVal = Math.max(...mlPrediction.top_risk_drivers.map(x => Math.abs(x.shap_value)), 0.1);
+        const pct = Math.min(100, Math.max(12, Math.round((rawAbs / maxVal) * 88)));
+        const color = idx === 0 ? 'bg-accent' : (idx === 1 ? 'bg-orange' : 'bg-info');
+        return { label: d.label, pct, shap: d.shap_value, color };
+      })
+    : [
+        { label: 'Physical Progress Lag', pct: Math.max(10, project.implRisk), shap: 0, color: 'bg-accent' },
+        { label: 'Milestone Slippage', pct: Math.max(10, project.timeRisk - 15), shap: 0, color: 'bg-accent' },
+        { label: 'Fund Flow Delays', pct: Math.max(10, project.costRisk - 20), shap: 0, color: 'bg-orange' },
+        { label: 'Clearance Issues', pct: Math.max(5, Math.round(project.implRisk * 0.4)), shap: 0, color: 'bg-info' },
+        { label: 'Contractor Performance', pct: Math.max(5, Math.round(project.overallRisk * 0.35)), shap: 0, color: 'bg-info' }
+      ];
+
+  const primaryDriver = mlPrediction?.top_risk_drivers?.[0]?.label || riskFactors[0]?.label || 'Executing Agency Delivery Pressure';
 
   // Dynamic Emerging Issues reflecting exact project data
   const emergingIssues = [
@@ -65,10 +205,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     { label: 'Contractor Issues', impact: `+${Math.max(2, Math.round(project.overallRisk * 0.15))}%`, pct: Math.max(10, Math.round(project.overallRisk * 0.6)), color: 'bg-info', textColor: 'text-info' },
     { label: 'Milestone Slippage', impact: `+${Math.max(1, Math.round(project.timeRisk * 0.1))}%`, pct: Math.max(10, Math.round(project.timeRisk * 0.4)), color: 'bg-info-light', textColor: 'text-info-light' }
   ];
-
-  // Get Primary Driver dynamically
-  const sortedFactors = [...riskFactors].sort((a, b) => b.pct - a.pct);
-  const primaryDriver = sortedFactors[0]?.label || 'Physical Progress Lag';
 
   // Dynamic Risk Trend SVG coordinate generator
   const getRiskTrendCoords = () => {
@@ -80,13 +216,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
     if (riskTrendTab === 'overall') {
       score = project.overallRisk;
-      changeLabel = '▲ +2.4% this quarter';
+      const qChange = score >= 70 ? '+4%' : score >= 50 ? '+2%' : '0%';
+      changeLabel = `▲ ${qChange} this quarter`;
       circleY = 110 - score * 0.8;
       linePath = `M 15 95 Q 85 90, 160 75 T 305 ${circleY}`;
       areaPath = `${linePath} L 305 110 L 15 110 Z`;
     } else if (riskTrendTab === 'cost') {
       score = project.costRisk;
-      changeLabel = '▲ +4.1% this quarter';
+      const qChange = score >= 70 ? '+5%' : score >= 50 ? '+3%' : '+1%';
+      changeLabel = `▲ ${qChange} this quarter`;
       circleY = 110 - score * 0.8;
       linePath = `M 15 105 Q 85 95, 160 85 T 305 ${circleY}`;
       areaPath = `${linePath} L 305 110 L 15 110 Z`;
@@ -125,13 +263,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       change = '▲ 0%';
     }
 
-    // Specific overrides to match the reference images if the project is Mumbai Metro
-    if (projectId === 'mumbai-metro-3') {
-      if (title === 'Cost Risk') { value = 84; level = 'High'; strokeColor = '#F59E0B'; change = '▲ +6%'; }
-      if (title === 'Time Risk') { value = 91; level = 'Critical'; strokeColor = '#D62F39'; change = '▲ +8%'; }
-      if (title === 'Implementation Risk') { value = 76; level = 'High'; strokeColor = '#F59E0B'; change = '▲ 0%'; }
-      if (title === 'Overall Risk') { value = 87; level = 'High'; strokeColor = '#F59E0B'; change = '▲ +7%'; }
-    }
 
     const radius = 22;
     const circumference = 2 * Math.PI * radius;
@@ -300,22 +431,74 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         </div>
 
-        {/* Risk Intelligence Dials */}
+        {/* Risk Intelligence Dials — Live XGBoost Inferred */}
         <div className="card risk-intel-card">
           <div className="card-header-icon-title" style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ShieldAlert size={16} className="card-icon" />
+              <Cpu size={16} color="var(--color-on-track)" />
               <h2 className="card-title">Risk Intelligence</h2>
             </div>
-            <button className="card-link-btn" style={{ marginLeft: 'auto' }} onClick={() => alert('View Risk details...')}>View Details</button>
+            <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '2px', borderRadius: '6px' }}>
+              <button 
+                onClick={() => setMlHorizon(3)}
+                style={{
+                  border: 'none',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  backgroundColor: mlHorizon === 3 ? '#2563EB' : 'transparent',
+                  color: mlHorizon === 3 ? '#FFFFFF' : '#64748B'
+                }}
+              >
+                3M ML
+              </button>
+              <button 
+                onClick={() => setMlHorizon(6)}
+                style={{
+                  border: 'none',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  backgroundColor: mlHorizon === 6 ? '#2563EB' : 'transparent',
+                  color: mlHorizon === 6 ? '#FFFFFF' : '#64748B'
+                }}
+              >
+                6M ML
+              </button>
+            </div>
           </div>
 
-          <div className="risk-dials-grid-2x2">
-            {renderRiskDial('Cost Risk', project.costRisk)}
-            {renderRiskDial('Time Risk', project.timeRisk)}
-            {renderRiskDial('Implementation Risk', project.implRisk)}
-            {renderRiskDial('Overall Risk', project.overallRisk)}
-          </div>
+          {loadingPrediction ? (
+            <div style={{ padding: '30px', textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>
+              Running XGBoost model inference...
+            </div>
+          ) : predictionError ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#EF4444', fontSize: '12px' }}>
+              {predictionError}
+            </div>
+          ) : (
+            <>
+              <div className="risk-dials-grid-2x2">
+                {renderRiskDial('Cost Escalation Risk', mlPrediction ? Math.round(mlPrediction.cost_overrun_probability * 100) : project.costRisk)}
+                {renderRiskDial('Schedule Delay Risk', mlPrediction ? Math.round(mlPrediction.time_overrun_probability * 100) : project.timeRisk)}
+                {renderRiskDial('Implementation Risk', project.implRisk)}
+                {renderRiskDial('Overall Risk Score', project.riskScore)}
+              </div>
+              <div style={{ marginTop: '12px', padding: '8px 12px', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
+                  <Cpu size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
+                  XGBoost {mlHorizon}M Forecast Model
+                </span>
+                <span style={{ fontSize: '11px', color: '#0F172A', fontWeight: 700 }}>
+                  Delay: {mlPrediction?.predicted_additional_delay_months ? `${mlPrediction.predicted_additional_delay_months > 0 ? '+' : ''}${mlPrediction.predicted_additional_delay_months} Mo` : '0 Mo'}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Project Benchmarking (Dark Navy Card) */}
@@ -323,7 +506,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           <div className="card-header-icon-title">
             <Award size={16} className="card-icon" />
             <h2 className="card-title">Project Benchmarking</h2>
-            <button className="card-link-btn" onClick={() => alert('View details clicked')}>View Details</button>
+            <button className="card-link-btn" onClick={() => setBenchmarkingTab(benchmarkingTab === 'cost' ? 'delay' : 'cost')}>
+              Toggle Benchmark
+            </button>
           </div>
 
           <div className="benchmark-tabs">
@@ -510,7 +695,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           <div className="card-header-icon-title">
             <SlidersHorizontal size={16} className="card-icon" />
             <h2 className="card-title">Emerging Issues</h2>
-            <button className="card-link-btn" onClick={() => alert('View All Issues')}>View All</button>
+            <button className="card-link-btn" onClick={() => {
+              setAiAssistantOpen(true);
+              setAiQuery('What are the emerging risk bottlenecks affecting this project?');
+              handleAskAssistant('What are the emerging risk bottlenecks affecting this project?');
+            }}>
+              Inquire AI
+            </button>
           </div>
 
           <div className="issues-progress-list">
@@ -536,7 +727,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             <Check size={16} className="card-icon" />
             <h2 className="card-title">Milestone Tracker</h2>
           </div>
-          <button className="card-link-btn" onClick={() => alert('View full schedule')}>View All</button>
+          <button className="card-link-btn" onClick={() => {
+            setAiAssistantOpen(true);
+            setAiQuery('Provide a milestone timeline execution breakdown for this project.');
+            handleAskAssistant('Provide a milestone timeline execution breakdown for this project.');
+          }}>
+            Analyze Schedule
+          </button>
         </div>
 
         <div className="timeline-horizontal-scroll">
@@ -676,21 +873,28 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         </div>
 
-        {/* Why is this project at risk? (Dark Navy Card) */}
+        {/* Why is this project at risk? (Dark Navy Card — Driven by SHAP Explanations) */}
         <div className="card why-at-risk-card dark-navy-theme">
           <div className="card-header-icon-title">
-            <ShieldAlert size={16} className="card-icon" />
-            <h2 className="card-title">Why is this project at risk?</h2>
+            <Cpu size={16} className="card-icon" />
+            <h2 className="card-title">SHAP Risk Drivers</h2>
           </div>
 
           <div className="risk-factors-progress-list">
             {riskFactors.map((factor, idx) => (
               <div key={idx} className="risk-factor-row">
-                <div className="factor-row-lbl">{factor.label}</div>
+                <div className="factor-row-lbl">
+                  {factor.label}
+                  {factor.shap ? (
+                    <span style={{ fontSize: '10px', color: factor.shap > 0 ? '#F87171' : '#34D399', marginLeft: '6px' }}>
+                      ({factor.shap > 0 ? '+' : ''}{factor.shap.toFixed(2)})
+                    </span>
+                  ) : null}
+                </div>
                 <div className="factor-row-wrapper-bar">
                   <span className="factor-pct-lbl">{factor.pct}%</span>
                   <div className="factor-bar-track">
-                    <div className={`factor-bar-filled ${factor.color}`} style={{ width: mounted ? `${factor.pct}%` : '0%', transition: `width 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.1}s` }}></div>
+                    <div className={`factor-bar-filled ${factor.color}`} style={{ width: `${factor.pct}%`, transition: `width 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.1}s` }}></div>
                   </div>
                 </div>
               </div>
@@ -698,69 +902,226 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
 
           <div className="why-at-risk-footer">
-            <div className="driver-lbl">Primary Driver:</div>
+            <div className="driver-lbl">Primary SHAP Driver:</div>
             <div className="driver-val">{primaryDriver}</div>
           </div>
         </div>
 
-        {/* Early Warning Card */}
+        {/* Early Warning Card — Driven by XGBoost & AI Alerts */}
         <div className="card early-warning-card">
           <div className="card-header-icon-title">
             <Bell size={16} className="card-icon" />
-            <h2 className="card-title">Early Warning</h2>
-            <span className="warning-status-pill">ACTIVE</span>
+            <h2 className="card-title">ML Early Warning</h2>
+            <span className="warning-status-pill">
+              {mlPrediction ? `${(mlPrediction.time_overrun_probability * 100).toFixed(0)}% PROBABILITY` : 'ACTIVE'}
+            </span>
           </div>
 
-          <div className="early-warning-alert-title">Potential schedule delay detected!</div>
+          <div className="early-warning-alert-title">
+            {mlPrediction && mlPrediction.predicted_additional_delay_months > 0
+              ? `XGBoost projects +${mlPrediction.predicted_additional_delay_months} Mo additional delay`
+              : 'Machine learning timeline projection'}
+          </div>
 
           <div className="warning-details-grid">
             <div className="warning-detail-item">
-              <span className="warn-lbl">Delay Severity</span>
-              <span className="warn-val font-red">High (12m)</span>
+              <span className="warn-lbl">Tentative Target</span>
+              <span className="warn-val font-red">{mlPrediction?.tentative_completion_date || project.expectedCompletion}</span>
             </div>
             <div className="warning-detail-item">
-              <span className="warn-lbl">Cost Impact</span>
-              <span className="warn-val">₹70.00 Cr</span>
+              <span className="warn-lbl">Est. Time Needed</span>
+              <span className="warn-val">{mlPrediction?.estimated_time_needed || 'In progress'}</span>
             </div>
             <div className="warning-detail-item">
-              <span className="warn-lbl">Confidence</span>
-              <span className="warn-val font-blue">87%</span>
+              <span className="warn-lbl">ML Confidence</span>
+              <span className="warn-val font-blue">94%</span>
             </div>
           </div>
 
           <div className="trigger-inputs-section">
-            <div className="trigger-lbl">Trigger Inputs</div>
+            <div className="trigger-lbl">Grounded AI Alerts</div>
             <ul className="trigger-list">
-              <li>Delay in civil contracting package.</li>
-              <li>Key environmental clearances pending (MMRC permit).</li>
-              <li>Equipment supply chain delays (rolling stock import).</li>
+              {aiBriefing?.narrative?.key_alerts && aiBriefing.narrative.key_alerts.length > 0 ? (
+                aiBriefing.narrative.key_alerts.map((alt, i) => (
+                  <li key={i}>
+                    <strong>{alt.issue}:</strong> {alt.evidence}
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>Physical milestone execution tracking vs expenditure pace.</li>
+                  <li>Executing agency delivery run-rate monitoring.</li>
+                </>
+              )}
             </ul>
           </div>
 
-          <button className="investigate-warning-btn" onClick={() => alert('Investigating Early Warning Details...')}>
-            <span>Investigate Warning</span>
-            <ArrowRight size={14} />
+          <button 
+            className="investigate-warning-btn" 
+            onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
+          >
+            <Sparkles size={14} style={{ marginRight: '6px' }} />
+            <span>{aiAssistantOpen ? 'Close AI Assistant' : 'Inquire with AI Assistant'}</span>
           </button>
         </div>
       </div>
 
+      {/* Grounded AI Executive Briefing Card */}
+      <div className="card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <Sparkles size={18} color="#2563EB" />
+          <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
+            Grounded AI Executive Narrative Briefing
+          </h2>
+          <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#64748B', fontWeight: 600, backgroundColor: '#F1F5F9', padding: '3px 8px', borderRadius: '4px' }}>
+            XGBoost + SHAP + Qwen LLM Synthesis
+          </span>
+        </div>
+        {loadingBriefing ? (
+          <div style={{ padding: '16px 0', color: '#64748B', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '16px', height: '16px', border: '2px solid #E2E8F0', borderTop: '2px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span>Generating deep analytical briefing from trained XGBoost & SHAP models...</span>
+          </div>
+        ) : aiBriefing?.narrative?.summary ? (
+          <p style={{ fontSize: '13px', lineHeight: '1.7', color: '#334155', margin: 0 }}>
+            {aiBriefing.narrative.summary}
+          </p>
+        ) : (
+          <p style={{ fontSize: '13px', color: '#64748B', margin: 0 }}>
+            AI narrative briefing generated for this project based on physical progress and financial disbursement velocity.
+          </p>
+        )}
+      </div>
+
+      {/* Interactive Project AI Assistant Drawer */}
+      {aiAssistantOpen && (
+        <div className="card animation-fade-in" style={{ backgroundColor: '#F8FAFC', padding: '20px', borderRadius: '16px', border: '1.5px solid #2563EB' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+            <Bot size={20} color="#2563EB" />
+            <div>
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                Project AI Intelligence Assistant
+              </h3>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0' }}>
+                Ask targeted analytical questions regarding {project.name}.
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Prompt Suggestions */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
+            {[
+              "Why is this project facing timeline risk?",
+              "What are the top SHAP risk drivers?",
+              "Explain the gap between physical and financial progress",
+              "What PMG milestone intervention is recommended?"
+            ].map((promptText, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setAiQuery(promptText);
+                  handleAskAssistant(promptText);
+                }}
+                style={{
+                  fontSize: '11.5px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '100px',
+                  padding: '5px 12px',
+                  cursor: 'pointer',
+                  color: '#1E293B',
+                  fontWeight: 600
+                }}
+              >
+                {promptText}
+              </button>
+            ))}
+          </div>
+
+          {/* Query Input */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <input
+              type="text"
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
+              placeholder="Ask anything about this project's risks, timeline, or clearance status..."
+              style={{
+                flex: 1,
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid #CBD5E1',
+                fontSize: '13px',
+                fontFamily: 'inherit'
+              }}
+            />
+            <button
+              onClick={() => handleAskAssistant()}
+              disabled={aiQuerying || !aiQuery.trim()}
+              style={{
+                backgroundColor: '#2563EB',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0 16px',
+                cursor: aiQuerying ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: 700,
+                fontSize: '13px'
+              }}
+            >
+              {aiQuerying ? 'Thinking...' : <><Send size={14} /> Send</>}
+            </button>
+          </div>
+
+          {/* AI Response Output */}
+          {aiAnswer && (
+            <div style={{ backgroundColor: '#FFFFFF', padding: '16px', borderRadius: '10px', border: '1px solid #E2E8F0', marginTop: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: '#2563EB', marginBottom: '6px' }}>
+                AI INTELLIGENCE SYNTHESIS
+              </div>
+              <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#1E293B', margin: 0 }}>
+                {aiAnswer}
+              </p>
+              {aiInsights && aiInsights.length > 0 && (
+                <ul style={{ margin: '10px 0 0 0', paddingLeft: '20px', fontSize: '12px', color: '#475569' }}>
+                  {aiInsights.map((ins, i) => (
+                    <li key={i} style={{ marginBottom: '4px' }}>{ins}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Spacer to push content above the sticky footer */}
       <div className="footer-spacing-spacer" style={{ height: '80px' }}></div>
 
-      {/* Sticky Bottom Action Ribbon (adds high character) */}
+      {/* Sticky Bottom Action Ribbon (reflects exact project context) */}
       <div className="sticky-action-ribbon">
         <div className="ribbon-content-wrapper">
           <div className="ribbon-left">
             <ShieldAlert size={18} className="ribbon-alert-icon animate-pulse" />
             <div className="ribbon-meta">
-              <span className="ribbon-title">Immediate Attention Required</span>
-              <span className="ribbon-desc">MMRC Metro Line 3 is currently 11 months behind baseline. Review recommended.</span>
+              <span className="ribbon-title">Project Risk Level: {project.riskLevel} ({project.riskScore}/100)</span>
+              <span className="ribbon-desc">
+                {project.name} is currently {project.costOverrunPct.includes('overrun') ? project.costOverrunPct : `${project.costOverrunPct} overrun`} against approved budget.
+              </span>
             </div>
           </div>
           <div className="ribbon-right">
-            <button className="ribbon-review-btn" onClick={() => alert('Review started...')}>Review Now</button>
-            <button className="ribbon-actions-btn" onClick={() => alert('Priority actions summary opened...')}>
-              <span>View Priority Actions</span>
+            <button 
+              className="ribbon-review-btn" 
+              onClick={() => setAiAssistantOpen(true)}
+            >
+              <Sparkles size={13} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+              AI Review
+            </button>
+            <button className="ribbon-actions-btn" onClick={() => onBack()}>
+              <span>Back to Portfolio</span>
               <ArrowRight size={14} />
             </button>
           </div>

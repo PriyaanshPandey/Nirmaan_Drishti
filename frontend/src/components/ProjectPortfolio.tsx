@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
-import { projectsData } from '../data/projectsData';
+import React, { useState, useEffect } from 'react';
+import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { Project } from '../data/projectsData';
+import { api } from '../services/api';
 import './ProjectPortfolio.css';
 
 interface ProjectPortfolioProps {
@@ -9,31 +9,79 @@ interface ProjectPortfolioProps {
 }
 
 export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProject }) => {
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
+  const [totalProjects, setTotalProjects] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 20;
+
+  const [showNewProjectModal, setShowNewProjectModal] = useState<boolean>(false);
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectCode, setNewProjectCode] = useState('');
+  const [newProjectCost, setNewProjectCost] = useState('');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMinistry, setSelectedMinistry] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
 
-  // Filters setup
-  const ministries = ['All', 'Railways', 'Ministry of Railways'];
-  const sectors = ['All', 'Metro Rail', 'High Speed Rail', 'Freight Corridor'];
-  const statuses = ['All', 'ON TRACK', 'DELAYED', 'CRITICAL'];
+  const [ministries, setMinistries] = useState<string[]>(['All']);
+  const [sectors, setSectors] = useState<string[]>(['All']);
 
-  // Filter projects
-  const filteredProjects = projectsData.filter((project) => {
-    const matchesSearch =
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.agency.toLowerCase().includes(searchQuery.toLowerCase());
+  // Fetch filter options (Ministries & Sectors) from backend
+  useEffect(() => {
+    let isMounted = true;
+    api.getMinistries().then((res) => {
+      if (isMounted && res && res.length > 0) {
+        setMinistries(['All', ...res.map(m => m.name)]);
+      }
+    });
 
+    api.getSectors().then((res) => {
+      if (isMounted && res && res.length > 0) {
+        setSectors(['All', ...res.map(s => s.name)]);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch paginated projects from backend
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    setError(false);
+
+    api.getProjects(page, pageSize, searchQuery, undefined, undefined, selectedStatus !== 'All' ? selectedStatus : undefined)
+      .then((res) => {
+        if (!isMounted) return;
+        setProjectsList(res.items);
+        setTotalProjects(res.total);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page, searchQuery, selectedStatus]);
+
+  // In-memory filter for ministry and sector if selected
+  const filteredProjects = projectsList.filter((project) => {
     const matchesMinistry = selectedMinistry === 'All' || project.ministry === selectedMinistry;
     const matchesSector = selectedSector === 'All' || project.sector === selectedSector;
-    const matchesStatus = selectedStatus === 'All' || project.scheduleStatus === selectedStatus;
-
-    return matchesSearch && matchesMinistry && matchesSector && matchesStatus;
+    return matchesMinistry && matchesSector;
   });
 
-  const getStatusBadge = (status: Project['scheduleStatus']) => {
+  const getStatusBadge = (status: Project['scheduleStatus'] | string) => {
     switch (status) {
       case 'CRITICAL':
         return <span className="portfolio-badge badge-critical-status">CRITICAL</span>;
@@ -42,200 +90,302 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
       case 'ON TRACK':
         return <span className="portfolio-badge badge-ontrack-status">ON TRACK</span>;
       default:
-        return null;
+        return <span className="portfolio-badge badge-ontrack-status">{status || 'ACTIVE'}</span>;
     }
   };
 
-  const getRiskIndicator = (score: number) => {
-    let color = '#2F6BF4'; // Low risk
-    if (score >= 80) color = '#D62F39'; // Critical risk
-    else if (score >= 60) color = '#4A5673'; // Medium/High risk
-    
-    return (
-      <div className="risk-indicator-bar-wrapper">
-        <div 
-          className="risk-indicator-fill" 
-          style={{ width: `${score}%`, backgroundColor: color }}
-        ></div>
-      </div>
-    );
-  };
+  const totalPages = Math.ceil(totalProjects / pageSize) || 1;
 
   return (
-    <div className="portfolio-container animation-fade-in">
-      {/* Portfolio Title & CTA section */}
-      <div className="portfolio-header">
-        <div>
-          <h1 className="portfolio-title">Project Portfolio</h1>
-          <p className="portfolio-subtitle">
-            Displaying {filteredProjects.length} active infrastructure projects across {ministries.length - 1} ministries.
-          </p>
+    <div className="project-portfolio-page">
+      {/* Top Header Controls */}
+      <div className="portfolio-top-bar">
+        <div className="portfolio-title-section">
+          <h1 className="portfolio-main-title">Project Portfolio</h1>
+          <span className="portfolio-total-badge">{totalProjects} Projects</span>
         </div>
-        <div className="portfolio-cta-group">
-          <button className="export-csv-btn" onClick={() => alert('Exporting Portfolio CSV...')}>
-            <Download size={14} />
-            <span>Export CSV</span>
+        <div className="portfolio-action-buttons">
+          <button className="portfolio-btn btn-export" onClick={() => api.exportActionPlan()}>
+            <Download size={15} />
+            <span>Export View</span>
           </button>
-          <button className="new-project-btn" onClick={() => alert('Add new project...')}>
-            <Plus size={14} />
+          <button className="portfolio-btn btn-add-project" onClick={() => setShowNewProjectModal(true)}>
+            <Plus size={15} />
             <span>New Project</span>
           </button>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="filter-card">
-        <div className="search-box-wrapper">
+      {/* Filter and Search Bar Section */}
+      <div className="portfolio-filters-card">
+        <div className="portfolio-search-input-wrapper">
           <Search size={16} className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Search projects by name, location, agency..." 
+          <input
+            type="text"
+            placeholder="Search projects by name, ID, agency or location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
+            className="portfolio-search-input"
           />
         </div>
 
-        <div className="filters-row">
-          <div className="filter-select-group">
-            <div className="select-container">
-              <label className="select-label">Ministry</label>
-              <select 
-                value={selectedMinistry} 
-                onChange={(e) => setSelectedMinistry(e.target.value)}
-                className="filter-select"
-              >
-                {ministries.map((m) => (
-                  <option key={m} value={m}>{m === 'All' ? 'All Ministries' : m}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="select-container">
-              <label className="select-label">Sector</label>
-              <select 
-                value={selectedSector} 
-                onChange={(e) => setSelectedSector(e.target.value)}
-                className="filter-select"
-              >
-                {sectors.map((s) => (
-                  <option key={s} value={s}>{s === 'All' ? 'All Sectors' : s}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="select-container">
-              <label className="select-label">Status</label>
-              <select 
-                value={selectedStatus} 
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="filter-select"
-              >
-                {statuses.map((st) => (
-                  <option key={st} value={st}>{st === 'All' ? 'All Statuses' : st}</option>
-                ))}
-              </select>
-            </div>
+        <div className="portfolio-dropdowns-group">
+          <div className="portfolio-filter-select-wrapper">
+            <SlidersHorizontal size={14} className="filter-select-icon" />
+            <select
+              value={selectedMinistry}
+              onChange={(e) => setSelectedMinistry(e.target.value)}
+              className="portfolio-filter-select"
+            >
+              {ministries.map((m, idx) => (
+                <option key={idx} value={m}>
+                  {m === 'All' ? 'All Ministries' : m}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <button className="more-filters-btn" onClick={() => alert('More filters toggled')}>
-            <SlidersHorizontal size={14} />
-            <span>More Filters</span>
-          </button>
+          <div className="portfolio-filter-select-wrapper">
+            <select
+              value={selectedSector}
+              onChange={(e) => setSelectedSector(e.target.value)}
+              className="portfolio-filter-select"
+            >
+              {sectors.map((s, idx) => (
+                <option key={idx} value={s}>
+                  {s === 'All' ? 'All Sectors' : s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="portfolio-filter-select-wrapper">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="portfolio-filter-select"
+            >
+              <option value="All">All Schedule Statuses</option>
+              <option value="ON TRACK">On Track</option>
+              <option value="DELAYED">Delayed</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Projects Table */}
-      <div className="table-card">
-        <div className="portfolio-table-wrapper">
-          <table className="portfolio-table">
-            <thead>
-              <tr>
-                <th style={{ width: '35%' }}>PROJECT NAME</th>
-                <th style={{ width: '12%' }}>MINISTRY</th>
-                <th style={{ width: '15%' }}>COST (CR)</th>
-                <th style={{ width: '13%' }}>PHYSICAL %</th>
-                <th style={{ width: '13%' }}>FINANCIAL %</th>
-                <th style={{ width: '12%' }}>SCHEDULE</th>
-                <th style={{ width: '10%', textAlign: 'center' }}>RISK</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjects.length > 0 ? (
-                filteredProjects.map((project) => (
-                  <tr 
-                    key={project.id} 
-                    className="portfolio-row" 
-                    onClick={() => onSelectProject(project.id)}
-                  >
-                    <td>
-                      <div className="project-name-primary">{project.name}</div>
-                      <div className="project-name-sub">
-                        {project.type} • {project.location}
-                      </div>
-                    </td>
-                    <td className="td-ministry-text">{project.ministry}</td>
-                    <td>
-                      <div className="project-cost-val">{project.costLabel}</div>
-                      <div className={`project-cost-sub ${project.costSubtext.includes('▲') || project.costSubtext.includes('+') ? 'cost-alert' : ''}`}>
-                        {project.costSubtext}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="progress-cell-wrapper">
-                        <span className="progress-cell-val">{project.progressPhysical}%</span>
-                        <div className="progress-cell-bar-bg">
-                          <div 
-                            className="progress-cell-bar-fill" 
-                            style={{ width: `${project.progressPhysical}%`, backgroundColor: '#090B2E' }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="progress-cell-wrapper">
-                        <span className="progress-cell-val">{project.progressFinancial}%</span>
-                        <div className="progress-cell-bar-bg">
-                          <div 
-                            className="progress-cell-bar-fill" 
-                            style={{ width: `${project.progressFinancial}%`, backgroundColor: '#4A5673' }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{getStatusBadge(project.scheduleStatus)}</td>
-                    <td style={{ verticalAlign: 'middle' }}>{getRiskIndicator(project.riskScore)}</td>
-                  </tr>
-                ))
-              ) : (
+      {/* Table Card Section */}
+      <div className="portfolio-table-card">
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px' }}>
+            <div style={{ width: '36px', height: '36px', border: '3px solid #E2E8F0', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <span style={{ color: '#64748B', fontSize: '14px' }}>Loading projects from database...</span>
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#DC2626' }}>
+            Failed to load projects. Please ensure backend is running.
+          </div>
+        ) : (
+          <div className="portfolio-table-responsive-container">
+            <table className="portfolio-custom-table">
+              <thead>
                 <tr>
-                  <td colSpan={7} className="table-empty-state">
-                    No active infrastructure projects matches your search/filter criteria.
-                  </td>
+                  <th className="th-project-id">PROJECT ID</th>
+                  <th className="th-project-name">PROJECT NAME</th>
+                  <th className="th-agency">AGENCY</th>
+                  <th className="th-location">STATE</th>
+                  <th className="th-cost-approved">APPROVED</th>
+                  <th className="th-cost-revised">REVISED</th>
+                  <th className="th-cost-overrun">OVERRUN</th>
+                  <th className="th-physical-progress">PROGRESS</th>
+                  <th className="th-schedule-status">STATUS</th>
+                  <th className="th-actions">ACTION</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredProjects.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                      No infrastructure projects found matching the criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProjects.map((project) => (
+                    <tr 
+                      key={project.id} 
+                      className="portfolio-table-row"
+                      onClick={() => onSelectProject(project.id)}
+                    >
+                      <td className="td-project-id">{project.id}</td>
+                      <td className="td-project-name">
+                        <div className="project-primary-name">{project.name}</div>
+                        <div className="project-sub-meta">{project.sector} • {project.ministry}</div>
+                      </td>
+                      <td className="td-agency">{project.agency}</td>
+                      <td className="td-location">{project.location}</td>
+                      <td className="td-cost-approved">{project.costApproved}</td>
+                      <td className="td-cost-revised">{project.costRevised}</td>
+                      <td className="td-cost-overrun" style={{ fontWeight: 700, color: project.costOverrunPct.includes('-') ? '#16A34A' : '#DC2626' }}>
+                        {project.costOverrunPct}
+                      </td>
+                      <td className="td-physical-progress">
+                        <div className="progress-cell-group">
+                          <div className="progress-bar-track">
+                            <div 
+                              className="progress-bar-fill"
+                              style={{ width: `${project.progressPhysical}%` }}
+                            />
+                          </div>
+                          <span className="progress-text-pct">{project.progressPhysical}%</span>
+                        </div>
+                      </td>
+                      <td className="td-schedule-status">
+                        {getStatusBadge(project.scheduleStatus)}
+                      </td>
+                      <td className="td-actions" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                          className="view-project-details-btn"
+                          onClick={() => onSelectProject(project.id)}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        {/* Table Pagination */}
-        <div className="portfolio-pagination">
-          <div className="pagination-info">
-            Showing 1-{filteredProjects.length} of {filteredProjects.length} projects
+        {/* Pagination Section */}
+        {totalPages > 1 && (
+          <div className="portfolio-pagination-bar">
+            <span className="pagination-info">
+              Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalProjects)} of {totalProjects} projects
+            </span>
+            <div className="pagination-controls">
+              <button 
+                className="page-btn" 
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button className="page-btn active">{page}</button>
+              <button 
+                className="page-btn" 
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
-          <div className="pagination-controls">
-            <button className="pagination-arrow-btn" disabled>
-              <ChevronLeft size={14} />
-            </button>
-            <button className="pagination-num-btn active">1</button>
-            <button className="pagination-num-btn" disabled>2</button>
-            <button className="pagination-num-btn" disabled>3</button>
-            <button className="pagination-arrow-btn" disabled>
-              <ChevronRight size={14} />
-            </button>
+        )}
+      </div>
+
+      {/* New Project Modal */}
+      {showNewProjectModal && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}
+          onClick={() => setShowNewProjectModal(false)}
+        >
+          <div 
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '16px',
+              maxWidth: '550px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
+                Onboard New Infrastructure Project
+              </h2>
+              <button 
+                onClick={() => setShowNewProjectModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#64748B' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '16px' }}>
+              Projects onboarded here are synchronized to PostgreSQL and immediately become available for XGBoost Risk Assessment and SHAP Explainability.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>Project Name</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. National Corridor Expansion Phase IV"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>Project Code</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. PRJ-9901"
+                    value={newProjectCode}
+                    onChange={(e) => setNewProjectCode(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>Approved Cost (₹ Cr)</label>
+                  <input 
+                    type="number" 
+                    placeholder="e.g. 1250"
+                    value={newProjectCost}
+                    onChange={(e) => setNewProjectCost(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
+              <button 
+                onClick={() => setShowNewProjectModal(false)}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#F8FAFC', color: '#475569', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowNewProjectModal(false);
+                }}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#2563EB', color: '#FFFFFF', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Onboard Project
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
