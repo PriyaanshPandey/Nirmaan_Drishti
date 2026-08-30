@@ -56,9 +56,9 @@ export const RiskTrendChart: React.FC = () => {
   return (
     <div className="card risk-trend-card">
       <div className="trend-header">
-        <div>
+        <div className="trend-title-col">
           <h2 className="card-title">National Risk Trend</h2>
-          <p className="card-subtitle">Trajectory Analysis (Trailing 12 Mo)</p>
+          <p className="card-subtitle">Trajectory Analysis (12 Mo)</p>
         </div>
 
         {/* Tab Selection */}
@@ -104,7 +104,7 @@ export const RiskTrendChart: React.FC = () => {
           </div>
         ) : (
           <>
-            <svg viewBox="0 0 320 120" className="trend-svg">
+            <svg viewBox="0 0 340 160" className="trend-svg">
               <defs>
                 <linearGradient id="trendGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
@@ -113,10 +113,10 @@ export const RiskTrendChart: React.FC = () => {
               </defs>
 
               {/* Grid lines */}
-              <line x1="15" y1="20" x2="305" y2="20" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-              <line x1="15" y1="55" x2="305" y2="55" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-              <line x1="15" y1="90" x2="305" y2="90" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-              <line x1="15" y1="110" x2="305" y2="110" stroke="#E2E8F0" strokeWidth="1" />
+              <line x1="20" y1="35" x2="320" y2="35" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+              <line x1="20" y1="65" x2="320" y2="65" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+              <line x1="20" y1="95" x2="320" y2="95" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+              <line x1="20" y1="130" x2="320" y2="130" stroke="#E2E8F0" strokeWidth="1" />
 
               {/* Gradient Fill under curve */}
               <path d={currentData.fillPath} fill="url(#trendGradient)" />
@@ -142,7 +142,7 @@ export const RiskTrendChart: React.FC = () => {
                         x1={pt.x}
                         y1={pt.y}
                         x2={pt.x}
-                        y2="110"
+                        y2="130"
                         stroke="#94A3B8"
                         strokeWidth="1"
                         strokeDasharray="2 2"
@@ -171,14 +171,14 @@ export const RiskTrendChart: React.FC = () => {
                       style={{ cursor: 'pointer' }}
                     />
 
-                    {/* X-axis labels */}
+                    {/* X-axis labels neatly below baseline */}
                     <text
                       x={pt.x}
-                      y="120"
+                      y="148"
                       textAnchor="middle"
                       fontSize="8.5"
-                      fill={isHovered ? '#0F172A' : '#94A3B8'}
-                      fontWeight={isHovered ? '600' : 'normal'}
+                      fill={isHovered ? '#0F172A' : '#64748B'}
+                      fontWeight={isHovered ? '700' : '500'}
                     >
                       {pt.label}
                     </text>
@@ -192,8 +192,8 @@ export const RiskTrendChart: React.FC = () => {
               <div
                 className="trend-tooltip"
                 style={{
-                  left: `${(currentData.points[hoveredPointIdx].x / 320) * 100}%`,
-                  top: `${(currentData.points[hoveredPointIdx].y / 120) * 100}%`,
+                  left: `${(currentData.points[hoveredPointIdx].x / 340) * 100}%`,
+                  top: `${(currentData.points[hoveredPointIdx].y / 160) * 100}%`,
                 }}
               >
                 <div className="tooltip-value">{currentData.points[hoveredPointIdx].value}</div>

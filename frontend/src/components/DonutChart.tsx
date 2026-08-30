@@ -128,7 +128,7 @@ export const DonutChart: React.FC = () => {
             })}
           </svg>
 
-          {/* Central Counter Display */}
+          {/* Central Counter Display - cleanly centered inside the hole */}
           <div className="donut-center-text">
             <span className="donut-center-value">
               <AnimatedCounter value={hoveredSegment ? hoveredSegment.count : totalProjects} />
@@ -139,33 +139,39 @@ export const DonutChart: React.FC = () => {
           </div>
         </div>
 
-        {/* Legend */}
+        {/* Legend cleanly formatted */}
         <div className="donut-legend">
-          {data.map((segment) => (
-            <div 
-              key={segment.id} 
-              className={`legend-item ${hoveredSegment?.id === segment.id ? 'active' : ''}`}
-              onMouseEnter={() => setHoveredSegment(segment)}
-              onMouseLeave={() => setHoveredSegment(null)}
-            >
-              <div className="legend-indicator" style={{ backgroundColor: segment.color }} />
-              <div className="legend-info">
-                <div className="legend-name-row">
-                  <span className="legend-name">{segment.name}</span>
-                  <span className="legend-count">{segment.count}</span>
-                </div>
-                <div className="legend-bar-bg">
-                  <div 
-                    className="legend-bar-fill" 
-                    style={{ 
-                      width: `${segment.percentage}%`,
-                      backgroundColor: segment.color 
-                    }} 
-                  />
+          {data.map((segment) => {
+            const isHovered = hoveredSegment?.id === segment.id;
+            return (
+              <div 
+                key={segment.id} 
+                className={`legend-item ${isHovered ? 'active' : ''}`}
+                onMouseEnter={() => setHoveredSegment(segment)}
+                onMouseLeave={() => setHoveredSegment(null)}
+              >
+                <div className="legend-indicator" style={{ backgroundColor: segment.color }} />
+                <div className="legend-info">
+                  <div className="legend-name-row">
+                    <span className="legend-name">{segment.name}</span>
+                    <div className="legend-stats">
+                      <span className="legend-count">{segment.count.toLocaleString()}</span>
+                      <span className="legend-pct">({segment.percentage.toFixed(1)}%)</span>
+                    </div>
+                  </div>
+                  <div className="legend-bar-bg">
+                    <div 
+                      className="legend-bar-fill" 
+                      style={{ 
+                        width: mounted ? `${segment.percentage}%` : '0%',
+                        backgroundColor: segment.color 
+                      }} 
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

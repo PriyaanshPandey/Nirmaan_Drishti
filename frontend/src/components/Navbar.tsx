@@ -73,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
         ))}
       </div>
       
-      <button className="add-project-btn" onClick={() => alert('Add Project clicked')}>
+      <button className="add-project-btn" onClick={() => setActiveTab('projects')}>
         <Plus size={14} strokeWidth={3} />
         <span>Add Project</span>
       </button>

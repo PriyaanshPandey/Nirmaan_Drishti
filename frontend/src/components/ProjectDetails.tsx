@@ -1082,7 +1082,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               <div style={{ fontSize: '12px', fontWeight: 800, color: '#2563EB', marginBottom: '6px' }}>
                 AI INTELLIGENCE SYNTHESIS
               </div>
-              <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#1E293B', margin: 0 }}>
+              <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#1E293B', margin: 0, whiteSpace: 'pre-line' }}>
                 {aiAnswer}
               </p>
               {aiInsights && aiInsights.length > 0 && (

@@ -19,9 +19,10 @@ function App() {
   const [previousTab, setPreviousTab] = useState<string>('projects');
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab) return;
+    const targetTab = tab === 'home' ? 'dashboard' : tab;
+    if (targetTab === activeTab) return;
     setSelectedProjectId(null);
-    setActiveTab(tab);
+    setActiveTab(targetTab);
   };
 
   const handleSelectProject = (id: string) => {

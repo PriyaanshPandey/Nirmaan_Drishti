@@ -54,7 +54,7 @@ export const AIActionCenter: React.FC<AIActionCenterProps> = ({ onNavigateTab })
       ) : (
         <>
           <h2 className="ai-headline">
-            {data.total_interventions_needed} projects require immediate intervention
+            {data.total_interventions_needed ?? (data.critical_count + data.high_count + data.medium_count)} projects require immediate intervention
           </h2>
 
           {/* Status counts */}

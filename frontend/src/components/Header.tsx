@@ -12,11 +12,15 @@ export const Header: React.FC = () => {
 
   useEffect(() => {
     api.getDashboardSummary().then((res) => {
-      if (res && res.metrics) {
-        const highRisk = res.health_distribution?.find((d: any) => d.id === 'critical_delay' || d.id === 'at_risk');
-        const count = highRisk?.count || 0;
-        if (count > 0) {
-          setBadgeText(`AI Insight Active — ${count} critical risk correlations detected.`);
+      if (res && res.health_distribution) {
+        const riskCount = res.health_distribution.reduce((acc: number, d: any) => {
+          if (['critical', 'critical_delay', 'at_risk', 'at-risk'].includes(d.id)) {
+            return acc + (d.count || 0);
+          }
+          return acc;
+        }, 0);
+        if (riskCount > 0) {
+          setBadgeText(`AI Insight Active — ${riskCount.toLocaleString()} critical risk correlations detected.`);
         }
       }
     });

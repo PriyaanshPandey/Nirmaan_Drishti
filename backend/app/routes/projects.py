@@ -93,6 +93,8 @@ def get_projects(
     search: Optional[str] = Query(None, description="Search by name, ID, agency, or state"),
     ministry_id: Optional[int] = Query(None, description="Filter by Ministry ID"),
     sector_id: Optional[int] = Query(None, description="Filter by Sector ID"),
+    ministry: Optional[str] = Query(None, description="Filter by Ministry name"),
+    sector: Optional[str] = Query(None, description="Filter by Sector name"),
     schedule_status: Optional[str] = Query(None, description="Filter by status (ON TRACK, DELAYED, CRITICAL, EXTENDED)"),
     risk_level: Optional[str] = Query(None, description="Filter by risk level (Low, Medium, High, Critical)"),
     state: Optional[str] = Query(None, description="Filter by State"),
@@ -105,8 +107,8 @@ def get_projects(
     """
     query = db.query(Project).options(joinedload(Project.ministry), joinedload(Project.sector))
 
-    # Apply search filter
-    if search:
+    # Apply search filter across name, ID, agency, state, location, and project code
+    if search and search.strip():
         search_fmt = f"%{search.strip()}%"
         query = query.filter(
             or_(
@@ -114,20 +116,38 @@ def get_projects(
                 Project.id.ilike(search_fmt),
                 Project.implementing_agency.ilike(search_fmt),
                 Project.state.ilike(search_fmt),
+                Project.location.ilike(search_fmt),
                 Project.project_code.ilike(search_fmt)
             )
         )
 
-    # Apply direct filters
+    # Apply direct ministry filters (by ID or name)
     if ministry_id is not None:
         query = query.filter(Project.ministry_id == ministry_id)
+    elif ministry and ministry.strip() and ministry.strip().upper() != "ALL":
+        query = query.join(Project.ministry).filter(Ministry.name.ilike(f"%{ministry.strip()}%"))
+
+    # Apply direct sector filters (by ID or name)
     if sector_id is not None:
         query = query.filter(Project.sector_id == sector_id)
-    if schedule_status:
-        query = query.filter(Project.schedule_status.ilike(schedule_status.strip()))
-    if risk_level:
+    elif sector and sector.strip() and sector.strip().upper() != "ALL":
+        query = query.join(Project.sector).filter(Sector.name.ilike(f"%{sector.strip()}%"))
+
+    # Apply smart schedule status filter
+    if schedule_status and schedule_status.strip() and schedule_status.strip().upper() != "ALL":
+        stat = schedule_status.strip().upper()
+        if "ON" in stat or "TRACK" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%ON%TRACK%"), Project.schedule_status.ilike("%COMPLETED%")))
+        elif "DELAY" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%DELAY%"), Project.schedule_status.ilike("%EXTENDED%")))
+        elif "CRIT" in stat or "OVERDUE" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%")))
+        else:
+            query = query.filter(Project.schedule_status.ilike(f"%{stat}%"))
+
+    if risk_level and risk_level.strip() and risk_level.strip().upper() != "ALL":
         query = query.filter(Project.risk_level.ilike(risk_level.strip()))
-    if state:
+    if state and state.strip() and state.strip().upper() != "ALL":
         query = query.filter(Project.state.ilike(f"%{state.strip()}%"))
 
     # Sorting

@@ -49,13 +49,42 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     };
   }, []);
 
-  // Fetch paginated projects from backend
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setPage(1);
+  };
+
+  const handleMinistryChange = (val: string) => {
+    setSelectedMinistry(val);
+    setPage(1);
+  };
+
+  const handleSectorChange = (val: string) => {
+    setSelectedSector(val);
+    setPage(1);
+  };
+
+  const handleStatusChange = (val: string) => {
+    setSelectedStatus(val);
+    setPage(1);
+  };
+
+  // Fetch paginated & filtered projects from backend
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     setError(false);
 
-    api.getProjects(page, pageSize, searchQuery, undefined, undefined, selectedStatus !== 'All' ? selectedStatus : undefined)
+    api.getProjects(
+      page, 
+      pageSize, 
+      searchQuery, 
+      undefined, 
+      undefined, 
+      selectedStatus !== 'All' ? selectedStatus : undefined,
+      selectedMinistry !== 'All' ? selectedMinistry : undefined,
+      selectedSector !== 'All' ? selectedSector : undefined
+    )
       .then((res) => {
         if (!isMounted) return;
         setProjectsList(res.items);
@@ -72,26 +101,19 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     return () => {
       isMounted = false;
     };
-  }, [page, searchQuery, selectedStatus]);
+  }, [page, searchQuery, selectedMinistry, selectedSector, selectedStatus]);
 
-  // In-memory filter for ministry and sector if selected
-  const filteredProjects = projectsList.filter((project) => {
-    const matchesMinistry = selectedMinistry === 'All' || project.ministry === selectedMinistry;
-    const matchesSector = selectedSector === 'All' || project.sector === selectedSector;
-    return matchesMinistry && matchesSector;
-  });
+  const filteredProjects = projectsList;
 
   const getStatusBadge = (status: Project['scheduleStatus'] | string) => {
-    switch (status) {
-      case 'CRITICAL':
-        return <span className="portfolio-badge badge-critical-status">CRITICAL</span>;
-      case 'DELAYED':
-        return <span className="portfolio-badge badge-delayed-status">DELAYED</span>;
-      case 'ON TRACK':
-        return <span className="portfolio-badge badge-ontrack-status">ON TRACK</span>;
-      default:
-        return <span className="portfolio-badge badge-ontrack-status">{status || 'ACTIVE'}</span>;
+    const stat = (status || '').toUpperCase();
+    if (stat.includes('CRIT') || stat.includes('OVERDUE')) {
+      return <span className="status-badge-pill status-critical">CRITICAL</span>;
     }
+    if (stat.includes('DELAY') || stat.includes('EXTEND')) {
+      return <span className="status-badge-pill status-delayed">DELAYED</span>;
+    }
+    return <span className="status-badge-pill status-on-track">ON TRACK</span>;
   };
 
   const totalPages = Math.ceil(totalProjects / pageSize) || 1;
@@ -124,7 +146,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             type="text"
             placeholder="Search projects by name, ID, agency or location..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="portfolio-search-input"
           />
         </div>
@@ -134,7 +156,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             <SlidersHorizontal size={14} className="filter-select-icon" />
             <select
               value={selectedMinistry}
-              onChange={(e) => setSelectedMinistry(e.target.value)}
+              onChange={(e) => handleMinistryChange(e.target.value)}
               className="portfolio-filter-select"
             >
               {ministries.map((m, idx) => (
@@ -148,7 +170,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
           <div className="portfolio-filter-select-wrapper">
             <select
               value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
+              onChange={(e) => handleSectorChange(e.target.value)}
               className="portfolio-filter-select"
             >
               {sectors.map((s, idx) => (
@@ -162,7 +184,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
           <div className="portfolio-filter-select-wrapper">
             <select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              onChange={(e) => handleStatusChange(e.target.value)}
               className="portfolio-filter-select"
             >
               <option value="All">All Schedule Statuses</option>

@@ -323,7 +323,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div style={{ fontSize: '11px', fontWeight: 800, color: '#2563EB', marginBottom: '4px', letterSpacing: '0.5px' }}>
               AI INTELLIGENCE SYNTHESIS
             </div>
-            <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#1E293B', margin: 0 }}>
+            <p style={{ fontSize: '13px', lineHeight: '1.6', color: '#1E293B', margin: 0, whiteSpace: 'pre-line' }}>
               {queryAnswer}
             </p>
             {queryInsights && queryInsights.length > 0 && (
