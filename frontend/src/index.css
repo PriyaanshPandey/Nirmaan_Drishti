@@ -393,4 +393,82 @@ table tbody tr:hover {
   animation: graphAreaFadeIn 0.8s ease-out 0.4s both;
 }
 
+/* ══════════════════════════════════════════
+   SKELETON SHIMMER LOADER
+   ══════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-pulse {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+/* ══════════════════════════════════════════
+   ANIMATED COUNTER SCALE-IN
+   ══════════════════════════════════════════ */
+
+@keyframes counterScaleIn {
+  from { opacity: 0; transform: scale(0.85) translateY(4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animated-counter-span {
+  animation: counterScaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ══════════════════════════════════════════
+   BAR CHART HOVER GLOW
+   ══════════════════════════════════════════ */
+
+.bar-fill-hover {
+  transition: filter 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.bar-fill-hover:hover {
+  filter: brightness(1.12) saturate(1.1);
+  transform: scaleX(1.015);
+  transform-origin: left center;
+}
+
+/* ══════════════════════════════════════════
+   SVG SEGMENT HOVER GLOW (DONUT / PIE)
+   ══════════════════════════════════════════ */
+
+.donut-segment-hovered {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* ══════════════════════════════════════════
+   CARD ENTRANCE STAGGER
+   ══════════════════════════════════════════ */
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-stagger-1 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.card-stagger-2 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
+.card-stagger-3 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.19s both; }
+.card-stagger-4 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
+
+
+
 

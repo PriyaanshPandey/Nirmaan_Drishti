@@ -104,47 +104,42 @@
 }
 
 .sev-box {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: 12px;
+  padding: 18px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 14px 8px;
-  border-radius: 12px;
   text-align: center;
-  gap: 4px;
-  transition: transform 0.2s ease;
+  gap: 6px;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
 .sev-box:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
-.box-crit {
-  background-color: #FEF2F2;
-  border: 1px solid #FECACA;
-}
-
+.box-crit { border: 1.5px solid rgba(220, 38, 38, 0.15); }
 .box-crit .sev-lbl { color: #DC2626; }
 .box-crit .sev-count { color: #991B1B; }
-.box-crit .sev-sub { color: #B91C1C; }
+.box-crit .sev-sub { color: #64748B; }
+.box-crit:hover { border-color: rgba(220, 38, 38, 0.4) !important; box-shadow: 0 8px 24px rgba(220, 38, 38, 0.08) !important; }
 
-.box-high {
-  background-color: #FFFBEB;
-  border: 1px solid #FDE68A;
-}
-
+.box-high { border: 1.5px solid rgba(217, 119, 6, 0.15); }
 .box-high .sev-lbl { color: #D97706; }
 .box-high .sev-count { color: #92400E; }
-.box-high .sev-sub { color: #B45309; }
+.box-high .sev-sub { color: #64748B; }
+.box-high:hover { border-color: rgba(217, 119, 6, 0.4) !important; box-shadow: 0 8px 24px rgba(217, 119, 6, 0.08) !important; }
 
-.box-med {
-  background-color: #EFF6FF;
-  border: 1px solid #BFDBFE;
-}
-
+.box-med { border: 1.5px solid rgba(37, 99, 235, 0.15); }
 .box-med .sev-lbl { color: #2563EB; }
 .box-med .sev-count { color: #1E40AF; }
-.box-med .sev-sub { color: #1D4ED8; }
+.box-med .sev-sub { color: #64748B; }
+.box-med:hover { border-color: rgba(37, 99, 235, 0.4) !important; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08) !important; }
 
 .sev-lbl {
   font-size: 11px;
@@ -237,13 +232,20 @@
 }
 
 .sim-metric-box {
-  background-color: #F8FAFC;
-  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--border-color);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 14px 14px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.sim-metric-box:hover {
+  transform: translateY(-3px) !important;
+  border-color: rgba(47, 107, 244, 0.3) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .sim-box-lbl {
@@ -451,7 +453,7 @@
 }
 
 .ac-data-table th {
-  padding: 14px 16px;
+  padding: 16px 16px;
   font-size: 11px;
   font-weight: 800;
   color: #64748B;
@@ -470,7 +472,7 @@
 }
 
 .ac-data-table td {
-  padding: 14px 16px;
+  padding: 20px 16px;
   vertical-align: middle;
 }
 
@@ -484,7 +486,7 @@
   color: var(--navy-dark);
   font-size: 13.5px;
   line-height: 1.3;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
 }
 
 .p-sub {

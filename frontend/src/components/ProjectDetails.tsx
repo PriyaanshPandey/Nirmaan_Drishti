@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ArrowLeft, ChevronDown, Bell, ShieldAlert, Award, FileText, Calendar, Check,
+  ArrowLeft, ChevronDown, Bell, ShieldAlert, Award, FileText, Calendar,
   AlertTriangle, ArrowRight, SlidersHorizontal, Sparkles, Cpu, Send, Bot
 } from 'lucide-react';
 import { type Project } from '../data/projectsData';
@@ -719,99 +719,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         </div>
       </div>
-
-      {/* Row 4: Milestone Tracker (Wide Card Timeline) */}
-      <div className="card milestone-timeline-card">
-        <div className="milestone-timeline-header">
-          <div className="card-header-icon-title">
-            <Check size={16} className="card-icon" />
-            <h2 className="card-title">Milestone Tracker</h2>
-          </div>
-          <button className="card-link-btn" onClick={() => {
-            setAiAssistantOpen(true);
-            setAiQuery('Provide a milestone timeline execution breakdown for this project.');
-            handleAskAssistant('Provide a milestone timeline execution breakdown for this project.');
-          }}>
-            Analyze Schedule
-          </button>
-        </div>
-
-        <div className="timeline-horizontal-scroll">
-          <div className="timeline-horizontal-wrapper">
-            {/* Horizontal progress guide line */}
-            <div className="timeline-connecting-line">
-              <div className="connecting-line-fill" style={{ width: mounted ? '45%' : '0%', transition: 'width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s' }}></div>
-            </div>
-
-            {/* Node 1: Completed */}
-            <div className="timeline-node-item active-node">
-              <div className="node-circle node-checked">
-                <Check size={12} strokeWidth={3} />
-              </div>
-              <div className="node-info-text">
-                <h4 className="node-name">Land Acquisition</h4>
-                <p className="node-date text-green">Cleared on 12 Mar 2021</p>
-                <span className="node-status-tag tag-green">Completed</span>
-              </div>
-            </div>
-
-            {/* Node 2: Completed */}
-            <div className="timeline-node-item active-node">
-              <div className="node-circle node-checked">
-                <Check size={12} strokeWidth={3} />
-              </div>
-              <div className="node-info-text">
-                <h4 className="node-name">Tendering</h4>
-                <p className="node-date text-green">Cleared on 15 Oct 2021</p>
-                <span className="node-status-tag tag-green">Completed</span>
-              </div>
-            </div>
-
-            {/* Node 3: Warning/Delay */}
-            <div className="timeline-node-item active-node">
-              <div className="node-circle node-warning">
-                <AlertTriangle size={12} strokeWidth={3} />
-              </div>
-              <div className="node-info-text">
-                <h4 className="node-name">Civil Construction</h4>
-                <p className="node-date text-red">Revised: 15 Nov 2025 (Delay)</p>
-                <span className="node-status-tag tag-red">Delayed by 11 Mos</span>
-              </div>
-            </div>
-
-            {/* Node 4: Upcoming */}
-            <div className="timeline-node-item">
-              <div className="node-circle node-grey"></div>
-              <div className="node-info-text">
-                <h4 className="node-name">System Integration</h4>
-                <p className="node-date">Revised: 20 May 2026</p>
-                <span className="node-status-tag tag-grey">Upcoming</span>
-              </div>
-            </div>
-
-            {/* Node 5: Upcoming */}
-            <div className="timeline-node-item">
-              <div className="node-circle node-grey"></div>
-              <div className="node-info-text">
-                <h4 className="node-name">Testing & Commission</h4>
-                <p className="node-date">Expected: 10 Sep 2027</p>
-                <span className="node-status-tag tag-grey">Upcoming</span>
-              </div>
-            </div>
-
-            {/* Node 6: Upcoming */}
-            <div className="timeline-node-item">
-              <div className="node-circle node-grey"></div>
-              <div className="node-info-text">
-                <h4 className="node-name">Project Completion</h4>
-                <p className="node-date">Target: Dec 2027</p>
-                <span className="node-status-tag tag-grey">Upcoming</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Row 5: Grid Row 3 (Risk Trend, Why At Risk, Early Warning Card) */}
       <div className="details-grid-3">
         {/* Risk Trend Chart */}

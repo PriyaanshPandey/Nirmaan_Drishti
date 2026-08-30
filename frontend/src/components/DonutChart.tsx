@@ -57,8 +57,17 @@ export const DonutChart: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="card donut-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '320px' }}>
-        <div style={{ color: '#94A3B8', fontSize: '13px' }}>Loading health distribution...</div>
+      <div className="card donut-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '320px', gap: '20px' }}>
+        {/* Skeleton shimmer donut ring */}
+        <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+          <div className="skeleton-pulse skeleton-circle" style={{ width: '120px', height: '120px', position: 'absolute' }} />
+          <div style={{ position: 'absolute', top: '14px', left: '14px', width: '92px', height: '92px', borderRadius: '50%', backgroundColor: '#fff' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '80%' }}>
+          <div className="skeleton-pulse skeleton-line" style={{ width: '60%' }} />
+          <div className="skeleton-pulse skeleton-line" style={{ width: '80%' }} />
+          <div className="skeleton-pulse skeleton-line" style={{ width: '50%' }} />
+        </div>
       </div>
     );
   }
@@ -111,15 +120,16 @@ export const DonutChart: React.FC = () => {
                   r={radius}
                   fill="transparent"
                   stroke={segment.color}
-                  strokeWidth={isHovered ? strokeWidth + 3 : strokeWidth}
+                  strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
                   strokeDasharray={`${mounted ? strokeLength : 0} ${circumference}`}
                   strokeDashoffset={strokeOffset}
-                  className="donut-segment"
+                  className={`donut-segment${isHovered ? ' donut-segment-hovered' : ''}`}
                   style={{
                     transformOrigin: 'center',
                     transform: 'rotate(-90deg)',
-                    transition: 'stroke-dasharray 1s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.2s ease',
-                    cursor: 'pointer'
+                    transition: 'stroke-dasharray 1.1s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.25s ease, filter 0.25s ease',
+                    cursor: 'pointer',
+                    filter: isHovered ? `drop-shadow(0 0 8px ${segment.color})` : 'none',
                   }}
                   onMouseEnter={() => setHoveredSegment(segment)}
                   onMouseLeave={() => setHoveredSegment(null)}

@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -72,11 +71,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           </button>
         ))}
       </div>
-      
-      <button className="add-project-btn" onClick={() => setActiveTab('projects')}>
-        <Plus size={14} strokeWidth={3} />
-        <span>Add Project</span>
-      </button>
     </nav>
   );
 };

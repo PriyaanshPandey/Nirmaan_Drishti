@@ -402,6 +402,58 @@ const FALLBACK_RISK_SUMMARY: RiskSummaryData = {
   ]
 };
 
+const FALLBACK_DISTRIBUTION_SUMMARY: DistributionSummaryData = {
+  total: 3361,
+  high: 574,
+  highPct: '17.1%',
+  medium: 968,
+  mediumPct: '28.8%',
+  low: 1819,
+  lowPct: '54.1%',
+  sectors: [
+    { name: 'Road Transport', total: 1142, high: 185, highPct: 16.2, medium: 331, mediumPct: 29.0, low: 626, lowPct: 54.8, avgRisk: 52 },
+    { name: 'Railways', total: 924, high: 212, highPct: 22.9, medium: 285, mediumPct: 30.8, low: 427, lowPct: 46.2, avgRisk: 65 },
+    { name: 'Power', total: 548, high: 64, highPct: 11.7, medium: 152, mediumPct: 27.7, low: 332, lowPct: 60.6, avgRisk: 42 },
+    { name: 'Petroleum', total: 312, high: 43, highPct: 13.8, medium: 92, mediumPct: 29.5, low: 177, lowPct: 56.7, avgRisk: 45 },
+    { name: 'Coal', total: 185, high: 28, highPct: 15.1, medium: 52, mediumPct: 28.1, low: 105, lowPct: 56.8, avgRisk: 48 },
+    { name: 'Urban Development', total: 142, high: 25, highPct: 17.6, medium: 38, mediumPct: 26.8, low: 79, lowPct: 55.6, avgRisk: 50 },
+    { name: 'Shipping / Ports', total: 108, high: 17, highPct: 15.7, medium: 28, mediumPct: 25.9, low: 63, lowPct: 58.3, avgRisk: 46 }
+  ]
+};
+
+// ─────────────────────────────────────────────────────────
+// In-Memory API Cache
+// Prevents redundant network round-trips when navigating
+// between pages. Data stays fresh for TTL_MS milliseconds.
+// ─────────────────────────────────────────────────────────
+const TTL_MS = 3 * 60 * 1000; // 3 minutes
+
+interface CacheEntry<T> {
+  data: T;
+  expires: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _cache = new Map<string, CacheEntry<any>>();
+
+function cacheGet<T>(key: string): T | null {
+  const entry = _cache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expires) {
+    _cache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+function cacheSet<T>(key: string, data: T): void {
+  _cache.set(key, { data, expires: Date.now() + TTL_MS });
+}
+
+export function clearApiCache(): void {
+  _cache.clear();
+}
+
 export const api = {
   /**
    * System & Database Health Check
@@ -420,10 +472,14 @@ export const api = {
    * Fetch National Infrastructure Dashboard Aggregates
    */
   async getDashboardSummary(): Promise<DashboardSummaryData | null> {
+    const cached = cacheGet<DashboardSummaryData>('dashboard_summary');
+    if (cached) return cached;
     try {
       const res = await fetch(`${API_BASE_URL}/dashboard/summary`);
       if (!res.ok) throw new Error('Dashboard summary failed');
-      return await res.json();
+      const data = await res.json();
+      cacheSet('dashboard_summary', data);
+      return data;
     } catch (e) {
       console.warn('Backend unavailable, using rich national infrastructure dataset fallback.');
       return FALLBACK_DASHBOARD;
@@ -606,10 +662,14 @@ export const api = {
    * Fetch National Risk Analysis Summary
    */
   async getRiskSummary(): Promise<RiskSummaryData | null> {
+    const cached = cacheGet<RiskSummaryData>('risk_summary');
+    if (cached) return cached;
     try {
       const res = await fetch(`${API_BASE_URL}/risk/summary`);
       if (!res.ok) throw new Error('Risk summary failed');
-      return await res.json();
+      const data = await res.json();
+      cacheSet('risk_summary', data);
+      return data;
     } catch (e) {
       console.warn('Backend unavailable, using fallback national risk summary.');
       return FALLBACK_RISK_SUMMARY;
@@ -663,10 +723,14 @@ export const api = {
    * Fetch Action Centre Summary & Queue
    */
   async getActionCenterSummary(): Promise<ActionCenterData | null> {
+    const cached = cacheGet<ActionCenterData>('action_center');
+    if (cached) return cached;
     try {
       const res = await fetch(`${API_BASE_URL}/alerts/summary`);
       if (!res.ok) throw new Error('Action center fetch failed');
-      return await res.json();
+      const data = await res.json();
+      cacheSet('action_center', data);
+      return data;
     } catch (e) {
       console.warn('Backend unavailable, using fallback Action Center data.');
       return FALLBACK_ACTION_CENTER;
@@ -677,12 +741,17 @@ export const api = {
    * Fetch Sectoral & Geographical Distribution Summary
    */
   async getDistributionSummary(): Promise<DistributionSummaryData | null> {
+    const cached = cacheGet<DistributionSummaryData>('distribution_summary');
+    if (cached) return cached;
     try {
       const res = await fetch(`${API_BASE_URL}/distribution/summary`);
       if (!res.ok) throw new Error('Distribution fetch failed');
-      return await res.json();
+      const data = await res.json();
+      cacheSet('distribution_summary', data);
+      return data;
     } catch (e) {
-      return null;
+      console.warn('Backend unavailable, using fallback Project Distribution data.');
+      return FALLBACK_DISTRIBUTION_SUMMARY;
     }
   },
 

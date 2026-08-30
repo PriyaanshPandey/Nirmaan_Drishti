@@ -1,40 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface AnimatedCounterProps {
   value: number;
-  duration?: number; // duration in ms
+  duration?: number;
   formatter?: (val: number) => string;
+  /** Change this key to force the counter to re-animate (e.g., pass the page tab name) */
+  triggerKey?: string | number;
 }
 
-export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ value, duration = 800, formatter }) => {
+export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
+  value,
+  duration = 900,
+  formatter,
+  triggerKey,
+}) => {
   const [count, setCount] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const animRef = useRef<number>(0);
 
+  // IntersectionObserver: start count-up when element enters viewport
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisible(true);
+            setCount(0); // reset so animation always plays
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [triggerKey]);
+
+  // Animate count from 0 → value whenever visible or value changes
+  useEffect(() => {
+    if (!visible || value === 0) {
+      setCount(value);
+      return;
+    }
+
     let startTimestamp: number | null = null;
-    let animId: number;
+    const startVal = 0;
 
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      
-      // Ease out cubic
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      const currentCount = Math.floor(easeProgress * value);
-      
-      setCount(currentCount);
-      
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(startVal + eased * (value - startVal)));
+
       if (progress < 1) {
-        animId = window.requestAnimationFrame(step);
+        animRef.current = window.requestAnimationFrame(step);
       } else {
         setCount(value);
       }
     };
-    
-    animId = window.requestAnimationFrame(step);
-    return () => {
-      window.cancelAnimationFrame(animId);
-    };
-  }, [value, duration]);
 
-  return <>{formatter ? formatter(count) : count.toLocaleString()}</>;
+    animRef.current = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(animRef.current);
+  }, [visible, value, duration, triggerKey]);
+
+  return (
+    <span ref={ref} className="animated-counter-span" style={{ display: 'inline-block' }}>
+      {formatter ? formatter(count) : count.toLocaleString()}
+    </span>
+  );
 };

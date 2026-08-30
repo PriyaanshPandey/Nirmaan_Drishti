@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Search } from 'lucide-react';
+import { Download, Search, ShieldAlert, AlertTriangle, Clock } from 'lucide-react';
 import './ActionCenter.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
@@ -166,19 +166,22 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
           ) : (
             <>
               <div className="ac-severity-boxes">
-                <div className="sev-box box-crit">
+                <div className="sev-box box-crit card-stagger-1">
+                  <ShieldAlert size={18} style={{ color: '#DC2626', marginBottom: '2px' }} />
                   <span className="sev-lbl">Critical</span>
-                  <span className="sev-count"><AnimatedCounter value={summaryCounts.critical} /></span>
+                  <span className="sev-count"><AnimatedCounter value={summaryCounts.critical} triggerKey={summaryCounts.critical} /></span>
                   <span className="sev-sub">Immediate PMG Review</span>
                 </div>
-                <div className="sev-box box-high">
+                <div className="sev-box box-high card-stagger-2">
+                  <AlertTriangle size={18} style={{ color: '#D97706', marginBottom: '2px' }} />
                   <span className="sev-lbl">High</span>
-                  <span className="sev-count"><AnimatedCounter value={summaryCounts.high} /></span>
+                  <span className="sev-count"><AnimatedCounter value={summaryCounts.high} triggerKey={summaryCounts.high} /></span>
                   <span className="sev-sub">Ministry Escalation</span>
                 </div>
-                <div className="sev-box box-med">
+                <div className="sev-box box-med card-stagger-3">
+                  <Clock size={18} style={{ color: '#2563EB', marginBottom: '2px' }} />
                   <span className="sev-lbl">Medium</span>
-                  <span className="sev-count"><AnimatedCounter value={summaryCounts.medium} /></span>
+                  <span className="sev-count"><AnimatedCounter value={summaryCounts.medium} triggerKey={summaryCounts.medium} /></span>
                   <span className="sev-sub">Agency Level NOC</span>
                 </div>
               </div>
@@ -242,7 +245,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
 
           <div className="sim-confidence-footer">
             <span className="conf-lbl">AI Simulation Confidence</span>
-            <span className="conf-score">{currentSim.confidence}%</span>
+            <span className="conf-score">
+              <AnimatedCounter value={currentSim.confidence} triggerKey={`${selectedSimCategory}-${currentSim.confidence}`} formatter={(v) => `${v}%`} />
+            </span>
           </div>
         </div>
 

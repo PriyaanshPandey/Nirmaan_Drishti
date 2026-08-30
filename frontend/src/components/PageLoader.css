@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  animation: loaderFadeIn 0.18s ease both;
+  animation: loaderFadeIn 0.2s ease both;
 }
 
 @keyframes loaderFadeIn {
@@ -35,7 +35,7 @@
   border-radius: 12px;
 }
 
-/* Top shimmer progress bar across top */
+/* ── Top shimmer progress bar ── */
 .loader-top-bar {
   position: fixed;
   top: 0;
@@ -46,7 +46,6 @@
   background-size: 600px 100%;
   animation: topBarSlide 1.2s ease-in-out infinite;
   z-index: 999;
-  border-radius: 0;
 }
 
 @keyframes topBarSlide {
@@ -56,11 +55,55 @@
   100% { background-position: 600px 0; opacity: 0; }
 }
 
+/* ── Brand Splash Row ── */
+.loader-brand-splash {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0 4px;
+  animation: loaderFadeIn 0.3s ease 0.1s both;
+}
+
+/* Spinning ring */
+.loader-spinner-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3.5px solid #E2E8F0;
+  border-top-color: #2F6BF4;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.loader-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--navy-dark);
+  letter-spacing: -0.03em;
+}
+
+.loader-brand-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+/* ── Skeleton Body ── */
 .loader-body {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 /* Header skeleton */
@@ -100,6 +143,6 @@
   border-radius: 18px;
 }
 
-.skeleton-card.tall { height: 280px; }
+.skeleton-card.tall   { height: 280px; }
 .skeleton-card.medium { height: 200px; }
-.skeleton-card.wide { grid-column: span 1; }
+.skeleton-card.wide   { grid-column: span 1; }

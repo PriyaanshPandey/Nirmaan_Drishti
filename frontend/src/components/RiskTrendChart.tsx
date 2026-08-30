@@ -118,10 +118,10 @@ export const RiskTrendChart: React.FC = () => {
               <line x1="20" y1="95" x2="320" y2="95" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
               <line x1="20" y1="130" x2="320" y2="130" stroke="#E2E8F0" strokeWidth="1" />
 
-              {/* Gradient Fill under curve */}
-              <path d={currentData.fillPath} fill="url(#trendGradient)" />
+              {/* Gradient Fill under curve — fades in */}
+              <path d={currentData.fillPath} fill="url(#trendGradient)" className="graph-fill-animate" />
 
-              {/* Main trend line path */}
+              {/* Main trend line path — draws itself in */}
               <path
                 d={currentData.path}
                 fill="none"
@@ -129,6 +129,7 @@ export const RiskTrendChart: React.FC = () => {
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="graph-path-animate"
               />
 
               {/* Data Points and Interactivity */}
@@ -146,6 +147,20 @@ export const RiskTrendChart: React.FC = () => {
                         stroke="#94A3B8"
                         strokeWidth="1"
                         strokeDasharray="2 2"
+                      />
+                    )}
+
+                    {/* Hover glow ring */}
+                    {isHovered && (
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="9"
+                        fill="none"
+                        stroke="#2563EB"
+                        strokeWidth="1.5"
+                        opacity="0.3"
+                        style={{ pointerEvents: 'none' }}
                       />
                     )}
 

@@ -1,0 +1,319 @@
+/* ══════════════════════════════════════════
+   NIRMAAN DRISTI HOME STYLING
+   ══════════════════════════════════════════ */
+
+.home-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 0 60px 0;
+}
+
+/* ── Hero Block ── */
+.home-hero {
+  text-align: center;
+  padding: 48px 24px;
+  background: linear-gradient(135deg, rgba(9, 11, 46, 0.02) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #2563EB, #7C3AED, #2563EB);
+  background-size: 200% auto;
+  animation: heroBorderMove 4s linear infinite;
+}
+
+@keyframes heroBorderMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #2563EB;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-sparkle {
+  animation: sparkleRotation 2s linear infinite;
+}
+
+@keyframes sparkleRotation {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.hero-title {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--navy-dark) 30%, #2563EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 4px 0 0 0;
+}
+
+.hero-subtitle {
+  max-width: 680px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.hero-cta-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.hero-btn {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-btn.primary {
+  background: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.hero-btn.primary:hover {
+  background: #1D4ED8;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+}
+
+.hero-btn.secondary {
+  background: #FFFFFF;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+}
+
+.hero-btn.secondary:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+/* ── Stats Counter Grid ── */
+.home-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .home-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.home-stat-card {
+  padding: 20px;
+  text-align: center;
+  align-items: center;
+}
+
+.home-stat-card .stat-val {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--navy-dark);
+}
+
+.home-stat-card .stat-lbl {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #2563EB;
+  letter-spacing: 0.5px;
+  margin: 6px 0 2px 0;
+}
+
+.home-stat-card .stat-desc {
+  font-size: 11px;
+  color: var(--text-light);
+  line-height: 1.4;
+}
+
+/* ── Section Titles ── */
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--navy-dark);
+  letter-spacing: -0.01em;
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+/* ── Quick Nav Grid ── */
+.home-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .home-nav-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-nav-card {
+  padding: 24px;
+  cursor: pointer;
+  height: 100%;
+}
+
+.nav-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* Glow classes */
+.blue-glow { background: #EFF6FF; }
+.green-glow { background: #ECFDF5; }
+.purple-glow { background: #F5F3FF; }
+.red-glow { background: #FEF2F2; }
+
+.nav-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--navy-dark);
+  margin-bottom: 6px;
+}
+
+.nav-card-desc {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  flex-grow: 1;
+  margin-bottom: 16px;
+}
+
+.nav-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: gap 0.2s ease;
+}
+
+.hover-blue .nav-card-action { color: #2563EB; }
+.hover-green .nav-card-action { color: #059669; }
+.hover-purple .nav-card-action { color: #7C3AED; }
+.hover-red .nav-card-action { color: #DC2626; }
+
+.home-nav-card:hover .nav-card-action {
+  gap: 10px;
+}
+
+/* ── Technical Overview Panel ── */
+.home-technical-panel {
+  padding: 28px;
+  background: #FAFBFD;
+  border: 1px dashed #D1D5DB;
+}
+
+.tech-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid #E5E7EB;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.tech-icon-wrapper {
+  background: var(--navy-dark);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.tech-panel-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--navy-dark);
+  margin: 0;
+}
+
+.tech-panel-subtitle {
+  font-size: 12px;
+  color: var(--text-light);
+  margin: 2px 0 0 0;
+}
+
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .tech-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.tech-col h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-dark);
+  margin-bottom: 6px;
+}
+
+.tech-col p {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}

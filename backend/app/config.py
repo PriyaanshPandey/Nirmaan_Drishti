@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
     ENVIRONMENT: str = "development"
     DASHSCOPE_API_KEY: str = ""
-    PROJECT_NAME: str = "Sanket-AI National Infrastructure Intelligence API"
+    PROJECT_NAME: str = "Nirmaan Dristi National Infrastructure Intelligence API"
     DEBUG: bool = True
 
     model_config = SettingsConfigDict(

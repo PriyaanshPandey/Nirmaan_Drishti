@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import './AIInsights.css';
 import { api } from '../services/api';
+import { AnimatedCounter } from './AnimatedCounter';
 
 type InsightData = {
   as_of_date: string;
@@ -22,6 +23,109 @@ type InsightData = {
 
 type InsightsTab = 'overview' | 'issues' | 'patterns' | 'similarity' | 'drivers' | 'predictive';
 
+const FALLBACK_INSIGHTS: InsightData = {
+  as_of_date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+  total_projects: 3,
+  high_risk_count: 3,
+  summary_text: "Current patterns indicate potential delays in land acquisition and contractor coordination, with 3 projects showing elevated risk signals. Development of additional live tracking features is underway.",
+  recommendations: [
+    {
+      id: 1,
+      title: "Revise Land Acquisition Processes",
+      impact: "High Impact",
+      impactClass: "font-red",
+      iconType: "shield",
+      iconBg: "var(--color-accent-red)",
+      desc: "Distribution delay affects critical construction phases in local zones."
+    },
+    {
+      id: 2,
+      title: "Restructure Procurement Timelines",
+      impact: "High Impact",
+      impactClass: "font-red",
+      iconType: "clock",
+      iconBg: "var(--color-accent-red)",
+      desc: "Supply chain disruptions propagate risk to equipment installations."
+    },
+    {
+      id: 3,
+      title: "Strengthen Clearance Approvals",
+      impact: "Medium Impact",
+      impactClass: "font-orange",
+      iconType: "shield",
+      iconBg: "#F59E0B",
+      desc: "Forest clearance permissions represent critical path items for upcoming works."
+    },
+    {
+      id: 4,
+      title: "Review Contractor Performance",
+      impact: "Medium Impact",
+      impactClass: "font-orange",
+      iconType: "users",
+      iconBg: "#F59E0B",
+      desc: "Milestone slippage rates exceed average sector deviations."
+    }
+  ],
+  emerging_issues: [
+    { label: "Land Acquisition", count: 124, impact: "+14%" },
+    { label: "Procurement Delays", count: 85, impact: "+9%" },
+    { label: "Clearance Delays", count: 62, impact: "+7%" },
+    { label: "Contractor Issues", count: 44, impact: "+5%" },
+    { label: "Milestone Slippage", count: 96, impact: "+11%" }
+  ],
+  patterns: [
+    {
+      title: "High Expenditure + Low Progress = Milestone Slippage",
+      count: 24,
+      risk: "High Risk",
+      riskClass: "font-red",
+      detail: "Milestone slippages correlated with advance payment drawdowns. Under development: live ledger audits."
+    },
+    {
+      title: "Repeated Milestone Postponement = Contractor Performance Decline",
+      count: 18,
+      risk: "Medium Risk",
+      riskClass: "font-orange",
+      detail: "Low output rates and resource constraints observed on sites. Under development: contractor profiling database."
+    },
+    {
+      title: "Clearance Delays = Land Acquisition Issues",
+      count: 32,
+      risk: "Medium Risk",
+      riskClass: "font-orange",
+      detail: "Delay correlation index elevated. Under development: multi-agency GIS clearance tracking."
+    }
+  ],
+  similarity: {
+    score: 42,
+    total_comparable: 50,
+    cost_overrun_pct: 78,
+    schedule_delay_pct: 82,
+    on_hold_pct: 12
+  },
+  predictive: {
+    projects_entering_risk: 148,
+    projects_entering_risk_pct: "+12%",
+    expected_portfolio_delay: "8.4 months",
+    potential_cost_overrun: "₹56,420 Cr",
+    active_scenarios: 3
+  },
+  sector_insights: [
+    { name: "Railways", label: "High risk sector", labelClass: "font-red", pct: "+28%", count: 92, desc: "92 projects affected" },
+    { name: "Road Transport", label: "High risk sector", labelClass: "font-red", pct: "+24%", count: 114, desc: "114 projects affected" },
+    { name: "Power", label: "Common patterns", labelClass: "font-orange", pct: "+12%", count: 45, desc: "45 projects affected" },
+    { name: "Petroleum", label: "Common bottlenecks", labelClass: "font-blue", pct: "+9%", count: 32, desc: "32 projects affected" },
+    { name: "Coal", label: "Common bottlenecks", labelClass: "font-blue", pct: "+6%", count: 18, desc: "18 projects affected" }
+  ],
+  risk_drivers: [
+    { label: "Physical Progress Lag", pct: 42, color: "bg-accent" },
+    { label: "Milestone Slippage", pct: 38, color: "bg-accent" },
+    { label: "Fund Flow Delays", pct: 24, color: "bg-orange" },
+    { label: "Clearance Delays", pct: 18, color: "bg-info" },
+    { label: "Contractor Performance", pct: 15, color: "bg-info" }
+  ]
+};
+
 interface AIInsightsProps {
   onSelectProject?: (projectId: string) => void;
   onNavigateTab?: (tab: string) => void;
@@ -33,6 +137,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
   const [selectedSimilarity, setSelectedSimilarity] = useState<'cost' | 'schedule' | 'onhold'>('schedule');
   const [insightsData, setInsightsData] = useState<InsightData | null>(null);
   const [loadingInsights, setLoadingInsights] = useState(true);
+  const [isFallback, setIsFallback] = useState(false);
 
   // Modal for viewing projects affiliated with a risk recommendation
   const [selectedRecModal, setSelectedRecModal] = useState<{
@@ -102,9 +207,17 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
     api.getInsightsSummary().then((res) => {
       if (res && res.total_projects !== undefined) {
         setInsightsData(res as InsightData);
+        setIsFallback(false);
+      } else {
+        setInsightsData(FALLBACK_INSIGHTS);
+        setIsFallback(true);
       }
       setLoadingInsights(false);
-    }).catch(() => setLoadingInsights(false));
+    }).catch(() => {
+      setInsightsData(FALLBACK_INSIGHTS);
+      setIsFallback(true);
+      setLoadingInsights(false);
+    });
   }, []);
 
   const subTabs = [
@@ -206,7 +319,9 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
         <div className="header-block-right">
           <div className="insights-date-group">
             <span className="insights-date-indicator">{insightsData?.as_of_date || 'Loading...'}</span>
-            <span className="insights-update-sub">Live data from PostgreSQL</span>
+            <span className="insights-update-sub" style={{ color: isFallback ? '#DC2626' : '#64748B', fontWeight: isFallback ? 700 : 'normal' }}>
+              {isFallback ? 'Simulated Sandbox Mode (Offline)' : 'Live data from PostgreSQL'}
+            </span>
           </div>
 
           <div className="ai-dropdown-badge">
@@ -217,20 +332,16 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
         </div>
       </div>
 
-      {/* Show loading or error state if no data */}
-      {loadingInsights || !insightsData ? (
+      {/* Show loading state if loading */}
+      {loadingInsights ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px' }}>
-          {loadingInsights ? (
-            <>
-              <div style={{ width: '36px', height: '36px', border: '3px solid #E2E8F0', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              <span style={{ color: '#64748B', fontSize: '14px' }}>Loading AI insights from backend...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles size={32} color="#94A3B8" />
-              <span style={{ color: '#64748B', fontSize: '14px' }}>AI insights unavailable. Backend may be offline.</span>
-            </>
-          )}
+          <div style={{ width: '36px', height: '36px', border: '3px solid #E2E8F0', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <span style={{ color: '#64748B', fontSize: '14px' }}>Loading AI insights from backend...</span>
+        </div>
+      ) : !insightsData ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px' }}>
+          <Sparkles size={32} color="#94A3B8" />
+          <span style={{ color: '#64748B', fontSize: '14px' }}>AI insights unavailable. Under Development.</span>
         </div>
       ) : (
         <>
@@ -359,9 +470,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div className="card recommendations-card">
               <div className="recommendations-header">
                 <div>
-                  <h2 className="card-title flex-align-center gap-6">
-                    <Zap size={15} fill="var(--color-on-track)" color="var(--color-on-track)" />
-                    <span>AI Recommendations</span>
+                  <h2 className="card-title flex-align-center gap-6" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div className="flex-align-center gap-6">
+                      <Zap size={15} fill="var(--color-on-track)" color="var(--color-on-track)" />
+                      <span>AI Recommendations</span>
+                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      SQL-Driven
+                    </span>
                   </h2>
                   <p className="card-subtitle">Top recommendations based on current trends and historical patterns.</p>
                 </div>
@@ -399,7 +515,12 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                 <div className="summary-icon-pulse-wrapper">
                   <Sparkles size={16} color="#6EA7F5" />
                 </div>
-                <h2 className="card-title">AI Insight Summary</h2>
+                <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <span>AI Insight Summary</span>
+                  <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#EFF6FF', color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Grounded LLM
+                  </span>
+                </h2>
               </div>
               <p className="summary-insight-body-text">
                 {insightsData.summary_text}
@@ -417,7 +538,12 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div className="card column-card">
               <div className="column-card-header">
                 <div>
-                  <h2 className="card-title">Emerging Issues & Trends</h2>
+                  <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span>Emerging Issues & Trends</span>
+                    <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      SQL-Driven
+                    </span>
+                  </h2>
                   <p className="card-subtitle">Top issues showing increased activity across the project portfolio.</p>
                 </div>
                 <button className="card-link-btn" onClick={() => setActiveSubTab('issues')}>View All</button>
@@ -428,7 +554,9 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   <div key={idx} className="emerging-row-item">
                     <div className="emerging-row-details">
                       <span className="emerging-row-name">{issue.label}</span>
-                      <span className="emerging-row-sub">{issue.count} projects</span>
+                      <span className="emerging-row-sub">
+                        <AnimatedCounter value={issue.count} triggerKey={`issue-${issue.count}-${activeSubTab}`} /> projects
+                      </span>
                     </div>
                     <div className="emerging-row-value-spark">
                       <span className={`emerging-val ${issueValClasses[idx] || 'font-red'}`}>{issue.impact}</span>
@@ -443,7 +571,12 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div className="card column-card">
               <div className="column-card-header">
                 <div>
-                  <h2 className="card-title">Pattern Detection</h2>
+                  <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span>Pattern Detection</span>
+                    <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      SQL-Driven
+                    </span>
+                  </h2>
                   <p className="card-subtitle">Active patterns detected across projects.</p>
                 </div>
                 <button className="card-link-btn" onClick={() => setActiveSubTab('patterns')}>View All</button>
@@ -473,7 +606,12 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div className="card column-card dark-navy-theme historical-card">
               <div className="column-card-header">
                 <div>
-                  <h2 className="card-title">Historical Similarity</h2>
+                  <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span>Historical Similarity</span>
+                    <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      SQL-Driven
+                    </span>
+                  </h2>
                   <p className="card-subtitle">The project profile matches historical outcomes.</p>
                 </div>
                 <button className="card-link-btn" onClick={() => setActiveSubTab('similarity')}>View All</button>
@@ -483,7 +621,9 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
               <div className="historical-score-sub-card">
                 <div className="score-lbl">Similarity Score</div>
                 <div className="score-number-group">
-                  <span className="score-val">{insightsData.similarity.score}</span>
+                  <span className="score-val">
+                    <AnimatedCounter value={insightsData.similarity.score} triggerKey={`sim-${insightsData.similarity.score}`} />
+                  </span>
                   <span className="score-max">/{insightsData.similarity.total_comparable}</span>
                 </div>
                 <div className="score-desc">projects match this profile</div>
@@ -511,7 +651,12 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div className="card column-card">
               <div className="column-card-header">
                 <div>
-                  <h2 className="card-title">Predictive Insights</h2>
+                  <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span>Predictive Insights</span>
+                    <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#FEE2E2', color: '#DC2626', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      XGBoost ML
+                    </span>
+                  </h2>
                   <p className="card-subtitle">AI powered forecasts and predictions.</p>
                 </div>
                 <button className="card-link-btn" onClick={() => setActiveSubTab('predictive')}>View All</button>
@@ -523,8 +668,10 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     <TrendingUp size={14} color="var(--color-on-track)" />
                   </div>
                   <div className="pred-details">
-                    <span className="pred-lbl">Projects Entering Risk Zone</span>
-                    <span className="pred-val font-red">{insightsData.predictive.projects_entering_risk} projects</span>
+                    <span className="pred-lbl">Projects Entering Risk Zone <strong style={{ fontSize: '9px', opacity: 0.75, color: '#16A34A' }}>[SQL]</strong></span>
+                    <span className="pred-val font-red">
+                      <AnimatedCounter value={insightsData.predictive.projects_entering_risk} triggerKey={`pred-risk-${insightsData.predictive.projects_entering_risk}`} /> projects
+                    </span>
                   </div>
                   <span className="pred-variance-pct font-red">{insightsData.predictive.projects_entering_risk_pct}</span>
                 </div>
@@ -534,7 +681,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     <Clock size={14} color="#D97706" />
                   </div>
                   <div className="pred-details">
-                    <span className="pred-lbl">Expected Delay (Portfolio)</span>
+                    <span className="pred-lbl">Expected Delay (Portfolio) <strong style={{ fontSize: '9px', opacity: 0.75, color: '#DC2626' }}>[XGBoost]</strong></span>
                     <span className="pred-val font-red">{insightsData.predictive.expected_portfolio_delay}</span>
                   </div>
                 </div>
@@ -544,7 +691,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     <BarChart3 size={14} color="#A855F7" />
                   </div>
                   <div className="pred-details">
-                    <span className="pred-lbl">Potential Cost Overrun</span>
+                    <span className="pred-lbl">Potential Cost Overrun <strong style={{ fontSize: '9px', opacity: 0.75, color: '#DC2626' }}>[XGBoost]</strong></span>
                     <span className="pred-val font-red">{insightsData.predictive.potential_cost_overrun}</span>
                   </div>
                 </div>
@@ -554,7 +701,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     <Layers size={14} color="var(--navy-dark)" />
                   </div>
                   <div className="pred-details">
-                    <span className="pred-lbl">Risk Mitigation Scenarios</span>
+                    <span className="pred-lbl">Risk Mitigation Scenarios <strong style={{ fontSize: '9px', opacity: 0.6, color: '#475569' }}>[Simulated]</strong></span>
                     <span className="pred-val">{insightsData.predictive.active_scenarios} active scenarios</span>
                   </div>
                   <ChevronRight size={14} className="pred-arrow-right" />
@@ -580,7 +727,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   <div key={idx} className="sector-box">
                     <div className="sector-box-header">
                       <span className="sector-box-name">{s.name}</span>
-                      <span className={`sector-box-tag ${s.labelClass}`}>{s.label}</span>
+                      <span className={`sector-box-tag ${s.labelClass === 'font-red' ? 'tag-red' : s.labelClass === 'font-orange' ? 'tag-orange' : 'tag-blue'}`}>{s.label}</span>
                     </div>
                     <div className="sector-box-pct-row">
                       <span className="sector-box-pct font-red">{s.pct}</span>

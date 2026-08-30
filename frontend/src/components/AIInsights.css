@@ -990,3 +990,45 @@
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Sector Card Header & Tags ── */
+.sector-box-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.sector-box-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--navy-dark);
+  line-height: 1.25;
+}
+
+.sector-box-tag {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.sector-box-tag.tag-red {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+.sector-box-tag.tag-orange {
+  background-color: #FFEDD5;
+  color: #D97706;
+}
+
+.sector-box-tag.tag-blue {
+  background-color: #EBF3FF;
+  color: var(--color-on-track);
+}
