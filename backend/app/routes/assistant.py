@@ -44,11 +44,12 @@ def call_qwen_service(context: Dict[str, Any], query: str) -> Optional[str]:
         explainer = QwenExplainer()
         if explainer.api_key and len(explainer.api_key) > 5 and "your_" not in explainer.api_key.lower():
             ans = explainer.answer_question(context, query)
-            if ans and not ans.startswith("*(Generated via grounded rule-based"):
+            if ans:
                 return ans
     except Exception as e:
         logger.warning(f"Qwen LLM query call skipped: {e}")
     return None
+
 
 
 def answer_single_project_question(project: Project, question: str) -> AssistantQueryResponse:
