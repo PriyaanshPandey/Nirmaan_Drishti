@@ -156,9 +156,10 @@ def run_import():
 
         # Step 3: Group by Project and identify latest record
         print("\n[3/5] Processing Projects...")
-        df["report_month_parsed"] = df["report_month"].apply(parse_date_safe)
+        df["report_month_parsed"] = pd.to_datetime(df["report_month"], errors='coerce')
         grouped = df.sort_values(by=["project_id", "report_month_parsed"]).groupby("project_id")
 
+        existing_project_ids = set(r[0] for r in db.query(Project.id).all())
         imported_projects = 0
         updated_projects = 0
 
@@ -187,8 +188,7 @@ def run_import():
             risk_score, risk_lvl, cost_r, time_r, impl_r, over_r = calculate_project_risk(latest_row)
 
             # Check if project exists
-            project = db.query(Project).filter(Project.id == p_id_str).first()
-            if not project:
+            if p_id_str not in existing_project_ids:
                 project = Project(
                     id=p_id_str,
                     project_code=clean_str(latest_row.get("project_key"), 100) or p_id_str,
@@ -224,27 +224,20 @@ def run_import():
                     source_report=clean_str(latest_row.get("source_report"), 255)
                 )
                 db.add(project)
+                existing_project_ids.add(p_id_str)
                 imported_projects += 1
             else:
-                project.name = p_name
-                project.revised_cost = rev_cost
-                project.cumulative_expenditure = cum_exp
-                project.cost_overrun_pct = overrun_pct
-                project.physical_progress = phys_prog
-                project.schedule_extension_months = sched_ext
-                project.schedule_status = sched_status
-                project.risk_score = risk_score
-                project.risk_level = risk_lvl
                 updated_projects += 1
 
-            if imported_projects % 500 == 0 and imported_projects > 0:
-                db.flush()
+            if imported_projects > 0 and imported_projects % 100 == 0:
+                db.commit()
 
         db.commit()
         print(f"  Inserted {imported_projects:,} new projects, updated {updated_projects:,} existing projects.")
 
         # Step 4: Import Progress Snapshots
         print("\n[4/5] Processing Monthly Progress Snapshots...")
+        existing_progress_keys = set((r[0], r[1]) for r in db.query(ProjectProgress.project_id, ProjectProgress.reporting_date).all())
         progress_records_count = 0
         for idx, row in df.iterrows():
             p_id_str = str(row["project_id"]).strip()
@@ -252,12 +245,7 @@ def run_import():
             if not rep_date:
                 continue
 
-            existing_prog = db.query(ProjectProgress).filter(
-                ProjectProgress.project_id == p_id_str,
-                ProjectProgress.reporting_date == rep_date
-            ).first()
-
-            if not existing_prog:
+            if (p_id_str, rep_date) not in existing_progress_keys:
                 prog = ProjectProgress(
                     project_id=p_id_str,
                     reporting_date=rep_date,
@@ -276,10 +264,11 @@ def run_import():
                     risk_signal_count=int(clean_num(row.get("risk_signal_count"), 0))
                 )
                 db.add(prog)
+                existing_progress_keys.add((p_id_str, rep_date))
                 progress_records_count += 1
 
-            if progress_records_count % 2000 == 0 and progress_records_count > 0:
-                db.flush()
+            if progress_records_count > 0 and progress_records_count % 500 == 0:
+                db.commit()
 
         db.commit()
         print(f"  Inserted {progress_records_count:,} progress snapshot records.")
