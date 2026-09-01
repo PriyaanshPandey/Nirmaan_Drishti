@@ -27,6 +27,39 @@ export interface DashboardSummaryData {
     color: string;
     percentage: number;
   }>;
+  national_risk_distribution?: Array<{
+    id: string;
+    name: string;
+    count: number;
+    color: string;
+    percentage: number;
+  }>;
+  top_critical_projects?: Array<{
+    id: string;
+    projectId: string;
+    project: string;
+    riskScore: number;
+    riskLevel: string;
+    costOverrunPct: number;
+    costEscalationCrore: number;
+    delayMonths: number;
+    originalCost: number;
+    revisedCost: number;
+    sector: string;
+    ministry: string;
+    concern: string;
+  }>;
+  sector_overruns?: Array<{
+    sector_name: string;
+    total_projects: number;
+    total_original_cost: number;
+    total_revised_cost: number;
+    total_cost_escalation: number;
+    avg_cost_overrun_pct: number;
+    delayed_projects_count: number;
+    avg_delay_months: number;
+    max_delay_months: number;
+  }>;
   priority_interventions: Array<{
     id: string;
     project: string;
@@ -197,11 +230,11 @@ const FALLBACK_DASHBOARD: DashboardSummaryData = {
     { id: 'critical', name: 'Critical Delay', count: 455, color: '#EF4444', percentage: 13.5 }
   ],
   priority_interventions: [
-    { id: 'mumbai-metro-3', project: 'Mumbai Metro Line 3', riskScore: 92, concern: 'Clearance & Depot' },
-    { id: 'mumbai-ahmedabad-bullet', project: 'Mumbai-Ahmedabad Bullet Train', riskScore: 88, concern: 'Land Acq.' },
-    { id: 'prj-705237', project: 'Western Dedicated Freight Corridor', riskScore: 83, concern: 'Overrun & Utility' },
-    { id: 'prj-618412', project: 'Zojila Tunnel Construction', riskScore: 78, concern: 'Extreme Weather' },
-    { id: 'prj-706811', project: 'NMDC Slurry Pipeline Phase-1', riskScore: 75, concern: 'Procurement' }
+    { id: '400006', project: 'Jharsuguda-Barpali-Sardega Ph II Works- Rail Connectivity', riskScore: 92, concern: 'Clearance & Depot' },
+    { id: '400259', project: 'Construction of 3rd line between Bhadrak and Nargundi (92 Kms)', riskScore: 88, concern: 'Land Acq.' },
+    { id: '619075', project: 'Sivok - Rangpo New Rail Line Project (44.96 km)', riskScore: 83, concern: 'Overrun & Utility' },
+    { id: '400112', project: 'Udhampur-Srinagar-Baramulla Rail Link (USBRL) Project', riskScore: 78, concern: 'Extreme Weather' },
+    { id: '400812', project: 'Four Laning of Ramban to Banihal Section of NH-1A', riskScore: 75, concern: 'Procurement' }
   ],
   delay_factors: [
     { id: 'land', label: 'Land Acquisition', impact: '+23%', percentage: 85, color: '#090B2E' },

@@ -6,6 +6,42 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
 
+class RiskSegment(BaseModel):
+    id: str
+    name: str
+    count: int
+    color: str
+    percentage: float
+
+
+class TopCriticalProjectItem(BaseModel):
+    id: str
+    projectId: str
+    project: str
+    riskScore: int
+    riskLevel: str
+    costOverrunPct: float
+    costEscalationCrore: float
+    delayMonths: int
+    originalCost: float
+    revisedCost: float
+    sector: str
+    ministry: str
+    concern: str
+
+
+class SectorOverrunItem(BaseModel):
+    sector_name: str
+    total_projects: int
+    total_original_cost: float
+    total_revised_cost: float
+    total_cost_escalation: float
+    avg_cost_overrun_pct: float
+    delayed_projects_count: int
+    avg_delay_months: float
+    max_delay_months: float
+
+
 class MetricCardsData(BaseModel):
     total_projects: int
     total_projects_subtext: str
@@ -79,9 +115,13 @@ class AIActionCenterData(BaseModel):
 class DashboardSummary(BaseModel):
     metrics: MetricCardsData
     health_distribution: List[HealthSegment]
+    national_risk_distribution: List[RiskSegment] = []
+    top_critical_projects: List[TopCriticalProjectItem] = []
+    sector_overruns: List[SectorOverrunItem] = []
     priority_interventions: List[PriorityInterventionItem]
     delay_factors: List[DelayFactorItem]
     risk_trend: RiskTrendData
     ai_action_center: AIActionCenterData
     total_projects: int
     as_of_date: str
+

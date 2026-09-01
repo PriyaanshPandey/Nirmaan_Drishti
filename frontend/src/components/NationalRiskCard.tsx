@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './DonutChart.css';
+import './NationalRiskCard.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 
-interface ChartSegment {
+interface RiskSegment {
   id: string;
   name: string;
   count: number;
@@ -11,20 +12,19 @@ interface ChartSegment {
   percentage: number;
 }
 
-const DEFAULT_HEALTH_DIST: ChartSegment[] = [
-  { id: 'on-track', name: 'On Track', count: 1848, color: '#22C55E', percentage: 55.0 },
-  { id: 'monitoring', name: 'Monitoring', count: 638, color: '#3B82F6', percentage: 19.0 },
-  { id: 'at-risk', name: 'At Risk', count: 420, color: '#F59E0B', percentage: 12.5 },
-  { id: 'critical', name: 'Critical Delay', count: 455, color: '#EF4444', percentage: 13.5 }
+const DEFAULT_RISK_DIST: RiskSegment[] = [
+  { id: 'high_risk', name: 'High Risk / Critical', count: 455, color: '#EF4444', percentage: 13.5 },
+  { id: 'medium_risk', name: 'Medium Risk', count: 1058, color: '#EAB308', percentage: 31.5 },
+  { id: 'low_risk', name: 'Low Risk', count: 1848, color: '#22C55E', percentage: 55.0 }
 ];
 
-interface DonutChartProps {
+interface NationalRiskCardProps {
   activeTab?: string;
 }
 
-export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
-  const [data, setData] = useState<ChartSegment[]>(DEFAULT_HEALTH_DIST);
-  const [hoveredSegment, setHoveredSegment] = useState<ChartSegment | null>(null);
+export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab }) => {
+  const [data, setData] = useState<RiskSegment[]>(DEFAULT_RISK_DIST);
+  const [hoveredSegment, setHoveredSegment] = useState<RiskSegment | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -36,16 +36,10 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
 
     api.getDashboardSummary().then((res) => {
       if (!isMounted) return;
-      if (res && res.health_distribution && res.health_distribution.length > 0) {
-        const total = res.health_distribution.reduce((a, b) => a + b.count, 0);
+      if (res && res.national_risk_distribution && res.national_risk_distribution.length > 0) {
+        const total = res.national_risk_distribution.reduce((a, b) => a + b.count, 0);
         if (total > 0) {
-          setData(res.health_distribution.map(d => ({
-            id: d.id,
-            name: d.name,
-            count: d.count,
-            color: d.color,
-            percentage: d.percentage,
-          })));
+          setData(res.national_risk_distribution);
         }
       }
     }).catch(() => {
@@ -66,10 +60,10 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
   const totalProjects = data.reduce((acc, curr) => acc + curr.count, 0);
 
   return (
-    <div className="card donut-card">
+    <div className="card donut-card national-risk-card">
       <div className="card-header">
-        <h2 className="card-title">Project Health Distribution</h2>
-        <p className="card-subtitle">By project status</p>
+        <h2 className="card-title">National Risk Distribution</h2>
+        <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
       </div>
 
       <div className="donut-chart-container">
@@ -83,13 +77,12 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
               stroke="#F1F5F9"
               strokeWidth={strokeWidth}
             />
-            
+
             {data.map((segment) => {
               const strokeLength = (segment.percentage / 100) * circumference;
               const strokeOffset = circumference - (accumulatedPercentage / 100) * circumference;
-              
-              accumulatedPercentage += segment.percentage;
 
+              accumulatedPercentage += segment.percentage;
               const isHovered = hoveredSegment?.id === segment.id;
 
               return (

@@ -1,0 +1,261 @@
+.paimana-map-section {
+  width: 100%;
+  background: linear-gradient(135deg, #D6EEFF 0%, #E8F4FD 30%, #C8E6FF 60%, #D6EEFF 100%);
+  border-radius: 20px;
+  padding: 32px;
+  border: 1px solid #BAE6FD;
+  box-shadow: 0 8px 30px rgba(2, 132, 199, 0.08);
+  margin-top: 10px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative wave behind map (matching PAIMANA background) */
+.paimana-map-section::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: -10%;
+  width: 120%;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(186,230,253,0.15) 100%);
+  transform: rotate(-5deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.paimana-map-section::after {
+  content: '';
+  position: absolute;
+  bottom: 10%;
+  left: -5%;
+  width: 110%;
+  height: 200px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(186,230,253,0.1) 100%);
+  transform: rotate(3deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.map-section-header {
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.map-section-title {
+  font-size: 26px;
+  font-weight: 850;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.as-of-tag {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.map-section-subtitle {
+  font-size: 14.5px;
+  color: #475569;
+  margin-top: 4px;
+}
+
+.paimana-map-container {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 32px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Left Side: PAIMANA State Metrics Card */
+.state-metrics-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 24px 28px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.state-card-header {
+  background: #0B112C;
+  color: #FFFFFF;
+  padding: 14px 24px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(11, 17, 44, 0.25);
+}
+
+.state-header-title {
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.state-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+}
+
+.state-metric-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #E2E8F0;
+}
+
+.metric-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-box-blue {
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+}
+
+.icon-box-green {
+  background: #ECFDF5;
+  border: 1px solid #D1FAE5;
+}
+
+.icon-box-red {
+  background: #FEF2F2;
+  border: 1px solid #FEE2E2;
+}
+
+.icon-box-amber {
+  background: #FFFBEB;
+  border: 1px solid #FEF3C7;
+}
+
+.icon-box-slate {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+}
+
+.icon-box-purple {
+  background: #F5F3FF;
+  border: 1px solid #DDD6FE;
+}
+
+.metric-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-lbl {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0F172A;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.metric-val {
+  font-size: 22px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+}
+
+/* Right Side: India Real SVG Map */
+.india-map-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 420px;
+}
+
+.india-svg-map {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  overflow: visible;
+}
+
+.state-path-real:hover {
+  filter: brightness(1.1) drop-shadow(0 3px 8px rgba(15, 23, 42, 0.3)) !important;
+}
+
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* PAIMANA Vertical Choropleth Legend Scale */
+.choropleth-legend {
+  position: absolute;
+  right: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.legend-max,
+.legend-min {
+  font-size: 11px;
+  font-weight: 850;
+  color: #475569;
+}
+
+.legend-gradient-bar {
+  width: 12px;
+  height: 150px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #7F1D1D 0%, #991B1B 15%, #B91C1C 30%, #DC2626 45%, #E8866A 60%, #F4B99A 75%, #FDDCBF 90%, #FFF5E1 100%);
+  border: 1px solid #E2E8F0;
+}
+
+@media (max-width: 992px) {
+  .paimana-map-container {
+    grid-template-columns: 1fr;
+  }
+}

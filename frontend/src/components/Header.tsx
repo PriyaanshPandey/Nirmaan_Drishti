@@ -29,7 +29,7 @@ export const Header: React.FC = () => {
   return (
     <header className="dashboard-header">
       <div className="header-left">
-        <h1 className="header-title">Nirmaan Dristi</h1>
+        <h1 className="header-title">Nirmaan Drishti</h1>
         <p className="header-subtitle">National Infrastructure Early Warning &amp; Predictive Monitoring Platform</p>
       </div>
       <div className="header-right">

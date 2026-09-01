@@ -44,18 +44,38 @@ body {
   font-family: var(--font-sans);
   background: var(--bg-main);
   background-color: var(--bg-main);
-  background-attachment: fixed;
   color: var(--navy-dark);
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding: 32px 48px;
 }
 
 #root {
   width: 100%;
-  max-width: 1320px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.app-main-content {
+  width: 100%;
+  max-width: 1360px;
   margin: 0 auto;
+  padding: 32px 48px 40px 48px;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -131,8 +151,8 @@ h3 {
 /* Dashboard Layout Grid */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1.15fr 1.55fr 2fr;
-  gap: 28px;
+  grid-template-columns: 260px 1fr 1fr;
+  gap: 24px;
 }
 
 .dashboard-row-2 {
