@@ -37,6 +37,8 @@ interface Svg3DCuboidProps {
   sectorName: string;
   tooltipContent: { val: string; sub: string };
   onHover: (hovered: boolean) => void;
+  barIndex: number;
+  totalBars: number;
 }
 
 const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
@@ -50,7 +52,9 @@ const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
   mounted,
   sectorName,
   tooltipContent,
-  onHover
+  onHover,
+  barIndex,
+  totalBars
 }) => {
   const chartHeight = 150;
   const barWidth = 32;
@@ -65,6 +69,22 @@ const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
   const bottomY = chartHeight;
   const topY = bottomY - targetH;
 
+  // Value label adjusted upward by approximately 5px (was Math.max(16, topY - 10))
+  const labelY = Math.max(11, topY - 15);
+
+  // Dynamic vertical tooltip positioning:
+  // Tooltip height is ~52px + 5px caret = 57px.
+  // Setting top at labelY - 75 provides ~8-10px clearance between tooltip bottom and value label.
+  // Clamped at -52px so tall bars stay comfortably within the card boundary.
+  const tooltipTop = Math.max(-52, labelY - 75);
+
+  // Dynamic horizontal positioning:
+  // Smoothly adapts shift from -18% (far-left bar) to -82% (far-right bar) so tooltip never clips card boundary.
+  // Caret arrow points directly at the center of the bar.
+  const ratio = totalBars > 1 ? barIndex / (totalBars - 1) : 0.5;
+  const shiftX = -18 + ratio * (-82 - -18);
+  const caretX = Math.min(82, Math.max(18, -shiftX));
+
   return (
     <div
       className={`svg-bar-column ${isHovered ? 'bar-hovered' : ''}`}
@@ -73,7 +93,14 @@ const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
     >
       {/* 3D Floating Tooltip */}
       {isHovered && (
-        <div className="v-bar-3d-tooltip">
+        <div
+          className="v-bar-3d-tooltip"
+          style={{
+            top: `${tooltipTop}px`,
+            transform: `translateX(${shiftX.toFixed(1)}%)`,
+            ['--caret-x' as any]: `${caretX.toFixed(1)}%`,
+          }}
+        >
           <span className="tooltip-title">{sectorName}</span>
           <span className="tooltip-val" style={{ color: frontColor }}>{tooltipContent.val}</span>
           <span className="tooltip-sub">{tooltipContent.sub}</span>
@@ -88,10 +115,10 @@ const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
           viewBox="0 0 48 175"
           className="iso-3d-svg"
         >
-          {/* Top Value Tag */}
+          {/* Top Value Tag (moved up by 5px) */}
           <text
             x={barWidth / 2 + 2}
-            y={Math.max(16, topY - 10)}
+            y={labelY}
             textAnchor="middle"
             fontSize="11.5"
             fontWeight="850"
@@ -175,7 +202,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
 
   return (
     <div className="global-overruns-grid-2">
-      {/* Card 1 (Left): Global Cost Escalation (₹ Cr) */}
+      {/* Card 1 (Left): Global Cost Escalation */}
       <div className="card overrun-card-col">
         <div className="overrun-card-header">
           <div className="overrun-header-left">
@@ -184,13 +211,13 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
             </div>
             <div>
               <h2 className="card-title">Global Cost Escalation</h2>
-              <p className="card-subtitle">Real cost drift by sector (₹ Crore)</p>
+              <p className="card-subtitle">Real cost drift by sector (Crore)</p>
             </div>
           </div>
           <div className="metric-chip-pill chip-teal">
             <span className="chip-label">TOTAL COST DRIFT</span>
             <span className="chip-value">
-              ₹<AnimatedCounter value={Math.round(totalEscalationCrore)} resetKey={activeTab} /> Cr
+              <AnimatedCounter value={Math.round(totalEscalationCrore)} resetKey={activeTab} /> Cr
             </span>
           </div>
         </div>
@@ -204,7 +231,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               return (
                 <Svg3DCuboidBar
                   key={sec.sector_name}
-                  valText={`₹${(sec.total_cost_escalation / 1000).toFixed(0)}k`}
+                  valText={`${(sec.total_cost_escalation / 1000).toFixed(0)}k`}
                   heightPct={heightPct}
                   frontColor="#0284C7"
                   topColor="#38BDF8"
@@ -214,10 +241,12 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
                   mounted={mounted}
                   sectorName={sec.sector_name}
                   tooltipContent={{
-                    val: `₹${sec.total_cost_escalation.toLocaleString()} Cr`,
+                    val: `${sec.total_cost_escalation.toLocaleString()} Cr`,
                     sub: `+${sec.avg_cost_overrun_pct}% avg overrun`
                   }}
                   onHover={(h) => setHoveredCostIndex(h ? idx : null)}
+                  barIndex={idx}
+                  totalBars={sectors.length}
                 />
               );
             })}
@@ -225,7 +254,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
         </div>
       </div>
 
-      {/* Card 2 (Right): Global Time Overrun (Months) */}
+      {/* Card 2 (Right): Global Schedule Delays */}
       <div className="card overrun-card-col">
         <div className="overrun-card-header">
           <div className="overrun-header-left">
@@ -254,7 +283,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               return (
                 <Svg3DCuboidBar
                   key={sec.sector_name}
-                  valText={`${sec.avg_delay_months}m`}
+                  valText={`${sec.avg_delay_months}d`}
                   heightPct={heightPct}
                   frontColor="#D97706"
                   topColor="#FBBF24"
@@ -268,6 +297,8 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
                     sub: `${sec.delayed_projects_count} Delayed Assets`
                   }}
                   onHover={(h) => setHoveredTimeIndex(h ? idx : null)}
+                  barIndex={idx}
+                  totalBars={sectors.length}
                 />
               );
             })}
