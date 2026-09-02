@@ -291,14 +291,39 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                 className="page-btn" 
                 disabled={page <= 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
+                title="Previous Page"
               >
                 <ChevronLeft size={16} />
               </button>
-              <button className="page-btn active">{page}</button>
+
+              {(() => {
+                const pages: number[] = [];
+                const maxButtons = 5;
+                let start = Math.max(1, page - Math.floor(maxButtons / 2));
+                let end = start + maxButtons - 1;
+                if (end > totalPages) {
+                  end = totalPages;
+                  start = Math.max(1, end - maxButtons + 1);
+                }
+                for (let i = start; i <= end; i++) {
+                  pages.push(i);
+                }
+                return pages.map(pNum => (
+                  <button
+                    key={pNum}
+                    className={`page-btn ${page === pNum ? 'active' : ''}`}
+                    onClick={() => setPage(pNum)}
+                  >
+                    {pNum}
+                  </button>
+                ));
+              })()}
+
               <button 
                 className="page-btn" 
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                title="Next Page"
               >
                 <ChevronRight size={16} />
               </button>
