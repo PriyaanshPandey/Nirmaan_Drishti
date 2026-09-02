@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './DonutChart.css';
 import './NationalRiskCard.css';
 import { AnimatedCounter } from './AnimatedCounter';
@@ -25,13 +25,31 @@ interface NationalRiskCardProps {
 export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab }) => {
   const [data, setData] = useState<RiskSegment[]>(DEFAULT_RISK_DIST);
   const [hoveredSegment, setHoveredSegment] = useState<RiskSegment | null>(null);
+  const [selectedSegment, setSelectedSegment] = useState<RiskSegment | null>(null);
   const [mounted, setMounted] = useState(false);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+
+  // Click outside resets to default TOTAL state
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (chartContainerRef.current && !chartContainerRef.current.contains(e.target as Node)) {
+        setSelectedSegment(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
 
-    // Reset forming animation whenever user switches back to dashboard
+    // Reset forming animation and selections whenever user switches back to dashboard
     setMounted(false);
+    setSelectedSegment(null);
+    setHoveredSegment(null);
     const t = setTimeout(() => setMounted(true), 60);
 
     api.getDashboardSummary().then((res) => {
@@ -52,15 +70,60 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
     };
   }, [activeTab]);
 
-  const radius = 50;
+  const radius = 58; // Increased by 8px of radius (was 50)
   const strokeWidth = 14;
-  const circumference = 2 * Math.PI * radius; // ~314.159
+  const circumference = 2 * Math.PI * radius; // ~364.42
+  const popDistance = 3.5; // Radial outward distance (2-4px)
 
-  let accumulatedPercentage = 0;
-  const totalProjects = data.reduce((acc, curr) => acc + curr.count, 0);
+  const totalProjects = useMemo(() => data.reduce((acc, curr) => acc + curr.count, 0), [data]);
+
+  const computedSegments = useMemo(() => {
+    let acc = 0;
+    return data.map((segment) => {
+      const startPercent = acc;
+      const segmentPercent = segment.percentage;
+      const endPercent = startPercent + segmentPercent;
+      const midPercent = (startPercent + endPercent) / 2;
+      acc = endPercent;
+
+      // Start angle in degrees: 0% is at 12 o'clock (-90deg), proceeding clockwise
+      const startDeg = (startPercent / 100) * 360 - 90;
+
+      // Bisector angle for radial outward translation on hover/click
+      const angleRad = (midPercent / 100) * 2 * Math.PI;
+      const dx = Math.sin(angleRad) * popDistance;
+      const dy = -Math.cos(angleRad) * popDistance;
+
+      const strokeLength = (segmentPercent / 100) * circumference;
+
+      return {
+        ...segment,
+        startDeg,
+        dx,
+        dy,
+        strokeLength,
+      };
+    });
+  }, [data, circumference, popDistance]);
+
+  // Active segment: hover takes precedence while mouse is interacting, falls back to selected
+  const activeSegment = hoveredSegment || selectedSegment;
+
+  const handleSegmentClick = (segment: RiskSegment, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedSegment((prev) => (prev?.id === segment.id ? null : segment));
+  };
 
   return (
-    <div className="card donut-card national-risk-card">
+    <div
+      ref={chartContainerRef}
+      className="card donut-card national-risk-card"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          setSelectedSegment(null);
+        }
+      }}
+    >
       <div className="card-header">
         <h2 className="card-title">National Risk Distribution</h2>
         <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
@@ -69,73 +132,101 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
       <div className="donut-chart-container">
         <div className="donut-svg-wrapper">
           <svg viewBox="0 0 140 140" className="donut-svg">
+            {/* Background track circle */}
             <circle
               cx="70"
               cy="70"
               r={radius}
-              fill="transparent"
+              fill="none"
               stroke="#F1F5F9"
               strokeWidth={strokeWidth}
             />
 
-            {data.map((segment) => {
-              const strokeLength = (segment.percentage / 100) * circumference;
-              const strokeOffset = circumference - (accumulatedPercentage / 100) * circumference;
+            {/* Inner transparent circle to reset selection when center hole is clicked */}
+            <circle
+              cx="70"
+              cy="70"
+              r={radius - strokeWidth / 2}
+              fill="transparent"
+              style={{ cursor: selectedSegment ? 'pointer' : 'default', pointerEvents: 'all' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedSegment(null);
+              }}
+            />
 
-              accumulatedPercentage += segment.percentage;
-              const isHovered = hoveredSegment?.id === segment.id;
+            {computedSegments.map((segment) => {
+              const isActive = activeSegment?.id === segment.id;
 
               return (
-                <circle
+                <g
                   key={segment.id}
-                  cx="70"
-                  cy="70"
-                  r={radius}
-                  fill="transparent"
-                  stroke={segment.color}
-                  strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
-                  strokeDasharray={`${mounted ? strokeLength : 0} ${circumference}`}
-                  strokeDashoffset={strokeOffset}
-                  className={`donut-segment${isHovered ? ' donut-segment-hovered' : ''}`}
+                  className="donut-segment-group"
                   style={{
-                    transformOrigin: 'center',
-                    transform: 'rotate(-90deg)',
-                    transition: 'stroke-dasharray 1.1s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.25s ease, filter 0.25s ease',
-                    cursor: 'pointer',
-                    filter: isHovered ? `drop-shadow(0 0 8px ${segment.color})` : 'none',
+                    transform: isActive ? `translate(${segment.dx.toFixed(2)}px, ${segment.dy.toFixed(2)}px)` : 'translate(0px, 0px)',
+                    transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
-                  onMouseEnter={() => setHoveredSegment(segment)}
-                  onMouseLeave={() => setHoveredSegment(null)}
-                />
+                >
+                  <circle
+                    cx="70"
+                    cy="70"
+                    r={radius}
+                    fill="none"
+                    stroke={segment.color}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${mounted ? segment.strokeLength : 0} ${circumference}`}
+                    strokeDashoffset={0}
+                    className={`donut-segment${isActive ? ' donut-segment-hovered' : ''}`}
+                    style={{
+                      transformOrigin: '70px 70px',
+                      transform: `rotate(${segment.startDeg}deg)`,
+                      transition: 'stroke-dasharray 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease',
+                      cursor: 'pointer',
+                      pointerEvents: 'stroke',
+                      filter: isActive ? `drop-shadow(0 0 8px ${segment.color})` : 'none',
+                    }}
+                    onMouseEnter={() => setHoveredSegment(segment)}
+                    onMouseLeave={() => setHoveredSegment(null)}
+                    onClick={(e) => handleSegmentClick(segment, e)}
+                  />
+                </g>
               );
             })}
           </svg>
 
-          <div className="donut-center-text">
+          <div
+            className="donut-center-text"
+            style={{ cursor: selectedSegment ? 'pointer' : 'default' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedSegment(null);
+            }}
+          >
             <span className="donut-center-value">
-              <AnimatedCounter value={hoveredSegment ? hoveredSegment.count : totalProjects} resetKey={activeTab} />
+              <AnimatedCounter value={activeSegment ? activeSegment.count : totalProjects} resetKey={activeTab} />
             </span>
             <span className="donut-center-label">
-              {hoveredSegment ? hoveredSegment.name : 'TOTAL'}
+              {activeSegment ? activeSegment.name : 'TOTAL'}
             </span>
           </div>
         </div>
 
         <div className="donut-legend">
           {data.map((segment) => {
-            const isHovered = hoveredSegment?.id === segment.id;
+            const isActive = activeSegment?.id === segment.id;
             return (
               <div
                 key={segment.id}
-                className={`legend-item${isHovered ? ' legend-item-hovered' : ''}`}
+                className={`legend-item${isActive ? ' legend-item-hovered' : ''}`}
                 onMouseEnter={() => setHoveredSegment(segment)}
                 onMouseLeave={() => setHoveredSegment(null)}
+                onClick={(e) => handleSegmentClick(segment, e)}
               >
                 <div className="legend-row-top">
                   <div className="legend-label-left">
                     <span
                       className="legend-color-dot"
-                      style={{ backgroundColor: segment.color, boxShadow: isHovered ? `0 0 6px ${segment.color}` : 'none' }}
+                      style={{ backgroundColor: segment.color, boxShadow: isActive ? `0 0 6px ${segment.color}` : 'none' }}
                     />
                     <span className="legend-name">{segment.name}</span>
                   </div>

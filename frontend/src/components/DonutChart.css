@@ -27,8 +27,8 @@
 
 .donut-svg-wrapper {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 160px;
+  height: 160px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -43,9 +43,16 @@
   display: block;
 }
 
+.donut-segment-group {
+  will-change: transform;
+}
+
 .donut-segment {
+  fill: none;
+  pointer-events: stroke;
   cursor: pointer;
   outline: none;
+  transition: filter 0.25s ease;
 }
 
 .donut-center-text {
@@ -79,7 +86,7 @@
   color: var(--text-muted);
   letter-spacing: 0.08em;
   margin-top: 3px;
-  max-width: 95px;
+  max-width: 105px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

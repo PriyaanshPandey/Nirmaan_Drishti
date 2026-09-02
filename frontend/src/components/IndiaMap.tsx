@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Building2, Coins, TrendingUp, Clock } from 'lucide-react';
 import './IndiaMap.css';
 import { projectsData, type Project } from '../data/projectsData';
@@ -104,6 +105,36 @@ interface IndiaMapProps {
 export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
   const [selectedStateId, setSelectedStateId] = useState<string>('up');
   const [hoveredStateId, setHoveredStateId] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; name: string }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    name: ''
+  });
+
+  const handleStateMouseEnter = (locId: string, locName: string, e: React.MouseEvent) => {
+    setHoveredStateId(locId);
+    const label = ID_TO_LABEL[locId] || locName;
+    setTooltip({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      name: label
+    });
+  };
+
+  const handleStateMouseMove = (locId: string, locName: string, e: React.MouseEvent) => {
+    setTooltip(prev => ({
+      ...prev,
+      x: e.clientX,
+      y: e.clientY
+    }));
+  };
+
+  const handleStateMouseLeave = () => {
+    setHoveredStateId(null);
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
 
   const activeResetTrigger = `${selectedStateId}-${resetKey !== undefined ? resetKey : activeTab}`;
 
@@ -314,8 +345,9 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                   strokeLinecap="round"
                   className="state-path-real"
                   onClick={() => setSelectedStateId(loc.id)}
-                  onMouseEnter={() => setHoveredStateId(loc.id)}
-                  onMouseLeave={() => setHoveredStateId(null)}
+                  onMouseEnter={(e) => handleStateMouseEnter(loc.id, loc.name, e)}
+                  onMouseMove={(e) => handleStateMouseMove(loc.id, loc.name, e)}
+                  onMouseLeave={handleStateMouseLeave}
                   style={{
                     cursor: 'pointer',
                     transition: 'all 0.25s ease',
@@ -324,42 +356,22 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                 />
               );
             })}
-
-            {/* Floating tooltip label matching PAIMANA's gold/tan pill */}
-            {hoveredStateId && (() => {
-              const hoveredLoc = mapLocations.find((l: any) => l.id === hoveredStateId);
-              if (!hoveredLoc) return null;
-              const center = getPathCenter(hoveredLoc.path);
-              const label = ID_TO_LABEL[hoveredStateId] || hoveredLoc.name;
-              const shortLabel = label.length > 16 ? label.substring(0, 14) + '…' : label;
-              const pillW = Math.max(90, shortLabel.length * 7.5 + 20);
-
-              return (
-                <g pointerEvents="none">
-                  <rect
-                    x={center.x - pillW / 2}
-                    y={center.y - 14}
-                    width={pillW}
-                    height="26"
-                    rx="13"
-                    fill="#E8C88A"
-                    stroke="#1D2A54"
-                    strokeWidth="1"
-                  />
-                  <text
-                    x={center.x}
-                    y={center.y + 3}
-                    textAnchor="middle"
-                    fontSize="10"
-                    fontWeight="800"
-                    fill="#1D2A54"
-                  >
-                    {shortLabel}
-                  </text>
-                </g>
-              );
-            })()}
           </svg>
+
+          {/* Cursor-tracking Tooltip (exactly 2px above cursor) */}
+          {tooltip.visible && createPortal(
+            <div
+              className="state-cursor-tooltip"
+              style={{
+                left: `${tooltip.x}px`,
+                top: `${tooltip.y - 2}px`,
+                transform: 'translate(-50%, -100%)',
+              }}
+            >
+              {tooltip.name}
+            </div>,
+            document.body
+          )}
 
           {/* PAIMANA Vertical Choropleth Legend */}
           <div className="choropleth-legend">
