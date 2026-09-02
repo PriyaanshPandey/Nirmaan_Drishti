@@ -259,3 +259,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+.state-cursor-tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  margin: 0;
+  padding: 6px 12px;
+  background: #1E293B;
+  color: #F8FAFC;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+  line-height: 1.2;
+}

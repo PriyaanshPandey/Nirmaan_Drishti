@@ -168,9 +168,7 @@
 /* 3D Interactive Tooltip */
 .v-bar-3d-tooltip {
   position: absolute;
-  top: -45px;
   left: 50%;
-  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -190,7 +188,7 @@
   content: '';
   position: absolute;
   bottom: -5px;
-  left: 50%;
+  left: var(--caret-x, 50%);
   transform: translateX(-50%);
   width: 0;
   height: 0;
@@ -217,8 +215,8 @@
 }
 
 @keyframes tooltipFade {
-  from { opacity: 0; transform: translate(-50%, 6px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (max-width: 900px) {
