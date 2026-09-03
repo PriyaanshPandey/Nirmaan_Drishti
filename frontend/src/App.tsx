@@ -42,14 +42,18 @@ function App() {
 
   return (
     <div className="app-layout">
-      <div className="app-main-content">
+      {/* ── Home Page (Direct rendering without transform containing block for sticky pinning) ── */}
+      {activeTab === 'home' && (
+        <Home activeTab={activeTab} onNavigateTab={handleTabChange} />
+      )}
+
+      {/* ── Inner App Modules (Standard 1360px container with Top Navbar) ── */}
+      <div 
+        className="app-main-content" 
+        style={{ display: activeTab === 'home' ? 'none' : 'flex' }}
+      >
         {/* Pill-shaped Top Navbar */}
         <Navbar activeTab={activeTab} setActiveTab={handleTabChange} />
-
-        {/* ── Home Welcome Page ── */}
-        <PageSlot id="home" activeTab={activeTab}>
-          <Home activeTab={activeTab} onNavigateTab={handleTabChange} />
-        </PageSlot>
 
         {/* ── Dashboard ── */}
         <PageSlot id="dashboard" activeTab={activeTab}>

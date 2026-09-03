@@ -1,3 +1,31 @@
+.home-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.home-content-container {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 32px 48px 48px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background-color: var(--bg-main, #FFFFFF);
+}
+
+.home-navbar-sticky {
+  position: sticky;
+  top: 16px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
 .home-container {
   display: flex;
   flex-direction: column;
