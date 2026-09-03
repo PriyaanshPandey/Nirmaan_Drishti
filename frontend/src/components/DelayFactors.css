@@ -1,0 +1,95 @@
+.delay-factors-card {
+  height: 100%;
+}
+
+.factors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* Increased spacing */
+  margin-top: 10px;
+}
+
+.factor-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Increased from 6px */
+  cursor: pointer;
+}
+
+.factor-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.factor-label {
+  font-size: 13px; /* Increased from 11px */
+  font-weight: 750; /* Bolder */
+  color: var(--navy-dark);
+}
+
+.factor-impact {
+  font-size: 13px; /* Increased from 11px */
+  font-weight: 850; /* Strongest */
+  color: var(--navy-dark);
+}
+
+.factor-bar-bg {
+  width: 100%;
+  height: 8px; /* Increased from 6px */
+  background-color: #E2E8F0;
+  border-radius: 100px;
+  overflow: hidden;
+  position: relative;
+  transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.factor-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  width: 0;
+  transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Custom interactive hover enhancements to add character */
+.factor-item:hover .factor-info {
+  transform: translateY(-1px);
+}
+
+.factor-item:hover .factor-bar-bg {
+  height: 10px; /* Expands height slightly */
+  background-color: #CBD5E1;
+}
+
+/* Add a sliding white shine overlay on progress bar hover */
+.factor-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transition: none;
+}
+
+.factor-item:hover .factor-bar-fill::after {
+  animation: shineBar 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes shineBar {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 150%;
+  }
+}

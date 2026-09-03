@@ -1,0 +1,148 @@
+/* =============================================
+   PAGE LOADER — Skeleton Shimmer Transition
+   ============================================= */
+
+/* Overlay that wraps the entire skeleton */
+.page-loader-overlay {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: loaderFadeIn 0.2s ease both;
+}
+
+@keyframes loaderFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #EDF2F7 0px,
+    #E2E8F0 40px,
+    #EDF2F7 80px
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 12px;
+}
+
+/* ── Top shimmer progress bar ── */
+.loader-top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #2F6BF4, #6EA7F5, #2F6BF4, transparent);
+  background-size: 600px 100%;
+  animation: topBarSlide 1.2s ease-in-out infinite;
+  z-index: 999;
+}
+
+@keyframes topBarSlide {
+  0%   { background-position: -600px 0; opacity: 1; }
+  60%  { background-position: 600px 0; opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { background-position: 600px 0; opacity: 0; }
+}
+
+/* ── Brand Splash Row ── */
+.loader-brand-splash {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0 4px;
+  animation: loaderFadeIn 0.3s ease 0.1s both;
+}
+
+/* Spinning ring */
+.loader-spinner-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3.5px solid #E2E8F0;
+  border-top-color: #2F6BF4;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.loader-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--navy-dark);
+  letter-spacing: -0.03em;
+}
+
+.loader-brand-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+/* ── Skeleton Body ── */
+.loader-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 4px;
+}
+
+/* Header skeleton */
+.skeleton-header-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-title {
+  width: 260px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.skeleton-subtitle {
+  width: 180px;
+  height: 14px;
+  border-radius: 6px;
+}
+
+/* 3-col card row */
+.skeleton-cards-row-3 {
+  display: grid;
+  grid-template-columns: 1.15fr 1.55fr 2fr;
+  gap: 28px;
+}
+
+/* 2-col card row */
+.skeleton-cards-row-2 {
+  display: grid;
+  grid-template-columns: 1.15fr 3fr;
+  gap: 28px;
+}
+
+.skeleton-card {
+  border-radius: 18px;
+}
+
+.skeleton-card.tall   { height: 280px; }
+.skeleton-card.medium { height: 200px; }
+.skeleton-card.wide   { grid-column: span 1; }

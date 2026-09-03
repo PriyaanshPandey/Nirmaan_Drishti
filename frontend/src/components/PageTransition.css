@@ -1,0 +1,96 @@
+/* ══════════════════════════════════════════
+   PAGE TRANSITION SYSTEM
+   Cross-dissolve fade — instant feel, zero lag
+   Uses will-change + GPU compositing for 60fps
+   ══════════════════════════════════════════ */
+
+.page-slot {
+  /* Each page occupies full width, starts hidden */
+  width: 100%;
+  /* GPU-accelerated layer promotion */
+  will-change: opacity, transform;
+  /* Prevents layout shifts during transition */
+  backface-visibility: hidden;
+}
+
+/* ── Hidden state (not active tab) ── */
+.page-slot.page-hidden {
+  opacity: 0;
+  pointer-events: none;
+  /* Keep in DOM but invisible — no layout cost */
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+/* ── Entering: animates in from invisible ── */
+.page-slot.page-entering {
+  animation: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Active: fully visible and interactive ── */
+.page-slot.page-active {
+  opacity: 1;
+  transform: translateY(0);
+  position: static;
+  visibility: visible;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+/* ── Exiting: fades out quickly ── */
+.page-slot.page-exiting {
+  animation: pageExit 0.15s cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* ── Staggered card entry within a transitioning page ── */
+.page-slot.page-entering .card,
+.page-slot.page-entering .metric-card,
+.page-slot.page-entering .dist-metric-box,
+.page-slot.page-entering .risk-metric-box,
+.page-slot.page-entering .column-card,
+.page-slot.page-entering .insight-split-box,
+.page-slot.page-entering .sim-metric-box,
+.page-slot.page-entering .sector-box {
+  animation: pageEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.page-slot.page-entering .card:nth-child(1),
+.page-slot.page-entering .metric-card:nth-child(1) { animation-delay: 0.04s; }
+.page-slot.page-entering .card:nth-child(2),
+.page-slot.page-entering .metric-card:nth-child(2) { animation-delay: 0.08s; }
+.page-slot.page-entering .card:nth-child(3),
+.page-slot.page-entering .metric-card:nth-child(3) { animation-delay: 0.12s; }
+.page-slot.page-entering .card:nth-child(4),
+.page-slot.page-entering .metric-card:nth-child(4) { animation-delay: 0.16s; }
+.page-slot.page-entering .card:nth-child(5),
+.page-slot.page-entering .metric-card:nth-child(5) { animation-delay: 0.20s; }

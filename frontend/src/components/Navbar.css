@@ -1,0 +1,96 @@
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px 0;
+  margin-bottom: 12px;
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nav-pills-wrapper {
+  display: flex;
+  background-color: var(--bg-card);
+  padding: 6px;
+  border-radius: 100px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+}
+
+.nav-pill-btn {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px; /* Increased font size */
+  font-weight: 700; /* Bolder */
+  color: var(--text-light);
+  padding: 10px 22px;
+  cursor: pointer;
+  border-radius: 100px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.nav-pill-btn:hover {
+  color: var(--navy-dark);
+  transform: translateY(-1px);
+}
+
+.nav-pill-btn.active {
+  color: #ffffff !important;
+}
+
+.nav-active-indicator {
+  background-color: var(--navy-active);
+  box-shadow: 0 4px 12px rgba(10, 13, 48, 0.15);
+}
+
+.nav-pill-btn:active {
+  transform: scale(0.97);
+}
+
+.add-project-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--navy-active);
+  color: #ffffff;
+  border: none;
+  border-radius: 100px;
+  padding: 12px 24px; /* Enlarged button padding */
+  font-family: inherit;
+  font-size: 14px; /* Increased font size */
+  font-weight: 800; /* Boldest */
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(10, 13, 48, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.add-project-btn svg {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.add-project-btn:hover {
+  background-color: var(--navy-light);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(10, 13, 48, 0.3), 0 0 0 4px rgba(47, 107, 244, 0.15);
+}
+
+.add-project-btn:hover svg {
+  transform: rotate(90deg) scale(1.2);
+}
+
+.add-project-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

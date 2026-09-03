@@ -1,0 +1,226 @@
+.global-overruns-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+}
+
+.overrun-card-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.overrun-card-col:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+.overrun-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(241, 245, 249, 0.9);
+  margin-bottom: 16px;
+}
+
+.overrun-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.overrun-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-teal {
+  background: rgba(2, 132, 199, 0.1);
+}
+
+.icon-gold {
+  background: rgba(217, 119, 6, 0.1);
+}
+
+.overrun-card-header .card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 2px;
+}
+
+.overrun-card-header .card-subtitle {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.metric-chip-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.chip-teal {
+  background: #F0F9FF;
+  border-color: #BAE6FD;
+}
+
+.chip-gold {
+  background: #FFFBEB;
+  border-color: #FEF3C7;
+}
+
+.chip-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.chip-value {
+  font-size: 14px;
+  font-weight: 850;
+  color: #0F172A;
+}
+
+/* Vertical SVG Chart Area */
+.vertical-chart-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 240px;
+  padding-top: 10px;
+  position: relative;
+}
+
+.v-bars-flex-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 220px;
+  gap: 8px;
+  border-bottom: 2px solid #E2E8F0;
+  padding-bottom: 2px;
+}
+
+.svg-bar-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+  cursor: pointer;
+}
+
+.svg-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 175px;
+  width: 100%;
+}
+
+.iso-3d-svg {
+  overflow: visible;
+  display: block;
+}
+
+/* X-Axis Sector Label */
+.v-bar-sector-lbl {
+  margin-top: 10px;
+  font-size: 11.5px;
+  font-weight: 750;
+  color: #64748B;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: color 0.2s ease;
+}
+
+.svg-bar-column:hover .v-bar-sector-lbl {
+  color: #0F172A;
+  font-weight: 850;
+}
+
+/* 3D Interactive Tooltip */
+.v-bar-3d-tooltip {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #0F172A;
+  color: #FFFFFF;
+  z-index: 50;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+  animation: tooltipFade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.v-bar-3d-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: var(--caret-x, 50%);
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #0F172A;
+}
+
+.tooltip-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94A3B8;
+}
+
+.tooltip-val {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.tooltip-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #CBD5E1;
+}
+
+@keyframes tooltipFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .global-overruns-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

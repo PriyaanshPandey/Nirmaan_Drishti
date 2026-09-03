@@ -1,0 +1,82 @@
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 6px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 850;
+  color: var(--navy-dark);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.header-subtitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.date-indicator {
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.date-highlight {
+  font-weight: 850;
+  color: var(--navy-dark);
+}
+
+.insight-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #EBF3FF;
+  border: 1px solid #B9D5FF;
+  border-radius: 100px;
+  padding: 7px 16px;
+  box-shadow: 0 3px 10px rgba(47, 107, 244, 0.08);
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.insight-badge:hover {
+  background-color: #DDEBFF;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(47, 107, 244, 0.15);
+}
+
+.badge-dot {
+  width: 7.5px;
+  height: 7.5px;
+  border-radius: 50%;
+  background-color: var(--color-accent-blue);
+  box-shadow: 0 0 6px var(--color-accent-blue);
+}
+
+.badge-text {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--color-accent-blue);
+  letter-spacing: -0.01em;
+}
