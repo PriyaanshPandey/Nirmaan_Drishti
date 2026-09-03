@@ -1,61 +1,45 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { Volume2, VolumeX, ChevronDown } from 'lucide-react';
 import './VideoHero.css';
 
 interface VideoHeroProps {
   activeTab?: string;
+  onFinished?: () => void;
 }
 
-export const VideoHero: React.FC<VideoHeroProps> = ({ activeTab }) => {
+export const VideoHero: React.FC<VideoHeroProps> = ({ onFinished }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isBlurring, setIsBlurring] = useState<boolean>(false);
+  const [isDismissed, setIsDismissed] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [hasAutoScrolled, setHasAutoScrolled] = useState<boolean>(false);
-  const [showControls, setShowControls] = useState<boolean>(true);
-  const autoScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Smooth scroll helper to main section
-  const scrollToContent = useCallback(() => {
-    const el = document.getElementById('home-main-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-    }
-  }, []);
+  // Dismiss video intro (fade overlay out without scrolling)
+  const dismissVideo = () => {
+    setIsBlurring(true);
+    setIsDismissed(true);
+    setTimeout(() => {
+      if (onFinished) onFinished();
+    }, 800);
+  };
 
-  // Replay video when switching back to home tab if at the top
-  useEffect(() => {
-    if (activeTab === 'home' && window.scrollY < 100) {
-      const video = videoRef.current;
-      if (video) {
-        video.currentTime = 0;
-        video.playbackRate = 2.8;
-        video.play().catch(() => {});
-        setIsBlurring(false);
-        setHasAutoScrolled(false);
-      }
-    }
-  }, [activeTab]);
-
-  // Monitor video playback time to trigger blur-out (around 2.2s real time)
+  // Monitor playback time to trigger blur-out (at ~2.2s real time)
   const handleTimeUpdate = () => {
     const video = videoRef.current;
     if (!video || !video.duration) return;
 
-    // At 2.8x speed, 6.2s in video = ~2.2s real time
+    // At 2.8x speed, 6.2s in video = ~2.2s in real time
     if (video.currentTime >= 6.2 && !isBlurring) {
       setIsBlurring(true);
     }
   };
 
-  // Video finished playing (~3.0s) -> smooth scroll down immediately
+  // Video finished playing (~3.0s) -> blur out and dismiss overlay smoothly
   const handleVideoEnded = () => {
     setIsBlurring(true);
-    if (!hasAutoScrolled) {
-      setHasAutoScrolled(true);
-      scrollToContent();
-    }
+    setTimeout(() => {
+      dismissVideo();
+    }, 150);
   };
 
   // Sound toggle handler
@@ -68,25 +52,10 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ activeTab }) => {
     setIsMuted(nextMuted);
   };
 
-  // Hide floating controls when user scrolls down manually
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setShowControls(false);
-      } else {
-        setShowControls(true);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Configure 2.8x speed playback and guaranteed 3.0s auto-scroll trigger
+  // Configure 2.8x speed playback and guaranteed 3.0s dismiss trigger
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      // 8.38s video / 2.8x playbackRate = 2.99s (~3.0s total playtime)
       video.playbackRate = 2.8;
       video.play().catch(() => {
         video.muted = true;
@@ -95,29 +64,25 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ activeTab }) => {
       });
     }
 
-    // Blur-out bloom at 2.2 seconds
+    // Snappy blur-out bloom at 2.2 seconds
     const blurTimer = setTimeout(() => {
       setIsBlurring(true);
     }, 2200);
 
-    // Guaranteed auto-scroll at 3.0 seconds
-    autoScrollTimerRef.current = setTimeout(() => {
-      if (!hasAutoScrolled) {
-        setHasAutoScrolled(true);
-        scrollToContent();
-      }
+    // Guaranteed dismiss at 3.0 seconds
+    const dismissTimer = setTimeout(() => {
+      dismissVideo();
     }, 3000);
 
     return () => {
       clearTimeout(blurTimer);
-      if (autoScrollTimerRef.current) {
-        clearTimeout(autoScrollTimerRef.current);
-      }
+      clearTimeout(dismissTimer);
     };
-  }, [hasAutoScrolled, scrollToContent]);
+  }, []);
 
-  return (
-    <section className="video-hero-container">
+  // Render via portal directly into document.body to cover every inch of the screen edge-to-edge
+  return ReactDOM.createPortal(
+    <div className={`video-hero-overlay ${isDismissed ? 'is-dismissed' : ''}`}>
       {/* Full-viewport Background Video (Plays in 3 seconds at 2.8x speed) */}
       <video
         ref={videoRef}
@@ -134,11 +99,11 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ activeTab }) => {
       {/* Dreamy white blur/dissolve overlay triggered near the end */}
       <div className={`video-hero-dissolve ${isBlurring ? 'is-active' : ''}`} />
 
-      {/* Feathered bottom dissolve to eliminate any hard line with the main section */}
+      {/* Feathered bottom dissolve */}
       <div className="video-hero-bottom-feather" />
 
       {/* Sound Toggle Button */}
-      {showControls && (
+      {!isDismissed && (
         <button
           type="button"
           className="video-hero-sound-btn"
@@ -151,19 +116,20 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ activeTab }) => {
         </button>
       )}
 
-      {/* Sleek Skip / Scroll Down CTA */}
-      {showControls && (
+      {/* Sleek Skip CTA */}
+      {!isDismissed && (
         <button
           type="button"
           className="video-hero-skip-cta"
-          onClick={scrollToContent}
-          aria-label="Skip to main content"
+          onClick={dismissVideo}
+          aria-label="Skip video intro"
         >
           <span>Explore Overview</span>
           <ChevronDown size={16} className="skip-arrow-bounce" />
         </button>
       )}
-    </section>
+    </div>,
+    document.body
   );
 };
 

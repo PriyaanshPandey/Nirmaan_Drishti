@@ -9,7 +9,6 @@ import { GlobalOverrunGraphs } from './components/GlobalOverrunGraphs';
 import { ProjectPortfolio } from './components/ProjectPortfolio';
 import { ProjectDetails } from './components/ProjectDetails';
 import { AIInsights } from './components/AIInsights';
-import { RiskAnalysis } from './components/RiskAnalysis';
 import { ActionCenter } from './components/ActionCenter';
 import { ProjectDistribution } from './components/ProjectDistribution';
 import { PageSlot } from './components/PageTransition';
@@ -42,18 +41,15 @@ function App() {
 
   return (
     <div className="app-layout">
-      {/* ── Home Page (Direct rendering without transform containing block for sticky pinning) ── */}
-      {activeTab === 'home' && (
-        <Home activeTab={activeTab} onNavigateTab={handleTabChange} />
-      )}
-
-      {/* ── Inner App Modules (Standard 1360px container with Top Navbar) ── */}
-      <div 
-        className="app-main-content" 
-        style={{ display: activeTab === 'home' ? 'none' : 'flex' }}
-      >
-        {/* Pill-shaped Top Navbar */}
+      {/* ── Main Application Content (Unified 1360px container with Top Navbar) ── */}
+      <div className="app-main-content">
+        {/* Pill-shaped Top Navbar across all pages */}
         <Navbar activeTab={activeTab} setActiveTab={handleTabChange} />
+
+        {/* ── Home ── */}
+        <PageSlot id="home" activeTab={activeTab}>
+          <Home activeTab={activeTab} onNavigateTab={handleTabChange} />
+        </PageSlot>
 
         {/* ── Dashboard ── */}
         <PageSlot id="dashboard" activeTab={activeTab}>
@@ -110,15 +106,6 @@ function App() {
           </main>
         </PageSlot>
 
-        {/* ── Risk Analysis ── */}
-        <PageSlot id="risk" activeTab={activeTab}>
-          <main className="risk-content">
-            <RiskAnalysis
-              onSelectProject={handleSelectProject}
-              onNavigateTab={handleTabChange}
-            />
-          </main>
-        </PageSlot>
 
         {/* ── Action Centre ── */}
         <PageSlot id="action-centre" activeTab={activeTab}>
