@@ -41,7 +41,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("Could not establish initial connection to PostgreSQL database.")
 
-    # Warm up ML client
+    # Warm up ML client and AI Engine
+    try:
+        from app.services.ai_engine_service import ai_engine
+        ai_engine.initialize()
+        logger.info("AI Engine initialized with models.")
+    except Exception as e:
+        logger.warning(f"AI Engine warmup note: {e}")
+
     try:
         ml = get_ml_client()
         logger.info("ML Risk Client initialized.")

@@ -1786,4 +1786,118 @@
   40% { transform: scale(1.1); opacity: 1; }
 }
 
+/* Cost Escalation Driver Analysis Styles */
+.cost-driver-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  margin-top: 14px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.cost-driver-container:hover {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border-color: #CBD5E1;
+}
+
+.cost-driver-item {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cost-driver-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.cost-driver-item-increasing {
+  border-left: 4px solid #EF4444;
+  background: linear-gradient(90deg, rgba(254, 242, 242, 0.5) 0%, #FFFFFF 100%);
+}
+
+.cost-driver-item-mitigating {
+  border-left: 4px solid #10B981;
+  background: linear-gradient(90deg, rgba(240, 253, 244, 0.5) 0%, #FFFFFF 100%);
+}
+
+/* Quick Prompt Chips in Chat */
+.quick-prompt-chips-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 12px;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  scrollbar-width: none;
+}
+
+.quick-prompt-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.quick-prompt-btn {
+  background: #FFFFFF;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quick-prompt-btn:hover {
+  background: #03045E;
+  color: #FFFFFF;
+  border-color: #03045E;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(3, 4, 94, 0.2);
+}
+
+/* Early Warnings & Recommendations Enhanced Cards */
+.warning-pill-card {
+  background: #FFFFFF;
+  border: 1px solid #FCA5A5;
+  border-left: 4px solid #DC2626;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.25s ease;
+}
+
+.warning-pill-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.1);
+  border-color: #F87171;
+}
+
+.recommendation-pill-card {
+  background: #FFFFFF;
+  border: 1px solid #93C5FD;
+  border-left: 4px solid #2563EB;
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.25s ease;
+}
+
+.recommendation-pill-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1);
+  border-color: #60A5FA;
+}
+
+
 
