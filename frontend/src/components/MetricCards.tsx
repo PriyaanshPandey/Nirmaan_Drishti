@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './MetricCards.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api, type DashboardSummaryData } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
 
 const DEFAULT_METRICS: DashboardSummaryData['metrics'] = {
   total_projects: 3361,
@@ -52,7 +53,18 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             <circle cx="80" cy="10" r="3" fill="#ffffff" />
           </svg>
         </div>
-        <h3 className="metric-title">TOTAL PROJECTS</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+          <h3 className="metric-title" style={{ margin: 0 }}>TOTAL PROJECTS</h3>
+          <InfoButton
+            title="Total Monitored Projects"
+            category="PAIMANA SCOPE"
+            summary="All central sector infrastructure projects currently monitored by MoSPI with capital expenditure of ₹150 Crore and above."
+            calculation="Count of active projects with sanctioned cost >= ₹150 Cr"
+            implication="Covers 17 Central Ministries across 22 key infrastructure sectors nationwide."
+            theme="dark"
+            size="sm"
+          />
+        </div>
         <div className="metric-value">
           <AnimatedCounter value={totalProjects} resetKey={activeTab} />
         </div>
@@ -66,7 +78,18 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             <path d="M 0 40 L 30 40 L 50 15 L 70 50 L 100 30" stroke="var(--navy-dark)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h3 className="metric-title">TOTAL COST</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+          <h3 className="metric-title" style={{ margin: 0 }}>TOTAL COST</h3>
+          <InfoButton
+            title="Original Sanctioned Cost"
+            category="BUDGET BASELINE"
+            summary="Sum of initial statutory capital outlays approved at sanction by Cabinet Committee on Economic Affairs (CCEA) or designated Ministries."
+            calculation="SUM(Original Sanctioned Cost in ₹ Cr)"
+            implication="Provides sovereign budgetary baseline before variation orders or price index adjustments."
+            theme="light"
+            size="sm"
+          />
+        </div>
         <div className="metric-value">
           <AnimatedCounter 
             value={origCostCr}
@@ -85,7 +108,18 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             <circle cx="100" cy="5" r="4" fill="var(--color-accent-red)" />
           </svg>
         </div>
-        <h3 className="metric-title">REVISED COST</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+          <h3 className="metric-title" style={{ margin: 0 }}>REVISED COST</h3>
+          <InfoButton
+            title="Revised Anticipated Cost"
+            category="COST DRIFT"
+            summary="Current projected completion cost reflecting cumulative price escalations, scope additions, and execution timeline delays."
+            calculation="((Revised Cost - Original Cost) / Original Cost) × 100"
+            implication="Cost overrun exceeding 15% requires statutory re-appraisal and inter-ministerial sign-off."
+            theme="light"
+            size="sm"
+          />
+        </div>
         <div className="metric-value text-red">
           <AnimatedCounter 
             value={revCostCr}
@@ -101,3 +135,4 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
     </div>
   );
 };
+

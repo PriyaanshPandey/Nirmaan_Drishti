@@ -3,6 +3,7 @@ import { TrendingUp, Clock } from 'lucide-react';
 import './GlobalOverrunGraphs.css';
 import { api } from '../services/api';
 import { AnimatedCounter } from './AnimatedCounter';
+import { InfoButton } from './ExplainabilityInfo';
 
 export interface SectorOverrun {
   sector_name: string;
@@ -210,7 +211,17 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <TrendingUp size={18} color="#0284C7" />
             </div>
             <div>
-              <h2 className="card-title">Global Cost Escalation</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 className="card-title" style={{ margin: 0 }}>Global Cost Escalation</h2>
+                <InfoButton
+                  title="Sectoral Cost Escalation Drift"
+                  category="SECTOR ANALYSIS"
+                  summary="Cumulative budgetary expansion in ₹ Crores across India's primary infrastructure sectors."
+                  calculation="SUM(Revised Anticipated Cost - Original Sanctioned Cost) grouped by Sector"
+                  implication="Railways and Road Transport traditionally exhibit the largest absolute cost drift due to land acquisition and design variations."
+                  size="sm"
+                />
+              </div>
               <p className="card-subtitle">Real cost drift by sector (Crore)</p>
             </div>
           </div>
@@ -262,7 +273,17 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <Clock size={18} color="#D97706" />
             </div>
             <div>
-              <h2 className="card-title">Global Schedule Delays</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 className="card-title" style={{ margin: 0 }}>Global Schedule Delays</h2>
+                <InfoButton
+                  title="Sectoral Schedule Delay Magnitude"
+                  category="SCHEDULE ANALYSIS"
+                  summary="Mean timeline slippage in months from the original contractual completion target date."
+                  calculation="AVG(Anticipated Completion Date - Original Sanctioned Completion Date) in months"
+                  implication="Highlights systemic multi-agency friction points including statutory forest clearances and utility shifting."
+                  size="sm"
+                />
+              </div>
               <p className="card-subtitle">Average delay extension by sector (Months)</p>
             </div>
           </div>

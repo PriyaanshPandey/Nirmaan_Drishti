@@ -7,6 +7,7 @@ import {
 import { type Project } from '../data/projectsData';
 import { api, type RiskPredictionData, type AIExplanationData } from '../services/api';
 import './ProjectDetails.css';
+import { InfoButton } from './ExplainabilityInfo';
 
 interface ProjectDetailsProps {
   projectId: string;
@@ -334,13 +335,34 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       {/* Row 1: Dashboard Metrics (Moved Above) */}
       <div className="details-metrics-row" style={{ marginBottom: '14px' }}>
         <div className="metric-box light-box">
-          <h3 className="metric-box-title">APPROVED COST</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h3 className="metric-box-title" style={{ margin: 0 }}>APPROVED COST</h3>
+            <InfoButton
+              title="Original Approved Cost"
+              category="SANCTIONED OUTLAY"
+              summary="Initial statutory capital budget sanctioned at project inception by the Cabinet/Ministry."
+              calculation="Baseline Sanctioned Outlay in ₹ Crore"
+              implication="The baseline against which all subsequent cost variations and budget escalations are evaluated."
+              size="sm"
+            />
+          </div>
           <div className="metric-box-val">{project.costApproved}</div>
           <div className="metric-box-sub text-muted">Original Estimate</div>
         </div>
 
         <div className="metric-box dark-box">
-          <h3 className="metric-box-title">REVISED COST</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h3 className="metric-box-title" style={{ margin: 0 }}>REVISED COST</h3>
+            <InfoButton
+              title="Revised Anticipated Cost"
+              category="COST VARIANCE"
+              summary="Latest projected completion outlay factoring inflation, variations, and contractual claims."
+              calculation="Overrun % = ((Revised Cost - Approved Cost) / Approved Cost) × 100"
+              implication="Significant escalation requires inter-ministerial appraisal and revised Cabinet sanction."
+              theme="dark"
+              size="sm"
+            />
+          </div>
           <div className="metric-box-val">{project.costRevised}</div>
           <div className="metric-box-sub text-light">
             <span className="arrow-warn">▲</span> {project.costOverrunPct}
@@ -348,7 +370,17 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="metric-box light-box">
-          <h3 className="metric-box-title">TOTAL EXPENDITURE</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h3 className="metric-box-title" style={{ margin: 0 }}>TOTAL EXPENDITURE</h3>
+            <InfoButton
+              title="Cumulative Expenditure"
+              category="FINANCIAL PROGRESS"
+              summary="Total funds disbursed and audited vouchers booked against work completed to date."
+              calculation="Financial Progress % = (Cumulative Expenditure / Revised Cost) × 100"
+              implication="If Financial Progress heavily outpaces Physical Progress, capital efficiency and unbilled work risk is flagged."
+              size="sm"
+            />
+          </div>
           <div className="metric-box-val">{project.costExpenditure}</div>
           <div className="metric-box-sub text-muted">
             {project.progressFinancial}% of Revised Cost
@@ -356,7 +388,17 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="metric-box light-box">
-          <h3 className="metric-box-title">PHYSICAL PROGRESS</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h3 className="metric-box-title" style={{ margin: 0 }}>PHYSICAL PROGRESS</h3>
+            <InfoButton
+              title="Physical Execution Progress"
+              category="GROUND COMPLETION"
+              summary="Weighted engineering completion of site civil structures, track, foundation, or plant systems."
+              calculation="Sum of weighted milestone progress certified by the Implementing Agency (0-100%)"
+              implication="A negative gap between Physical Progress and Revised Target signals critical critical-path execution friction."
+              size="sm"
+            />
+          </div>
           <div className="metric-box-val">{project.progressPhysical}.00%</div>
           <div className="metric-box-sub text-muted">
             Revised Target: {project.progressPhysicalTarget ?? project.progressPhysical}.00%
@@ -364,7 +406,17 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="metric-box light-box">
-          <h3 className="metric-box-title">EXPECTED COMPLETION</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h3 className="metric-box-title" style={{ margin: 0 }}>EXPECTED COMPLETION</h3>
+            <InfoButton
+              title="Expected Commercial Date (COD)"
+              category="TIMELINE TARGET"
+              summary="Current anticipated commissioning date compared with the original statutory milestone."
+              calculation="Anticipated Commercial Operation Date vs Original Milestone"
+              implication="Timeline extensions increase Interest During Construction (IDC) and prolonged overhead expense."
+              size="sm"
+            />
+          </div>
           <div className="metric-box-val">{project.expectedCompletion}</div>
           <div className="metric-box-sub text-muted">
             Original: {project.originalCompletion}
@@ -403,6 +455,14 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
             AI Project Summary
           </h2>
+          <InfoButton
+            title="AI Executive Summary"
+            category="AI BRIEFING"
+            summary="Synthesizes monthly progress filings, financial velocity, and contractor performance into an automated executive briefing."
+            calculation="Grounded narrative generated using verified database telemetry and calibrated risk models"
+            implication="Helps project directors and ministry officials quickly identify the root operational bottlenecks."
+            size="sm"
+          />
         </div>
         {loadingBriefing ? (
           <div style={{ padding: '10px 0', color: '#64748B', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -481,6 +541,14 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
                   AI Cost & Schedule Forecast Engine
                 </h2>
+                <InfoButton
+                  title="Multi-Horizon Forecast Engine"
+                  category="XGBOOST PREDICTIVE ML"
+                  summary="Forward-looking predictions evaluating the probability and magnitude of additional budget overrun and timeline slippage over 3-month and 6-month horizons."
+                  calculation="XGBoost Classifier (0-100% Probability) + XGBoost Regressor (Delta ₹ Cr / Delta Months)"
+                  implication="Allows project managers to take pre-emptive mitigation actions before cost overruns materialize."
+                  size="sm"
+                />
                 <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, backgroundColor: '#F1F5F9', padding: '3px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
                   PAIMANA Calibrated XGBoost
                 </span>
@@ -903,6 +971,14 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                   <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
                     Explainable AI Analysis
                   </h2>
+                  <InfoButton
+                    title="TreeSHAP Explainability (XAI)"
+                    category="FEATURE ATTRIBUTION"
+                    summary="Quantifies the mathematical impact of each project characteristic towards pushing the model prediction higher (+ve) or lower (-ve)."
+                    calculation="Shapley Values: φ_i = marginal contribution of feature i across all possible feature combinations"
+                    implication="Red bars (+SHAP) are the primary drivers of delay/cost risk. Green bars (-SHAP) represent stabilizing project strengths."
+                    size="sm"
+                  />
                 </div>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, marginTop: '2px', display: 'block' }}>
                   TreeSHAP feature attributions, model-specific natural language explanations, and cost escalation drivers

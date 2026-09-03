@@ -3,6 +3,7 @@ import './DonutChart.css';
 import './NationalRiskCard.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
 
 interface RiskSegment {
   id: string;
@@ -124,9 +125,21 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
         }
       }}
     >
-      <div className="card-header">
-        <h2 className="card-title">National Risk Distribution</h2>
-        <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
+      <div className="card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 className="card-title" style={{ margin: 0 }}>National Risk Distribution</h2>
+            <InfoButton
+              title="National Risk Index"
+              category="AI RISK MODEL"
+              summary="Composite machine learning risk scoring synthesized by trained XGBoost classifiers across all 3,361 infrastructure assets."
+              calculation="Score (0-100) = f(physical velocity, expenditure gap, land acquisition delay, contractor track record)"
+              implication="High/Critical (>70) projects have >80% likelihood of experiencing compounding cost/time escalation without immediate intervention."
+              size="sm"
+            />
+          </div>
+          <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
+        </div>
       </div>
 
       <div className="donut-chart-container">
