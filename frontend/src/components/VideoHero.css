@@ -1,0 +1,169 @@
+/* ══════════════════════════════════════════════════════════════
+   VIDEO HERO INTRO (100vw x 100vh)
+   Fast 3-Second Playback + Snappy Blur-Out + Ultra-Smooth Switch
+   ══════════════════════════════════════════════════════════════ */
+
+.video-hero-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Full-bleed video media */
+.video-hero-media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 1;
+  transform: scale(1);
+  filter: blur(0px) brightness(1);
+  transition: filter 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.75s ease;
+}
+
+/* Blurring & blooming phase towards 2.2s of video */
+.video-hero-media.is-blurring {
+  filter: blur(24px) brightness(1.05);
+  transform: scale(1.06);
+  opacity: 0.62;
+}
+
+/* Soft white glow dissolve layer */
+.video-hero-dissolve {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.65) 75%, #FFFFFF 100%);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.video-hero-dissolve.is-active {
+  opacity: 1;
+}
+
+/* Feathered bottom dissolve to eliminate any hard line with main page */
+.video-hero-bottom-feather {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 35%,
+    rgba(255, 255, 255, 0.88) 75%,
+    #FFFFFF 100%
+  );
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Sound Toggle Pill Button (Top Right) */
+.video-hero-sound-btn {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(15, 23, 42, 0.09);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+  padding: 8px 16px;
+  border-radius: 100px;
+  color: #0F172A;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.video-hero-sound-btn:hover {
+  background: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* Explore / Skip Pill CTA (Bottom Center) */
+.video-hero-skip-cta {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.10);
+  padding: 11px 24px;
+  border-radius: 100px;
+  color: #0F172A;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.28s ease;
+  user-select: none;
+}
+
+.video-hero-skip-cta:hover {
+  background: #FFFFFF;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.15);
+  color: #2563EB;
+}
+
+.skip-arrow-bounce {
+  animation: skipBounce 1.8s infinite ease-in-out;
+}
+
+@keyframes skipBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .video-hero-sound-btn {
+    top: 16px;
+    right: 16px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .video-hero-skip-cta {
+    bottom: 24px;
+    padding: 9px 18px;
+    font-size: 13px;
+  }
+
+  .video-hero-bottom-feather {
+    height: 120px;
+  }
+}

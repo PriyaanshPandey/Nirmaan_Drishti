@@ -1,3 +1,31 @@
+.home-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.home-content-container {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 32px 48px 48px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background-color: var(--bg-main, #FFFFFF);
+}
+
+.home-navbar-sticky {
+  position: sticky;
+  top: 16px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
 .home-container {
   display: flex;
   flex-direction: column;
@@ -196,11 +224,30 @@
   flex-shrink: 0;
 }
 
-.icon-blue { background: #EFF6FF; border: 1px solid #DBEAFE; }
-.icon-green { background: #ECFDF5; border: 1px solid #D1FAE5; }
-.icon-purple { background: #F5F3FF; border: 1px solid #DDD6FE; }
-.icon-red { background: #FEF2F2; border: 1px solid #FEE2E2; }
-.icon-teal { background: #F0F9FF; border: 1px solid #BAE6FD; }
+.icon-blue {
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+}
+
+.icon-green {
+  background: #ECFDF5;
+  border: 1px solid #D1FAE5;
+}
+
+.icon-purple {
+  background: #F5F3FF;
+  border: 1px solid #DDD6FE;
+}
+
+.icon-red {
+  background: #FEF2F2;
+  border: 1px solid #FEE2E2;
+}
+
+.icon-teal {
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+}
 
 .module-body {
   flex: 1;
@@ -231,11 +278,25 @@
 }
 
 /* Hover accent colors */
-.module-blue:hover { border-color: #BFDBFE; }
-.module-green:hover { border-color: #A7F3D0; }
-.module-purple:hover { border-color: #DDD6FE; }
-.module-red:hover { border-color: #FECACA; }
-.module-teal:hover { border-color: #BAE6FD; }
+.module-blue:hover {
+  border-color: #BFDBFE;
+}
+
+.module-green:hover {
+  border-color: #A7F3D0;
+}
+
+.module-purple:hover {
+  border-color: #DDD6FE;
+}
+
+.module-red:hover {
+  border-color: #FECACA;
+}
+
+.module-teal:hover {
+  border-color: #BAE6FD;
+}
 
 @media (max-width: 768px) {
   .metrics-strip-row {
