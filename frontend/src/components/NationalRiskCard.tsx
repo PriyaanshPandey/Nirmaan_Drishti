@@ -130,11 +130,8 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h2 className="card-title" style={{ margin: 0 }}>National Risk Distribution</h2>
             <InfoButton
-              title="National Risk Index"
-              category="AI RISK MODEL"
-              summary="Composite machine learning risk scoring synthesized by trained XGBoost classifiers across all 3,361 infrastructure assets."
-              calculation="Score (0-100) = f(physical velocity, expenditure gap, land acquisition delay, contractor track record)"
-              implication="High/Critical (>70) projects have >80% likelihood of experiencing compounding cost/time escalation without immediate intervention."
+              title="Risk Level"
+              summary="AI calculates how likely projects are to face future delays or budget increases, based on work velocity and past trends."
               size="sm"
             />
           </div>

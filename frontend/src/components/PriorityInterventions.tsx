@@ -100,11 +100,8 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h2 className="card-title" style={{ margin: 0 }}>Priority Interventions &amp; Critical Projects</h2>
               <InfoButton
-                title="Priority Interventions Watchlist"
-                category="ACTION CENTRE"
-                summary="Dynamic watchlist highlighting the nation's most vulnerable infrastructure assets requiring high-level intervention."
-                calculation="Priority Score = (XGBoost Risk Probability × 0.60) + (Sanctioned Outlay / ₹10,000 Cr × 0.40)"
-                implication="Click any project card to inspect its deep-dive metrics, milestone timelines, and TreeSHAP root cause factors."
+                title="Priority Projects"
+                summary="These are the most critical projects needing urgent attention due to big delays and large budgets at risk."
                 size="sm"
               />
             </div>

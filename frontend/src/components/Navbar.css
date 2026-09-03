@@ -1,6 +1,6 @@
 .navbar-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
   padding: 10px 0;
@@ -10,6 +10,7 @@
 
 .nav-pills-wrapper {
   display: flex;
+  margin: 0 auto;
   background-color: var(--bg-card);
   padding: 6px;
   border-radius: 100px;

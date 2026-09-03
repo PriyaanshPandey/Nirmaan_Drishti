@@ -56,11 +56,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
           <h3 className="metric-title" style={{ margin: 0 }}>TOTAL PROJECTS</h3>
           <InfoButton
-            title="Total Monitored Projects"
-            category="PAIMANA SCOPE"
-            summary="All central sector infrastructure projects currently monitored by MoSPI with capital expenditure of ₹150 Crore and above."
-            calculation="Count of active projects with sanctioned cost >= ₹150 Cr"
-            implication="Covers 17 Central Ministries across 22 key infrastructure sectors nationwide."
+            title="Total Projects"
+            summary="Total number of major national infrastructure projects being tracked across all ministries in India."
             theme="dark"
             size="sm"
           />
@@ -81,11 +78,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
           <h3 className="metric-title" style={{ margin: 0 }}>TOTAL COST</h3>
           <InfoButton
-            title="Original Sanctioned Cost"
-            category="BUDGET BASELINE"
-            summary="Sum of initial statutory capital outlays approved at sanction by Cabinet Committee on Economic Affairs (CCEA) or designated Ministries."
-            calculation="SUM(Original Sanctioned Cost in ₹ Cr)"
-            implication="Provides sovereign budgetary baseline before variation orders or price index adjustments."
+            title="Original Budget"
+            summary="The starting budget officially approved for all these projects before construction began."
             theme="light"
             size="sm"
           />
@@ -111,11 +105,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
           <h3 className="metric-title" style={{ margin: 0 }}>REVISED COST</h3>
           <InfoButton
-            title="Revised Anticipated Cost"
-            category="COST DRIFT"
-            summary="Current projected completion cost reflecting cumulative price escalations, scope additions, and execution timeline delays."
-            calculation="((Revised Cost - Original Cost) / Original Cost) × 100"
-            implication="Cost overrun exceeding 15% requires statutory re-appraisal and inter-ministerial sign-off."
+            title="Current Updated Cost"
+            summary="The latest estimated total cost. The percentage shows how much costs have risen above the original budget."
             theme="light"
             size="sm"
           />

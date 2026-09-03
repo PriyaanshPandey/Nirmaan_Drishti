@@ -138,11 +138,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h2 className="card-title" style={{ margin: 0 }}>Project Health Distribution</h2>
             <InfoButton
-              title="Project Health Distribution"
-              category="HEALTH CLASSIFICATION"
-              summary="Categorizes all 3,361 projects into 4 operational states based on physical schedule adherence and financial cost variance."
-              calculation="On Track (0 delay, 0 overrun) | Monitoring (1-3 mo delay) | At Risk (3-12 mo delay) | Critical (>12 mo or >15% overrun)"
-              implication="Hover or click any segment to filter and see exact counts. 'At Risk' and 'Critical Delay' require immediate intervention."
+              title="Project Health"
+              summary="Shows how projects are performing. Green means on schedule, yellow means slightly delayed, and red means major delays or budget overruns."
               size="sm"
             />
           </div>

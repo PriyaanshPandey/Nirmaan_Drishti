@@ -214,11 +214,8 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 className="card-title" style={{ margin: 0 }}>Global Cost Escalation</h2>
                 <InfoButton
-                  title="Sectoral Cost Escalation Drift"
-                  category="SECTOR ANALYSIS"
-                  summary="Cumulative budgetary expansion in ₹ Crores across India's primary infrastructure sectors."
-                  calculation="SUM(Revised Anticipated Cost - Original Sanctioned Cost) grouped by Sector"
-                  implication="Railways and Road Transport traditionally exhibit the largest absolute cost drift due to land acquisition and design variations."
+                  title="Cost Increases"
+                  summary="Shows which sectors (like Railways or Roads) have the highest extra costs above their starting plans."
                   size="sm"
                 />
               </div>
@@ -276,11 +273,8 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 className="card-title" style={{ margin: 0 }}>Global Schedule Delays</h2>
                 <InfoButton
-                  title="Sectoral Schedule Delay Magnitude"
-                  category="SCHEDULE ANALYSIS"
-                  summary="Mean timeline slippage in months from the original contractual completion target date."
-                  calculation="AVG(Anticipated Completion Date - Original Sanctioned Completion Date) in months"
-                  implication="Highlights systemic multi-agency friction points including statutory forest clearances and utility shifting."
+                  title="Timeline Delays"
+                  summary="Shows the average number of extra months projects in each sector are delayed past their deadline."
                   size="sm"
                 />
               </div>

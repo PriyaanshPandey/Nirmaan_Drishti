@@ -16,10 +16,7 @@ export interface InfoButtonProps {
 
 export const InfoButton: React.FC<InfoButtonProps> = ({
   title,
-  category = 'DEFINITION',
   summary,
-  calculation,
-  implication,
   theme = 'light',
   size = 'md',
   style
@@ -28,11 +25,12 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const updatePosition = () => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const popoverWidth = 320;
+    const popoverWidth = 270;
     const padding = 12;
 
     // Calculate left, keeping within viewport
@@ -42,57 +40,45 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
       left = window.innerWidth - popoverWidth - padding;
     }
 
-    // Calculate top: prefer below, flip above if near bottom
-    let top = rect.bottom + 8;
-    if (top + 280 > window.innerHeight && rect.top - 280 > padding) {
-      top = rect.top - 260;
+    // Calculate top: prefer below; flip above if near bottom
+    let top = rect.bottom + 6;
+    if (top + 160 > window.innerHeight && rect.top - 160 > padding) {
+      top = rect.top - 140;
     }
 
     setCoords({ top, left });
   };
 
-  const handleToggle = (e: React.MouseEvent) => {
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    updatePosition();
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 150);
+  };
+
+  const handleToggleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isOpen) {
       updatePosition();
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
     }
-    setIsOpen(!isOpen);
   };
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const handleScrollOrResize = () => {
-      updatePosition();
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScrollOrResize, true);
-    window.addEventListener('resize', handleScrollOrResize);
-    document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('keydown', handleKeyDown);
-
     return () => {
-      window.removeEventListener('scroll', handleScrollOrResize, true);
-      window.removeEventListener('resize', handleScrollOrResize);
-      document.removeEventListener('mousedown', handleOutsideClick);
-      document.removeEventListener('keydown', handleKeyDown);
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     };
-  }, [isOpen]);
+  }, []);
 
   return (
     <>
@@ -100,62 +86,31 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
         ref={buttonRef}
         type="button"
         className={`info-btn-trigger ${size} ${theme === 'dark' ? 'dark-theme-trigger' : ''} ${isOpen ? 'active' : ''}`}
-        onClick={handleToggle}
-        title={`Click for explainability: ${title}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleToggleClick}
+        title={title}
         aria-label={`Explain ${title}`}
         style={style}
       >
-        <Info size={size === 'sm' ? 10 : 12} strokeWidth={2.4} />
+        <Info size={size === 'sm' ? 10 : 11} strokeWidth={2.4} />
       </button>
 
       {isOpen &&
         createPortal(
-          <>
-            <div className="info-popover-backdrop" onClick={() => setIsOpen(false)} />
-            <div
-              ref={popoverRef}
-              className="info-popover-card"
-              style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="info-popover-header">
-                <div>
-                  <span className="info-popover-category">{category}</span>
-                  <h4 className="info-popover-title">{title}</h4>
-                </div>
-                <button
-                  type="button"
-                  className="info-popover-close"
-                  onClick={() => setIsOpen(false)}
-                  aria-label="Close popover"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-
-              <div className="info-popover-body">
-                <p className="info-popover-summary">{summary}</p>
-
-                {calculation && (
-                  <div className="info-popover-section">
-                    <div className="info-popover-section-label">
-                      <span>Formula &amp; Method</span>
-                    </div>
-                    <p className="info-popover-section-text info-popover-code">{calculation}</p>
-                  </div>
-                )}
-
-                {implication && (
-                  <div className="info-popover-tip">
-                    <div className="info-popover-section-label">
-                      <span>Key Takeaway</span>
-                    </div>
-                    <p className="info-popover-section-text">{implication}</p>
-                  </div>
-                )}
-              </div>
+          <div
+            ref={popoverRef}
+            className="info-popover-card"
+            style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="info-popover-header">
+              <h4 className="info-popover-title">{title}</h4>
             </div>
-          </>,
+            <p className="info-popover-summary">{summary}</p>
+          </div>,
           document.body
         )}
     </>
