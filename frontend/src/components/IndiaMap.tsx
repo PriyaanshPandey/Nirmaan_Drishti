@@ -123,7 +123,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     });
   };
 
-  const handleStateMouseMove = (locId: string, locName: string, e: React.MouseEvent) => {
+  const handleStateMouseMove = (e: React.MouseEvent) => {
     setTooltip(prev => ({
       ...prev,
       x: e.clientX,
@@ -237,21 +237,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     return '#FFF5E1';
   };
 
-  // Compute path bounding box center for tooltip positioning
-  const getPathCenter = (pathD: string): { x: number; y: number } => {
-    const nums = pathD.match(/[\d.]+/g);
-    if (!nums || nums.length < 4) return { x: 300, y: 350 };
-    const xs: number[] = [];
-    const ys: number[] = [];
-    for (let i = 0; i < Math.min(nums.length, 40); i += 2) {
-      xs.push(parseFloat(nums[i]));
-      ys.push(parseFloat(nums[i + 1]));
-    }
-    return {
-      x: (Math.min(...xs) + Math.max(...xs)) / 2,
-      y: (Math.min(...ys) + Math.max(...ys)) / 2
-    };
-  };
+
 
   const mapLocations = indiaMapData.locations || [];
   const viewBox = indiaMapData.viewBox || '0 0 612 696';
@@ -346,7 +332,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                   className="state-path-real"
                   onClick={() => setSelectedStateId(loc.id)}
                   onMouseEnter={(e) => handleStateMouseEnter(loc.id, loc.name, e)}
-                  onMouseMove={(e) => handleStateMouseMove(loc.id, loc.name, e)}
+                  onMouseMove={handleStateMouseMove}
                   onMouseLeave={handleStateMouseLeave}
                   style={{
                     cursor: 'pointer',

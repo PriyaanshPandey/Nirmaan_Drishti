@@ -29,6 +29,7 @@ export interface Project {
   timeRisk: number;
   implRisk: number;
   overallRisk: number;
+  scheduleExtensionMonths?: number | string;
 }
 
 export interface ProjectMilestone {

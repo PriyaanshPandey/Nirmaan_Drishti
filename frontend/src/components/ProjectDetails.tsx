@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  ArrowLeft, ChevronDown, Bell, ShieldAlert, Award, FileText, Calendar,
-  AlertTriangle, ArrowRight, SlidersHorizontal, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, MessageSquare, X
+  ArrowLeft, ChevronDown, ShieldAlert, Award, Calendar,
+  AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
 } from 'lucide-react';
 import { type Project } from '../data/projectsData';
 import { api, type RiskPredictionData, type AIExplanationData } from '../services/api';
@@ -98,9 +98,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [mlPrediction, setMlPrediction] = useState<RiskPredictionData | null>(null);
   const [pred3m, setPred3m] = useState<RiskPredictionData | null>(null);
   const [pred6m, setPred6m] = useState<RiskPredictionData | null>(null);
-  const [loadingPrediction, setLoadingPrediction] = useState(true);
-  const [predictionError, setPredictionError] = useState<string | null>(null);
-  const [mlHorizon, setMlHorizon] = useState<3 | 6>(3);
 
   // Grounded AI Narrative Briefing state
   const [aiBriefing, setAiBriefing] = useState<AIExplanationData | null>(null);
@@ -114,14 +111,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
   // Tab selections & Horizon Filters
-  const [benchmarkingTab, setBenchmarkingTab] = useState<'cost' | 'delay' | 'tech'>('cost');
-  const [perfTab, setPerfTab] = useState<'progress' | 'expenditure'>('progress');
-  const [riskTrendTab, setRiskTrendTab] = useState<'overall' | 'cost' | 'time'>('overall');
   const [forecastHorizonFilter, setForecastHorizonFilter] = useState<'all' | '3m' | '6m'>('all');
   const [shapTab, setShapTab] = useState<'cost3m' | 'cost6m' | 'sched3m' | 'sched6m'>('cost3m');
   const [nlpTab, setNlpTab] = useState<'sched3m' | 'sched6m' | 'cost3m' | 'cost6m'>('sched3m');
-  const [showFullDesc, setShowFullDesc] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -147,7 +139,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   // Fetch Project Metadata
   useEffect(() => {
     let isMounted = true;
-    const t = setTimeout(() => setMounted(true), 80);
     setLoadingProject(true);
     setProjectError(false);
     api.getProjectById(projectId).then((res) => {
@@ -166,15 +157,12 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     });
     return () => {
       isMounted = false;
-      clearTimeout(t);
     };
   }, [projectId]);
 
   // Fetch Live XGBoost ML Prediction + SHAP Drivers
   useEffect(() => {
     let isMounted = true;
-    setLoadingPrediction(true);
-    setPredictionError(null);
     Promise.all([
       api.getProjectRisk(projectId, 3),
       api.getProjectRisk(projectId, 6)
@@ -185,12 +173,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         setPred3m(r3);
       }
       if (r6) setPred6m(r6);
-      setLoadingPrediction(false);
-    }).catch((err) => {
-      if (isMounted) {
-        setPredictionError(err.message || 'Failed to compute risk prediction.');
-        setLoadingPrediction(false);
-      }
+    }).catch(() => {
+      // Offline fallback already applied
     });
     return () => {
       isMounted = false;
@@ -294,149 +278,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     );
   }
 
-  // Dynamic Benchmarking table rows generator
-  const getBenchmarkData = () => {
-    if (benchmarkingTab === 'cost') {
-      return [
-        { label: 'Approved Budget', projectVal: project.costApproved, avg: '₹95,000 Cr', benchmark: '₹88,000 Cr' },
-        { label: 'Revised Estimate', projectVal: project.costRevised, avg: '₹1,02,000 Cr', benchmark: '₹94,000 Cr' },
-        { label: 'Cumulative Overrun', projectVal: String(project.costOverrunPct || '').includes('overrun') ? String(project.costOverrunPct).replace(' overrun', '') : String(project.costOverrunPct || '0%'), avg: '+5.2%', benchmark: '+3.4%', isAlert: true },
-        { label: 'Financial Progress %', projectVal: `${project.progressFinancial}%`, avg: '63%', benchmark: '68%' }
-      ];
-    } else if (benchmarkingTab === 'delay') {
-      return [
-        { label: 'Expected Completion', projectVal: project.expectedCompletion, avg: 'Dec 2027', benchmark: 'Dec 2026' },
-        { label: 'Original Completion', projectVal: project.originalCompletion, avg: 'Jun 2027', benchmark: 'Dec 2026' },
-        { label: 'Physical Progress %', projectVal: `${project.progressPhysical}%`, avg: '68%', benchmark: '75%', isAlert: project.progressPhysical < (project.progressPhysicalTarget || 80) },
-        { label: 'Physical Target %', projectVal: `${project.progressPhysicalTarget || project.progressPhysical}%`, avg: '72%', benchmark: '78%' }
-      ];
-    } else {
-      return [
-        { label: 'Cost Risk Score', projectVal: `${project.costRisk}%`, avg: '54%', benchmark: '35%', isAlert: project.costRisk >= 70 },
-        { label: 'Time Risk Score', projectVal: `${project.timeRisk}%`, avg: '58%', benchmark: '40%', isAlert: project.timeRisk >= 70 },
-        { label: 'Implementation Risk', projectVal: `${project.implRisk}%`, avg: '48%', benchmark: '30%', isAlert: project.implRisk >= 70 },
-        { label: 'Overall Risk Score', projectVal: `${project.overallRisk}%`, avg: '52%', benchmark: '32%', isAlert: project.overallRisk >= 70 }
-      ];
-    }
-  };
-
-  // Real SHAP Risk Drivers reflecting exact model output
-  const riskFactors = mlPrediction && mlPrediction.top_risk_drivers && mlPrediction.top_risk_drivers.length > 0
-    ? mlPrediction.top_risk_drivers.slice(0, 5).map((d, idx) => {
-        const rawAbs = Math.abs(d.shap_value);
-        const maxVal = Math.max(...mlPrediction.top_risk_drivers.map(x => Math.abs(x.shap_value)), 0.1);
-        const pct = Math.min(100, Math.max(12, Math.round((rawAbs / maxVal) * 88)));
-        const color = idx === 0 ? 'bg-accent' : (idx === 1 ? 'bg-orange' : 'bg-info');
-        return { label: d.label, pct, shap: d.shap_value, color };
-      })
-    : [
-        { label: 'Physical Progress Lag', pct: Math.max(10, project.implRisk), shap: 0, color: 'bg-accent' },
-        { label: 'Milestone Slippage', pct: Math.max(10, project.timeRisk - 15), shap: 0, color: 'bg-accent' },
-        { label: 'Fund Flow Delays', pct: Math.max(10, project.costRisk - 20), shap: 0, color: 'bg-orange' },
-        { label: 'Clearance Issues', pct: Math.max(5, Math.round(project.implRisk * 0.4)), shap: 0, color: 'bg-info' },
-        { label: 'Contractor Performance', pct: Math.max(5, Math.round(project.overallRisk * 0.35)), shap: 0, color: 'bg-info' }
-      ];
-
-  const primaryDriver = mlPrediction?.top_risk_drivers?.[0]?.label || riskFactors[0]?.label || 'Executing Agency Delivery Pressure';
-
-  // Dynamic Emerging Issues reflecting exact project data
-  const emergingIssues = [
-    { label: 'Land Acquisition', impact: `+${Math.max(5, Math.round(project.implRisk * 0.35))}%`, pct: Math.max(10, project.implRisk), color: 'bg-critical', textColor: 'text-critical' },
-    { label: 'Procurement Delays', impact: `+${Math.max(4, Math.round(project.costRisk * 0.25))}%`, pct: Math.max(10, project.costRisk), color: 'bg-warning', textColor: 'text-warning' },
-    { label: 'Clearance Delays', impact: `+${Math.max(3, Math.round(project.implRisk * 0.2))}%`, pct: Math.max(10, Math.round(project.implRisk * 0.8)), color: 'bg-warning', textColor: 'text-warning' },
-    { label: 'Contractor Issues', impact: `+${Math.max(2, Math.round(project.overallRisk * 0.15))}%`, pct: Math.max(10, Math.round(project.overallRisk * 0.6)), color: 'bg-info', textColor: 'text-info' },
-    { label: 'Milestone Slippage', impact: `+${Math.max(1, Math.round(project.timeRisk * 0.1))}%`, pct: Math.max(10, Math.round(project.timeRisk * 0.4)), color: 'bg-info-light', textColor: 'text-info-light' }
-  ];
-
-  // Dynamic Risk Trend SVG coordinate generator
-  const getRiskTrendCoords = () => {
-    let score = project.overallRisk;
-    let changeLabel = '▲ +3% this quarter';
-    let areaPath = '';
-    let linePath = '';
-    let circleY = 40;
-
-    if (riskTrendTab === 'overall') {
-      score = project.overallRisk;
-      const qChange = score >= 70 ? '+4%' : score >= 50 ? '+2%' : '0%';
-      changeLabel = `▲ ${qChange} this quarter`;
-      circleY = 110 - score * 0.8;
-      linePath = `M 15 95 Q 85 90, 160 75 T 305 ${circleY}`;
-      areaPath = `${linePath} L 305 110 L 15 110 Z`;
-    } else if (riskTrendTab === 'cost') {
-      score = project.costRisk;
-      const qChange = score >= 70 ? '+5%' : score >= 50 ? '+3%' : '+1%';
-      changeLabel = `▲ ${qChange} this quarter`;
-      circleY = 110 - score * 0.8;
-      linePath = `M 15 105 Q 85 95, 160 85 T 305 ${circleY}`;
-      areaPath = `${linePath} L 305 110 L 15 110 Z`;
-    } else {
-      score = project.timeRisk;
-      changeLabel = '▲ +6.5% this quarter';
-      circleY = 110 - score * 0.8;
-      linePath = `M 15 80 Q 85 70, 160 60 T 305 ${circleY}`;
-      areaPath = `${linePath} L 305 110 L 15 110 Z`;
-    }
-
-    return { score, changeLabel, areaPath, linePath, circleY };
-  };
-
-  // Risk Dials SVG Render to match the third image exactly
-  const renderRiskDial = (title: string, value: number) => {
-    let level = 'Low';
-    let strokeColor = '#10B981'; // Green
-    let change = '▲ 0%';
-    
-    if (value >= 90) {
-      level = 'Critical';
-      strokeColor = '#D62F39'; // Red
-      change = '▲ +8%';
-    } else if (value >= 70) {
-      level = 'High';
-      strokeColor = '#F59E0B'; // Orange
-      change = '▲ +6%';
-    } else if (value >= 40) {
-      level = 'Medium';
-      strokeColor = '#3B82F6'; // Blue
-      change = '▲ +2%';
-    } else {
-      level = 'Low';
-      strokeColor = '#10B981'; // Green
-      change = '▲ 0%';
-    }
-
-
-    const radius = 22;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (value / 100) * circumference;
-
-    return (
-      <div className="risk-dial-box">
-        <div className="dial-title">{title}</div>
-        <div className="dial-radial-wrapper">
-          <svg viewBox="0 0 54 54" className="dial-radial-svg">
-            <circle cx="27" cy="27" r={radius} fill="none" stroke="#E2E8F0" strokeWidth="4" />
-            <circle 
-              cx="27" 
-              cy="27" 
-              r={radius} 
-              fill="none" 
-              stroke={strokeColor} 
-              strokeWidth="4" 
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              transform="rotate(-90 27 27)"
-              style={{ transition: 'stroke-dashoffset 0.8s ease' }}
-            />
-          </svg>
-          <div className="dial-value-text">{value}%</div>
-        </div>
-        <div className="dial-level" style={{ color: strokeColor }}>{level}</div>
-        <div className="dial-change" style={{ color: strokeColor }}>{change}</div>
-      </div>
-    );
-  };
 
   return (
     <div className="details-container animation-fade-in">
