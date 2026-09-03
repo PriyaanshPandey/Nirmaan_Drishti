@@ -6,6 +6,8 @@ import {
 import './Home.css';
 import { IndiaMap } from './IndiaMap';
 import { AnimatedCounter } from './AnimatedCounter';
+import nirmaanEmblem from '../assets/nirmaan_emblem.png';
+import heroIllustration from '../assets/hero_illustration.png';
 
 interface HomeProps {
   activeTab?: string;
@@ -55,17 +57,36 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
     <div className="home-container animation-fade-in">
       {/* Hero Section */}
       <section className="home-hero">
-        <div className="hero-glow" />
-        <h1 className="hero-title">Nirmaan Drishti</h1>
-        <p className="hero-subtitle">
-          Predictive Intelligence &amp; Early Warning System for India's Central Infrastructure Projects
-        </p>
-        <div className="hero-cta-group">
-          <button className="hero-btn primary" onClick={() => onNavigateTab('dashboard')}>
-            <span>Launch Dashboard</span>
-            <ArrowRight size={16} />
-          </button>
+        <div className="hero-content-wrapper">
+          <div className="hero-main-layout">
+            <div className="hero-logo-col">
+              <img
+                src={nirmaanEmblem}
+                alt="Nirmaan Drishti Emblem"
+                className="hero-emblem-img"
+              />
+            </div>
+            <div className="hero-text-col">
+              <h1 className="hero-title-main">
+                Nirmaan<br />Drishti
+              </h1>
+              <p className="hero-subtitle-main">
+                Predictive Intelligence &amp; Early Warning System for India's Central Infrastructure Projects
+              </p>
+              <button className="hero-btn-launch" onClick={() => onNavigateTab('dashboard')}>
+                <span>Launch Dashboard</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* Right-side Infrastructure Illustration */}
+        <img
+          src={heroIllustration}
+          alt="National Infrastructure Illustration"
+          className="hero-infra-illustration"
+        />
       </section>
 
       {/* Key Metrics Strip with Counting Animations (0 -> X) */}
@@ -93,7 +114,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
         <div className="metric-strip-card">
           <div className="strip-icon"><Cpu size={20} color="#7C3AED" /></div>
           <div className="strip-info">
-            <span className="strip-val">3 &amp; 6 Mo</span>
+            <span className="strip-val">3 &amp; 6 Months</span>
             <span className="strip-lbl">Forecast Horizon</span>
           </div>
         </div>
