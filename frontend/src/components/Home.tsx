@@ -67,7 +67,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
         />
       )}
 
-      {/* ── 1. Hero Banner Section (First uploaded screenshot) ── */}
+      {/* ── 1. Hero Banner Section ── */}
       <section className="home-hero">
         <div className="hero-content-wrapper">
           {/* Live Platform Status Pill */}
@@ -125,7 +125,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
         />
       </section>
 
-      {/* ── 2. Key Metrics Strip (Second uploaded screenshot) ── */}
+      {/* ── 2. Key Metrics Strip ── */}
       <section className="metrics-strip-row">
         <div className="metric-strip-card">
           <div className="strip-icon"><BarChart3 size={20} color="#2563EB" /></div>
@@ -169,7 +169,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
       {/* ── 3. Interactive India Map ── */}
       <IndiaMap activeTab={activeTab} />
 
-      {/* ── 4. Platform Modules Grid ── */}
+      {/* ── 4. Platform Modules Grid (Rectangular Cards) ── */}
       <section className="home-modules">
         <div className="modules-header-row">
           <h2 className="modules-title">Platform Modules</h2>
