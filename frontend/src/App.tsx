@@ -9,7 +9,6 @@ import { GlobalOverrunGraphs } from './components/GlobalOverrunGraphs';
 import { ProjectPortfolio } from './components/ProjectPortfolio';
 import { ProjectDetails } from './components/ProjectDetails';
 import { AIInsights } from './components/AIInsights';
-import { RiskAnalysis } from './components/RiskAnalysis';
 import { ActionCenter } from './components/ActionCenter';
 import { ProjectDistribution } from './components/ProjectDistribution';
 import { PageSlot } from './components/PageTransition';
@@ -20,9 +19,13 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [previousTab, setPreviousTab] = useState<string>('projects');
+  const [homeClickNonce, setHomeClickNonce] = useState<number>(0);
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab) return;
+    if (tab === 'home') {
+      setHomeClickNonce(prev => prev + 1);
+    }
+    if (tab === activeTab && tab !== 'home') return;
     setSelectedProjectId(null);
     setActiveTab(tab);
   };
@@ -42,13 +45,18 @@ function App() {
 
   return (
     <div className="app-layout">
+      {/* ── Main Application Content (Unified 1360px container with Top Navbar) ── */}
       <div className="app-main-content">
-        {/* Pill-shaped Top Navbar */}
+        {/* Pill-shaped Top Navbar across all pages */}
         <Navbar activeTab={activeTab} setActiveTab={handleTabChange} />
 
-        {/* ── Home Welcome Page ── */}
+        {/* ── Home ── */}
         <PageSlot id="home" activeTab={activeTab}>
-          <Home activeTab={activeTab} onNavigateTab={handleTabChange} />
+          <Home
+            activeTab={activeTab}
+            onNavigateTab={handleTabChange}
+            homeClickNonce={homeClickNonce}
+          />
         </PageSlot>
 
         {/* ── Dashboard ── */}
@@ -106,15 +114,6 @@ function App() {
           </main>
         </PageSlot>
 
-        {/* ── Risk Analysis ── */}
-        <PageSlot id="risk" activeTab={activeTab}>
-          <main className="risk-content">
-            <RiskAnalysis
-              onSelectProject={handleSelectProject}
-              onNavigateTab={handleTabChange}
-            />
-          </main>
-        </PageSlot>
 
         {/* ── Action Centre ── */}
         <PageSlot id="action-centre" activeTab={activeTab}>

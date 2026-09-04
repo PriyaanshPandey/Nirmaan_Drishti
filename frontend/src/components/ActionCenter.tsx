@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Search, ShieldAlert, AlertTriangle, Clock } from 'lucide-react';
+import {
+  Download, Search, ShieldAlert, AlertTriangle, Clock,
+  IndianRupee, ChevronDown, Sparkles, Activity, BarChart3
+} from 'lucide-react';
 import './ActionCenter.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
@@ -157,43 +160,101 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
         {/* Col 1: Action Queue Card */}
         <div className="card ac-card-summary">
           <div className="ac-card-head">
-            <h2 className="ac-title">Action Queue Status</h2>
-            <p className="ac-subtitle">Pending interventions by severity</p>
+            <div className="ac-head-left">
+              <div className="ac-head-icon-chip chip-red">
+                <Activity size={18} color="#DC2626" />
+              </div>
+              <div>
+                <h2 className="ac-title">Action Queue Status</h2>
+                <p className="ac-subtitle">Active interventions by urgency tier</p>
+              </div>
+            </div>
+            {summaryCounts && (
+              <span className="ac-head-pill pill-total-tasks">
+                {summaryCounts.critical + summaryCounts.high + summaryCounts.medium} Tasks
+              </span>
+            )}
           </div>
 
           {!summaryCounts ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>Loading action queue...</div>
+            <div className="ac-loading-placeholder">Loading action queue...</div>
           ) : (
             <>
+              {/* 3 Severity Cards */}
               <div className="ac-severity-boxes">
-                <div className="sev-box box-crit card-stagger-1">
-                  <ShieldAlert size={18} style={{ color: '#DC2626', marginBottom: '2px' }} />
+                <div className="sev-box box-crit">
+                  <div className="sev-icon-wrap icon-crit-wrap">
+                    <ShieldAlert size={16} />
+                  </div>
                   <span className="sev-lbl">Critical</span>
-                  <span className="sev-count"><AnimatedCounter value={summaryCounts.critical} triggerKey={summaryCounts.critical} /></span>
+                  <span className="sev-count">
+                    <AnimatedCounter value={summaryCounts.critical} triggerKey={summaryCounts.critical} />
+                  </span>
                   <span className="sev-sub">Immediate PMG Review</span>
                 </div>
-                <div className="sev-box box-high card-stagger-2">
-                  <AlertTriangle size={18} style={{ color: '#D97706', marginBottom: '2px' }} />
+
+                <div className="sev-box box-high">
+                  <div className="sev-icon-wrap icon-high-wrap">
+                    <AlertTriangle size={16} />
+                  </div>
                   <span className="sev-lbl">High</span>
-                  <span className="sev-count"><AnimatedCounter value={summaryCounts.high} triggerKey={summaryCounts.high} /></span>
+                  <span className="sev-count">
+                    <AnimatedCounter value={summaryCounts.high} triggerKey={summaryCounts.high} />
+                  </span>
                   <span className="sev-sub">Ministry Escalation</span>
                 </div>
-                <div className="sev-box box-med card-stagger-3">
-                  <Clock size={18} style={{ color: '#2563EB', marginBottom: '2px' }} />
+
+                <div className="sev-box box-med">
+                  <div className="sev-icon-wrap icon-med-wrap">
+                    <Clock size={16} />
+                  </div>
                   <span className="sev-lbl">Medium</span>
-                  <span className="sev-count"><AnimatedCounter value={summaryCounts.medium} triggerKey={summaryCounts.medium} /></span>
+                  <span className="sev-count">
+                    <AnimatedCounter value={summaryCounts.medium} triggerKey={summaryCounts.medium} />
+                  </span>
                   <span className="sev-sub">Agency Level NOC</span>
                 </div>
               </div>
 
+              {/* Stacked Proportional Severity Distribution Bar */}
+              <div className="ac-severity-bar-track">
+                <div
+                  className="sev-seg seg-crit"
+                  style={{ width: `${(summaryCounts.critical / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
+                  title={`Critical: ${summaryCounts.critical}`}
+                />
+                <div
+                  className="sev-seg seg-high"
+                  style={{ width: `${(summaryCounts.high / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
+                  title={`High: ${summaryCounts.high}`}
+                />
+                <div
+                  className="sev-seg seg-med"
+                  style={{ width: `${(summaryCounts.medium / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
+                  title={`Medium: ${summaryCounts.medium}`}
+                />
+              </div>
+
+              {/* Exposure Highlights Banner */}
               <div className="ac-exposure-banner">
-                <div className="exp-item">
-                  <span className="exp-lbl">Total Financial Exposure</span>
-                  <span className="exp-val exp-red">{summaryCounts.totalExp}</span>
+                <div className="exp-item exp-item-financial">
+                  <div className="exp-icon-wrap icon-red-tint">
+                    <IndianRupee size={15} />
+                  </div>
+                  <div className="exp-text-wrap">
+                    <span className="exp-lbl">Financial Exposure</span>
+                    <span className="exp-val exp-red">{summaryCounts.totalExp}</span>
+                  </div>
                 </div>
-                <div className="exp-item">
-                  <span className="exp-lbl">Avg Delay Exposure</span>
-                  <span className="exp-val exp-orange">{summaryCounts.avgDelay}</span>
+                <div className="exp-divider" />
+                <div className="exp-item exp-item-delay">
+                  <div className="exp-icon-wrap icon-amber-tint">
+                    <Clock size={15} />
+                  </div>
+                  <div className="exp-text-wrap">
+                    <span className="exp-lbl">Avg Delay Exposure</span>
+                    <span className="exp-val exp-orange">{summaryCounts.avgDelay}</span>
+                  </div>
                 </div>
               </div>
             </>
@@ -203,80 +264,152 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
         {/* Col 2: Resolution Simulator */}
         <div className="card ac-card-simulator">
           <div className="ac-card-head">
-            <h2 className="ac-title">Resolution Simulator</h2>
-            <p className="ac-subtitle">Project impact of resolution strategy</p>
+            <div className="ac-head-left">
+              <div className="ac-head-icon-chip chip-blue">
+                <Sparkles size={18} color="#2563EB" />
+              </div>
+              <div>
+                <h2 className="ac-title">Resolution Simulator</h2>
+                <p className="ac-subtitle">Counterfactual scenario projection</p>
+              </div>
+            </div>
+            <span className="ac-head-pill pill-ai-active">
+              <span className="ai-spark-dot" />
+              {currentSim.confidence}% Confidence
+            </span>
           </div>
 
           <div className="sim-dropdown-wrapper">
-            <label className="sim-field-lbl">Simulate Resolution For:</label>
-            <select 
-              value={selectedSimCategory} 
-              onChange={(e) => setSelectedSimCategory(e.target.value)}
-              className="sim-custom-select"
-            >
-              <option value="land">Land Acquisition (ROW Acceleration)</option>
-              <option value="procurement">Procurement (Expedited Tendership)</option>
-              <option value="contractor">Contractor Defaults (Subcontract Fast-track)</option>
-              <option value="milestone">Milestone Slippage (Overtime Mobilization)</option>
-              <option value="clearance">Clearance Delays (Statutory Green Channel)</option>
-            </select>
-          </div>
-
-          <div className="sim-metrics-grid">
-            <div className="sim-metric-box">
-              <span className="sim-box-lbl">Current Trajectory Delay</span>
-              <span className="sim-box-val val-curr-delay">{currentSim.currentDelay}</span>
-            </div>
-            <div className="sim-metric-box">
-              <span className="sim-box-lbl">Projected Post-Intervention</span>
-              <span className="sim-box-val val-proj-delay">{currentSim.projDelay}</span>
-              <span className="sim-gain-tag">▼ {currentSim.projDelayReduction}</span>
-            </div>
-            <div className="sim-metric-box">
-              <span className="sim-box-lbl">Cost Escalation Risk</span>
-              <span className="sim-box-val val-curr-cost">{currentSim.currentCost}</span>
-            </div>
-            <div className="sim-metric-box">
-              <span className="sim-box-lbl">Estimated Cost Savings</span>
-              <span className="sim-box-val val-saving">{currentSim.projSaving}</span>
-              <span className="sim-gain-tag-green">Saved Exposure</span>
+            <label className="sim-field-lbl">Simulate Resolution Strategy</label>
+            <div className="sim-select-container">
+              <select 
+                value={selectedSimCategory} 
+                onChange={(e) => setSelectedSimCategory(e.target.value)}
+                className="sim-custom-select"
+              >
+                <option value="land">Land Acquisition (ROW Acceleration)</option>
+                <option value="procurement">Procurement (Expedited Tendership)</option>
+                <option value="contractor">Contractor Defaults (Subcontract Fast-track)</option>
+                <option value="milestone">Milestone Slippage (Overtime Mobilization)</option>
+                <option value="clearance">Clearance Delays (Statutory Green Channel)</option>
+              </select>
+              <ChevronDown size={15} className="sim-select-arrow" />
             </div>
           </div>
 
+          {/* 2 Comparison Impact Cards (Delay vs Cost) */}
+          <div className="sim-impact-grid">
+            {/* Delay Impact Card */}
+            <div className="sim-impact-card impact-card-delay">
+              <div className="impact-top">
+                <span className="impact-tag">DELAY REDUCTION</span>
+                <span className="impact-pill pill-green">▼ {currentSim.projDelayReduction}</span>
+              </div>
+              <div className="impact-numbers-row">
+                <div className="impact-col">
+                  <span className="impact-lbl">Baseline</span>
+                  <span className="impact-val val-muted">{currentSim.currentDelay}</span>
+                </div>
+                <div className="impact-arrow">→</div>
+                <div className="impact-col">
+                  <span className="impact-lbl">Post-Action</span>
+                  <span className="impact-val val-blue">{currentSim.projDelay}</span>
+                </div>
+              </div>
+              <div className="impact-bar-track">
+                <div className="impact-bar-fill fill-blue" style={{ width: '50%' }} />
+              </div>
+            </div>
+
+            {/* Cost Impact Card */}
+            <div className="sim-impact-card impact-card-cost">
+              <div className="impact-top">
+                <span className="impact-tag">FINANCIAL RECOVERY</span>
+                <span className="impact-pill pill-emerald">Saved Exposure</span>
+              </div>
+              <div className="impact-numbers-row">
+                <div className="impact-col">
+                  <span className="impact-lbl">Cost Risk</span>
+                  <span className="impact-val val-muted">{currentSim.currentCost}</span>
+                </div>
+                <div className="impact-arrow">→</div>
+                <div className="impact-col">
+                  <span className="impact-lbl">Est. Savings</span>
+                  <span className="impact-val val-green">{currentSim.projSaving}</span>
+                </div>
+              </div>
+              <div className="impact-bar-track">
+                <div className="impact-bar-fill fill-green" style={{ width: '51.4%' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom AI Confidence Metric */}
           <div className="sim-confidence-footer">
-            <span className="conf-lbl">AI Simulation Confidence</span>
-            <span className="conf-score">
-              <AnimatedCounter value={currentSim.confidence} triggerKey={`${selectedSimCategory}-${currentSim.confidence}`} formatter={(v) => `${v}%`} />
-            </span>
+            <div className="conf-meta">
+              <span className="conf-lbl">AI Model Verification Confidence</span>
+              <span className="conf-score-tag">{currentSim.confidence}% Validated</span>
+            </div>
+            <div className="conf-bar-track">
+              <div
+                className="conf-bar-fill"
+                style={{ width: `${currentSim.confidence}%` }}
+              />
+            </div>
           </div>
         </div>
 
         {/* Col 3: Prioritization Weights */}
         <div className="card ac-card-weights">
           <div className="ac-card-head">
-            <h2 className="ac-title">Prioritization Weights</h2>
-            <p className="ac-subtitle">Scoring model configuration</p>
+            <div className="ac-head-left">
+              <div className="ac-head-icon-chip chip-purple">
+                <BarChart3 size={18} color="#7C3AED" />
+              </div>
+              <div>
+                <h2 className="ac-title">Prioritization Weights</h2>
+                <p className="ac-subtitle">Scoring model configuration</p>
+              </div>
+            </div>
+            <span className="ac-head-pill pill-calibrated">
+              Active Model
+            </span>
           </div>
 
           <div className="weights-list">
             {weights.map((w, idx) => (
               <div key={idx} className="weight-item">
                 <div className="weight-meta">
-                  <span className="weight-label">{w.label}</span>
-                  <span className="weight-pct">{w.pct}%</span>
+                  <div className="weight-label-wrap">
+                    <span className="weight-rank">{idx + 1}</span>
+                    <span className="weight-label">{w.label}</span>
+                  </div>
+                  <span className="weight-pct-badge" style={{ color: w.color }}>
+                    {w.pct}%
+                  </span>
                 </div>
                 <div className="weight-bar-bg">
                   <div 
                     className="weight-bar-fill" 
                     style={{ 
                       width: mounted ? `${w.pct}%` : '0%', 
-                      backgroundColor: w.color,
-                      transition: `width 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.1}s` 
+                      background: `linear-gradient(90deg, ${w.color}CC 0%, ${w.color} 100%)`,
+                      boxShadow: `0 0 10px ${w.color}33`,
+                      transition: `width 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.08}s` 
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Scale Axis */}
+          <div className="weights-scale-axis">
+            <span>0%</span>
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>100%</span>
           </div>
         </div>
       </div>

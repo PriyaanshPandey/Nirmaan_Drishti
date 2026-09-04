@@ -37,6 +37,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -66,6 +67,7 @@
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-6px);
@@ -85,12 +87,26 @@
 }
 
 .page-slot.page-entering .card:nth-child(1),
-.page-slot.page-entering .metric-card:nth-child(1) { animation-delay: 0.04s; }
+.page-slot.page-entering .metric-card:nth-child(1) {
+  animation-delay: 0.04s;
+}
+
 .page-slot.page-entering .card:nth-child(2),
-.page-slot.page-entering .metric-card:nth-child(2) { animation-delay: 0.08s; }
+.page-slot.page-entering .metric-card:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
 .page-slot.page-entering .card:nth-child(3),
-.page-slot.page-entering .metric-card:nth-child(3) { animation-delay: 0.12s; }
+.page-slot.page-entering .metric-card:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
 .page-slot.page-entering .card:nth-child(4),
-.page-slot.page-entering .metric-card:nth-child(4) { animation-delay: 0.16s; }
+.page-slot.page-entering .metric-card:nth-child(4) {
+  animation-delay: 0.16s;
+}
+
 .page-slot.page-entering .card:nth-child(5),
-.page-slot.page-entering .metric-card:nth-child(5) { animation-delay: 0.20s; }
+.page-slot.page-entering .metric-card:nth-child(5) {
+  animation-delay: 0.20s;
+}
