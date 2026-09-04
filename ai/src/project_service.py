@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
-from src.feature_selection import get_available_feature_split, get_feature_columns
+from src.feature_selection import get_available_feature_split, get_feature_columns, is_cold_start
 from src.predict import predict_cost, predict_time, load_all_models
 from src.explain import get_shap_explanation
 from src.preprocessing import get_feature_names
@@ -273,11 +273,14 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
             "project_info": info,
         }
 
-    # For active projects, prepare features and run ML predictions
+    # For active projects, prepare features and check cold-start vs mature status
     features_df = prepare_prediction_features(project_id, df)
+    cold_flag = is_cold_start(features_df).iloc[0] if len(features_df) > 0 else False
 
-    cost_pred = predict_cost(features_df, models, current, horizons)
-    time_pred = predict_time(features_df, models, current, horizons)
+    cost_pred = predict_cost(features_df, models, current, horizons, is_cold=cold_flag)
+    time_pred = predict_time(features_df, models, current, horizons, is_cold=cold_flag)
+
+    confidence_level = "LIMITED HISTORICAL DATA" if cold_flag else "HIGH CONFIDENCE"
 
     # Resolve dates for timeline forecasting
     as_of = latest.get("report_month")
@@ -354,6 +357,8 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
         "project_name": info["project_name"],
         "as_of_month": info["latest_report_month"],
         "is_completed": False,
+        "is_cold_start": bool(cold_flag),
+        "confidence_level": confidence_level,
         "current_status": current,
         "timeline": timeline,
         "cost_prediction": cost_pred,

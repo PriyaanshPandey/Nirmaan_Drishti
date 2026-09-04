@@ -1,7 +1,7 @@
 """
 Feature selection and trajectory engineering for PAIMANA ML models.
 
-Defines approved feature lists, trajectory features, and feature splitting.
+Defines approved feature lists, trajectory features, cold-start features, and feature splitting.
 Ensures zero temporal leakage: all trajectory features are computed strictly
 from current and prior historical snapshots.
 """
@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 
 
-# --- Identifier / lineage columns: NEVER used as ML features ---
+# --- Identifier / lineage columns: NEVER used as ML features (causes memorization) ---
 IDENTIFIER_COLUMNS = [
     "project_id",
     "project_key",
@@ -21,9 +21,11 @@ IDENTIFIER_COLUMNS = [
     "page",
     "source_report",
     "data_quality_flag",
+    "extraction_date",
+    "record_version",
 ]
 
-# --- Date columns: used for ordering/targets, not raw features ---
+# --- Date columns: used for ordering/targets, not raw string features ---
 DATE_COLUMNS = [
     "report_month",
     "approval_start",
@@ -31,7 +33,7 @@ DATE_COLUMNS = [
     "revised_doc",
 ]
 
-# --- Categorical features ---
+# --- Categorical features (Contextual) ---
 CATEGORICAL_FEATURES = [
     "agency",
     "ministry_department",
@@ -40,7 +42,22 @@ CATEGORICAL_FEATURES = [
     "schedule_status",
 ]
 
-# --- Numeric state features ---
+# --- Cold-Start Categorical Features (Known at project sanction) ---
+COLD_START_CATEGORICAL_FEATURES = [
+    "agency",
+    "ministry_department",
+    "sector",
+    "state",
+]
+
+# --- Cold-Start Numeric Features (Known at project sanction) ---
+COLD_START_NUMERIC_FEATURES = [
+    "original_cost_crore",
+    "original_duration_months",
+    "planned_remaining_months",
+]
+
+# --- Numeric state features (Snapshot at forecast origin T) ---
 NUMERIC_STATE_FEATURES = [
     "project_age_months",
     "original_duration_months",
@@ -70,11 +87,13 @@ NUMERIC_STATE_FEATURES = [
     "risk_signal_count",
 ]
 
-# --- Numeric trend & trajectory features ---
+# --- Numeric trend & trajectory features (Backward-looking from T) ---
 NUMERIC_TREND_FEATURES = [
     "physical_progress_delta_1m",
     "physical_progress_delta_3m",
+    "physical_progress_delta_6m",
     "progress_velocity_3m",
+    "progress_velocity_6m",
     "progress_trend_slope",
     "cost_overrun_delta_1m",
     "cost_overrun_delta_3m",
@@ -89,11 +108,28 @@ NUMERIC_TREND_FEATURES = [
     "is_overdue_flag",
     "is_extended_flag",
     "consecutive_stagnant_months",
+    "snapshot_history_count",
 ]
 
-# --- All approved features ---
+# --- All approved mature features ---
 ALL_NUMERIC_FEATURES = NUMERIC_STATE_FEATURES + NUMERIC_TREND_FEATURES
 ALL_FEATURES = CATEGORICAL_FEATURES + ALL_NUMERIC_FEATURES
+COLD_START_ALL_FEATURES = COLD_START_CATEGORICAL_FEATURES + COLD_START_NUMERIC_FEATURES
+
+
+def is_cold_start(df: pd.DataFrame) -> pd.Series:
+    """
+    Classify projects as new/low-history when:
+    project_age_months < 2 OR physical_progress_pct < 2.0% OR snapshot_history_count <= 2.
+    """
+    age = df["project_age_months"].fillna(0)
+    prog = df["physical_progress_pct"].fillna(0)
+    
+    # If snapshot_history_count is present
+    if "snapshot_history_count" in df.columns:
+        snaps = df["snapshot_history_count"].fillna(1)
+        return (age < 2) | (prog < 2.0) | (snaps <= 2)
+    return (age < 2) | (prog < 2.0)
 
 
 def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -129,6 +165,9 @@ def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
     df["is_overdue_flag"] = ((status == "OVERDUE") | (overdue_d > 0)).astype(float)
     df["is_extended_flag"] = ((status == "EXTENDED") | (ext_mo > 0)).astype(float)
 
+    # Snapshot history count (cumulative snapshots seen so far for this project up to T)
+    df["snapshot_history_count"] = df.groupby("project_id").cumcount() + 1
+
     # Consecutive stagnant months (months where progress delta <= 0.1)
     stagnant_counts = []
     for pid, grp in df.groupby("project_id", sort=False):
@@ -146,36 +185,45 @@ def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def get_feature_columns() -> List[str]:
-    """Return the list of all approved feature columns."""
+def get_feature_columns(is_cold: bool = False) -> List[str]:
+    """Return the list of approved feature columns."""
+    if is_cold:
+        return COLD_START_ALL_FEATURES.copy()
     return ALL_FEATURES.copy()
 
 
-def get_categorical_features() -> List[str]:
+def get_categorical_features(is_cold: bool = False) -> List[str]:
     """Return the list of categorical feature columns."""
+    if is_cold:
+        return COLD_START_CATEGORICAL_FEATURES.copy()
     return CATEGORICAL_FEATURES.copy()
 
 
-def get_numeric_features() -> List[str]:
+def get_numeric_features(is_cold: bool = False) -> List[str]:
     """Return the list of numeric feature columns."""
+    if is_cold:
+        return COLD_START_NUMERIC_FEATURES.copy()
     return ALL_NUMERIC_FEATURES.copy()
 
 
-def get_available_features(df: pd.DataFrame) -> List[str]:
+def get_available_features(df: pd.DataFrame, is_cold: bool = False) -> List[str]:
     """Return the list of approved features present in the DataFrame."""
-    return [col for col in ALL_FEATURES if col in df.columns]
+    target_list = COLD_START_ALL_FEATURES if is_cold else ALL_FEATURES
+    return [col for col in target_list if col in df.columns]
 
 
-def get_available_feature_split(df: pd.DataFrame) -> Dict[str, List[str]]:
+def get_available_feature_split(df: pd.DataFrame, is_cold: bool = False) -> Dict[str, List[str]]:
     """Return dict of available categorical and numeric features."""
+    cat_list = COLD_START_CATEGORICAL_FEATURES if is_cold else CATEGORICAL_FEATURES
+    num_list = COLD_START_NUMERIC_FEATURES if is_cold else ALL_NUMERIC_FEATURES
     return {
-        "categorical": [c for c in CATEGORICAL_FEATURES if c in df.columns],
-        "numeric": [c for c in ALL_NUMERIC_FEATURES if c in df.columns],
+        "categorical": [c for c in cat_list if c in df.columns],
+        "numeric": [c for c in num_list if c in df.columns],
     }
 
 
 def validate_features(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
     """Check which approved features are present and which are missing."""
-    available = get_available_features(df)
+    available = [col for col in ALL_FEATURES if col in df.columns]
     missing = [c for c in ALL_FEATURES if c not in df.columns]
     return available, missing
