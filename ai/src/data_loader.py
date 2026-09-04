@@ -50,7 +50,7 @@ def load_master_csv(csv_path: str = None, config: dict = None) -> pd.DataFrame:
         raise FileNotFoundError(f"CSV file not found: {csv_path}")
 
     print(f"Loading dataset from: {csv_path}")
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, dtype={"project_id": str}, low_memory=False)
 
     if df.empty:
         raise ValueError("CSV file is empty.")
@@ -61,7 +61,8 @@ def load_master_csv(csv_path: str = None, config: dict = None) -> pd.DataFrame:
     if missing_critical:
         raise ValueError(f"Missing critical columns: {missing_critical}")
 
-    # Parse report_month as datetime
+    # Parse report_month as datetime and standardize project_id as str
+    df["project_id"] = df["project_id"].astype(str).str.strip()
     df["report_month"] = pd.to_datetime(df["report_month"])
 
     # Parse date columns if present

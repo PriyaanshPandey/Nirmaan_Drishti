@@ -1,0 +1,17 @@
+Metric,2011_to_2025,2011_to_May2026,Net_Added
+Total Snapshots,207623,223210,15587
+Unique Projects (effective_project_id),4376,6564,2188
+Date Range,2011-04-01 to 2025-06-01,2011-04-01 to 2026-05-01,N/A
+Ministries Count,20,21,1
+Sectors Count,16,16,0
+Years Count,15,16,1
+Missing Values Total,548933,659490,110557
+Duplicate Snapshots,0,0,0
+Cost 3M Risk Positive Cases,7221,7353,132
+Cost 3M Risk Positive Rate (%),3.48%,3.29%,-0.18 pp
+Time 3M Risk Positive Cases,30896,34789,3893
+Time 3M Risk Positive Rate (%),14.88%,15.59%,+0.70 pp
+Cost 6M Risk Positive Cases,9142,9294,152
+Cost 6M Risk Positive Rate (%),4.40%,4.16%,-0.24 pp
+Time 6M Risk Positive Cases,43859,45569,1710
+Time 6M Risk Positive Rate (%),21.12%,20.42%,-0.71 pp
