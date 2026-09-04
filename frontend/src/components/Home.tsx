@@ -11,6 +11,19 @@ import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
 import heroIllustrationBase from '../assets/hero_illustration_base.png';
 
+import { projectsData } from '../data/projectsData';
+import { api } from '../services/api';
+
+const initialProjectsCount = projectsData.length;
+const initialTotalRevCostCr = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialLakhCrores = initialTotalRevCostCr > 0 ? initialTotalRevCostCr / 100000 : 106.52;
+const initialStatesCount = new Set(
+  projectsData.map(p => p.location.split(',')[0].trim()).filter(Boolean)
+).size;
+
 interface HomeProps {
   activeTab?: string;
   onNavigateTab: (tab: string) => void;
@@ -22,6 +35,31 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
   const [replayCount, setReplayCount] = useState<number>(0);
   const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
   const [animIteration, setAnimIteration] = useState<number>(0);
+
+  const [totalProjects, setTotalProjects] = useState<number>(initialProjectsCount);
+  const [portfolioCostLakhCr, setPortfolioCostLakhCr] = useState<number>(initialLakhCrores);
+  const statesCount = initialStatesCount;
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getDashboardSummary()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.metrics) {
+          if (res.metrics.total_projects > 0) {
+            setTotalProjects(res.metrics.total_projects);
+          }
+          if (res.metrics.total_revised_cost > 0) {
+            setPortfolioCostLakhCr(res.metrics.total_revised_cost / 100000);
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Trigger convergence animation on home load or after video intro dismisses or whenever home is clicked
   useEffect(() => {
@@ -65,7 +103,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
     {
       tab: 'projects',
       title: 'Project Portfolio',
-      desc: 'Browse all 3,361 infrastructure assets with search, filters, and detailed milestone tracking.',
+      desc: `Browse all ${totalProjects.toLocaleString()} infrastructure assets with search, filters, and detailed milestone tracking.`,
       icon: <Database size={22} color="#059669" />,
       color: 'green'
     },
@@ -220,7 +258,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           <div className="strip-icon"><BarChart3 size={20} color="#2563EB" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              <AnimatedCounter value={3361} duration={1000} resetKey={activeTab} />
+              <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
             </span>
             <span className="strip-lbl">Projects Monitored</span>
           </div>
@@ -230,7 +268,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           <div className="strip-icon"><TrendingUp size={20} color="#059669" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              ₹<AnimatedCounter value={42.78} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
+              ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
             </span>
             <span className="strip-lbl">Total Portfolio</span>
           </div>
@@ -248,7 +286,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           <div className="strip-icon"><Globe size={20} color="#D97706" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              <AnimatedCounter value={28} duration={800} resetKey={activeTab} />+
+              <AnimatedCounter value={statesCount} duration={800} resetKey={activeTab} />+
             </span>
             <span className="strip-lbl">States Covered</span>
           </div>

@@ -4,6 +4,8 @@ import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import { InfoButton } from './ExplainabilityInfo';
 
+import { projectsData } from '../data/projectsData';
+
 interface ChartSegment {
   id: string;
   name: string;
@@ -12,11 +14,17 @@ interface ChartSegment {
   percentage: number;
 }
 
+const totalInitHealth = projectsData.length;
+const onTrackInit = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('ON TRACK')).length;
+const criticalInit = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('CRIT')).length;
+const delayedInit = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND')).length;
+const monitoringInit = Math.max(0, totalInitHealth - onTrackInit - criticalInit - delayedInit);
+
 const DEFAULT_HEALTH_DIST: ChartSegment[] = [
-  { id: 'on-track', name: 'On Track', count: 1848, color: '#22C55E', percentage: 55.0 },
-  { id: 'monitoring', name: 'Monitoring', count: 638, color: '#3B82F6', percentage: 19.0 },
-  { id: 'at-risk', name: 'At Risk', count: 420, color: '#F59E0B', percentage: 12.5 },
-  { id: 'critical', name: 'Critical Delay', count: 455, color: '#EF4444', percentage: 13.5 }
+  { id: 'on-track', name: 'On Track', count: onTrackInit, color: '#22C55E', percentage: totalInitHealth > 0 ? parseFloat((onTrackInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'monitoring', name: 'Monitoring', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'at-risk', name: 'At Risk', count: delayedInit, color: '#F59E0B', percentage: totalInitHealth > 0 ? parseFloat((delayedInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'critical', name: 'Critical Delay', count: criticalInit, color: '#EF4444', percentage: totalInitHealth > 0 ? parseFloat((criticalInit / totalInitHealth * 100).toFixed(1)) : 0 }
 ];
 
 interface DonutChartProps {

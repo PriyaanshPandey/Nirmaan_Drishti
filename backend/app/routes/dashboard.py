@@ -39,39 +39,56 @@ def generate_svg_spline(points: List[Dict[str, float]]) -> str:
     return " ".join(d)
 
 
+import time
+
+_cached_dashboard_summary = None
+_cached_dashboard_time = 0.0
+DASHBOARD_CACHE_TTL_SEC = 30.0
+
+
+def invalidate_dashboard_cache():
+    global _cached_dashboard_summary, _cached_dashboard_time
+    _cached_dashboard_summary = None
+    _cached_dashboard_time = 0.0
+
+
 @router.get("/summary", response_model=DashboardSummary, summary="Dashboard Summary Statistics")
 def get_dashboard_summary(db: Session = Depends(get_db)):
     """
     Compute high-level summary metrics, health distributions, risk distributions,
     top 10 critical projects, and sector overrun graphs.
     """
-    total_projects = db.query(func.count(Project.id)).scalar() or 0
+    global _cached_dashboard_summary, _cached_dashboard_time
+    now = time.time()
+    if _cached_dashboard_summary is not None and (now - _cached_dashboard_time) < DASHBOARD_CACHE_TTL_SEC:
+        return _cached_dashboard_summary
 
-    # Aggregate costs
-    cost_stats = db.query(
+    # Execute single high-performance aggregation across all projects
+    stats = db.query(
+        func.count(Project.id).label("total_projects"),
         func.sum(Project.original_cost).label("tot_orig"),
         func.sum(Project.revised_cost).label("tot_rev"),
-        func.sum(Project.cumulative_expenditure).label("tot_exp")
-    ).first()
-
-    tot_orig = float(cost_stats.tot_orig or 0.0)
-    tot_rev = float(cost_stats.tot_rev or 0.0)
-    tot_exp = float(cost_stats.tot_exp or 0.0)
-
-    overrun_pct = round(((tot_rev - tot_orig) / tot_orig * 100), 1) if tot_orig > 0 else 0.0
-
-    # Health distribution counts - covers all projects accurately
-    status_counts = db.query(
+        func.sum(Project.cumulative_expenditure).label("tot_exp"),
+        func.count(case((Project.risk_score >= 70, 1))).label("high_risk"),
+        func.count(case((Project.risk_score.between(50, 69), 1))).label("med_risk"),
+        func.count(case((Project.risk_score < 50, 1))).label("low_risk"),
         func.count(case((or_(Project.schedule_status.in_(['ON_TRACK', 'COMPLETED', 'ON TRACK']), Project.schedule_status == 'UNKNOWN'), 1))).label("on_track"),
         func.count(case((and_(Project.schedule_status == 'EXTENDED', Project.risk_level.in_(['Low', 'Medium']), (Project.cost_overrun_pct <= 15) | (Project.cost_overrun_pct == None)), 1))).label("monitoring"),
         func.count(case((and_(Project.schedule_status == 'EXTENDED', or_(Project.risk_level == 'High', Project.cost_overrun_pct > 15)), 1))).label("delayed"),
         func.count(case((Project.schedule_status.in_(['OVERDUE', 'CRITICAL']), 1))).label("critical")
     ).first()
 
-    c_on_track = status_counts.on_track or 0
-    c_monitoring = status_counts.monitoring or 0
-    c_delayed = status_counts.delayed or 0
-    c_critical = status_counts.critical or 0
+    total_projects = stats.total_projects or 0
+    tot_orig = float(stats.tot_orig or 0.0)
+    tot_rev = float(stats.tot_rev or 0.0)
+    tot_exp = float(stats.tot_exp or 0.0)
+
+    overrun_pct = round(((tot_rev - tot_orig) / tot_orig * 100), 1) if tot_orig > 0 else 0.0
+
+    c_on_track = stats.on_track or 0
+    c_monitoring = stats.monitoring or 0
+    c_delayed = stats.delayed or 0
+    c_critical = stats.critical or 0
 
     if total_projects > 0 and (c_on_track + c_monitoring + c_delayed + c_critical) == 0:
         c_on_track = int(total_projects * 0.55)
@@ -88,9 +105,9 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     ]
 
     # ── National Risk Distribution ───────────────────────────────────────────
-    c_high_risk = db.query(func.count(Project.id)).filter(Project.risk_score >= 70).scalar() or 0
-    c_med_risk = db.query(func.count(Project.id)).filter(Project.risk_score.between(50, 69)).scalar() or 0
-    c_low_risk = db.query(func.count(Project.id)).filter(Project.risk_score < 50).scalar() or 0
+    c_high_risk = stats.high_risk or 0
+    c_med_risk = stats.med_risk or 0
+    c_low_risk = stats.low_risk or 0
 
     if total_projects > 0 and (c_high_risk + c_med_risk + c_low_risk) != total_projects:
         c_high_risk = c_critical + c_delayed if (c_critical + c_delayed) > 0 else int(total_projects * 0.135)
@@ -258,7 +275,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         actions=actions_list
     )
 
-    return DashboardSummary(
+    summary_result = DashboardSummary(
         metrics=MetricCardsData(
             total_projects=total_projects,
             total_projects_subtext="Active Infrastructure Projects",
@@ -280,6 +297,9 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         total_projects=total_projects,
         as_of_date=datetime.utcnow().strftime("%B %Y")
     )
+    _cached_dashboard_summary = summary_result
+    _cached_dashboard_time = now
+    return summary_result
 
 
 

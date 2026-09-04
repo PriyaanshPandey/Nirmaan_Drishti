@@ -7,7 +7,7 @@
 
 import { type Project, type ProjectBenchmark, projectsData } from '../data/projectsData';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api';
 
 export interface DashboardSummaryData {
   metrics: {
@@ -378,247 +378,244 @@ export interface ChatResponse {
 }
 
 // Resilient fallback dataset for zero-downtime offline state
-const FALLBACK_DASHBOARD: DashboardSummaryData = {
-  metrics: {
-    total_projects: 3361,
-    total_projects_subtext: '+124 this quarter',
-    total_original_cost: 3713000,
-    total_original_cost_formatted: '₹37.13 L Cr',
-    total_revised_cost: 4278000,
-    total_revised_cost_formatted: '₹42.78 L Cr',
-    cost_overrun_percentage: 15.2,
-    cost_overrun_formatted: '+15.2% overrun'
-  },
-  health_distribution: [
-    { id: 'on-track', name: 'On Track', count: 1848, color: '#22C55E', percentage: 55.0 },
-    { id: 'monitoring', name: 'Monitoring', count: 638, color: '#3B82F6', percentage: 19.0 },
-    { id: 'at-risk', name: 'At Risk', count: 420, color: '#F59E0B', percentage: 12.5 },
-    { id: 'critical', name: 'Critical Delay', count: 455, color: '#EF4444', percentage: 13.5 }
-  ],
-  priority_interventions: [
-    { id: '400006', project: 'Jharsuguda-Barpali-Sardega Ph II Works- Rail Connectivity', riskScore: 92, concern: 'Clearance & Depot' },
-    { id: '400259', project: 'Construction of 3rd line between Bhadrak and Nargundi (92 Kms)', riskScore: 88, concern: 'Land Acq.' },
-    { id: '619075', project: 'Sivok - Rangpo New Rail Line Project (44.96 km)', riskScore: 83, concern: 'Overrun & Utility' },
-    { id: '400112', project: 'Udhampur-Srinagar-Baramulla Rail Link (USBRL) Project', riskScore: 78, concern: 'Extreme Weather' },
-    { id: '400812', project: 'Four Laning of Ramban to Banihal Section of NH-1A', riskScore: 75, concern: 'Procurement' }
-  ],
-  delay_factors: [
-    { id: 'land', label: 'Land Acquisition', impact: '+23%', percentage: 85, color: '#090B2E' },
-    { id: 'procurement', label: 'Procurement Issues', impact: '+17%', percentage: 65, color: '#1E4EBF' },
-    { id: 'clearance', label: 'Clearance Delays', impact: '+14%', percentage: 55, color: '#22C55E' },
-    { id: 'contractor', label: 'Contractor Defaults', impact: '+11%', percentage: 40, color: '#3B82F6' },
-    { id: 'milestone', label: 'Milestone Slippage', impact: '+7%', percentage: 25, color: '#93C5FD' }
-  ],
-  risk_trend: {
-    cost: {
-      path: 'M 15 100 C 60 98, 90 92, 135 88 C 180 84, 210 70, 255 60 C 275 55, 290 48, 305 38',
-      fillPath: 'M 15 100 C 60 98, 90 92, 135 88 C 180 84, 210 70, 255 60 C 275 55, 290 48, 305 38 L 305 110 L 15 110 Z',
-      points: [
-        { x: 15, y: 100, label: 'Q1', value: '₹12.0 L Cr' },
-        { x: 88, y: 94, label: 'Q2', value: '₹17.5 L Cr' },
-        { x: 160, y: 86, label: 'Q3', value: '₹25.0 L Cr' },
-        { x: 232, y: 65, label: 'Q4', value: '₹34.8 L Cr' },
-        { x: 305, y: 38, label: "Q1 '26", value: '₹42.78 L Cr' }
+// Dynamic resilient fallback generators based on live projectsData
+export function getFallbackDashboard(): DashboardSummaryData {
+  const total = projectsData.length;
+  const origCost = projectsData.reduce((acc, p) => acc + (parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0), 0);
+  const revCost = projectsData.reduce((acc, p) => acc + (parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0), 0);
+  const overrunPct = origCost > 0 ? ((revCost - origCost) / origCost) * 100 : 0;
+
+  const onTrackCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('ON TRACK')).length;
+  const criticalCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('CRIT')).length;
+  const delayedCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND')).length;
+  const monitoringCount = Math.max(0, total - onTrackCount - criticalCount - delayedCount);
+
+  const topCritical = [...projectsData]
+    .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))
+    .slice(0, 5)
+    .map(p => ({
+      id: String(p.id),
+      project: p.name,
+      riskScore: p.riskScore || 80,
+      concern: `${p.sector} - ${p.scheduleStatus}`
+    }));
+
+  return {
+    metrics: {
+      total_projects: total,
+      total_projects_subtext: 'Active Infrastructure Projects',
+      total_original_cost: Math.round(origCost),
+      total_original_cost_formatted: `₹${(origCost / 100000).toFixed(2)} L Cr`,
+      total_revised_cost: Math.round(revCost),
+      total_revised_cost_formatted: `₹${(revCost / 100000).toFixed(2)} L Cr`,
+      cost_overrun_percentage: parseFloat(overrunPct.toFixed(1)),
+      cost_overrun_formatted: `+${overrunPct.toFixed(1)}% overrun`
+    },
+    health_distribution: [
+      { id: 'on-track', name: 'On Track', count: onTrackCount, color: '#22C55E', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
+      { id: 'monitoring', name: 'Monitoring', count: monitoringCount, color: '#3B82F6', percentage: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0 },
+      { id: 'at-risk', name: 'At Risk', count: delayedCount, color: '#F59E0B', percentage: total > 0 ? parseFloat((delayedCount / total * 100).toFixed(1)) : 0 },
+      { id: 'critical', name: 'Critical Delay', count: criticalCount, color: '#EF4444', percentage: total > 0 ? parseFloat((criticalCount / total * 100).toFixed(1)) : 0 }
+    ],
+    priority_interventions: topCritical,
+    delay_factors: [
+      { id: 'land', label: 'Land Acquisition', impact: '+23%', percentage: 85, color: '#090B2E' },
+      { id: 'procurement', label: 'Procurement Issues', impact: '+17%', percentage: 65, color: '#1E4EBF' },
+      { id: 'clearance', label: 'Clearance Delays', impact: '+14%', percentage: 55, color: '#22C55E' },
+      { id: 'contractor', label: 'Contractor Defaults', impact: '+11%', percentage: 40, color: '#3B82F6' },
+      { id: 'milestone', label: 'Milestone Slippage', impact: '+7%', percentage: 25, color: '#93C5FD' }
+    ],
+    risk_trend: {
+      cost: {
+        path: 'M 15 100 C 60 98, 90 92, 135 88 C 180 84, 210 70, 255 60 C 275 55, 290 48, 305 38',
+        fillPath: 'M 15 100 C 60 98, 90 92, 135 88 C 180 84, 210 70, 255 60 C 275 55, 290 48, 305 38 L 305 110 L 15 110 Z',
+        points: [
+          { x: 15, y: 100, label: 'Q1', value: '₹12.0 L Cr' },
+          { x: 88, y: 94, label: 'Q2', value: '₹17.5 L Cr' },
+          { x: 160, y: 86, label: 'Q3', value: '₹25.0 L Cr' },
+          { x: 232, y: 65, label: 'Q4', value: '₹34.8 L Cr' },
+          { x: 305, y: 38, label: "Q1 '26", value: `₹${(revCost / 100000).toFixed(2)} L Cr` }
+        ]
+      },
+      time: {
+        path: 'M 15 80 C 60 40, 90 100, 135 70 C 180 40, 210 30, 255 50 C 275 60, 290 45, 305 30',
+        fillPath: 'M 15 80 C 60 40, 90 100, 135 70 C 180 40, 210 30, 255 50 C 275 60, 290 45, 305 30 L 305 110 L 15 110 Z',
+        points: [
+          { x: 15, y: 80, label: 'Q1', value: '2mo delay' },
+          { x: 88, y: 82, label: 'Q2', value: '4mo delay' },
+          { x: 160, y: 55, label: 'Q3', value: '5mo delay' },
+          { x: 232, y: 48, label: 'Q4', value: '9mo delay' },
+          { x: 305, y: 30, label: "Q1 '26", value: '12mo delay' }
+        ]
+      },
+      impl: {
+        path: 'M 15 95 C 60 85, 90 75, 135 65 C 180 55, 210 45, 255 35 C 275 30, 290 25, 305 20',
+        fillPath: 'M 15 95 C 60 85, 90 75, 135 65 C 180 55, 210 45, 255 35 C 275 30, 290 25, 305 20 L 305 110 L 15 110 Z',
+        points: [
+          { x: 15, y: 95, label: 'Q1', value: '15% Done' },
+          { x: 88, y: 78, label: 'Q2', value: '32% Done' },
+          { x: 160, y: 60, label: 'Q3', value: '50% Done' },
+          { x: 232, y: 40, label: 'Q4', value: '68% Done' },
+          { x: 305, y: 20, label: "Q1 '26", value: '85% Done' }
+        ]
+      }
+    },
+    ai_action_center: {
+      total_interventions_needed: Math.min(total, criticalCount + delayedCount),
+      critical_count: criticalCount,
+      high_count: delayedCount,
+      medium_count: monitoringCount,
+      critical_pct: total > 0 ? parseFloat((criticalCount / total * 100).toFixed(1)) : 0,
+      high_pct: total > 0 ? parseFloat((delayedCount / total * 100).toFixed(1)) : 0,
+      medium_pct: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0,
+      actions: [
+        { id: 'land', category: 'Land Acquisition', detail: 'CORRIDOR RoW clearances pending' },
+        { id: 'procurement', category: 'Procurement', detail: 'Tenders delayed / under rebidding' },
+        { id: 'clearance', category: 'Clearance', detail: 'Statutory environmental permits' },
+        { id: 'contractor', category: 'Contractor', detail: 'Mobilization & equipment constraints' }
       ]
     },
-    time: {
-      path: 'M 15 80 C 60 40, 90 100, 135 70 C 180 40, 210 30, 255 50 C 275 60, 290 45, 305 30',
-      fillPath: 'M 15 80 C 60 40, 90 100, 135 70 C 180 40, 210 30, 255 50 C 275 60, 290 45, 305 30 L 305 110 L 15 110 Z',
-      points: [
-        { x: 15, y: 80, label: 'Q1', value: '2mo delay' },
-        { x: 88, y: 82, label: 'Q2', value: '4mo delay' },
-        { x: 160, y: 55, label: 'Q3', value: '5mo delay' },
-        { x: 232, y: 48, label: 'Q4', value: '9mo delay' },
-        { x: 305, y: 30, label: "Q1 '26", value: '12mo delay' }
-      ]
-    },
-    impl: {
-      path: 'M 15 95 C 60 85, 90 75, 135 65 C 180 55, 210 45, 255 35 C 275 30, 290 25, 305 20',
-      fillPath: 'M 15 95 C 60 85, 90 75, 135 65 C 180 55, 210 45, 255 35 C 275 30, 290 25, 305 20 L 305 110 L 15 110 Z',
-      points: [
-        { x: 15, y: 95, label: 'Q1', value: '15% Done' },
-        { x: 88, y: 78, label: 'Q2', value: '32% Done' },
-        { x: 160, y: 60, label: 'Q3', value: '50% Done' },
-        { x: 232, y: 40, label: 'Q4', value: '68% Done' },
-        { x: 305, y: 20, label: "Q1 '26", value: '85% Done' }
-      ]
-    }
-  },
-  ai_action_center: {
-    total_interventions_needed: 126,
-    critical_count: 38,
-    high_count: 51,
-    medium_count: 37,
-    critical_pct: 30.1,
-    high_pct: 40.5,
-    medium_pct: 29.4,
-    actions: [
-      { id: 'land', category: 'Land Acquisition', detail: '42 projects blocked' },
-      { id: 'procurement', category: 'Procurement', detail: '25 tenders delayed' },
-      { id: 'clearance', category: 'Clearance', detail: '13 env. permits pending' },
-      { id: 'contractor', category: 'Contractor', detail: '15 performance issues' }
+    total_projects: total,
+    as_of_date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  };
+}
+
+export function getFallbackRiskSummary(): RiskSummaryData {
+  const total = projectsData.length;
+  const highRisk = projectsData.filter(p => (p.riskScore || 0) >= 70).length;
+  const modRisk = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
+  const lowRisk = Math.max(0, total - highRisk - modRisk);
+
+  const timeOverrun = projectsData.filter(p => (parseFloat(String(p.scheduleExtensionMonths || 0)) > 0) || ((p.delayDays || 0) > 0)).length;
+  const costOverrun = projectsData.filter(p => {
+    const orig = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const rev = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+    return rev > orig;
+  }).length;
+
+  const avgRisk = total > 0 
+    ? Math.round(projectsData.reduce((acc, p) => acc + (p.riskScore || 30), 0) / total * 10) / 10 
+    : 35.0;
+
+  const critCount = projectsData.filter(p => (p.riskScore || 0) >= 80).length;
+  const highOnlyCount = Math.max(0, highRisk - critCount);
+
+  return {
+    total_analyzed: total,
+    high_risk_count: highRisk,
+    high_risk_pct: total > 0 ? parseFloat((highRisk / total * 100).toFixed(1)) : 0,
+    time_overrun_count: timeOverrun,
+    time_overrun_pct: total > 0 ? parseFloat((timeOverrun / total * 100).toFixed(1)) : 0,
+    cost_overrun_count: costOverrun,
+    cost_overrun_pct: total > 0 ? parseFloat((costOverrun / total * 100).toFixed(1)) : 0,
+    early_warning_count: modRisk,
+    early_warning_pct: total > 0 ? parseFloat((modRisk / total * 100).toFixed(1)) : 0,
+    low_risk_count: lowRisk,
+    low_risk_pct: total > 0 ? parseFloat((lowRisk / total * 100).toFixed(1)) : 0,
+    avg_risk_score: avgRisk,
+    distribution_categories: [
+      { category: 'Critical Risk (>80)', count: critCount, color: '#EF4444' },
+      { category: 'High Risk (70-79)', count: highOnlyCount, color: '#F97316' },
+      { category: 'Moderate Risk (50-69)', count: modRisk, color: '#EAB308' },
+      { category: 'Low Risk (<50)', count: lowRisk, color: '#22C55E' }
     ]
-  },
-  total_projects: 3361,
-  as_of_date: '31 July 2026'
-};
+  };
+}
 
-const FALLBACK_ACTION_CENTER: ActionCenterData = {
-  total_projects_requiring_intervention: 126,
-  critical_count: 38,
-  high_count: 51,
-  medium_count: 37,
-  total_financial_exposure_formatted: '₹14,250 Cr',
-  total_delay_exposure_formatted: '18.4 months',
-  action_items: [
-    {
-      id: 1,
-      project: 'Mumbai Metro Phase III',
-      projectId: 'mumbai-metro-3',
-      ministry: 'Ministry of Housing & Urban Affairs',
-      riskEvent: 'Land acquisition delay in Aarey depot staging area',
-      severity: 'Critical',
-      priorityScore: 94,
-      financialExposure: '₹4,800 Cr',
-      delayExposure: '7.2 months',
-      overdue: 'Overdue by 14 days',
-      dueDate: '15 Aug 2026',
-      status: 'Open'
-    },
-    {
-      id: 2,
-      project: 'Mumbai-Ahmedabad High Speed Rail',
-      projectId: 'mumbai-ahmedabad-bullet',
-      ministry: 'Ministry of Railways',
-      riskEvent: 'Forest and statutory environmental clearances in Maharashtra',
-      severity: 'Critical',
-      priorityScore: 91,
-      financialExposure: '₹12,000 Cr',
-      delayExposure: '14.0 months',
-      overdue: 'Pending 32 days',
-      dueDate: '20 Aug 2026',
-      status: 'Open'
-    },
-    {
-      id: 3,
-      project: 'Western Dedicated Freight Corridor',
-      projectId: 'prj-705237',
-      ministry: 'Ministry of Railways',
-      riskEvent: 'Signalling and utility shifting procurement bottlenecks',
-      severity: 'High',
-      priorityScore: 84,
-      financialExposure: '₹3,200 Cr',
-      delayExposure: '5.2 months',
-      overdue: 'Due in 6 days',
-      dueDate: '05 Sep 2026',
-      status: 'In Progress'
-    },
-    {
-      id: 4,
-      project: 'Zojila Tunnel Construction',
-      projectId: 'prj-618412',
-      ministry: 'Ministry of Road Transport & Highways',
-      riskEvent: 'Contractor equipment shortfall during winter freeze window',
-      severity: 'High',
-      priorityScore: 79,
-      financialExposure: '₹2,100 Cr',
-      delayExposure: '4.8 months',
-      overdue: 'Due in 12 days',
-      dueDate: '11 Sep 2026',
-      status: 'Pending'
+export function getFallbackDistributionSummary(): DistributionSummaryData {
+  const total = projectsData.length;
+  const high = projectsData.filter(p => (p.riskScore || 0) >= 70).length;
+  const medium = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
+  const low = Math.max(0, total - high - medium);
+
+  // Group by sector
+  const sectorMap: Record<string, { total: number; high: number; med: number; low: number; riskSum: number }> = {};
+  for (const p of projectsData) {
+    const sec = p.sector || 'Other';
+    if (!sectorMap[sec]) {
+      sectorMap[sec] = { total: 0, high: 0, med: 0, low: 0, riskSum: 0 };
     }
-  ],
-  simulator_scenarios: {
-    land: {
-      currentDelay: '7.2 months',
-      currentCost: '₹4,800 Cr',
-      projDelay: '3.8 months',
-      projDelayReduction: '3.4 months',
-      projSaving: '₹2,100 Cr',
-      confidence: 82
-    },
-    procurement: {
-      currentDelay: '5.2 months',
-      currentCost: '₹3,200 Cr',
-      projDelay: '2.8 months',
-      projDelayReduction: '2.4 months',
-      projSaving: '₹1,200 Cr',
-      confidence: 75
-    },
-    clearance: {
-      currentDelay: '4.4 months',
-      currentCost: '₹1,200 Cr',
-      projDelay: '2.4 months',
-      projDelayReduction: '2.0 months',
-      projSaving: '₹500 Cr',
-      confidence: 68
-    },
-    contractor: {
-      currentDelay: '4.8 months',
-      currentCost: '₹2,100 Cr',
-      projDelay: '3.2 months',
-      projDelayReduction: '1.6 months',
-      projSaving: '₹850 Cr',
-      confidence: 70
-    },
-    milestone: {
-      currentDelay: '3.8 months',
-      currentCost: '₹1,850 Cr',
-      projDelay: '2.0 months',
-      projDelayReduction: '1.8 months',
-      projSaving: '₹600 Cr',
-      confidence: 65
-    }
-  },
-  prioritization_weights: [
-    { label: 'Risk Severity', pct: 88, color: '#DC2626' },
-    { label: 'Financial Exposure', pct: 82, color: '#DC2626' },
-    { label: 'Delay Exposure', pct: 74, color: '#F59E0B' },
-    { label: 'Network Criticality', pct: 58, color: '#2563EB' },
-    { label: 'Urgency', pct: 45, color: '#2563EB' },
-    { label: 'Dependencies', pct: 32, color: '#94A3B8' }
-  ]
-};
+    sectorMap[sec].total += 1;
+    const r = p.riskScore || 30;
+    sectorMap[sec].riskSum += r;
+    if (r >= 70) sectorMap[sec].high += 1;
+    else if (r >= 50) sectorMap[sec].med += 1;
+    else sectorMap[sec].low += 1;
+  }
 
-const FALLBACK_RISK_SUMMARY: RiskSummaryData = {
-  total_analyzed: 3361,
-  high_risk_count: 574,
-  high_risk_pct: 17.1,
-  time_overrun_count: 1419,
-  time_overrun_pct: 42.2,
-  cost_overrun_count: 512,
-  cost_overrun_pct: 15.2,
-  early_warning_count: 968,
-  early_warning_pct: 28.8,
-  low_risk_count: 1819,
-  low_risk_pct: 54.1,
-  avg_risk_score: 52.4,
-  distribution_categories: [
-    { category: 'Critical Risk (>80)', count: 245, color: '#EF4444' },
-    { category: 'High Risk (70-79)', count: 329, color: '#F97316' },
-    { category: 'Moderate Risk (50-69)', count: 968, color: '#EAB308' },
-    { category: 'Low Risk (<50)', count: 1819, color: '#22C55E' }
-  ]
-};
+  const sectors = Object.entries(sectorMap)
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 15)
+    .map(([name, s]) => ({
+      name,
+      total: s.total,
+      high: s.high,
+      highPct: s.total > 0 ? parseFloat((s.high / s.total * 100).toFixed(1)) : 0,
+      medium: s.med,
+      mediumPct: s.total > 0 ? parseFloat((s.med / s.total * 100).toFixed(1)) : 0,
+      low: s.low,
+      lowPct: s.total > 0 ? parseFloat((s.low / s.total * 100).toFixed(1)) : 0,
+      avgRisk: s.total > 0 ? Math.round(s.riskSum / s.total) : 30
+    }));
 
-const FALLBACK_DISTRIBUTION_SUMMARY: DistributionSummaryData = {
-  total: 3361,
-  high: 574,
-  highPct: '17.1%',
-  medium: 968,
-  mediumPct: '28.8%',
-  low: 1819,
-  lowPct: '54.1%',
-  sectors: [
-    { name: 'Road Transport', total: 1142, high: 185, highPct: 16.2, medium: 331, mediumPct: 29.0, low: 626, lowPct: 54.8, avgRisk: 52 },
-    { name: 'Railways', total: 924, high: 212, highPct: 22.9, medium: 285, mediumPct: 30.8, low: 427, lowPct: 46.2, avgRisk: 65 },
-    { name: 'Power', total: 548, high: 64, highPct: 11.7, medium: 152, mediumPct: 27.7, low: 332, lowPct: 60.6, avgRisk: 42 },
-    { name: 'Petroleum', total: 312, high: 43, highPct: 13.8, medium: 92, mediumPct: 29.5, low: 177, lowPct: 56.7, avgRisk: 45 },
-    { name: 'Coal', total: 185, high: 28, highPct: 15.1, medium: 52, mediumPct: 28.1, low: 105, lowPct: 56.8, avgRisk: 48 },
-    { name: 'Urban Development', total: 142, high: 25, highPct: 17.6, medium: 38, mediumPct: 26.8, low: 79, lowPct: 55.6, avgRisk: 50 },
-    { name: 'Shipping / Ports', total: 108, high: 17, highPct: 15.7, medium: 28, mediumPct: 25.9, low: 63, lowPct: 58.3, avgRisk: 46 }
-  ]
-};
+  return {
+    total,
+    high,
+    highPct: `${total > 0 ? (high / total * 100).toFixed(1) : 0}%`,
+    medium,
+    mediumPct: `${total > 0 ? (medium / total * 100).toFixed(1) : 0}%`,
+    low,
+    lowPct: `${total > 0 ? (low / total * 100).toFixed(1) : 0}%`,
+    sectors
+  };
+}
+
+export function getFallbackActionCenter(): ActionCenterData {
+  const critProjects = projectsData.filter(p => (p.riskScore || 0) >= 70).slice(0, 10);
+  const actionItems: ActionCenterData['action_items'] = critProjects.map((p, idx) => ({
+    id: idx + 1,
+    project: p.name,
+    projectId: String(p.id),
+    ministry: p.ministry,
+    riskEvent: `${p.sector} - Milestone slippage & capital outlay escalation`,
+    severity: (p.riskScore || 0) >= 80 ? ('Critical' as const) : ('High' as const),
+    priorityScore: p.riskScore || 85,
+    financialExposure: p.costRevised,
+    delayExposure: `${p.scheduleExtensionMonths || 12} months`,
+    overdue: 'Immediate Action Required',
+    dueDate: p.expectedCompletion || 'Dec 2026',
+    status: 'Open' as const
+  }));
+
+  const critCount = projectsData.filter(p => (p.riskScore || 0) >= 80).length;
+  const highCount = projectsData.filter(p => (p.riskScore || 0) >= 70 && (p.riskScore || 0) < 80).length;
+  const medCount = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
+
+  return {
+    total_projects_requiring_intervention: critCount + highCount,
+    critical_count: critCount,
+    high_count: highCount,
+    medium_count: medCount,
+    total_financial_exposure_formatted: '₹14,250 Cr',
+    total_delay_exposure_formatted: '18.4 months',
+    action_items: actionItems,
+    simulator_scenarios: {
+      land: { currentDelay: '7.2 months', currentCost: '₹4,800 Cr', projDelay: '3.8 months', projDelayReduction: '3.4 months', projSaving: '₹2,100 Cr', confidence: 82 },
+      procurement: { currentDelay: '5.2 months', currentCost: '₹3,200 Cr', projDelay: '2.8 months', projDelayReduction: '2.4 months', projSaving: '₹1,200 Cr', confidence: 75 },
+      clearance: { currentDelay: '4.4 months', currentCost: '₹1,200 Cr', projDelay: '2.4 months', projDelayReduction: '2.0 months', projSaving: '₹500 Cr', confidence: 68 },
+      contractor: { currentDelay: '4.8 months', currentCost: '₹2,100 Cr', projDelay: '3.2 months', projDelayReduction: '1.6 months', projSaving: '₹850 Cr', confidence: 70 },
+      milestone: { currentDelay: '3.8 months', currentCost: '₹1,850 Cr', projDelay: '2.0 months', projDelayReduction: '1.8 months', projSaving: '₹600 Cr', confidence: 65 }
+    },
+    prioritization_weights: [
+      { label: 'Risk Severity', pct: 88, color: '#DC2626' },
+      { label: 'Financial Exposure', pct: 82, color: '#DC2626' },
+      { label: 'Delay Exposure', pct: 74, color: '#F59E0B' },
+      { label: 'Network Criticality', pct: 58, color: '#2563EB' },
+      { label: 'Urgency', pct: 45, color: '#2563EB' },
+      { label: 'Dependencies', pct: 32, color: '#94A3B8' }
+    ]
+  };
+}
 
 // ─────────────────────────────────────────────────────────
 // In-Memory API Cache
@@ -681,7 +678,7 @@ export const api = {
       return data;
     } catch (e) {
       console.warn('Backend unavailable, using rich national infrastructure dataset fallback.');
-      return FALLBACK_DASHBOARD;
+      return getFallbackDashboard();
     }
   },
 
@@ -821,6 +818,146 @@ export const api = {
   },
 
   /**
+   * Create New Project (Live Backend with Cache Invalidation and Dynamic Local Sync)
+   */
+  async createProject(payload: {
+    id?: string;
+    name: string;
+    project_code?: string;
+    original_cost?: number;
+    revised_cost?: number;
+    ministry_id?: number;
+    sector_id?: number;
+    state?: string;
+    implementing_agency?: string;
+    schedule_status?: string;
+  }): Promise<Project> {
+    const projectId = payload.id || payload.project_code || `PRJ-${Date.now()}`;
+    const origCost = payload.original_cost || 1000;
+    const revCost = payload.revised_cost || origCost;
+    const overrunPct = origCost > 0 ? Number((((revCost - origCost) / origCost) * 100).toFixed(1)) : 0;
+
+    const backendPayload = {
+      id: projectId,
+      name: payload.name,
+      project_code: payload.project_code || projectId,
+      description: `${payload.name} added to National Infrastructure Monitoring.`,
+      original_cost: origCost,
+      revised_cost: revCost,
+      cumulative_expenditure: 0.0,
+      cost_overrun_pct: overrunPct,
+      cost_escalation_crore: revCost > origCost ? revCost - origCost : 0,
+      physical_progress: 0.0,
+      physical_progress_target: 100.0,
+      financial_progress: 0.0,
+      schedule_status: payload.schedule_status || 'ON TRACK',
+      schedule_extension_months: 0,
+      delay_days: 0,
+      risk_score: 30,
+      risk_level: 'Low',
+      cost_risk: 20,
+      time_risk: 20,
+      impl_risk: 20,
+      overall_risk: 20,
+      state: payload.state || 'National',
+      location: payload.state || 'National',
+      implementing_agency: payload.implementing_agency || 'Executing Agency',
+      ministry_id: payload.ministry_id || 1,
+      sector_id: payload.sector_id || 1
+    };
+
+    let createdProject: Project;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backendPayload)
+      });
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail || 'Failed to create project on backend');
+      }
+      const p = await res.json();
+      createdProject = {
+        id: p.id,
+        name: p.name,
+        ministry: p.ministry?.name || 'Ministry of Infrastructure',
+        sector: p.sector?.name || 'Infrastructure',
+        location: p.location || p.state || 'India',
+        agency: p.implementing_agency || 'Government of India',
+        costApproved: p.costApproved || `₹${p.original_cost || 0} Cr`,
+        costRevised: p.costRevised || `₹${p.revised_cost || 0} Cr`,
+        costExpenditure: p.costExpenditure || `₹${p.cumulative_expenditure || 0} Cr`,
+        costOverrunPct: p.costOverrunFormatted || `${p.cost_overrun_pct || 0}%`,
+        progressPhysical: p.physical_progress || 0,
+        progressPhysicalTarget: p.physical_progress_target || 100,
+        progressFinancial: p.financial_progress || 0,
+        expectedCompletion: p.expectedCompletionFormatted || 'Dec 2028',
+        originalCompletion: p.originalCompletionFormatted || 'Dec 2028',
+        startDate: p.startDateFormatted || 'Sep 2026',
+        phase: p.phase || 'Construction',
+        type: p.type || 'Infrastructure',
+        scheduleStatus: p.schedule_status || 'ON TRACK',
+        costLabel: p.costLabel || `₹${p.revised_cost || 0} Cr`,
+        costSubtext: p.costSubtext || '',
+        riskScore: p.risk_score || 30,
+        riskLevel: p.risk_level || 'Low',
+        description: p.description || '',
+        costRisk: p.cost_risk || 20,
+        timeRisk: p.time_risk || 20,
+        implRisk: p.impl_risk || 20,
+        overallRisk: p.overall_risk || 20,
+      };
+    } catch (e) {
+      console.warn('Backend unavailable, saving project locally into active memory:', e);
+      createdProject = {
+        id: projectId,
+        name: payload.name,
+        ministry: 'Ministry of Infrastructure',
+        sector: 'Infrastructure',
+        location: payload.state || 'National',
+        agency: payload.implementing_agency || 'Executing Agency',
+        costApproved: `₹${origCost} Cr`,
+        costRevised: `₹${revCost} Cr`,
+        costExpenditure: '₹0 Cr',
+        costOverrunPct: `${overrunPct}%`,
+        progressPhysical: 0,
+        progressPhysicalTarget: 100,
+        progressFinancial: 0,
+        expectedCompletion: 'Dec 2028',
+        originalCompletion: 'Dec 2028',
+        startDate: 'Sep 2026',
+        phase: 'Construction',
+        type: 'Infrastructure',
+        scheduleStatus: 'ON TRACK',
+        costLabel: `₹${revCost} Cr`,
+        costSubtext: `Approved: ₹${origCost} Cr`,
+        riskScore: 30,
+        riskLevel: 'Low',
+        description: `${payload.name} added.`,
+        costRisk: 20,
+        timeRisk: 20,
+        implRisk: 20,
+        overallRisk: 20,
+      };
+    }
+
+    // Invalidate client-side caches so all pages immediately reload fresh aggregates
+    clearApiCache();
+
+    // Dynamically insert at head of in-memory projectsData so offline and search immediately see it
+    const existsIdx = projectsData.findIndex(p => String(p.id) === String(createdProject.id));
+    if (existsIdx >= 0) {
+      projectsData[existsIdx] = createdProject;
+    } else {
+      projectsData.unshift(createdProject);
+    }
+
+    return createdProject;
+  },
+
+  /**
    * Fetch Live Benchmark Peer Comparison for Project
    */
   async getProjectBenchmark(projectId: string): Promise<ProjectBenchmark | null> {
@@ -871,7 +1008,7 @@ export const api = {
       return data;
     } catch (e) {
       console.warn('Backend unavailable, using fallback national risk summary.');
-      return FALLBACK_RISK_SUMMARY;
+      return getFallbackRiskSummary();
     }
   },
 
@@ -932,7 +1069,7 @@ export const api = {
       return data;
     } catch (e) {
       console.warn('Backend unavailable, using fallback Action Center data.');
-      return FALLBACK_ACTION_CENTER;
+      return getFallbackActionCenter();
     }
   },
 
@@ -950,7 +1087,7 @@ export const api = {
       return data;
     } catch (e) {
       console.warn('Backend unavailable, using fallback Project Distribution data.');
-      return FALLBACK_DISTRIBUTION_SUMMARY;
+      return getFallbackDistributionSummary();
     }
   },
 

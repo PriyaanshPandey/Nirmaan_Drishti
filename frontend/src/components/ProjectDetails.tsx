@@ -403,8 +403,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </button>
           
           <div className="filter-pill-dropdown">
-            <span className="pill-label">Dept:</span>
-            <span className="pill-val">Rail (CO-02)</span>
+            <span className="pill-label">Sector:</span>
+            <span className="pill-val">{project.sector || 'Infrastructure'}</span>
             <ChevronDown size={12} className="pill-chevron" />
           </div>
           
@@ -428,10 +428,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="filters-right">
-          <span className="as-of-date">As of <span className="date-strong">31 July 2026</span></span>
+          <span className="as-of-date">Target Completion: <span className="date-strong">{project.expectedCompletion || 'Ongoing'}</span></span>
           <div className="insight-badge active-pulsing">
             <span className="badge-dot-glowing"></span>
-            <span className="badge-txt">AI Insight Active — 12 new risk correlations detected.</span>
+            <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
           </div>
         </div>
       </div>

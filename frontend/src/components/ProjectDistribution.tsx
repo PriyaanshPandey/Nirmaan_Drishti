@@ -14,10 +14,45 @@ import './ProjectDistribution.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import type { DistributionSummaryData } from '../services/api';
+import { projectsData } from '../data/projectsData';
 
 export const ProjectDistribution: React.FC = () => {
   const [data, setData] = useState<DistributionSummaryData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Derive dynamic portfolio and regional metrics
+  const delayedCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND') || (p.riskScore || 0) >= 70).length;
+  const totalEscalationCr = projectsData.reduce((acc, p) => {
+    const orig = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const rev = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+    return acc + Math.max(0, rev - orig);
+  }, 0);
+  const totalEscalationFormatted = totalEscalationCr >= 100000 
+    ? `₹${(totalEscalationCr / 100000).toFixed(1)}L Cr` 
+    : `₹${Math.round(totalEscalationCr).toLocaleString('en-IN')} Cr`;
+
+  // Top Sector from data or projectsData
+  const topSector = data && data.sectors && data.sectors.length > 0 ? data.sectors[0] : null;
+  const topSectorName = topSector ? topSector.name : (projectsData[0]?.sector || 'Road Transport & Highways');
+  const topSectorTotal = topSector ? topSector.total : projectsData.filter(p => p.sector === topSectorName).length;
+  const topSectorHighPct = topSector ? topSector.highPct : 18.4;
+  const topSectorAvgRisk = topSector ? topSector.avgRisk : 50;
+
+  // Regional state breakdown
+  const stateCounts: Record<string, { count: number; cost: number }> = {};
+  for (const p of projectsData) {
+    const st = p.location ? p.location.split(',')[0].trim() : 'National';
+    if (!stateCounts[st]) stateCounts[st] = { count: 0, cost: 0 };
+    stateCounts[st].count += 1;
+    stateCounts[st].cost += parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  }
+  const sortedStates = Object.entries(stateCounts).sort((a, b) => b[1].count - a[1].count);
+  const topStateName = sortedStates[0] ? sortedStates[0][0] : 'Western';
+  const topStateCount = sortedStates[0] ? sortedStates[0][1].count : 298;
+  const topStateCost = sortedStates[0] ? sortedStates[0][1].cost : 48600;
+  const topStateCostFormatted = topStateCost >= 100000 
+    ? `₹${(topStateCost / 100000).toFixed(1)}L Cr` 
+    : `₹${Math.round(topStateCost).toLocaleString('en-IN')} Cr`;
 
   useEffect(() => {
     setLoading(true);
@@ -310,20 +345,20 @@ export const ProjectDistribution: React.FC = () => {
               <span className="strategic-tag tag-red">CRITICAL ACTION REQUIRED</span>
               <ShieldAlert size={18} color="#DC2626" />
             </div>
-            <h4 className="strategic-card-title text-red">Land Clearance Backlog</h4>
+            <h4 className="strategic-card-title text-red">High Priority Interventions</h4>
             <p className="strategic-card-desc">
-              78 projects across railways and highways are delayed due to ROW clearance issues.
+              {data?.high || delayedCount} projects are flagged as critical or delayed requiring administrative escalation.
             </p>
             <div className="strategic-metrics-box">
               <div className="strategic-metric-item">
                 <span className="strategic-num text-red">
-                  <AnimatedCounter value={78} />
+                  <AnimatedCounter value={data?.high || delayedCount} />
                 </span>
-                <span className="strategic-lbl">Projects Delayed</span>
+                <span className="strategic-lbl">High Risk Projects</span>
               </div>
               <div className="strategic-divider" />
               <div className="strategic-metric-item">
-                <span className="strategic-num">₹14.2K Cr</span>
+                <span className="strategic-num">{totalEscalationFormatted}</span>
                 <span className="strategic-lbl">Escalation Cost</span>
               </div>
             </div>
@@ -336,21 +371,21 @@ export const ProjectDistribution: React.FC = () => {
           {/* Card 2: Prioritised Sector */}
           <div className="strategic-card card-priority-sector">
             <div className="strategic-top-row">
-              <span className="strategic-tag tag-blue">MOST CRITICAL SECTOR</span>
+              <span className="strategic-tag tag-blue">TOP CAPITAL SECTOR</span>
               <TrendingUp size={18} color="#2563EB" />
             </div>
-            <h4 className="strategic-card-title">Railways Core</h4>
+            <h4 className="strategic-card-title">{topSectorName}</h4>
             <p className="strategic-card-desc">
-              High severity contractor defaults and equipment shortage during freezing weather windows.
+              Accounts for {topSectorTotal} monitored national assets with {topSectorHighPct}% in elevated risk tier.
             </p>
             <div className="strategic-metrics-box">
               <div className="strategic-metric-item">
-                <span className="strategic-num text-amber">22.9%</span>
+                <span className="strategic-num text-amber">{topSectorHighPct}%</span>
                 <span className="strategic-lbl">High Risk Pct</span>
               </div>
               <div className="strategic-divider" />
               <div className="strategic-metric-item">
-                <span className="strategic-num">65/100</span>
+                <span className="strategic-num">{topSectorAvgRisk}/100</span>
                 <span className="strategic-lbl">Avg Risk Index</span>
               </div>
             </div>
@@ -366,21 +401,21 @@ export const ProjectDistribution: React.FC = () => {
               <span className="strategic-tag tag-neutral">REGIONAL CONCENTRATION</span>
               <MapPin size={18} color="#059669" />
             </div>
-            <h4 className="strategic-card-title">Western Corridor</h4>
+            <h4 className="strategic-card-title">{topStateName} Region</h4>
             <p className="strategic-card-desc">
-              Maharashtra and Gujarat hold 34% of active projects under monitoring phase.
+              Concentration of {topStateCount} active central sector projects across primary corridor nodes.
             </p>
             <div className="strategic-metrics-box">
               <div className="strategic-metric-item">
                 <span className="strategic-num">
-                  <AnimatedCounter value={298} />
+                  <AnimatedCounter value={topStateCount} />
                 </span>
                 <span className="strategic-lbl">Active Projects</span>
               </div>
               <div className="strategic-divider" />
               <div className="strategic-metric-item">
-                <span className="strategic-num">₹48.6K Cr</span>
-                <span className="strategic-lbl">Total Funding</span>
+                <span className="strategic-num">{topStateCostFormatted}</span>
+                <span className="strategic-lbl">Total Sanctioned</span>
               </div>
             </div>
             <button type="button" className="strategic-btn btn-action-neutral">
