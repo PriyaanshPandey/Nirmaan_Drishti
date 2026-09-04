@@ -19,9 +19,13 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [previousTab, setPreviousTab] = useState<string>('projects');
+  const [homeClickNonce, setHomeClickNonce] = useState<number>(0);
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab) return;
+    if (tab === 'home') {
+      setHomeClickNonce(prev => prev + 1);
+    }
+    if (tab === activeTab && tab !== 'home') return;
     setSelectedProjectId(null);
     setActiveTab(tab);
   };
@@ -48,7 +52,11 @@ function App() {
 
         {/* ── Home ── */}
         <PageSlot id="home" activeTab={activeTab}>
-          <Home activeTab={activeTab} onNavigateTab={handleTabChange} />
+          <Home
+            activeTab={activeTab}
+            onNavigateTab={handleTabChange}
+            homeClickNonce={homeClickNonce}
+          />
         </PageSlot>
 
         {/* ── Dashboard ── */}

@@ -148,18 +148,530 @@
   width: 100%;
 }
 
-/* Right-side Infrastructure Illustration */
-.hero-infra-illustration {
+/* Right-side Infrastructure Illustration Stage with Interactive Dots */
+.hero-infra-stage {
   position: absolute;
   right: 14px;
   bottom: 0;
   height: 85%;
+  aspect-ratio: 2308 / 2064;
   max-width: 48%;
+  z-index: 1;
+  user-select: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.hero-infra-img,
+.hero-infra-img-original {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   object-position: right bottom;
   pointer-events: none;
-  z-index: 1;
+  transition: opacity 0.4s ease;
 }
+
+.hero-infra-img {
+  z-index: 1;
+  filter: blur(0px) brightness(1);
+  transform-origin: center center;
+}
+
+.hero-infra-img-original {
+  z-index: 2;
+  opacity: 1;
+}
+
+/* When animating: original image hides, base image blurs */
+.hero-infra-stage.is-animating .hero-infra-img-original {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.hero-infra-stage.is-animating .hero-infra-img {
+  animation: heroIllustrationBlur 3.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes heroIllustrationBlur {
+  0% {
+    filter: blur(0px) brightness(1) saturate(1);
+    transform: scale(1);
+  }
+  24% {
+    filter: blur(8.5px) brightness(0.96) saturate(0.85);
+    transform: scale(0.985);
+  }
+  72% {
+    filter: blur(8.5px) brightness(0.96) saturate(0.85);
+    transform: scale(0.985);
+  }
+  100% {
+    filter: blur(0px) brightness(1) saturate(1);
+    transform: scale(1);
+  }
+}
+
+/* Central AI Synthesis / Radar Pulse Wave at Center (50%, 50%) */
+.hero-center-cluster {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-center-pulse {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-center-core-glow {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(59, 130, 246, 0.15) 50%, transparent 75%);
+  filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-infra-stage.is-animating .hero-center-pulse.ring-1 {
+  animation: centerRadarWave 2.0s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+}
+
+.hero-infra-stage.is-animating .hero-center-pulse.ring-2 {
+  animation: centerRadarWave 2.0s cubic-bezier(0.16, 1, 0.3, 1) 1.05s forwards;
+}
+
+.hero-infra-stage.is-animating .hero-center-core-glow {
+  animation: centerCoreGlow 1.8s ease-in-out 0.8s forwards;
+}
+
+@keyframes centerRadarWave {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  20% {
+    opacity: 0.55;
+  }
+  100% {
+    width: 140px;
+    height: 140px;
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+@keyframes centerCoreGlow {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  30% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+  70% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/* 4 Animated High-Precision Dots (subtle, clean effects) */
+.hero-dot {
+  position: absolute;
+  width: 2.6%;
+  aspect-ratio: 1 / 1;
+  min-width: 13px;
+  min-height: 13px;
+  max-width: 20px;
+  max-height: 20px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-dot-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  transition: transform 0.25s ease;
+}
+
+.hero-dot-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-dot-ping {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Subtle hover effect on stage when idle */
+.hero-infra-stage:not(.is-animating):hover .hero-dot .hero-dot-core {
+  transform: scale(1.08);
+}
+
+.hero-infra-stage:not(.is-animating):hover .hero-dot-blue .hero-dot-glow {
+  opacity: 0.35;
+}
+
+.hero-infra-stage:not(.is-animating):hover .hero-dot-green .hero-dot-glow {
+  opacity: 0.35;
+}
+
+.hero-infra-stage:not(.is-animating):hover .hero-dot-yellow .hero-dot-glow {
+  opacity: 0.35;
+}
+
+.hero-infra-stage:not(.is-animating):hover .hero-dot-red .hero-dot-glow {
+  opacity: 0.35;
+}
+
+/* Specific dot colors and coordinates */
+/* 1. Blue Dot (left: 21.07%, top: 55.35%) */
+.hero-dot-blue {
+  left: 21.07%;
+  top: 55.35%;
+}
+
+.hero-dot-blue .hero-dot-core {
+  background: radial-gradient(circle at 35% 35%, #4285F4 0%, #1A73E8 70%, #1557B0 100%);
+}
+
+.hero-dot-blue .hero-dot-glow {
+  background: radial-gradient(circle, rgba(26, 115, 232, 0.4) 0%, transparent 70%);
+}
+
+.hero-dot-blue .hero-dot-ping {
+  border-color: #1A73E8;
+}
+
+/* 2. Green Dot (left: 37.59%, top: 27.44%) */
+.hero-dot-green {
+  left: 37.59%;
+  top: 27.44%;
+}
+
+.hero-dot-green .hero-dot-core {
+  background: radial-gradient(circle at 35% 35%, #34A853 0%, #0F9D58 70%, #0B8043 100%);
+}
+
+.hero-dot-green .hero-dot-glow {
+  background: radial-gradient(circle, rgba(15, 157, 88, 0.4) 0%, transparent 70%);
+}
+
+.hero-dot-green .hero-dot-ping {
+  border-color: #0F9D58;
+}
+
+/* 3. Yellow Dot (left: 82.35%, top: 2.60%) */
+.hero-dot-yellow {
+  left: 82.35%;
+  top: 2.60%;
+}
+
+.hero-dot-yellow .hero-dot-core {
+  background: radial-gradient(circle at 35% 35%, #FBBC05 0%, #F4B400 70%, #E37400 100%);
+}
+
+.hero-dot-yellow .hero-dot-glow {
+  background: radial-gradient(circle, rgba(244, 180, 0, 0.4) 0%, transparent 70%);
+}
+
+.hero-dot-yellow .hero-dot-ping {
+  border-color: #F4B400;
+}
+
+/* 4. Red Dot (left: 85.14%, top: 79.36%) */
+.hero-dot-red {
+  left: 85.14%;
+  top: 79.36%;
+}
+
+.hero-dot-red .hero-dot-core {
+  background: radial-gradient(circle at 35% 35%, #EA4335 0%, #D93025 70%, #B31412 100%);
+}
+
+.hero-dot-red .hero-dot-glow {
+  background: radial-gradient(circle, rgba(234, 67, 53, 0.4) 0%, transparent 70%);
+}
+
+.hero-dot-red .hero-dot-ping {
+  border-color: #EA4335;
+}
+
+/* Animation triggers */
+.hero-infra-stage.is-animating .hero-dot-blue {
+  animation: dotMoveBlue 3.4s cubic-bezier(0.38, 0, 0.22, 1) forwards;
+}
+
+.hero-infra-stage.is-animating .hero-dot-green {
+  animation: dotMoveGreen 3.4s cubic-bezier(0.38, 0, 0.22, 1) forwards;
+}
+
+.hero-infra-stage.is-animating .hero-dot-yellow {
+  animation: dotMoveYellow 3.4s cubic-bezier(0.38, 0, 0.22, 1) forwards;
+}
+
+.hero-infra-stage.is-animating .hero-dot-red {
+  animation: dotMoveRed 3.4s cubic-bezier(0.38, 0, 0.22, 1) forwards;
+}
+
+.hero-infra-stage.is-animating .hero-dot .hero-dot-glow {
+  animation: dotGlowPulse 3.4s ease forwards;
+}
+
+.hero-infra-stage.is-animating .hero-dot .hero-dot-ping {
+  animation: dotDockPing 0.65s cubic-bezier(0.16, 1, 0.3, 1) 2.95s forwards;
+}
+
+@keyframes dotGlowPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  15% {
+    opacity: 0.45;
+    transform: scale(1.2);
+  }
+  68% {
+    opacity: 0.45;
+    transform: scale(1.2);
+  }
+  92% {
+    opacity: 0.2;
+    transform: scale(1.0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes dotDockPing {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+/* Keyframes for the 4 dot trajectories (subtle shadows and scale) */
+@keyframes dotMoveBlue {
+  0% {
+    left: 21.07%;
+    top: 55.35%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+  8% {
+    transform: translate(-50%, -50%) scale(1.12);
+    filter: drop-shadow(0 2px 5px rgba(26, 115, 232, 0.35));
+  }
+  32% {
+    left: 47.0%;
+    top: 47.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(26, 115, 232, 0.4));
+  }
+  48% {
+    left: 46.5%;
+    top: 46.5%;
+    transform: translate(-50%, -50%) scale(1.2);
+    filter: drop-shadow(0 2px 7px rgba(26, 115, 232, 0.45));
+  }
+  64% {
+    left: 47.0%;
+    top: 47.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(26, 115, 232, 0.4));
+  }
+  90% {
+    left: 21.07%;
+    top: 55.35%;
+    transform: translate(-50%, -50%) scale(1.06);
+    filter: drop-shadow(0 1px 3px rgba(26, 115, 232, 0.25));
+  }
+  100% {
+    left: 21.07%;
+    top: 55.35%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+}
+
+@keyframes dotMoveGreen {
+  0% {
+    left: 37.59%;
+    top: 27.44%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+  8% {
+    transform: translate(-50%, -50%) scale(1.12);
+    filter: drop-shadow(0 2px 5px rgba(15, 157, 88, 0.35));
+  }
+  32% {
+    left: 53.0%;
+    top: 47.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(15, 157, 88, 0.4));
+  }
+  48% {
+    left: 53.5%;
+    top: 46.5%;
+    transform: translate(-50%, -50%) scale(1.2);
+    filter: drop-shadow(0 2px 7px rgba(15, 157, 88, 0.45));
+  }
+  64% {
+    left: 53.0%;
+    top: 47.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(15, 157, 88, 0.4));
+  }
+  90% {
+    left: 37.59%;
+    top: 27.44%;
+    transform: translate(-50%, -50%) scale(1.06);
+    filter: drop-shadow(0 1px 3px rgba(15, 157, 88, 0.25));
+  }
+  100% {
+    left: 37.59%;
+    top: 27.44%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+}
+
+@keyframes dotMoveYellow {
+  0% {
+    left: 82.35%;
+    top: 2.60%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+  8% {
+    transform: translate(-50%, -50%) scale(1.12);
+    filter: drop-shadow(0 2px 5px rgba(244, 180, 0, 0.35));
+  }
+  32% {
+    left: 53.0%;
+    top: 53.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(244, 180, 0, 0.4));
+  }
+  48% {
+    left: 53.5%;
+    top: 53.5%;
+    transform: translate(-50%, -50%) scale(1.2);
+    filter: drop-shadow(0 2px 7px rgba(244, 180, 0, 0.45));
+  }
+  64% {
+    left: 53.0%;
+    top: 53.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(244, 180, 0, 0.4));
+  }
+  90% {
+    left: 82.35%;
+    top: 2.60%;
+    transform: translate(-50%, -50%) scale(1.06);
+    filter: drop-shadow(0 1px 3px rgba(244, 180, 0, 0.25));
+  }
+  100% {
+    left: 82.35%;
+    top: 2.60%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+}
+
+@keyframes dotMoveRed {
+  0% {
+    left: 85.14%;
+    top: 79.36%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+  8% {
+    transform: translate(-50%, -50%) scale(1.12);
+    filter: drop-shadow(0 2px 5px rgba(234, 67, 53, 0.35));
+  }
+  32% {
+    left: 47.0%;
+    top: 53.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(234, 67, 53, 0.4));
+  }
+  48% {
+    left: 46.5%;
+    top: 53.5%;
+    transform: translate(-50%, -50%) scale(1.2);
+    filter: drop-shadow(0 2px 7px rgba(234, 67, 53, 0.45));
+  }
+  64% {
+    left: 47.0%;
+    top: 53.0%;
+    transform: translate(-50%, -50%) scale(1.15);
+    filter: drop-shadow(0 2px 6px rgba(234, 67, 53, 0.4));
+  }
+  90% {
+    left: 85.14%;
+    top: 79.36%;
+    transform: translate(-50%, -50%) scale(1.06);
+    filter: drop-shadow(0 1px 3px rgba(234, 67, 53, 0.25));
+  }
+  100% {
+    left: 85.14%;
+    top: 79.36%;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  }
+}
+
 
 /* Two-column Hero Layout */
 .hero-main-layout {
@@ -277,8 +789,9 @@
     font-size: 42px;
   }
 
+  .hero-infra-stage,
   .hero-infra-illustration {
-    opacity: 0.18;
+    opacity: 0.22;
     max-width: 85%;
   }
 }
