@@ -163,13 +163,60 @@ h3 {
 
 @media (max-width: 1100px) {
   body {
-    padding: 20px;
+    padding: 0;
   }
 
   .dashboard-grid,
   .dashboard-row-2 {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+}
+
+@media (max-width: 868px) {
+  .app-main-content {
+    padding: 12px 14px 28px 14px;
+    gap: 18px;
+  }
+
+  h1 {
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 17px;
+  }
+
+  h3 {
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 18px 16px;
+    border-radius: 16px;
+    gap: 14px;
+  }
+
+  .card:hover {
+    transform: none; /* Disable 3D tilt on touch devices for smoother scrolling */
+  }
+}
+
+@media (max-width: 480px) {
+  .app-main-content {
+    padding: 8px 10px 24px 10px;
+    gap: 14px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .card {
+    padding: 15px 12px;
+    border-radius: 14px;
+    gap: 12px;
   }
 }
 

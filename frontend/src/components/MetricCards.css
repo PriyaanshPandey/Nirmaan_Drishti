@@ -128,3 +128,38 @@
   background-color: var(--color-accent-red);
   box-shadow: 0 0 6px var(--color-accent-red);
 }
+
+@media (max-width: 768px) {
+  .metrics-column {
+    gap: 12px;
+  }
+
+  .metric-card {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .metric-value {
+    font-size: 26px;
+  }
+
+  .metric-title {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .metric-subtext {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .metric-footer-badge {
+    padding: 3px 8px;
+    font-size: 11px;
+    margin-top: 5px;
+  }
+
+  .card-decor-pattern {
+    display: none; /* Hide heavy decor pattern on mobile to keep focus on key figures */
+  }
+}

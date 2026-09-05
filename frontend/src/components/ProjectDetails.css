@@ -137,7 +137,8 @@
   border: 1px solid #FCA5A5;
 }
 
-.status-ontrack {
+.status-ontrack,
+.status-completed {
   background-color: #DCFCE7;
   color: #166534;
   border: 1px solid #86EFAC;
@@ -1897,6 +1898,78 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1);
   border-color: #60A5FA;
+}
+
+@media (max-width: 868px) {
+  .project-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .title-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .detail-project-name {
+    font-size: 22px;
+  }
+
+  .details-filters-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .filters-left {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .filters-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .details-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .metric-box {
+    padding: 16px 14px;
+  }
+
+  .metric-box-val {
+    font-size: 19px;
+  }
+
+  .details-grid-3,
+  .details-grid-2-3 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .risk-dials-grid-2x2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .risk-dial-box {
+    padding: 14px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .details-metrics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-dials-grid-2x2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 

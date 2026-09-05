@@ -1197,24 +1197,59 @@ export const api = {
     }
 
     const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const isCompleted = Boolean(
+      (proj.phase || '').toLowerCase().includes('completed') ||
+      (proj.scheduleStatus || '').toLowerCase().includes('completed') ||
+      (typeof proj.progressPhysical === 'number' && proj.progressPhysical >= 100) ||
+      (parseFloat(String(proj.progressPhysical || '0')) >= 100)
+    );
+
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currOverrunPct = parseFloat(String(proj.costOverrunPct).replace(/[^0-9.-]/g, '')) || ((costRev - costApp) / costApp * 100);
     const currExtMo = parseFloat(String(proj.scheduleExtensionMonths || '0')) || (proj.timeRisk > 50 ? 14 : 6);
 
-    const cRisk = proj.costRisk !== undefined ? proj.costRisk : proj.riskScore;
-    const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore;
+    if (isCompleted) {
+      return {
+        project_id: proj.id,
+        prediction_date: new Date().toISOString().slice(0, 10),
+        horizon_months: horizon,
+        risk_score: 0,
+        risk_level: 'Low',
+        cost_overrun_probability: 0,
+        time_overrun_probability: 0,
+        predicted_additional_overrun_pct: 0,
+        predicted_additional_cost_crore: 0,
+        predicted_final_cost_overrun_pct: currOverrunPct,
+        predicted_final_revised_cost_crore: costRev,
+        predicted_additional_delay_months: 0,
+        predicted_total_schedule_extension_months: currExtMo,
+        tentative_completion_date: proj.expectedCompletion || 'Completed',
+        estimated_time_needed: 'Execution Completed',
+        top_risk_drivers: [],
+        top_protective_factors: [
+          { feature: 'physical_progress_complete', label: 'Physical Progress Complete', shap_value: -0.9 }
+        ],
+        explanation: 'Project physical construction is 100% complete and commissioned.',
+        model_version: 'v2.4-paimana-calibrated'
+      };
+    }
+
+    const cRiskRaw = proj.costRisk !== undefined ? proj.costRisk : proj.riskScore;
+    const tRiskRaw = proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore;
+    const cRisk = (cRiskRaw > 1 ? cRiskRaw / 100 : cRiskRaw) || 0.45;
+    const tRisk = (tRiskRaw > 1 ? tRiskRaw / 100 : tRiskRaw) || 0.45;
 
     const is6M = horizon === 6;
-    const costOverrunProb = Math.min(0.98, Math.max(0.08, (cRisk / 100) * (is6M ? 1.15 : 0.85)));
-    const timeOverrunProb = Math.min(0.98, Math.max(0.12, (tRisk / 100) * (is6M ? 1.20 : 0.88)));
+    const costOverrunProb = Math.min(0.98, Math.max(0.08, cRisk * (is6M ? 1.15 : 0.85)));
+    const timeOverrunProb = Math.min(0.98, Math.max(0.12, tRisk * (is6M ? 1.20 : 0.88)));
 
-    const addOverrunPct = parseFloat(((cRisk / 100) * (is6M ? 5.8 : 2.6)).toFixed(2));
+    const addOverrunPct = parseFloat((cRisk * (is6M ? 5.8 : 2.6)).toFixed(2));
     const addCostCr = parseFloat(((costRev * (addOverrunPct / 100))).toFixed(2));
     const finalOverrunPct = parseFloat((currOverrunPct + addOverrunPct).toFixed(1));
     const finalCostCr = parseFloat((costRev + addCostCr).toFixed(2));
 
-    const addDelayMo = parseFloat(((tRisk / 100) * (is6M ? 7.2 : 3.4)).toFixed(1));
+    const addDelayMo = Math.max(0.4, parseFloat((tRisk * (is6M ? 7.2 : 3.4)).toFixed(1)));
     const totalExtMo = parseFloat((currExtMo + addDelayMo).toFixed(1));
 
     // Dynamic Tentative Target Date Calculation
@@ -1390,15 +1425,83 @@ export const api = {
     }
 
     const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const isCompleted = Boolean(
+      (proj.phase || '').toLowerCase().includes('completed') ||
+      (proj.scheduleStatus || '').toLowerCase().includes('completed') ||
+      (typeof proj.progressPhysical === 'number' && proj.progressPhysical >= 100) ||
+      (parseFloat(String(proj.progressPhysical || '0')) >= 100)
+    );
+
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currOverrunPct = parseFloat(proj.costOverrunPct || '0');
-    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
-    const cRisk = (proj.costRisk !== undefined ? proj.costRisk : proj.riskScore) / 100;
-    const tRisk = (proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore) / 100;
+    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
 
-    const addDelayMo3M = parseFloat(((tRisk / 100) * 3.4).toFixed(1));
-    const addDelayMo6M = parseFloat(((tRisk / 100) * 7.2).toFixed(1));
+    // Handle completed projects separately - do NOT generate future 3M/6M horizon predictions
+    if (isCompleted) {
+      return {
+        project_id: String(proj.id),
+        project_name: proj.name,
+        as_of_month: proj.asOfDate || 'May 2026',
+        is_completed: true,
+        completed_summary: {
+          is_completed: true,
+          final_physical_progress_pct: proj.progressPhysical || 100,
+          actual_completion_date: proj.expectedCompletion || proj.originalCompletion || 'Completed',
+          original_target_doc: proj.originalCompletion || 'N/A',
+          revised_doc: proj.expectedCompletion || 'N/A',
+          actual_schedule_extension_months: extMo,
+          original_cost_crore: costApp,
+          final_revised_cost_crore: costRev,
+          final_expenditure_crore: parseFloat(String(proj.costExpenditure).replace(/[^0-9.]/g, '')) || costRev,
+          actual_cost_overrun_pct: currOverrunPct,
+          actual_cost_escalation_crore: Math.max(0, costRev - costApp),
+          source_report: proj.sourceReport || 'Official PAIMANA MoSPI Infrastructure Report',
+        },
+        current_status: {
+          schedule_status: 'COMPLETED',
+          physical_progress_pct: 100,
+          cost_overrun_pct: currOverrunPct,
+          cumulative_expenditure_crore: parseFloat(String(proj.costExpenditure).replace(/[^0-9.]/g, '')) || costRev,
+          schedule_extension_months: extMo,
+        },
+        timeline: {
+          approval_start: proj.startDate,
+          original_target_doc: proj.originalCompletion,
+          revised_doc: proj.expectedCompletion,
+        },
+        cost_prediction: {},
+        time_prediction: {},
+        risk_metrics: {
+          cost_escalation_risk_3m_pct: 0,
+          cost_escalation_risk_6m_pct: 0,
+          schedule_delay_risk_3m_pct: 0,
+          schedule_delay_risk_6m_pct: 0,
+          cost_risk_tier_3m: 'LOW',
+          cost_risk_tier_6m: 'LOW',
+          delay_risk_tier_3m: 'LOW',
+          delay_risk_tier_6m: 'LOW'
+        },
+        project_info: {
+          id: proj.id,
+          name: proj.name,
+          phase: proj.phase,
+          sector: proj.sector,
+          status: 'COMPLETED'
+        }
+      };
+    }
+
+    // Active/ongoing project predictions
+    const cRiskRaw = proj.costRisk !== undefined ? proj.costRisk : proj.riskScore;
+    const tRiskRaw = proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore;
+    const cRisk = (cRiskRaw > 1 ? cRiskRaw / 100 : cRiskRaw) || 0.45;
+    const tRisk = (tRiskRaw > 1 ? tRiskRaw / 100 : tRiskRaw) || 0.45;
+
+    // Dynamic predicted incremental delay (months) for 3M and 6M horizons
+    // Correct calculation: e.g. 81% risk -> 3M = +2.8 mo, 6M = +5.8 mo
+    const addDelayMo3M = Math.max(0.4, parseFloat((tRisk * 3.4).toFixed(1)));
+    const addDelayMo6M = Math.max(0.8, parseFloat((tRisk * 7.2).toFixed(1)));
 
     const computeTentativeDate = (delayMonths: number) => {
       try {
@@ -1426,8 +1529,8 @@ export const api = {
     return {
       project_id: String(proj.id),
       project_name: proj.name,
-      as_of_month: 'May 2026',
-      is_completed: (proj.scheduleStatus as string) === 'COMPLETED',
+      as_of_month: proj.asOfDate || 'May 2026',
+      is_completed: false,
       current_status: {
         schedule_status: proj.scheduleStatus,
         physical_progress_pct: proj.progressPhysical,
@@ -1442,27 +1545,27 @@ export const api = {
       },
       cost_prediction: {
         '3_month': {
-          additional_escalation_probability: cRisk * 0.85,
-          predicted_additional_overrun_pct: cRisk * 2.6,
-          predicted_additional_cost_crore: costRev * (cRisk * 0.026),
-          predicted_final_cost_overrun_pct: parseFloat(proj.costOverrunPct || '0') + (cRisk * 2.6),
-          predicted_final_revised_cost_crore: costRev + (costRev * (cRisk * 0.026)),
+          additional_escalation_probability: Math.min(0.98, cRisk * 0.85),
+          predicted_additional_overrun_pct: parseFloat((cRisk * 2.6).toFixed(2)),
+          predicted_additional_cost_crore: parseFloat((costRev * (cRisk * 0.026)).toFixed(2)),
+          predicted_final_cost_overrun_pct: parseFloat((currOverrunPct + (cRisk * 2.6)).toFixed(1)),
+          predicted_final_revised_cost_crore: parseFloat((costRev + (costRev * (cRisk * 0.026))).toFixed(2)),
           risk_tier: cRisk >= 0.7 ? 'CRITICAL' : cRisk >= 0.5 ? 'HIGH' : cRisk >= 0.25 ? 'MODERATE' : 'LOW'
         },
         '6_month': {
           additional_escalation_probability: Math.min(0.99, cRisk * 1.15),
-          predicted_additional_overrun_pct: cRisk * 5.8,
-          predicted_additional_cost_crore: costRev * (cRisk * 0.058),
-          predicted_final_cost_overrun_pct: currOverrunPct + (cRisk * 5.8),
-          predicted_final_revised_cost_crore: costRev + (costRev * (cRisk * 0.058)),
+          predicted_additional_overrun_pct: parseFloat((cRisk * 5.8).toFixed(2)),
+          predicted_additional_cost_crore: parseFloat((costRev * (cRisk * 0.058)).toFixed(2)),
+          predicted_final_cost_overrun_pct: parseFloat((currOverrunPct + (cRisk * 5.8)).toFixed(1)),
+          predicted_final_revised_cost_crore: parseFloat((costRev + (costRev * (cRisk * 0.058))).toFixed(2)),
           risk_tier: cRisk >= 0.6 ? 'CRITICAL' : cRisk >= 0.45 ? 'HIGH' : 'MODERATE'
         }
       },
       time_prediction: {
         '3_month': {
-          additional_delay_probability: tRisk * 0.88,
+          additional_delay_probability: Math.min(0.98, tRisk * 0.88),
           predicted_additional_delay_months: addDelayMo3M,
-          predicted_total_schedule_extension_months: extMo + addDelayMo3M,
+          predicted_total_schedule_extension_months: parseFloat((extMo + addDelayMo3M).toFixed(1)),
           predicted_additional_delay: `+${addDelayMo3M.toFixed(1)} months`,
           tentative_completion_date: tentativeDate3M,
           estimated_time_needed_completion: tRisk >= 0.7 ? '1 year 10 months' : '1 year 4 months',
@@ -1471,7 +1574,7 @@ export const api = {
         '6_month': {
           additional_delay_probability: Math.min(0.99, tRisk * 1.20),
           predicted_additional_delay_months: addDelayMo6M,
-          predicted_total_schedule_extension_months: extMo + addDelayMo6M,
+          predicted_total_schedule_extension_months: parseFloat((extMo + addDelayMo6M).toFixed(1)),
           predicted_additional_delay: `+${addDelayMo6M.toFixed(1)} months`,
           tentative_completion_date: tentativeDate6M,
           estimated_time_needed_completion: tRisk >= 0.7 ? '2 years 4 months' : '1 year 9 months',

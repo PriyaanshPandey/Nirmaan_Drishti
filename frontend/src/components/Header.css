@@ -80,3 +80,36 @@
   color: var(--color-accent-blue);
   letter-spacing: -0.01em;
 }
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+    margin-top: 2px;
+  }
+
+  .header-title {
+    font-size: 22px;
+  }
+
+  .header-subtitle {
+    font-size: 12px;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  .header-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .insight-badge {
+    padding: 5px 12px;
+  }
+
+  .badge-text {
+    font-size: 12px;
+  }
+}

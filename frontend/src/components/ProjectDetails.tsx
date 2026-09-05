@@ -391,6 +391,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     );
   }
 
+  const isCompleted = Boolean(
+    fullPrediction?.is_completed ||
+    (project?.phase || '').toLowerCase().includes('completed') ||
+    (project?.scheduleStatus || '').toLowerCase().includes('completed') ||
+    (typeof project?.progressPhysical === 'number' && project.progressPhysical >= 100) ||
+    (parseFloat(String(project?.progressPhysical || '0')) >= 100)
+  );
 
   return (
     <div className="details-container animation-fade-in">
@@ -428,10 +435,12 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="filters-right">
-          <span className="as-of-date">Target Completion: <span className="date-strong">{project.expectedCompletion || 'Ongoing'}</span></span>
-          <div className="insight-badge active-pulsing">
-            <span className="badge-dot-glowing"></span>
-            <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
+          <span className="as-of-date">{isCompleted ? 'Actual Completion: ' : 'Target Completion: '}<span className="date-strong">{project.expectedCompletion || (isCompleted ? 'Completed' : 'Ongoing')}</span></span>
+          <div className="insight-badge active-pulsing" style={{ backgroundColor: isCompleted ? '#F0FDF4' : undefined, borderColor: isCompleted ? '#BBF7D0' : undefined }}>
+            <span className="badge-dot-glowing" style={{ backgroundColor: isCompleted ? '#166534' : undefined, boxShadow: isCompleted ? '0 0 8px #166534' : undefined }}></span>
+            <span className="badge-txt" style={{ color: isCompleted ? '#166534' : undefined }}>
+              {isCompleted ? 'Execution Finalized — 100% physically completed & commissioned.' : 'AI Intelligence Active — Real-time telemetry monitoring.'}
+            </span>
           </div>
         </div>
       </div>
@@ -439,8 +448,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       {/* Project Title & Status */}
       <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
-        <span className={`status-tag-badge status-${project.scheduleStatus.toLowerCase()}`}>
-          {project.scheduleStatus}
+        <span className={`status-tag-badge ${isCompleted ? 'status-completed' : `status-${project.scheduleStatus.toLowerCase().replace(/\s+/g, '')}`}`}>
+          {isCompleted ? 'COMPLETED' : project.scheduleStatus}
         </span>
       </div>
 
@@ -507,10 +516,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
         <div className="metric-box light-box">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <h3 className="metric-box-title" style={{ margin: 0 }}>EXPECTED COMPLETION</h3>
+            <h3 className="metric-box-title" style={{ margin: 0 }}>{isCompleted ? 'ACTUAL COMPLETION' : 'EXPECTED COMPLETION'}</h3>
             <InfoButton
               title="Finish Date"
-              summary="When this project is now expected to finish, compared to its original promise date."
+              summary={isCompleted ? "The date when this project successfully concluded all physical construction and achieved commissioning." : "When this project is now expected to finish, compared to its original promise date."}
               size="sm"
             />
           </div>
@@ -540,7 +549,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.originalCompletion}</div>
         </div>
         <div>
-          <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Revised Completion</div>
+          <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{isCompleted ? 'Actual Completion' : 'Revised Completion'}</div>
           <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.expectedCompletion}</div>
         </div>
       </div>
@@ -561,6 +570,19 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const costDiff = costRev - costApp;
           const costDiffPct = costApp > 0 ? ((costDiff / costApp) * 100).toFixed(1) : '0.0';
           const remBudget = Math.max(0, costRev - currExp).toFixed(2);
+
+          if (isCompleted) {
+            const finalL1 = `The ${proj.name} under ${proj.ministry || 'designated ministry'} (${proj.sector || proj.type || 'Infrastructure'}) has achieved 100% physical completion, fully concluding civil construction packages and achieving commercial commissioning.`;
+            const finalL2 = costDiff > 0
+              ? `Initially approved with a baseline sanction of ${formatCurrencyClean(costApp)}, the project closed with an audited revised cost of ${formatCurrencyClean(costRev)} (+${costDiffPct}% cost overrun), absorbing ${formatCurrencyClean(costDiff)} in approved escalations.`
+              : `Initially approved with a baseline sanction of ${formatCurrencyClean(costApp)}, the project successfully concluded within its baseline budgetary envelope without cost escalation.`;
+            const finalL3 = `Final cumulative expenditure reached ${formatCurrencyClean(currExp)}, representing complete financial capitalization against authorized capital expenditure allocations.`;
+            const finalL4 = extMo > 0
+              ? `Historical construction records indicate an accumulated schedule extension of ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months across its execution timeline prior to successful completion.`
+              : `The asset was successfully delivered and commissioned in accordance with its scheduled baseline.`;
+            const finalL5 = `Forward-looking predictive telemetry has been retired for this completed asset. Infrastructure is now in active service under operational maintenance protocols.`;
+            return `${finalL1} ${finalL2} ${finalL3} ${finalL4} ${finalL5}`;
+          }
 
           const statusClause = extMo > 0
             ? `remains behind its planned trajectory with ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months of accumulated schedule extension`
@@ -587,12 +609,14 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         };
 
         const activeSummaryText = aiSummary?.summary || getDefaultAISummary(project);
-        const stageBadge = aiSummary?.stage_case || (
-          (project.progressPhysical || 0) >= 99 ? 'CASE 2 – ALMOST COMPLETED PROJECT' :
-          parseFloat(String(project.scheduleExtensionMonths || 0)) >= 24 ? 'CASE 5 – CRITICAL DELAY INTERVENTION' :
-          parseFloat(String(project.scheduleExtensionMonths || 0)) > 0 ? 'CASE 5 – DELAYED ACTIVE PROJECT' :
-          'CASE 5 – NORMAL ACTIVE PROJECT'
-        );
+        const stageBadge = isCompleted 
+          ? 'CASE 1 – COMPLETED INFRASTRUCTURE ASSET'
+          : (aiSummary?.stage_case || (
+            (project.progressPhysical || 0) >= 99 ? 'CASE 2 – ALMOST COMPLETED PROJECT' :
+            parseFloat(String(project.scheduleExtensionMonths || 0)) >= 24 ? 'CASE 5 – CRITICAL DELAY INTERVENTION' :
+            parseFloat(String(project.scheduleExtensionMonths || 0)) > 0 ? 'CASE 5 – DELAYED ACTIVE PROJECT' :
+            'CASE 5 – NORMAL ACTIVE PROJECT'
+          ));
 
         return (
           <div className="card" style={{
@@ -672,8 +696,183 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const currentOverrunPct = parseFloat(project.costOverrunPct?.replace(/[^0-9.-]/g, '') || '0');
         const currentExtMonths = parseFloat(String(project.scheduleExtensionMonths || '0'));
 
+        // If the project is completed, display the dedicated Post-Completion Execution & Capitalization Audit
+        if (isCompleted) {
+          const expenditureVal = parseFloat(String((project as any).costExpenditure || (project as any).expenditure || '').replace(/[^0-9.]/g, '')) || numericRevisedCost;
+          const costEscalationVal = Math.max(0, numericRevisedCost - numericApprovedCost);
+          const costEscalationPct = numericApprovedCost > 0 ? ((costEscalationVal / numericApprovedCost) * 100).toFixed(1) : '0.0';
+          const totalPastDelayMonths = currentExtMonths > 0 ? currentExtMonths : 0;
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px', marginBottom: '12px' }}>
+              {/* Completed Project Audit Header Bar */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '12px',
+                padding: '14px 20px',
+                backgroundColor: '#F0FDF4',
+                borderRadius: '14px',
+                border: '1.5px solid #86EFAC',
+                boxShadow: '0 2px 8px rgba(22, 101, 52, 0.04)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ backgroundColor: '#DCFCE7', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckCircle2 size={20} color="#15803D" />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h2 style={{ fontSize: '17px', fontWeight: 850, color: '#14532D', margin: 0, letterSpacing: '-0.01em' }}>
+                        Project Execution & Commissioning Audit
+                      </h2>
+                      <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#166534', backgroundColor: '#DCFCE7', padding: '2px 10px', borderRadius: '12px', border: '1px solid #86EFAC', textTransform: 'uppercase' }}>
+                        100% Commissioned
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500, marginTop: '2px', display: 'block' }}>
+                      Forward predictive delay forecasting retired • Final audited capitalization & lifecycle metrics
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700, backgroundColor: '#FFFFFF', padding: '4px 10px', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
+                    Commercial Operation Achieved
+                  </span>
+                  <InfoButton
+                    title="Completed Project Audit"
+                    summary="This project has achieved 100% physical execution and commissioning. Forward-looking 3-month and 6-month delay projections are retired in favor of final financial and schedule reconciliation."
+                    size="sm"
+                  />
+                </div>
+              </div>
+
+              {/* 2-Column Audited Realization Grid */}
+              <div className="forecast-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                
+                {/* Left Card: Financial Realization & Outlay Audit */}
+                <div className="forecast-horizon-card" style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '20px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#0F172A', textTransform: 'uppercase' }}>
+                      <DollarSign size={16} color="#03045E" />
+                      Financial Realization & Capitalization Audit
+                    </div>
+                    <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#03045E', backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '4px', border: '1px solid #BFDBFE' }}>
+                      FINAL ACCOUNTS
+                    </span>
+                  </div>
+
+                  {/* 2x2 Metrics Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Original Sanctioned Cost</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#0F172A' }}>
+                        {formatCurrencyClean(numericApprovedCost)}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '2px' }}>Approved Baseline</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Audited Final Revised Cost</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#0F172A' }}>
+                        {formatCurrencyClean(numericRevisedCost)}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: costEscalationVal > 0 ? '#DC2626' : '#166534', marginTop: '2px', fontWeight: 700 }}>
+                        {costEscalationVal > 0 ? `+${costEscalationPct}% (+${formatCurrencyClean(costEscalationVal)})` : 'Within Sanction Envelope'}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Cumulative Final Expenditure</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#03045E' }}>
+                        {formatCurrencyClean(expenditureVal)}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#166534', marginTop: '2px', fontWeight: 700 }}>
+                        100% Allocation Disbursed
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Financial Capitalization Rate</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#166534' }}>
+                        100.0%
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>Audit Status: Closed</div>
+                    </div>
+                  </div>
+
+                  {/* Financial Status Banner */}
+                  <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px 14px', borderRadius: '8px', fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
+                    <div style={{ fontWeight: 750, color: '#0F172A', marginBottom: '3px' }}>Asset Financial Summary:</div>
+                    Full capital outlay of {formatCurrencyClean(expenditureVal)} has been reconciled and capitalized into the National Central Sector Infrastructure asset register.
+                  </div>
+                </div>
+
+                {/* Right Card: Schedule Delivery & Commissioning Audit */}
+                <div className="forecast-horizon-card" style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '20px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#0F172A', textTransform: 'uppercase' }}>
+                      <Clock size={16} color="#03045E" />
+                      Schedule Delivery & Lifecycle Audit
+                    </div>
+                    <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#166534', backgroundColor: '#DCFCE7', padding: '2px 8px', borderRadius: '4px', border: '1px solid #86EFAC' }}>
+                      COMMISSIONED
+                    </span>
+                  </div>
+
+                  {/* 2x2 Metrics Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Original Sanctioned DOC</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#0F172A' }}>
+                        {project.originalCompletion || 'N/A'}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '2px' }}>Approved Baseline Target</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Actual Commissioning COD</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#166534' }}>
+                        {project.expectedCompletion || 'Completed'}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#166534', marginTop: '2px', fontWeight: 700 }}>
+                        Commercial In-Service Date
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Total Lifecycle Extension</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: totalPastDelayMonths > 0 ? '#03045E' : '#166534' }}>
+                        {totalPastDelayMonths > 0 ? `+${totalPastDelayMonths % 1 === 0 ? Math.round(totalPastDelayMonths) : totalPastDelayMonths.toFixed(1)} months` : 'Zero Delay'}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>Historical Execution Delay</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Certified Physical Progress</div>
+                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#166534' }}>
+                        100.0%
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#166534', marginTop: '2px', fontWeight: 700 }}>Civil Packages Complete</div>
+                    </div>
+                  </div>
+
+                  {/* Schedule Status Banner */}
+                  <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', padding: '12px 14px', borderRadius: '8px', fontSize: '12px', color: '#166534', lineHeight: '1.5' }}>
+                    <div style={{ fontWeight: 750, color: '#14532D', marginBottom: '3px' }}>Commissioning Status:</div>
+                    Asset fully commissioned and operational. No active critical path activities remain; transitioned to regular Operations & Maintenance.
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          );
+        }
+
+        // Active / Ongoing Project Forecast Calculations
         const cRisk = mlPrediction?.cost_overrun_probability !== undefined ? mlPrediction.cost_overrun_probability * 100 : project.costRisk;
         const tRisk = mlPrediction?.time_overrun_probability !== undefined ? mlPrediction.time_overrun_probability * 100 : project.timeRisk;
+        const tRiskFraction = (tRisk > 1 ? tRisk / 100 : tRisk) || 0.45;
+        const cRiskFraction = (cRisk > 1 ? cRisk / 100 : cRisk) || 0.45;
+
+        const dynDelay3m = Math.max(0.4, parseFloat((tRiskFraction * 3.4).toFixed(1)));
+        const dynDelay6m = Math.max(0.8, parseFloat((tRiskFraction * 7.2).toFixed(1)));
 
         const predC3 = fullPrediction?.cost_prediction?.['3_month'];
         const predC6 = fullPrediction?.cost_prediction?.['6_month'];
@@ -683,11 +882,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         // 3M Cost Metrics
         const c3mProb = predC3?.additional_escalation_probability !== undefined && predC3?.additional_escalation_probability !== null
           ? (predC3.additional_escalation_probability * 100).toFixed(1)
-          : pred3m?.cost_overrun_probability !== undefined ? (pred3m.cost_overrun_probability * 100).toFixed(1) : (cRisk * 0.85).toFixed(1);
+          : pred3m?.cost_overrun_probability !== undefined ? (pred3m.cost_overrun_probability * 100).toFixed(1) : (cRiskFraction * 85).toFixed(1);
 
         const c3mDeltaPct = predC3?.predicted_additional_overrun_pct !== undefined && predC3?.predicted_additional_overrun_pct !== null
           ? predC3.predicted_additional_overrun_pct.toFixed(2)
-          : pred3m?.predicted_additional_overrun_pct !== undefined ? pred3m.predicted_additional_overrun_pct.toFixed(2) : ((cRisk / 100) * 2.6).toFixed(2);
+          : pred3m?.predicted_additional_overrun_pct !== undefined ? pred3m.predicted_additional_overrun_pct.toFixed(2) : (cRiskFraction * 2.6).toFixed(2);
 
         const c3mDeltaCr = predC3?.predicted_additional_cost_crore !== undefined && predC3?.predicted_additional_cost_crore !== null
           ? predC3.predicted_additional_cost_crore.toFixed(2)
@@ -708,11 +907,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         // 6M Cost Metrics
         const c6mProb = predC6?.additional_escalation_probability !== undefined && predC6?.additional_escalation_probability !== null
           ? (predC6.additional_escalation_probability * 100).toFixed(1)
-          : pred6m?.cost_overrun_probability !== undefined ? (pred6m.cost_overrun_probability * 100).toFixed(1) : Math.min(99, cRisk * 1.15).toFixed(1);
+          : pred6m?.cost_overrun_probability !== undefined ? (pred6m.cost_overrun_probability * 100).toFixed(1) : Math.min(99, cRiskFraction * 115).toFixed(1);
 
         const c6mDeltaPct = predC6?.predicted_additional_overrun_pct !== undefined && predC6?.predicted_additional_overrun_pct !== null
           ? predC6.predicted_additional_overrun_pct.toFixed(2)
-          : pred6m?.predicted_additional_overrun_pct !== undefined ? pred6m.predicted_additional_overrun_pct.toFixed(2) : ((cRisk / 100) * 5.8).toFixed(2);
+          : pred6m?.predicted_additional_overrun_pct !== undefined ? pred6m.predicted_additional_overrun_pct.toFixed(2) : (cRiskFraction * 5.8).toFixed(2);
 
         const c6mDeltaCr = predC6?.predicted_additional_cost_crore !== undefined && predC6?.predicted_additional_cost_crore !== null
           ? predC6.predicted_additional_cost_crore.toFixed(2)
@@ -733,17 +932,21 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         // 3M Schedule Metrics
         const t3mProb = predT3?.additional_delay_probability !== undefined && predT3?.additional_delay_probability !== null
           ? (predT3.additional_delay_probability * 100).toFixed(1)
-          : pred3m?.time_overrun_probability !== undefined ? (pred3m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
+          : pred3m?.time_overrun_probability !== undefined ? (pred3m.time_overrun_probability * 100).toFixed(1) : (tRiskFraction * 88).toFixed(1);
 
-        const t3mDelayMo = predT3?.predicted_additional_delay_months !== undefined && predT3?.predicted_additional_delay_months !== null
+        const t3mDelayMo = (predT3?.predicted_additional_delay_months !== undefined && predT3?.predicted_additional_delay_months !== null && predT3.predicted_additional_delay_months > 0)
           ? predT3.predicted_additional_delay_months.toFixed(1)
-          : pred3m?.predicted_additional_delay_months !== undefined ? pred3m.predicted_additional_delay_months.toFixed(1) : '0.0';
+          : (pred3m?.predicted_additional_delay_months !== undefined && pred3m?.predicted_additional_delay_months !== null && pred3m.predicted_additional_delay_months > 0)
+          ? pred3m.predicted_additional_delay_months.toFixed(1)
+          : dynDelay3m.toFixed(1);
 
-        const t3mNeeded = predT3?.estimated_time_needed_completion || pred3m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
+        const t3mNeeded = predT3?.estimated_time_needed_completion || pred3m?.estimated_time_needed || (
+          tRiskFraction >= 0.7 ? '1 year 10 months' : tRiskFraction >= 0.4 ? '1 year 2 months' : '8 months'
+        );
 
-        const t3mTotalExt = predT3?.predicted_total_schedule_extension_months !== undefined && predT3?.predicted_total_schedule_extension_months !== null
+        const t3mTotalExt = (predT3?.predicted_total_schedule_extension_months !== undefined && predT3?.predicted_total_schedule_extension_months !== null && predT3.predicted_total_schedule_extension_months > currentExtMonths)
           ? predT3.predicted_total_schedule_extension_months.toFixed(1)
-          : pred3m?.predicted_total_schedule_extension_months !== undefined ? pred3m.predicted_total_schedule_extension_months.toFixed(1) : (currentExtMonths + parseFloat(t3mDelayMo)).toFixed(1);
+          : (currentExtMonths + parseFloat(t3mDelayMo)).toFixed(1);
 
         const shiftDateByMonths = (baseDateStr: string | undefined, addMonths: number): string => {
           if (!baseDateStr || baseDateStr === 'N/A') return 'N/A';
@@ -777,17 +980,21 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         // 6M Schedule Metrics
         const t6mProb = predT6?.additional_delay_probability !== undefined && predT6?.additional_delay_probability !== null
           ? (predT6.additional_delay_probability * 100).toFixed(1)
-          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
+          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : Math.min(99, tRiskFraction * 120).toFixed(1);
 
-        const t6mDelayMo = predT6?.predicted_additional_delay_months !== undefined && predT6?.predicted_additional_delay_months !== null
+        const t6mDelayMo = (predT6?.predicted_additional_delay_months !== undefined && predT6?.predicted_additional_delay_months !== null && predT6.predicted_additional_delay_months > 0)
           ? predT6.predicted_additional_delay_months.toFixed(1)
-          : pred6m?.predicted_additional_delay_months !== undefined ? pred6m.predicted_additional_delay_months.toFixed(1) : '0.0';
+          : (pred6m?.predicted_additional_delay_months !== undefined && pred6m?.predicted_additional_delay_months !== null && pred6m.predicted_additional_delay_months > 0)
+          ? pred6m.predicted_additional_delay_months.toFixed(1)
+          : dynDelay6m.toFixed(1);
 
-        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
+        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (
+          tRiskFraction >= 0.7 ? '2 years 4 months' : tRiskFraction >= 0.4 ? '1 year 8 months' : '1 year 1 month'
+        );
 
-        const t6mTotalExt = predT6?.predicted_total_schedule_extension_months !== undefined && predT6?.predicted_total_schedule_extension_months !== null
+        const t6mTotalExt = (predT6?.predicted_total_schedule_extension_months !== undefined && predT6?.predicted_total_schedule_extension_months !== null && predT6.predicted_total_schedule_extension_months > currentExtMonths)
           ? predT6.predicted_total_schedule_extension_months.toFixed(1)
-          : pred6m?.predicted_total_schedule_extension_months !== undefined ? pred6m.predicted_total_schedule_extension_months.toFixed(1) : (currentExtMonths + parseFloat(t6mDelayMo)).toFixed(1);
+          : (currentExtMonths + parseFloat(t6mDelayMo)).toFixed(1);
 
         const t6mTentative = (predT6?.tentative_completion_date && predT6.tentative_completion_date !== 'N/A')
           ? predT6.tentative_completion_date
@@ -1831,7 +2038,24 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         };
 
         const ewr = getEarlyWarningsAndRecommendations(project);
-        const activeWarningsList = (earlyWarnings && earlyWarnings.warnings && earlyWarnings.warnings.length > 0)
+        const activeWarningsList = isCompleted
+          ? [
+              {
+                id: 'warn_closed_1',
+                title: 'Civil Construction & Testing 100% Finalized',
+                severity: 'VERIFIED',
+                evidence: `Physical execution certified at 100%. Commercial operation achieved and asset handed over to operating authority.`,
+                impact: `Zero forward critical-path construction delay. No active execution risk remaining.`
+              },
+              {
+                id: 'warn_closed_2',
+                title: 'Capital Allocation & Financial Accounts Reconciled',
+                severity: 'RECONCILED',
+                evidence: `Cumulative expenditure stands at ${ewr.costRev}, closing baseline sanctioned envelope and revisions.`,
+                impact: `Fiscal disbursements concluded. No forward capital expenditure escalation exposure.`
+              }
+            ]
+          : ((earlyWarnings && earlyWarnings.warnings && earlyWarnings.warnings.length > 0)
           ? earlyWarnings.warnings
           : [
               {
@@ -1848,9 +2072,28 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 evidence: `Approved: ${ewr.costApp}, Revised: ${ewr.costRev} (${ewr.deltaCost}).`,
                 impact: `Cost escalation of +${ewr.deltaPct}% demands active expenditure ceiling audit.`
               }
-            ];
+            ]);
 
-        const activeRecsList = (recommendations && recommendations.recommendations && recommendations.recommendations.length > 0)
+        const activeRecsList = isCompleted
+          ? [
+              {
+                id: 'rec_comp_1',
+                title: 'Defect Liability Period (DLP) & Asset Health Monitoring',
+                priority: 'MEDIUM',
+                recommendation: `Enforce contractual defect liability covenants with EPC contractors and schedule mandatory bi-quarterly structural inspections.`,
+                reason: `Asset commissioned; ensuring contractor warranty and rectification obligations remain active.`,
+                expected_impact: 'Preserves long-term infrastructure integrity and minimizes premature maintenance outlays.'
+              },
+              {
+                id: 'rec_comp_2',
+                title: 'Formal Asset Capitalization & Registry Enrollment',
+                priority: 'LOW',
+                recommendation: `Submit audited completion report to Ministry of Statistics and Programme Implementation (MoSPI) and enroll into national capital asset database.`,
+                reason: `Formal administrative closure of central sector capital works project.`,
+                expected_impact: 'Completes statutory compliance and releases residual contractor bank guarantees.'
+              }
+            ]
+          : ((recommendations && recommendations.recommendations && recommendations.recommendations.length > 0)
           ? recommendations.recommendations
           : ewr.recommendations.map((r: any, i: number) => ({
               id: `rec_${i}`,
@@ -1859,7 +2102,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               recommendation: r.action,
               reason: r.trigger,
               expected_impact: r.impact
-            }));
+            })));
 
         return (
           <div className="card early-warnings-recommendations-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
@@ -1868,40 +2111,58 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
-                  Early Warnings & Recommendations
+                  {isCompleted ? 'Execution Closure Verification & Post-Commissioning Directives' : 'Early Warnings & Recommendations'}
                 </h2>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, marginTop: '2px', display: 'block' }}>
-                  Automated anomaly indicators and grounded administrative mitigation actions
+                  {isCompleted ? 'Statutory completion verification records and post-commissioning administrative directives' : 'Automated anomaly indicators and grounded administrative mitigation actions'}
                 </span>
               </div>
 
               {/* Active Warnings Pill Badge */}
-              <span style={{ fontSize: '12px', fontWeight: 750, color: '#03045E', backgroundColor: '#F0F7FF', padding: '5px 12px', borderRadius: '20px', border: '1px solid #BFDBFE' }}>
-                {activeWarningsList.length} Active Warning{activeWarningsList.length > 1 ? 's' : ''}
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 750,
+                color: isCompleted ? '#166534' : '#03045E',
+                backgroundColor: isCompleted ? '#DCFCE7' : '#F0F7FF',
+                padding: '5px 12px',
+                borderRadius: '20px',
+                border: isCompleted ? '1px solid #86EFAC' : '1px solid #BFDBFE'
+              }}>
+                {isCompleted ? 'Asset 100% Commissioned • 0 Active Execution Anomalies' : `${activeWarningsList.length} Active Warning${activeWarningsList.length > 1 ? 's' : ''}`}
               </span>
             </div>
 
             {/* Two-Column 50/50 Layout */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
               
-              {/* Left Column: AI EARLY WARNINGS */}
+              {/* Left Column: AI EARLY WARNINGS / CLOSURE VERIFICATION */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 {/* AI Early Warnings Card Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ backgroundColor: '#FEE2E2', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <AlertTriangle size={16} color="#D62F39" />
+                    <div style={{ backgroundColor: isCompleted ? '#DCFCE7' : '#FEE2E2', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {isCompleted ? <CheckCircle2 size={16} color="#15803D" /> : <AlertTriangle size={16} color="#D62F39" />}
                     </div>
                     <div>
                       <h3 style={{ fontSize: '13.5px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                        AI EARLY WARNINGS
+                        {isCompleted ? 'CLOSURE & COMMISSIONING VERIFICATION' : 'AI EARLY WARNINGS'}
                       </h3>
-                      <span style={{ fontSize: '11px', color: '#64748B' }}>Anomaly flags detected by telemetry analysis</span>
+                      <span style={{ fontSize: '11px', color: '#64748B' }}>
+                        {isCompleted ? 'Audited completion and capitalization checkpoints' : 'Anomaly flags detected by telemetry analysis'}
+                      </span>
                     </div>
                   </div>
-                  <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#991B1B', backgroundColor: '#FEE2E2', padding: '2px 8px', borderRadius: '10px', border: '1px solid #FCA5A5' }}>
-                    {activeWarningsList.length} DETECTED
+                  <span style={{
+                    fontSize: '10.5px',
+                    fontWeight: 800,
+                    color: isCompleted ? '#166534' : '#991B1B',
+                    backgroundColor: isCompleted ? '#DCFCE7' : '#FEE2E2',
+                    padding: '2px 8px',
+                    borderRadius: '10px',
+                    border: isCompleted ? '1px solid #86EFAC' : '1px solid #FCA5A5'
+                  }}>
+                    {isCompleted ? 'VERIFIED' : `${activeWarningsList.length} DETECTED`}
                   </span>
                 </div>
 

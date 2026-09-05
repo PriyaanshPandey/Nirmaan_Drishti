@@ -432,3 +432,47 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+@media (max-width: 768px) {
+  .portfolio-filters-card {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  .portfolio-pills-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .portfolio-pills-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .portfolio-pill-btn {
+    white-space: nowrap;
+    padding: 6px 14px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .portfolio-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+
+  .portfolio-table th,
+  .portfolio-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+}

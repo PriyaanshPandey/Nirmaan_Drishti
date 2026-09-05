@@ -898,3 +898,40 @@
   color: #94A3B8;
   font-size: 13px;
 }
+
+@media (max-width: 768px) {
+  .action-filters-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .action-filters-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ac-tab-btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .action-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+
+  .action-table th,
+  .action-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .action-card {
+    padding: 16px 14px;
+  }
+}

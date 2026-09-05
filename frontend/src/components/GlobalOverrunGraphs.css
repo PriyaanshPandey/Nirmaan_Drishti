@@ -224,3 +224,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 768px) {
+  .overrun-card-header {
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .metric-chip-pill {
+    align-items: flex-start;
+    padding: 4px 10px;
+  }
+
+  .vertical-chart-area {
+    min-height: 200px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .overrun-card-footer {
+    padding: 10px 14px;
+    font-size: 11.5px;
+  }
+}
