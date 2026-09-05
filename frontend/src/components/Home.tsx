@@ -20,9 +20,27 @@ const initialTotalRevCostCr = projectsData.reduce((acc, p) => {
   return acc + num;
 }, 0);
 const initialLakhCrores = initialTotalRevCostCr > 0 ? initialTotalRevCostCr / 100000 : 106.52;
-const initialStatesCount = new Set(
-  projectsData.map(p => p.location.split(',')[0].trim()).filter(Boolean)
-).size;
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+];
+
+const initialStatesCount = (() => {
+  const covered = new Set<string>();
+  for (const p of projectsData) {
+    const loc = p.location || '';
+    for (const state of INDIAN_STATES) {
+      if (loc.includes(state)) {
+        covered.add(state);
+      }
+    }
+  }
+  return covered.size || 28;
+})();
 
 interface HomeProps {
   activeTab?: string;

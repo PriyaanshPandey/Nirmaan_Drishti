@@ -11,11 +11,11 @@ interface DelayFactorItem {
 }
 
 const FALLBACK_DELAY_FACTORS: DelayFactorItem[] = [
-  { id: 'land',        label: 'Land Acquisition',       impact: '+26%', percentage: 72, color: '#D62F39' },
-  { id: 'procurement', label: 'Procurement Delays',      impact: '+18%', percentage: 58, color: '#F97316' },
-  { id: 'clearance',   label: 'Forest / Env. Clearance', impact: '+14%', percentage: 46, color: '#EAB308' },
-  { id: 'contractor',  label: 'Contractor Performance',  impact: '+11%', percentage: 36, color: '#2563EB' },
-  { id: 'funding',     label: 'Fund Flow Delays',        impact: '+8%',  percentage: 26, color: '#8B5CF6' },
+  { id: 'progress',   label: 'Physical Progress Lag',       impact: '+26%', percentage: 72, color: '#D62F39' },
+  { id: 'milestone',  label: 'Milestone Slippage',          impact: '+18%', percentage: 58, color: '#F97316' },
+  { id: 'outlay',     label: 'Financial Outlay Divergence', impact: '+14%', percentage: 46, color: '#EAB308' },
+  { id: 'escalation', label: 'Cost Escalation Revisions',   impact: '+11%', percentage: 36, color: '#2563EB' },
+  { id: 'stagnation', label: 'Work Pacing & Stagnation',    impact: '+8%',  percentage: 26, color: '#8B5CF6' },
 ];
 
 export const DelayFactors: React.FC = () => {

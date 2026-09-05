@@ -385,10 +385,22 @@ export function getFallbackDashboard(): DashboardSummaryData {
   const revCost = projectsData.reduce((acc, p) => acc + (parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0), 0);
   const overrunPct = origCost > 0 ? ((revCost - origCost) / origCost) * 100 : 0;
 
-  const onTrackCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('ON TRACK')).length;
-  const criticalCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('CRIT')).length;
-  const delayedCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND')).length;
-  const monitoringCount = Math.max(0, total - onTrackCount - criticalCount - delayedCount);
+  const critCount = projectsData.filter(p => {
+    const s = (p.scheduleStatus || '').toUpperCase();
+    return s.includes('CRIT') || s.includes('OVERDUE');
+  }).length;
+  const onTrackCount = projectsData.filter(p => {
+    const s = (p.scheduleStatus || '').toUpperCase();
+    return !s.includes('CRIT') && !s.includes('OVERDUE') && (s.includes('ON TRACK') || s.includes('COMPLET') || s.includes('SCHEDULE'));
+  }).length;
+  const highCount = projectsData.filter(p => {
+    const s = (p.scheduleStatus || '').toUpperCase();
+    const isCrit = s.includes('CRIT') || s.includes('OVERDUE');
+    const isOnTrack = s.includes('ON TRACK') || s.includes('COMPLET') || s.includes('SCHEDULE');
+    const overVal = parseFloat((p.costOverrunPct || '0').replace(/[^0-9.-]/g, '')) || 0;
+    return !isCrit && !isOnTrack && ((p.riskScore || 0) >= 65 || p.riskLevel === 'High' || p.riskLevel === 'Critical' || overVal > 15);
+  }).length;
+  const monitoringCount = Math.max(0, total - onTrackCount - highCount - critCount);
 
   const topCritical = [...projectsData]
     .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))
@@ -412,18 +424,18 @@ export function getFallbackDashboard(): DashboardSummaryData {
       cost_overrun_formatted: `+${overrunPct.toFixed(1)}% overrun`
     },
     health_distribution: [
-      { id: 'on-track', name: 'On Track', count: onTrackCount, color: '#22C55E', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
-      { id: 'monitoring', name: 'Monitoring', count: monitoringCount, color: '#3B82F6', percentage: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0 },
-      { id: 'at-risk', name: 'At Risk', count: delayedCount, color: '#F59E0B', percentage: total > 0 ? parseFloat((delayedCount / total * 100).toFixed(1)) : 0 },
-      { id: 'critical', name: 'Critical Delay', count: criticalCount, color: '#EF4444', percentage: total > 0 ? parseFloat((criticalCount / total * 100).toFixed(1)) : 0 }
+      { id: 'on_track', name: 'On Track', count: onTrackCount, color: '#22C55E', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
+      { id: 'monitoring', name: 'Needs Attention', count: monitoringCount, color: '#3B82F6', percentage: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0 },
+      { id: 'at_risk', name: 'High Risk', count: highCount, color: '#EAB308', percentage: total > 0 ? parseFloat((highCount / total * 100).toFixed(1)) : 0 },
+      { id: 'critical_delay', name: 'Critical Delay', count: critCount, color: '#EF4444', percentage: total > 0 ? parseFloat((critCount / total * 100).toFixed(1)) : 0 }
     ],
     priority_interventions: topCritical,
     delay_factors: [
-      { id: 'land', label: 'Land Acquisition', impact: '+23%', percentage: 85, color: '#090B2E' },
-      { id: 'procurement', label: 'Procurement Issues', impact: '+17%', percentage: 65, color: '#1E4EBF' },
-      { id: 'clearance', label: 'Clearance Delays', impact: '+14%', percentage: 55, color: '#22C55E' },
-      { id: 'contractor', label: 'Contractor Defaults', impact: '+11%', percentage: 40, color: '#3B82F6' },
-      { id: 'milestone', label: 'Milestone Slippage', impact: '+7%', percentage: 25, color: '#93C5FD' }
+      { id: 'progress', label: 'Physical Progress Lag', impact: '+23%', percentage: 85, color: '#090B2E' },
+      { id: 'milestone', label: 'Milestone Slippage', impact: '+17%', percentage: 65, color: '#1E4EBF' },
+      { id: 'outlay', label: 'Financial Outlay Divergence', impact: '+14%', percentage: 55, color: '#22C55E' },
+      { id: 'escalation', label: 'Cost Escalation Revisions', impact: '+11%', percentage: 40, color: '#3B82F6' },
+      { id: 'stagnation', label: 'Work Pacing & Stagnation', impact: '+7%', percentage: 25, color: '#93C5FD' }
     ],
     risk_trend: {
       cost: {
@@ -461,12 +473,12 @@ export function getFallbackDashboard(): DashboardSummaryData {
       }
     },
     ai_action_center: {
-      total_interventions_needed: Math.min(total, criticalCount + delayedCount),
-      critical_count: criticalCount,
-      high_count: delayedCount,
+      total_interventions_needed: Math.min(total, critCount + highCount),
+      critical_count: critCount,
+      high_count: highCount,
       medium_count: monitoringCount,
-      critical_pct: total > 0 ? parseFloat((criticalCount / total * 100).toFixed(1)) : 0,
-      high_pct: total > 0 ? parseFloat((delayedCount / total * 100).toFixed(1)) : 0,
+      critical_pct: total > 0 ? parseFloat((critCount / total * 100).toFixed(1)) : 0,
+      high_pct: total > 0 ? parseFloat((highCount / total * 100).toFixed(1)) : 0,
       medium_pct: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0,
       actions: [
         { id: 'land', category: 'Land Acquisition', detail: 'CORRIDOR RoW clearances pending' },
@@ -1879,6 +1891,9 @@ export const api = {
   /**
    * AI Early Warnings
    */
+  /**
+   * AI Early Warnings
+   */
   async getProjectEarlyWarnings(projectId: string): Promise<ProjectEarlyWarningsResponse | null> {
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/warnings`);
@@ -1888,41 +1903,70 @@ export const api = {
     }
 
     const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
-    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
-    const gap = Math.abs(proj.progressFinancial - proj.progressPhysical);
+    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
+    const gap = (proj.progressFinancial || 0) - (proj.progressPhysical || 0);
+    const costOverrun = parseFloat(String(proj.costOverrunPct || 0));
+
+    const warnings: Array<{
+      id: string;
+      title: string;
+      severity: string;
+      evidence: string;
+      impact: string;
+      detected_date: string;
+    }> = [];
+
+    if (gap > 15) {
+      warnings.push({
+        id: `warn_${proj.id}_1`,
+        title: 'Financial Disbursement Outpacing Physical Progress',
+        severity: gap > 25 ? 'HIGH' : 'MEDIUM',
+        evidence: `Cumulative financial disbursement (${proj.progressFinancial}%) exceeds verified physical completion (${proj.progressPhysical}%) by ${gap.toFixed(1)} percentage points.`,
+        impact: 'Exposes capital outlay ahead of certified structural asset verification.',
+        detected_date: 'May 2026'
+      });
+    }
+
+    if (extMo > 0) {
+      warnings.push({
+        id: `warn_${proj.id}_2`,
+        title: 'Recorded Timeline Extension Overrun',
+        severity: extMo > 12 ? 'HIGH' : 'MEDIUM',
+        evidence: `Cumulative project schedule has been extended by ${extMo.toFixed(1)} months beyond initial sanctioned target.`,
+        impact: 'Defers targeted commissioning milestones and elevates operational exposure.',
+        detected_date: 'May 2026'
+      });
+    }
+
+    if (costOverrun > 0) {
+      warnings.push({
+        id: `warn_${proj.id}_3`,
+        title: 'Approved Budget Cost Escalation',
+        severity: costOverrun > 20 ? 'HIGH' : 'MEDIUM',
+        evidence: `Project cost revision indicates +${costOverrun.toFixed(1)}% cost escalation over originally sanctioned outlay.`,
+        impact: 'Requires supplementary financial sanctions and tight expenditure oversight.',
+        detected_date: 'May 2026'
+      });
+    }
+
+    if (warnings.length === 0) {
+      warnings.push({
+        id: `warn_${proj.id}_1`,
+        title: 'Stable Trajectory Monitoring',
+        severity: 'LOW',
+        evidence: `Project exhibits aligned physical progress (${proj.progressPhysical}%) and financial disbursement (${proj.progressFinancial}%).`,
+        impact: 'No critical anomalies flagged; standard periodic reporting advised.',
+        detected_date: 'May 2026'
+      });
+    }
 
     return {
       project_id: String(proj.id),
       project_name: proj.name,
       section_title: 'Key Early Warnings & Anomaly Telemetry',
-      stage_case: 'PROACTIVE INTERVENTION REQUIRED',
-      total_warnings: 3,
-      warnings: [
-        {
-          id: `warn_${proj.id}_1`,
-          title: 'Physical Progress vs Expenditure Mismatch',
-          severity: gap > 15 ? 'HIGH' : 'MEDIUM',
-          evidence: `Financial disbursement stands at ${proj.progressFinancial}% while verified physical completion is at ${proj.progressPhysical}% (divergence: ${gap.toFixed(1)} pp).`,
-          impact: 'Increases exposure to contractor payments ahead of certified physical milestone delivery.',
-          detected_date: 'May 2026'
-        },
-        {
-          id: `warn_${proj.id}_2`,
-          title: 'Persistent Critical-Path Milestone Slippage',
-          severity: extMo > 12 ? 'HIGH' : 'MEDIUM',
-          evidence: `Cumulative recorded schedule extension has reached ${extMo} months past original sanctioned target.`,
-          impact: 'Compresses remaining commissioning window and threatens subsequent regional network handovers.',
-          detected_date: 'May 2026'
-        },
-        {
-          id: `warn_${proj.id}_3`,
-          title: 'Statutory RoW & Utility Clearance Backlog',
-          severity: 'MEDIUM',
-          evidence: 'Pending right-of-way permissions in critical corridor sections hindering contractor machinery pacing.',
-          impact: 'Stagnates equipment velocity and leads to idle machinery compensation claims.',
-          detected_date: 'May 2026'
-        }
-      ]
+      stage_case: warnings.some(w => w.severity === 'HIGH') ? 'PROACTIVE INTERVENTION REQUIRED' : 'STABLE EXECUTION',
+      total_warnings: warnings.length,
+      warnings
     };
   },
 
@@ -1938,38 +1982,69 @@ export const api = {
     }
 
     const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
-    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
+    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
+    const gap = (proj.progressFinancial || 0) - (proj.progressPhysical || 0);
+    const costOverrun = parseFloat(String(proj.costOverrunPct || 0));
+
+    const recs: Array<{
+      id: string;
+      priority: string;
+      title: string;
+      recommendation: string;
+      reason: string;
+      expected_impact: string;
+    }> = [];
+
+    let recIdx = 1;
+    if (extMo > 0) {
+      recs.push({
+        id: `rec_${proj.id}_${recIdx++}`,
+        priority: extMo > 12 ? 'HIGH' : 'MEDIUM',
+        title: 'Establish Critical-Path Milestone Recovery Protocols',
+        recommendation: `Initiate targeted project review with ${proj.agency} to compress critical path milestones.`,
+        reason: `Accumulated timeline extension of ${extMo.toFixed(1)} months past original sanction.`,
+        expected_impact: 'Prevents cascading sequential delay across subsequent commissioning stages.'
+      });
+    }
+
+    if (gap > 15) {
+      recs.push({
+        id: `rec_${proj.id}_${recIdx++}`,
+        priority: 'HIGH',
+        title: 'Conduct Physical Site Audit & Disbursement Reconciliation',
+        recommendation: 'Reconcile financial ledger drawdowns against certified physical milestone deliverables.',
+        reason: `Financial disbursement (${proj.progressFinancial}%) leads physical completion (${proj.progressPhysical}%) by ${gap.toFixed(1)} pp.`,
+        expected_impact: 'Restores strict progress-linked fund releases.'
+      });
+    }
+
+    if (costOverrun > 0) {
+      recs.push({
+        id: `rec_${proj.id}_${recIdx++}`,
+        priority: 'MEDIUM',
+        title: 'Audit Budget Escalations & Outlay Commitments',
+        recommendation: 'Review material price variation claims and revised cost estimates with administrative sanctioning authority.',
+        reason: `Recorded budget escalation of +${costOverrun.toFixed(1)}% over original sanction.`,
+        expected_impact: 'Controls unauthorized budget expansion.'
+      });
+    }
+
+    if (recs.length === 0) {
+      recs.push({
+        id: `rec_${proj.id}_1`,
+        priority: 'LOW',
+        title: 'Maintain Periodic Progress Verification Cadence',
+        recommendation: 'Continue monthly physical milestone monitoring according to original master schedule.',
+        reason: 'Project tracking stably within sanctioned baseline tolerances.',
+        expected_impact: 'Maintains steady velocity towards targeted completion.'
+      });
+    }
 
     return {
       project_id: String(proj.id),
       project_name: proj.name,
-      total_recommendations: 3,
-      recommendations: [
-        {
-          id: `rec_${proj.id}_1`,
-          priority: 'HIGH',
-          title: 'Establish Milestone Recovery & Fast-Tracking Taskforce',
-          recommendation: `Convene joint high-level taskforce with ${proj.agency} and nodal state officials to fast-track pending statutory clearances.`,
-          reason: `High schedule delay probability and ${extMo} months of accumulated timeline slippage.`,
-          expected_impact: 'Recovers 2.5 to 4.0 months of critical-path slippage and avoids sequential commissioning delay.'
-        },
-        {
-          id: `rec_${proj.id}_2`,
-          priority: 'HIGH',
-          title: 'Audit Financial Outlay vs Verified Site Deliverables',
-          recommendation: 'Conduct independent physical site audit to reconcile recorded financial disbursements against actual installed assets.',
-          reason: `Financial disbursement (${proj.progressFinancial}%) significantly leads physical completion (${proj.progressPhysical}%).`,
-          expected_impact: 'Eliminates uncertified advance payments and restores strict milestone-linked release protocols.'
-        },
-        {
-          id: `rec_${proj.id}_3`,
-          priority: 'MEDIUM',
-          title: 'Mandate Weekly EPC Contractor Machinery Deployment Review',
-          recommendation: 'Require contractor to submit weekly GPS-tracked equipment utilization logs and mobilize auxiliary civil crews.',
-          reason: 'Work stagnation risk detected in structural work packages.',
-          expected_impact: 'Restores monthly progress velocity to budgeted benchmark trajectory.'
-        }
-      ]
+      total_recommendations: recs.length,
+      recommendations: recs
     };
   },
 

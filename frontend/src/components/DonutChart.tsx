@@ -15,16 +15,28 @@ interface ChartSegment {
 }
 
 const totalInitHealth = projectsData.length;
-const onTrackInit = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('ON TRACK')).length;
-const criticalInit = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('CRIT')).length;
-const delayedInit = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND')).length;
-const monitoringInit = Math.max(0, totalInitHealth - onTrackInit - criticalInit - delayedInit);
+const critInit = projectsData.filter(p => {
+  const s = (p.scheduleStatus || '').toUpperCase();
+  return s.includes('CRIT') || s.includes('OVERDUE');
+}).length;
+const onTrackInit = projectsData.filter(p => {
+  const s = (p.scheduleStatus || '').toUpperCase();
+  return !s.includes('CRIT') && !s.includes('OVERDUE') && (s.includes('ON TRACK') || s.includes('COMPLET') || s.includes('SCHEDULE'));
+}).length;
+const highRiskInit = projectsData.filter(p => {
+  const s = (p.scheduleStatus || '').toUpperCase();
+  const isCrit = s.includes('CRIT') || s.includes('OVERDUE');
+  const isOnTrack = s.includes('ON TRACK') || s.includes('COMPLET') || s.includes('SCHEDULE');
+  const overVal = parseFloat((p.costOverrunPct || '0').replace(/[^0-9.-]/g, '')) || 0;
+  return !isCrit && !isOnTrack && ((p.riskScore || 0) >= 65 || p.riskLevel === 'High' || p.riskLevel === 'Critical' || overVal > 15);
+}).length;
+const monitoringInit = Math.max(0, totalInitHealth - onTrackInit - highRiskInit - critInit);
 
 const DEFAULT_HEALTH_DIST: ChartSegment[] = [
-  { id: 'on-track', name: 'On Track', count: onTrackInit, color: '#22C55E', percentage: totalInitHealth > 0 ? parseFloat((onTrackInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'monitoring', name: 'Monitoring', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'at-risk', name: 'At Risk', count: delayedInit, color: '#F59E0B', percentage: totalInitHealth > 0 ? parseFloat((delayedInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'critical', name: 'Critical Delay', count: criticalInit, color: '#EF4444', percentage: totalInitHealth > 0 ? parseFloat((criticalInit / totalInitHealth * 100).toFixed(1)) : 0 }
+  { id: 'on_track', name: 'On Track', count: onTrackInit, color: '#22C55E', percentage: totalInitHealth > 0 ? parseFloat((onTrackInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'monitoring', name: 'Needs Attention', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'at_risk', name: 'High Risk', count: highRiskInit, color: '#EAB308', percentage: totalInitHealth > 0 ? parseFloat((highRiskInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'critical_delay', name: 'Critical Delay', count: critInit, color: '#EF4444', percentage: totalInitHealth > 0 ? parseFloat((critInit / totalInitHealth * 100).toFixed(1)) : 0 }
 ];
 
 interface DonutChartProps {
@@ -95,9 +107,10 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
   // Pre-calculate geometry and radial angles for each segment
   const computedSegments = useMemo(() => {
     let acc = 0;
+    const totalCount = data.reduce((sum, curr) => sum + curr.count, 0);
     return data.map((segment) => {
       const startPercent = acc;
-      const segmentPercent = segment.percentage;
+      const segmentPercent = totalCount > 0 ? (segment.count / totalCount) * 100 : segment.percentage;
       const endPercent = startPercent + segmentPercent;
       const midPercent = (startPercent + endPercent) / 2;
       acc = endPercent;
@@ -240,6 +253,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
         <div className="donut-legend">
           {data.map((segment) => {
             const isActive = activeSegment?.id === segment.id;
+            const segmentPct = totalProjects > 0 ? (segment.count / totalProjects) * 100 : segment.percentage;
+            const segmentPctFormatted = segmentPct.toFixed(1);
             return (
               <div
                 key={segment.id}
@@ -260,7 +275,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                     <span className="legend-count">
                       <AnimatedCounter value={segment.count} resetKey={activeTab} />
                     </span>
-                    <span className="legend-percentage">({segment.percentage}%)</span>
+                    <span className="legend-percentage">({segmentPctFormatted}%)</span>
                   </div>
                 </div>
 
@@ -268,7 +283,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                   <div
                     className="legend-bar-fill"
                     style={{
-                      width: `${mounted ? segment.percentage : 0}%`,
+                      width: `${mounted ? segmentPct : 0}%`,
                       backgroundColor: segment.color
                     }}
                   />

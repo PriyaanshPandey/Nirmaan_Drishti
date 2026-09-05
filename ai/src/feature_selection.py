@@ -71,44 +71,43 @@ NUMERIC_STATE_FEATURES = [
     "cost_overrun_pct",
     "expenditure_ratio_pct",
     "cost_escalation_crore",
-    "cost_escalation_ratio",
     "remaining_budget_crore",
     "expenditure_velocity_crore_month",
     "physical_progress_pct",
     "remaining_work_pct",
-    "physical_financial_gap_pct",
-    "physical_to_expenditure_ratio",
-    "progress_expenditure_mismatch_flag",
-    "high_expenditure_low_progress_flag",
-    "days_to_original_target",
-    "days_to_revised_target",
-    "overdue_days",
-    "extension_count",
-    "risk_signal_count",
+    "physical_financial_gap",
+    "progress_minus_expenditure_gap",
+    "expenditure_vs_progress_ratio",
+    "elapsed_duration_pct",
+    "months_to_original_completion",
+    "months_to_revised_completion",
+    "progress_vs_elapsed_time",
+    "is_overdue_flag",
+    "is_extended_flag",
+    "cost_overrun_negative_flag",
+    "snapshot_history_count",
 ]
 
 # --- Numeric trend & trajectory features (Backward-looking from T) ---
 NUMERIC_TREND_FEATURES = [
-    "physical_progress_delta_1m",
-    "physical_progress_delta_3m",
-    "physical_progress_delta_6m",
-    "progress_velocity_3m",
-    "progress_velocity_6m",
-    "progress_trend_slope",
-    "cost_overrun_delta_1m",
-    "cost_overrun_delta_3m",
-    "cost_overrun_trend_slope",
-    "expenditure_ratio_delta_1m",
-    "expenditure_ratio_delta_3m",
-    "schedule_extension_delta_1m",
-    # Engineered trajectory features
-    "progress_minus_expenditure_gap",
-    "expenditure_minus_progress_gap",
-    "cost_overrun_negative_flag",
-    "is_overdue_flag",
-    "is_extended_flag",
+    "cost_overrun_rolling_mean_3m",
+    "cost_overrun_rolling_mean_6m",
+    "cost_overrun_rolling_std_3m",
+    "cost_overrun_rolling_std_6m",
+    "progress_rolling_mean_3m",
+    "progress_rolling_std_3m",
+    "delay_rolling_mean_3m",
+    "delay_rolling_std_3m",
+    "expenditure_change_1m",
+    "expenditure_change_3m",
+    "expenditure_acceleration",
+    "progress_change_1m",
+    "progress_change_3m",
+    "progress_acceleration",
+    "delay_change_1m",
+    "delay_change_3m",
+    "delay_acceleration",
     "consecutive_stagnant_months",
-    "snapshot_history_count",
 ]
 
 # --- All approved mature features ---
@@ -134,7 +133,7 @@ def is_cold_start(df: pd.DataFrame) -> pd.Series:
 
 def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Compute trajectory features strictly from historical data up to month t.
+    Compute comprehensive backward-looking features strictly up to month t.
     Does NOT use future information.
 
     Parameters
@@ -145,41 +144,79 @@ def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        Dataset with enriched trajectory features.
+        Dataset with all 45 enriched state and trajectory features.
     """
     df = df.sort_values(["project_id", "report_month"]).copy()
 
-    # Progress vs Expenditure gap
+    # Progress vs Expenditure gaps
     prog = df["physical_progress_pct"].fillna(0)
     exp = df["expenditure_ratio_pct"].fillna(0)
+    df["physical_financial_gap"] = exp - prog
     df["progress_minus_expenditure_gap"] = prog - exp
-    df["expenditure_minus_progress_gap"] = exp - prog
+    df["expenditure_vs_progress_ratio"] = np.where(prog > 0, exp / np.maximum(prog, 0.1), 1.0)
 
     # Under budget flag (preserves negative cost overrun semantics)
-    df["cost_overrun_negative_flag"] = (df["cost_overrun_pct"] < 0).astype(float)
+    cost_ov = df["cost_overrun_pct"].fillna(0) if "cost_overrun_pct" in df.columns else pd.Series(0.0, index=df.index)
+    df["cost_overrun_negative_flag"] = (cost_ov < 0).astype(float)
+
+    # Lifecycle duration features
+    orig_dur = df["original_duration_months"].fillna(36.0) if "original_duration_months" in df.columns else pd.Series(36.0, index=df.index)
+    age = df["project_age_months"].fillna(0) if "project_age_months" in df.columns else pd.Series(0.0, index=df.index)
+    df["elapsed_duration_pct"] = np.where(orig_dur > 0, (age / np.maximum(orig_dur, 0.1)) * 100.0, 0.0)
+    df["months_to_original_completion"] = df["planned_remaining_months"].fillna(0) if "planned_remaining_months" in df.columns else pd.Series(0.0, index=df.index)
+    df["months_to_revised_completion"] = df["revised_remaining_months"].fillna(0) if "revised_remaining_months" in df.columns else pd.Series(0.0, index=df.index)
+    df["progress_vs_elapsed_time"] = np.where(df["elapsed_duration_pct"] > 0, prog / np.maximum(df["elapsed_duration_pct"], 0.1), 1.0)
 
     # Schedule flags
-    status = df["schedule_status"].fillna("")
-    overdue_d = df["overdue_days"].fillna(0)
-    ext_mo = df["schedule_extension_months"].fillna(0)
+    status = df["schedule_status"].fillna("").astype(str).str.upper() if "schedule_status" in df.columns else pd.Series("", index=df.index)
+    overdue_d = df["overdue_days"].fillna(0) if "overdue_days" in df.columns else pd.Series(0.0, index=df.index)
+    ext_mo = df["schedule_extension_months"].fillna(0) if "schedule_extension_months" in df.columns else pd.Series(0.0, index=df.index)
     df["is_overdue_flag"] = ((status == "OVERDUE") | (overdue_d > 0)).astype(float)
     df["is_extended_flag"] = ((status == "EXTENDED") | (ext_mo > 0)).astype(float)
 
-    # Snapshot history count (cumulative snapshots seen so far for this project up to T)
+    # Cumulative snapshot history count up to T
     df["snapshot_history_count"] = df.groupby("project_id").cumcount() + 1
 
-    # Consecutive stagnant months (months where progress delta <= 0.1)
+    # Project-level rolling backward-looking features
+    grouped = df.groupby("project_id", sort=False)
+    df["cost_overrun_rolling_mean_3m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(3, min_periods=1).mean()).fillna(0)
+    df["cost_overrun_rolling_mean_6m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(6, min_periods=1).mean()).fillna(0)
+    df["cost_overrun_rolling_std_3m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(3, min_periods=1).std()).fillna(0)
+    df["cost_overrun_rolling_std_6m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(6, min_periods=1).std()).fillna(0)
+
+    df["progress_rolling_mean_3m"] = grouped["physical_progress_pct"].transform(lambda s: s.rolling(3, min_periods=1).mean()).fillna(0)
+    df["progress_rolling_std_3m"] = grouped["physical_progress_pct"].transform(lambda s: s.rolling(3, min_periods=1).std()).fillna(0)
+
+    df["delay_rolling_mean_3m"] = grouped["schedule_extension_months"].transform(lambda s: s.rolling(3, min_periods=1).mean()).fillna(0)
+    df["delay_rolling_std_3m"] = grouped["schedule_extension_months"].transform(lambda s: s.rolling(3, min_periods=1).std()).fillna(0)
+
+    # Expenditure velocity & acceleration
+    exp_series = df["expenditure_ratio_pct"].fillna(0) if "expenditure_ratio_pct" in df.columns else pd.Series(0.0, index=df.index)
+    df["expenditure_change_1m"] = grouped["expenditure_ratio_pct"].diff(1).fillna(0)
+    df["expenditure_change_3m"] = grouped["expenditure_ratio_pct"].diff(3).fillna(0)
+    df["expenditure_acceleration"] = df.groupby("project_id", sort=False)["expenditure_change_1m"].diff(1).fillna(0)
+
+    # Progress velocity & acceleration
+    df["progress_change_1m"] = grouped["physical_progress_pct"].diff(1).fillna(0)
+    df["progress_change_3m"] = grouped["physical_progress_pct"].diff(3).fillna(0)
+    df["progress_acceleration"] = df.groupby("project_id", sort=False)["progress_change_1m"].diff(1).fillna(0)
+
+    # Delay velocity & acceleration
+    df["delay_change_1m"] = grouped["schedule_extension_months"].diff(1).fillna(0)
+    df["delay_change_3m"] = grouped["schedule_extension_months"].diff(3).fillna(0)
+    df["delay_acceleration"] = df.groupby("project_id", sort=False)["delay_change_1m"].diff(1).fillna(0)
+
+    # Consecutive stagnant months
     stagnant_counts = []
-    for pid, grp in df.groupby("project_id", sort=False):
+    for pid, grp in grouped:
         current_streak = 0
-        deltas = grp["physical_progress_delta_1m"].values
+        deltas = grp["progress_change_1m"].values
         for d in deltas:
             if pd.notna(d) and d <= 0.1:
                 current_streak += 1
             else:
                 current_streak = 0
             stagnant_counts.append(float(current_streak))
-
     df["consecutive_stagnant_months"] = stagnant_counts
 
     return df

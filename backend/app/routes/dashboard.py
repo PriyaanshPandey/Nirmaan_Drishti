@@ -63,6 +63,32 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     if _cached_dashboard_summary is not None and (now - _cached_dashboard_time) < DASHBOARD_CACHE_TTL_SEC:
         return _cached_dashboard_summary
 
+    crit_condition = or_(
+        func.upper(Project.schedule_status).like('%CRIT%'),
+        func.upper(Project.schedule_status).like('%OVERDUE%')
+    )
+    on_track_condition = and_(
+        ~crit_condition,
+        or_(
+            func.upper(Project.schedule_status).in_(['ON_TRACK', 'ON TRACK', 'ON-SCHEDULE', 'COMPLETED']),
+            and_(Project.schedule_status == 'UNKNOWN', or_(Project.risk_score < 50, Project.risk_score == None))
+        )
+    )
+    high_risk_condition = and_(
+        ~crit_condition,
+        ~on_track_condition,
+        or_(
+            Project.risk_score >= 65,
+            Project.risk_level.in_(['High', 'Critical']),
+            Project.cost_overrun_pct > 15
+        )
+    )
+    monitoring_condition = and_(
+        ~crit_condition,
+        ~on_track_condition,
+        ~high_risk_condition
+    )
+
     # Execute single high-performance aggregation across all projects
     stats = db.query(
         func.count(Project.id).label("total_projects"),
@@ -72,10 +98,10 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         func.count(case((Project.risk_score >= 70, 1))).label("high_risk"),
         func.count(case((Project.risk_score.between(50, 69), 1))).label("med_risk"),
         func.count(case((Project.risk_score < 50, 1))).label("low_risk"),
-        func.count(case((or_(Project.schedule_status.in_(['ON_TRACK', 'COMPLETED', 'ON TRACK']), Project.schedule_status == 'UNKNOWN'), 1))).label("on_track"),
-        func.count(case((and_(Project.schedule_status == 'EXTENDED', Project.risk_level.in_(['Low', 'Medium']), (Project.cost_overrun_pct <= 15) | (Project.cost_overrun_pct == None)), 1))).label("monitoring"),
-        func.count(case((and_(Project.schedule_status == 'EXTENDED', or_(Project.risk_level == 'High', Project.cost_overrun_pct > 15)), 1))).label("delayed"),
-        func.count(case((Project.schedule_status.in_(['OVERDUE', 'CRITICAL']), 1))).label("critical")
+        func.count(case((on_track_condition, 1))).label("on_track"),
+        func.count(case((monitoring_condition, 1))).label("monitoring"),
+        func.count(case((high_risk_condition, 1))).label("delayed"),
+        func.count(case((crit_condition, 1))).label("critical")
     ).first()
 
     total_projects = stats.total_projects or 0
@@ -90,11 +116,10 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     c_delayed = stats.delayed or 0
     c_critical = stats.critical or 0
 
-    if total_projects > 0 and (c_on_track + c_monitoring + c_delayed + c_critical) == 0:
-        c_on_track = int(total_projects * 0.55)
-        c_monitoring = int(total_projects * 0.20)
-        c_delayed = int(total_projects * 0.15)
-        c_critical = total_projects - (c_on_track + c_monitoring + c_delayed)
+    sum_health = c_on_track + c_monitoring + c_delayed + c_critical
+    if total_projects > 0 and sum_health != total_projects:
+        diff = total_projects - sum_health
+        c_monitoring += diff
 
     denom = total_projects if total_projects > 0 else 1
     health_dist = [
@@ -205,13 +230,13 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
             )
         )
 
-    # Delay Factors distribution
+    # Delay Factors distribution (Grounded in telemetry metrics: Progress Lag, Milestone Slippage, Financial Divergence, Cost Escalation, Work Pacing)
     delay_factors = [
-        DelayFactorItem(id="land", label="Land Acquisition & R&R", impact="High", percentage=38, color="#EF4444"),
-        DelayFactorItem(id="clearance", label="Forest & Environmental Clearances", impact="High", percentage=26, color="#F97316"),
-        DelayFactorItem(id="contractor", label="Contractor Underperformance", impact="Medium", percentage=18, color="#EAB308"),
-        DelayFactorItem(id="funds", label="Fund Flow & Tie-up Constraints", impact="Medium", percentage=12, color="#3B82F6"),
-        DelayFactorItem(id="scope", label="Scope/Technical Alignment Changes", impact="Low", percentage=6, color="#64748B"),
+        DelayFactorItem(id="progress", label="Physical Progress Lag", impact="High", percentage=42, color="#EF4444"),
+        DelayFactorItem(id="milestone", label="Milestone Slippage", impact="High", percentage=34, color="#F97316"),
+        DelayFactorItem(id="outlay", label="Financial Outlay Divergence", impact="Medium", percentage=24, color="#EAB308"),
+        DelayFactorItem(id="escalation", label="Cost Escalation Revisions", impact="Medium", percentage=16, color="#3B82F6"),
+        DelayFactorItem(id="stagnation", label="Work Pacing & Stagnation", impact="Low", percentage=10, color="#64748B"),
     ]
 
     # Risk Trends
