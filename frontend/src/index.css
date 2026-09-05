@@ -1,34 +1,34 @@
 :root {
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  
+
   /* Color Palette */
   --bg-main: #FFFFFF;
   --bg-card: #FFFFFF;
   --navy-dark: #090B2E;
   --navy-light: #1A1F4C;
   --navy-active: #0A0D30;
-  
+
   --text-dark: #090B2E;
   --text-muted: #475569;
   --text-light: #64748B;
-  
+
   /* Chart / Status Colors */
   --color-on-track: #2F6BF4;
   --color-monitoring: #6EA7F5;
   --color-at-risk: #4A5673;
   --color-critical: #0B0E2E;
   --color-critical-dark: #221F24;
-  
+
   --color-accent-red: #D62F39;
   --color-accent-blue: #3E8BFF;
-  
+
   /* Borders and Shadows */
   --border-color: rgba(226, 232, 240, 0.8);
   --shadow-sm: 0 2px 4px 0 rgba(15, 23, 42, 0.04);
   --shadow-md: 0 6px 16px -2px rgba(15, 23, 42, 0.05), 0 3px 6px -1px rgba(15, 23, 42, 0.02);
   --shadow-lg: 0 16px 36px -4px rgba(15, 23, 42, 0.08), 0 8px 16px -4px rgba(15, 23, 42, 0.03);
   --shadow-glow: 0 0 20px rgba(47, 107, 244, 0.15);
-  
+
   --border-radius-sm: 10px;
   --border-radius-md: 18px;
   --border-radius-lg: 28px;
@@ -48,7 +48,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -67,7 +67,6 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow-x: hidden;
 }
 
 .app-main-content {
@@ -166,7 +165,9 @@ h3 {
   body {
     padding: 20px;
   }
-  .dashboard-grid, .dashboard-row-2 {
+
+  .dashboard-grid,
+  .dashboard-row-2 {
     grid-template-columns: 1fr;
     gap: 20px;
   }
@@ -182,8 +183,15 @@ h3 {
 }
 
 @keyframes globalFadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Page content fade-in elements sequence stagger */
@@ -265,8 +273,13 @@ h3 {
 }
 
 @keyframes barGrowIn {
-  from { width: 0 !important; }
-  to   { /* natural width */ }
+  from {
+    width: 0 !important;
+  }
+
+  to {
+    /* natural width */
+  }
 }
 
 /* Generic number count-up feel via opacity stagger */
@@ -275,19 +288,49 @@ h3 {
 }
 
 @keyframes valuePopIn {
-  from { opacity: 0; transform: scale(0.85) translateY(4px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Stagger delay utilities */
-.delay-100 { animation-delay: 0.10s; }
-.delay-200 { animation-delay: 0.20s; }
-.delay-300 { animation-delay: 0.30s; }
-.delay-400 { animation-delay: 0.40s; }
-.delay-500 { animation-delay: 0.50s; }
-.delay-600 { animation-delay: 0.60s; }
-.delay-700 { animation-delay: 0.70s; }
-.delay-800 { animation-delay: 0.80s; }
+.delay-100 {
+  animation-delay: 0.10s;
+}
+
+.delay-200 {
+  animation-delay: 0.20s;
+}
+
+.delay-300 {
+  animation-delay: 0.30s;
+}
+
+.delay-400 {
+  animation-delay: 0.40s;
+}
+
+.delay-500 {
+  animation-delay: 0.50s;
+}
+
+.delay-600 {
+  animation-delay: 0.60s;
+}
+
+.delay-700 {
+  animation-delay: 0.70s;
+}
+
+.delay-800 {
+  animation-delay: 0.80s;
+}
 
 /* ══════════════════════════════════════════
    GLOBAL PREMIUM INTERACTIVE & HOVER RULES
@@ -304,10 +347,10 @@ h3 {
 .priority-panel,
 .timeline-node-item,
 .recommendation-sub-card {
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-color 0.25s ease, 
-              background-color 0.25s ease !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease,
+    background-color 0.25s ease !important;
 }
 
 .column-card:hover,
@@ -320,8 +363,8 @@ h3 {
 .timeline-node-item:hover,
 .recommendation-sub-card:hover {
   transform: translateY(-4px) !important;
-  box-shadow: 0 10px 25px -5px rgba(9, 11, 46, 0.08), 
-              0 8px 16px -6px rgba(9, 11, 46, 0.04) !important;
+  box-shadow: 0 10px 25px -5px rgba(9, 11, 46, 0.08),
+    0 8px 16px -6px rgba(9, 11, 46, 0.04) !important;
   border-color: rgba(47, 107, 244, 0.25) !important;
 }
 
@@ -338,10 +381,10 @@ select,
 .ribbon-review-btn,
 .ribbon-actions-btn {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 0.2s ease,
-              border-color 0.2s ease,
-              color 0.2s ease !important;
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease !important;
 }
 
 button:hover,
@@ -387,6 +430,7 @@ table tbody tr:hover {
   from {
     stroke-dashoffset: 1000;
   }
+
   to {
     stroke-dashoffset: 0;
   }
@@ -396,6 +440,7 @@ table tbody tr:hover {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -418,8 +463,13 @@ table tbody tr:hover {
    ══════════════════════════════════════════ */
 
 @keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0% {
+    background-position: -400px 0;
+  }
+
+  100% {
+    background-position: 400px 0;
+  }
 }
 
 .skeleton-pulse {
@@ -444,8 +494,15 @@ table tbody tr:hover {
    ══════════════════════════════════════════ */
 
 @keyframes counterScaleIn {
-  from { opacity: 0; transform: scale(0.85) translateY(4px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .animated-counter-span {
@@ -480,15 +537,29 @@ table tbody tr:hover {
    ══════════════════════════════════════════ */
 
 @keyframes cardSlideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.card-stagger-1 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
-.card-stagger-2 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
-.card-stagger-3 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.19s both; }
-.card-stagger-4 { animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both; }
+.card-stagger-1 {
+  animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
 
+.card-stagger-2 {
+  animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
 
+.card-stagger-3 {
+  animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.19s both;
+}
 
-
+.card-stagger-4 {
+  animation: cardSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.26s both;
+}

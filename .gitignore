@@ -45,3 +45,9 @@ dist-ssr/
 # OS
 .DS_Store
 Thumbs.db
+
+# Large / Generated data files (>100MB exceeds GitHub limit)
+data/New_data_2011-26.csv
+data/input/
+ai/data/input/New_data_*.csv
+frontend/public/scroll_backup/

@@ -2,16 +2,31 @@ import React, { useState, useEffect } from 'react';
 import './MetricCards.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api, type DashboardSummaryData } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
+import { projectsData } from '../data/projectsData';
+
+const initialTotalProjects = projectsData.length;
+const initialTotalOrigCost = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialTotalRevCost = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialOverrunPct = initialTotalOrigCost > 0
+  ? Math.round(((initialTotalRevCost - initialTotalOrigCost) / initialTotalOrigCost * 100) * 10) / 10
+  : 0;
 
 const DEFAULT_METRICS: DashboardSummaryData['metrics'] = {
-  total_projects: 3361,
-  total_projects_subtext: '+124 this quarter',
-  total_original_cost: 3713000,
-  total_original_cost_formatted: '₹37.13 L Cr',
-  total_revised_cost: 4278000,
-  total_revised_cost_formatted: '₹42.78 L Cr',
-  cost_overrun_percentage: 15.2,
-  cost_overrun_formatted: '+15.2% overrun'
+  total_projects: initialTotalProjects,
+  total_projects_subtext: 'Live MoSPI Data',
+  total_original_cost: Math.round(initialTotalOrigCost),
+  total_original_cost_formatted: `₹${(initialTotalOrigCost / 100000).toFixed(2)} L Cr`,
+  total_revised_cost: Math.round(initialTotalRevCost),
+  total_revised_cost_formatted: `₹${(initialTotalRevCost / 100000).toFixed(2)} L Cr`,
+  cost_overrun_percentage: initialOverrunPct,
+  cost_overrun_formatted: `+${initialOverrunPct.toFixed(1)}% overrun`
 };
 
 interface MetricCardsProps {
@@ -29,7 +44,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
         setMetrics(res.metrics);
       }
     }).catch(() => {
-      // keep default fallback metrics
+      // keep dynamic fallback metrics
     });
 
     return () => {
@@ -37,10 +52,10 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
     };
   }, []);
 
-  const origCostCr = metrics.total_original_cost || 3713000;
-  const revCostCr = metrics.total_revised_cost || 4278000;
-  const overrunPct = metrics.cost_overrun_percentage || 15.2;
-  const totalProjects = metrics.total_projects || 3361;
+  const origCostCr = metrics.total_original_cost || initialTotalOrigCost;
+  const revCostCr = metrics.total_revised_cost || initialTotalRevCost;
+  const overrunPct = metrics.cost_overrun_percentage ?? initialOverrunPct;
+  const totalProjects = metrics.total_projects || initialTotalProjects;
 
   return (
     <div className="metrics-column">
@@ -52,7 +67,15 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             <circle cx="80" cy="10" r="3" fill="#ffffff" />
           </svg>
         </div>
-        <h3 className="metric-title">TOTAL PROJECTS</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+          <h3 className="metric-title" style={{ margin: 0 }}>TOTAL PROJECTS</h3>
+          <InfoButton
+            title="Total Projects"
+            summary="Total number of major national infrastructure projects being tracked across all ministries in India."
+            theme="dark"
+            size="sm"
+          />
+        </div>
         <div className="metric-value">
           <AnimatedCounter value={totalProjects} resetKey={activeTab} />
         </div>
@@ -66,7 +89,15 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             <path d="M 0 40 L 30 40 L 50 15 L 70 50 L 100 30" stroke="var(--navy-dark)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <h3 className="metric-title">TOTAL COST</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+          <h3 className="metric-title" style={{ margin: 0 }}>TOTAL COST</h3>
+          <InfoButton
+            title="Original Budget"
+            summary="The starting budget officially approved for all these projects before construction began."
+            theme="light"
+            size="sm"
+          />
+        </div>
         <div className="metric-value">
           <AnimatedCounter 
             value={origCostCr}
@@ -85,7 +116,15 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             <circle cx="100" cy="5" r="4" fill="var(--color-accent-red)" />
           </svg>
         </div>
-        <h3 className="metric-title">REVISED COST</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+          <h3 className="metric-title" style={{ margin: 0 }}>REVISED COST</h3>
+          <InfoButton
+            title="Current Updated Cost"
+            summary="The latest estimated total cost. The percentage shows how much costs have risen above the original budget."
+            theme="light"
+            size="sm"
+          />
+        </div>
         <div className="metric-value text-red">
           <AnimatedCounter 
             value={revCostCr}
@@ -101,3 +140,4 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
     </div>
   );
 };
+

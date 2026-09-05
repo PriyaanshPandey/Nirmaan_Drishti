@@ -80,44 +80,44 @@ def compute_alerts_summary(db: Session) -> ActionCenterSummary:
     tot_esc = float(tot_cost_escalation)
 
     scenarios = {
-        "land": SimulatorScenario(
-            currentDelay=f"{avg_d * 1.2:.1f} months",
+        "milestone": SimulatorScenario(
+            currentDelay=f"{avg_d:.1f} months",
             currentCost=f"₹{tot_esc * 0.35:,.0f} Cr",
-            projDelay=f"{avg_d * 0.6:.1f} months",
-            projDelayReduction=f"{avg_d * 0.6:.1f} months (-50%)",
+            projDelay=f"{avg_d * 0.5:.1f} months",
+            projDelayReduction=f"{avg_d * 0.5:.1f} months (-50%)",
             projSaving=f"₹{tot_esc * 0.18:,.0f} Cr",
             confidence=82
         ),
-        "procurement": SimulatorScenario(
-            currentDelay=f"{avg_d * 0.9:.1f} months",
-            currentCost=f"₹{tot_esc * 0.25:,.0f} Cr",
-            projDelay=f"{avg_d * 0.5:.1f} months",
-            projDelayReduction=f"{avg_d * 0.4:.1f} months (-44%)",
-            projSaving=f"₹{tot_esc * 0.12:,.0f} Cr",
-            confidence=75
-        ),
-        "contractor": SimulatorScenario(
+        "financial": SimulatorScenario(
             currentDelay=f"{avg_d * 0.8:.1f} months",
-            currentCost=f"₹{tot_esc * 0.20:,.0f} Cr",
+            currentCost=f"₹{tot_esc * 0.28:,.0f} Cr",
             projDelay=f"{avg_d * 0.5:.1f} months",
             projDelayReduction=f"{avg_d * 0.3:.1f} months (-38%)",
+            projSaving=f"₹{tot_esc * 0.14:,.0f} Cr",
+            confidence=78
+        ),
+        "cost": SimulatorScenario(
+            currentDelay=f"{avg_d * 0.7:.1f} months",
+            currentCost=f"₹{tot_esc * 0.22:,.0f} Cr",
+            projDelay=f"{avg_d * 0.4:.1f} months",
+            projDelayReduction=f"{avg_d * 0.3:.1f} months (-43%)",
+            projSaving=f"₹{tot_esc * 0.11:,.0f} Cr",
+            confidence=74
+        ),
+        "stagnation": SimulatorScenario(
+            currentDelay=f"{avg_d * 0.9:.1f} months",
+            currentCost=f"₹{tot_esc * 0.20:,.0f} Cr",
+            projDelay=f"{avg_d * 0.5:.1f} months",
+            projDelayReduction=f"{avg_d * 0.4:.1f} months (-44%)",
             projSaving=f"₹{tot_esc * 0.09:,.0f} Cr",
             confidence=70
         ),
-        "milestone": SimulatorScenario(
+        "schedule": SimulatorScenario(
             currentDelay=f"{avg_d * 0.6:.1f} months",
             currentCost=f"₹{tot_esc * 0.15:,.0f} Cr",
             projDelay=f"{avg_d * 0.3:.1f} months",
             projDelayReduction=f"{avg_d * 0.3:.1f} months (-50%)",
             projSaving=f"₹{tot_esc * 0.07:,.0f} Cr",
-            confidence=65
-        ),
-        "clearance": SimulatorScenario(
-            currentDelay=f"{avg_d * 0.7:.1f} months",
-            currentCost=f"₹{tot_esc * 0.12:,.0f} Cr",
-            projDelay=f"{avg_d * 0.4:.1f} months",
-            projDelayReduction=f"{avg_d * 0.3:.1f} months (-43%)",
-            projSaving=f"₹{tot_esc * 0.06:,.0f} Cr",
             confidence=68
         ),
     }
@@ -126,9 +126,9 @@ def compute_alerts_summary(db: Session) -> ActionCenterSummary:
         ActionWeight(label="Risk Severity", pct=88, color="#EF4444"),
         ActionWeight(label="Financial Exposure", pct=82, color="#EF4444"),
         ActionWeight(label="Delay Exposure", pct=74, color="#F59E0B"),
-        ActionWeight(label="Project/Network Criticality", pct=58, color="#22C55E"),
-        ActionWeight(label="Urgency", pct=45, color="#22C55E"),
-        ActionWeight(label="Dependencies", pct=32, color="#94A3B8"),
+        ActionWeight(label="Project Criticality", pct=58, color="#22C55E"),
+        ActionWeight(label="Trajectory Urgency", pct=45, color="#22C55E"),
+        ActionWeight(label="Milestone Dependencies", pct=32, color="#94A3B8"),
     ]
 
     return ActionCenterSummary(

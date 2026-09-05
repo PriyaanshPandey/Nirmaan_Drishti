@@ -2,7 +2,7 @@
 # All thresholds, model parameters, and paths are configurable here.
 
 data:
-  default_csv_path: "data/input/PAIMANA_Master.csv"
+  default_csv_path: "../data/New_data_2011-26.csv"
   training_dir: "data/training"
 
 cost:

@@ -3,6 +3,7 @@ import { TrendingUp, Clock } from 'lucide-react';
 import './GlobalOverrunGraphs.css';
 import { api } from '../services/api';
 import { AnimatedCounter } from './AnimatedCounter';
+import { InfoButton } from './ExplainabilityInfo';
 
 export interface SectorOverrun {
   sector_name: string;
@@ -210,7 +211,14 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <TrendingUp size={18} color="#0284C7" />
             </div>
             <div>
-              <h2 className="card-title">Global Cost Escalation</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 className="card-title" style={{ margin: 0 }}>Global Cost Escalation</h2>
+                <InfoButton
+                  title="Cost Increases"
+                  summary="Shows which sectors (like Railways or Roads) have the highest extra costs above their starting plans."
+                  size="sm"
+                />
+              </div>
               <p className="card-subtitle">Real cost drift by sector (Crore)</p>
             </div>
           </div>
@@ -262,7 +270,14 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <Clock size={18} color="#D97706" />
             </div>
             <div>
-              <h2 className="card-title">Global Schedule Delays</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 className="card-title" style={{ margin: 0 }}>Global Schedule Delays</h2>
+                <InfoButton
+                  title="Timeline Delays"
+                  summary="Shows the average number of extra months projects in each sector are delayed past their deadline."
+                  size="sm"
+                />
+              </div>
               <p className="card-subtitle">Average delay extension by sector (Months)</p>
             </div>
           </div>

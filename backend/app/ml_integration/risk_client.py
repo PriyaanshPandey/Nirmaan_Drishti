@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 # Add AI module directory to path for clean imports
 AI_DIR = Path(__file__).resolve().parent.parent.parent.parent / "ai"
 if str(AI_DIR) not in sys.path:
-    sys.path.insert(0, str(AI_DIR))
+    sys.path.append(str(AI_DIR))
 
 MODELS_DIR = AI_DIR / "models"
-RAW_DATA_PATH = AI_DIR / "data" / "input" / "PAIMANA_Master.csv"
+RAW_DATA_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "New_data_2011-26.csv"
 if not RAW_DATA_PATH.exists():
-    RAW_DATA_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "raw" / "PAIMANA_Master.csv"
+    RAW_DATA_PATH = AI_DIR / "data" / "input" / "PAIMANA_Master.csv"
 
 
 class MLRiskClient:

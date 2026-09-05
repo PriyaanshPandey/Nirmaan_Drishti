@@ -53,7 +53,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateTab }) => {
             <button onClick={() => onNavigateTab?.('dashboard')}>Dashboard</button>
             <button onClick={() => onNavigateTab?.('projects')}>Projects</button>
             <button onClick={() => onNavigateTab?.('insights')}>AI Insights</button>
-            <button onClick={() => onNavigateTab?.('risk')}>Risk Analysis</button>
             <button onClick={() => onNavigateTab?.('action')}>Action Center</button>
             <button onClick={() => onNavigateTab?.('distribution')}>Distribution</button>
           </div>

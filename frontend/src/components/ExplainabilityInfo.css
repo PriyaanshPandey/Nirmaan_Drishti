@@ -1,0 +1,118 @@
+/* Explainability & Info Component Styles */
+
+.info-btn-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(241, 245, 249, 0.85);
+  color: #64748B;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  vertical-align: middle;
+  flex-shrink: 0;
+  font-family: inherit;
+  outline: none;
+}
+
+.info-btn-trigger:hover,
+.info-btn-trigger.active {
+  background: #03045E;
+  color: #FFFFFF;
+  border-color: #03045E;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(3, 4, 94, 0.25);
+}
+
+.info-btn-trigger.dark-theme-trigger {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #F8FAFC;
+}
+
+.info-btn-trigger.dark-theme-trigger:hover,
+.info-btn-trigger.dark-theme-trigger.active {
+  background: #FFFFFF;
+  color: #03045E;
+  border-color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.35);
+}
+
+.info-btn-trigger.sm {
+  width: 15px;
+  height: 15px;
+  font-size: 9px;
+}
+
+/* Floating Compact Hover Tooltip */
+.info-popover-card {
+  position: fixed;
+  z-index: 99999;
+  width: 270px;
+  max-width: calc(100vw - 28px);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.15), 0 4px 8px -2px rgba(15, 23, 42, 0.06);
+  padding: 12px 14px;
+  animation: infoPopoverScale 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  color: #0F172A;
+  font-family: inherit;
+  pointer-events: auto;
+}
+
+@keyframes infoPopoverScale {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.info-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.info-popover-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #03045E;
+  margin: 0;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-popover-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0284C7;
+  flex-shrink: 0;
+}
+
+.info-popover-summary {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #334155;
+  margin: 0;
+  font-weight: 500;
+}
+
+

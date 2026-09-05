@@ -1,0 +1,2081 @@
+model,feature,mean_abs_shap
+cost_classifier_3m,cost_overrun_delta_3m,0.3358
+cost_classifier_3m,project_age_months,0.2263
+cost_classifier_3m,physical_financial_gap_pct,0.1507
+cost_classifier_3m,cost_overrun_pct,0.1433
+cost_classifier_3m,expenditure_ratio_pct,0.1317
+cost_classifier_3m,snapshot_history_count,0.1213
+cost_classifier_3m,cost_overrun_trend_slope,0.1077
+cost_classifier_3m,expenditure_ratio_delta_3m,0.1034
+cost_classifier_3m,original_duration_months,0.1024
+cost_classifier_3m,original_cost_crore,0.1019
+cost_classifier_3m,expenditure_ratio_delta_1m,0.0879
+cost_classifier_3m,cumulative_expenditure_crore,0.0825
+cost_classifier_3m,revised_cost_crore,0.0676
+cost_classifier_3m,remaining_work_pct,0.065
+cost_classifier_3m,schedule_status_Delayed,0.0635
+cost_classifier_3m,progress_minus_expenditure_gap,0.057
+cost_classifier_3m,remaining_budget_crore,0.0556
+cost_classifier_3m,cost_escalation_crore,0.0539
+cost_classifier_3m,expenditure_minus_progress_gap,0.0525
+cost_classifier_3m,agency_PGCIL,0.0513
+cost_classifier_3m,progress_trend_slope,0.0467
+cost_classifier_3m,agency_RAILWAYS,0.0412
+cost_classifier_3m,expenditure_velocity_crore_month,0.0407
+cost_classifier_3m,physical_progress_pct,0.0401
+cost_classifier_3m,days_to_revised_target,0.0397
+cost_classifier_3m,physical_to_expenditure_ratio,0.0393
+cost_classifier_3m,cost_escalation_ratio,0.0385
+cost_classifier_3m,agency_MoRTH,0.0379
+cost_classifier_3m,cost_overrun_delta_1m,0.0352
+cost_classifier_3m,agency_NHAI,0.0325
+cost_classifier_3m,overdue_days,0.0321
+cost_classifier_3m,risk_signal_count,0.0321
+cost_classifier_3m,extension_rate_pct,0.0289
+cost_classifier_3m,agency_ONGC,0.027
+cost_classifier_3m,revised_remaining_months,0.0263
+cost_classifier_3m,progress_velocity_3m,0.0262
+cost_classifier_3m,schedule_extension_months,0.026
+cost_classifier_3m,days_to_original_target,0.0247
+cost_classifier_3m,consecutive_stagnant_months,0.0221
+cost_classifier_3m,planned_remaining_months,0.0208
+cost_classifier_3m,physical_progress_delta_3m,0.0205
+cost_classifier_3m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.0198
+cost_classifier_3m,state_Maharashtra,0.0157
+cost_classifier_3m,state_Rajasthan,0.0156
+cost_classifier_3m,extension_count,0.0151
+cost_classifier_3m,physical_progress_delta_6m,0.0145
+cost_classifier_3m,state_Chhattisgarh,0.0132
+cost_classifier_3m,physical_progress_delta_1m,0.0125
+cost_classifier_3m,state_Mizoram,0.0116
+cost_classifier_3m,progress_velocity_6m,0.0105
+cost_classifier_3m,state_Odisha,0.0094
+cost_classifier_3m,schedule_status_Critical Overdue,0.009
+cost_classifier_3m,state_Multi-State,0.0087
+cost_classifier_3m,ministry_department_MINISTRY OF POWER,0.0083
+cost_classifier_3m,agency_NFR,0.0081
+cost_classifier_3m,state_Kerala,0.0077
+cost_classifier_3m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.0068
+cost_classifier_3m,sector_PETROLEUM,0.0062
+cost_classifier_3m,state_West Bengal,0.0058
+cost_classifier_3m,agency_CPWD,0.0057
+cost_classifier_3m,state_Goa,0.0057
+cost_classifier_3m,agency_ECR,0.0054
+cost_classifier_3m,ministry_department_MINISTRY OF RAILWAYS,0.0053
+cost_classifier_3m,sector_RAILWAYS,0.0052
+cost_classifier_3m,agency_IOCL,0.0043
+cost_classifier_3m,state_Manipur,0.0043
+cost_classifier_3m,sector_URBAN DEVELOPMENT,0.0037
+cost_classifier_3m,agency_NHIDCL,0.0035
+cost_classifier_3m,agency_HPCL,0.0029
+cost_classifier_3m,agency_NEEPCO,0.0029
+cost_classifier_3m,schedule_extension_delta_1m,0.0028
+cost_classifier_3m,progress_expenditure_mismatch_flag,0.0027
+cost_classifier_3m,state_Assam,0.0027
+cost_classifier_3m,agency_HSCC,0.0025
+cost_classifier_3m,state_Nagaland,0.0025
+cost_classifier_3m,ministry_department_MINISTRY OF COAL,0.0021
+cost_classifier_3m,agency_JNPT,0.0019
+cost_classifier_3m,ministry_department_MINISTRY OF WATER RESOURCES,0.0018
+cost_classifier_3m,state_Uttar Pradesh,0.0017
+cost_classifier_3m,schedule_status_On-Schedule,0.0016
+cost_classifier_3m,state_Delhi,0.0015
+cost_classifier_3m,agency_GAIL,0.0014
+cost_classifier_3m,state_Andaman & Nicobar,0.0014
+cost_classifier_3m,state_Ladakh,0.0013
+cost_classifier_3m,agency_WCR,0.0012
+cost_classifier_3m,state_Gujarat,0.0012
+cost_classifier_3m,state_Jharkhand,0.0012
+cost_classifier_3m,agency_CPWD FOR MHA,0.0011
+cost_classifier_3m,high_expenditure_low_progress_flag,0.001
+cost_classifier_3m,state_Tamil Nadu,0.001
+cost_classifier_3m,state_Arunachal Pradesh,0.0009
+cost_classifier_3m,state_Punjab,0.0009
+cost_classifier_3m,agency_SJVN,0.0008
+cost_classifier_3m,state_Himachal Pradesh,0.0008
+cost_classifier_3m,state_Sikkim,0.0008
+cost_classifier_3m,state_Andhra Pradesh,0.0007
+cost_classifier_3m,state_Meghalaya,0.0006
+cost_classifier_3m,agency_DVC,0.0005
+cost_classifier_3m,agency_ER,0.0005
+cost_classifier_3m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0005
+cost_classifier_3m,agency_KPL,0.0004
+cost_classifier_3m,agency_NHDP,0.0003
+cost_classifier_3m,agency_NHPC,0.0003
+cost_classifier_3m,agency_OIL,0.0003
+cost_classifier_3m,state_Bihar,0.0003
+cost_classifier_3m,agency_IWAI,0.0002
+cost_classifier_3m,agency_SWR,0.0002
+cost_classifier_3m,state_Tripura,0.0002
+cost_classifier_3m,cost_overrun_negative_flag,0.0001
+cost_classifier_3m,agency_NTPC,0.0001
+cost_classifier_3m,state_Jammu & Kashmir,0.0001
+cost_classifier_3m,state_Madhya Pradesh,0.0001
+cost_classifier_3m,state_Telangana,0.0001
+cost_classifier_3m,is_overdue_flag,0.0
+cost_classifier_3m,is_extended_flag,0.0
+cost_classifier_3m,agency_AAI,0.0
+cost_classifier_3m,agency_BCCL,0.0
+cost_classifier_3m,agency_BCPL,0.0
+cost_classifier_3m,agency_BHAVNI,0.0
+cost_classifier_3m,agency_BMRCL,0.0
+cost_classifier_3m,agency_BPCL,0.0
+cost_classifier_3m,agency_BRO,0.0
+cost_classifier_3m,agency_BSNL,0.0
+cost_classifier_3m,agency_BUIDCO,0.0
+cost_classifier_3m,agency_CCL,0.0
+cost_classifier_3m,agency_CIVIL AVIATION,0.0
+cost_classifier_3m,agency_CMRL,0.0
+cost_classifier_3m,agency_COAL,0.0
+cost_classifier_3m,agency_CORE,0.0
+cost_classifier_3m,agency_CPCL,0.0
+cost_classifier_3m,agency_CPWD EDUCATION,0.0
+cost_classifier_3m,agency_CPWD FOR HEALTH,0.0
+cost_classifier_3m,agency_CR,0.0
+cost_classifier_3m,agency_CVPPPL,0.0
+cost_classifier_3m,agency_DFCC,0.0
+cost_classifier_3m,agency_DJB,0.0
+cost_classifier_3m,agency_DMIC FOR DPIIT,0.0
+cost_classifier_3m,agency_DMRC,0.0
+cost_classifier_3m,agency_DORTH,0.0
+cost_classifier_3m,agency_DOT,0.0
+cost_classifier_3m,agency_ECL,0.0
+cost_classifier_3m,agency_ECOR,0.0
+cost_classifier_3m,agency_GSL,0.0
+cost_classifier_3m,agency_HCL,0.0
+cost_classifier_3m,agency_HITES,0.0
+cost_classifier_3m,agency_HSCL,0.0
+cost_classifier_3m,agency_IGGL,0.0
+cost_classifier_3m,agency_IICC FOR DPIIT,0.0
+cost_classifier_3m,agency_IRCON,0.0
+cost_classifier_3m,agency_KMDA,0.0
+cost_classifier_3m,agency_KOMRCL,0.0
+cost_classifier_3m,agency_LMRCL,0.0
+cost_classifier_3m,agency_MANGALORE REFIN,0.0
+cost_classifier_3m,agency_MCL,0.0
+cost_classifier_3m,agency_MEGA,0.0
+cost_classifier_3m,agency_MINES,0.0
+cost_classifier_3m,agency_MMRC,0.0
+cost_classifier_3m,agency_MMRCL,0.0
+cost_classifier_3m,agency_MPT,0.0
+cost_classifier_3m,agency_MRTP,0.0
+cost_classifier_3m,agency_MRVC,0.0
+cost_classifier_3m,agency_Multi-States (Andhra Pradesh,0.0
+cost_classifier_3m,agency_Multi-States (Arunachal Pradesh,0.0
+cost_classifier_3m,agency_Multi-States (Assam,0.0
+cost_classifier_3m,agency_Multi-States (Bihar,0.0
+cost_classifier_3m,agency_Multi-States (Chhattisgarh,0.0
+cost_classifier_3m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+cost_classifier_3m,agency_Multi-States (Delhi,0.0
+cost_classifier_3m,agency_Multi-States (Goa,0.0
+cost_classifier_3m,agency_Multi-States (Gujarat,0.0
+cost_classifier_3m,agency_Multi-States (Haryana,0.0
+cost_classifier_3m,agency_Multi-States (Himachal Pradesh,0.0
+cost_classifier_3m,agency_Multi-States (Jammu and Kashmir,0.0
+cost_classifier_3m,agency_Multi-States (Jharkhand,0.0
+cost_classifier_3m,agency_Multi-States (Karnataka,0.0
+cost_classifier_3m,agency_Multi-States (Kerala,0.0
+cost_classifier_3m,agency_Multi-States (Madhya Pradesh,0.0
+cost_classifier_3m,agency_Multi-States (Maharashtra,0.0
+cost_classifier_3m,agency_Multi-States (Odisha,0.0
+cost_classifier_3m,agency_Multi-States (Puducherry,0.0
+cost_classifier_3m,agency_Multi-States (Punjab,0.0
+cost_classifier_3m,agency_Multi-States (Rajasthan,0.0
+cost_classifier_3m,agency_Multi-States (Uttar Pradesh,0.0
+cost_classifier_3m,agency_NALCO,0.0
+cost_classifier_3m,agency_NATIS,0.0
+cost_classifier_3m,agency_NBCC,0.0
+cost_classifier_3m,agency_NCL,0.0
+cost_classifier_3m,agency_NCR,0.0
+cost_classifier_3m,agency_NCRTC,0.0
+cost_classifier_3m,agency_NER,0.0
+cost_classifier_3m,agency_NFL,0.0
+cost_classifier_3m,agency_NHSRCL,0.0
+cost_classifier_3m,agency_NLC,0.0
+cost_classifier_3m,agency_NMDC,0.0
+cost_classifier_3m,agency_NPCC,0.0
+cost_classifier_3m,agency_NPCIL,0.0
+cost_classifier_3m,agency_NR,0.0
+cost_classifier_3m,agency_NRL,0.0
+cost_classifier_3m,agency_NWR,0.0
+cost_classifier_3m,agency_PATNA METRO RAI,0.0
+cost_classifier_3m,agency_PETROLEUM,0.0
+cost_classifier_3m,agency_POWER,0.0
+cost_classifier_3m,agency_PPA,0.0
+cost_classifier_3m,agency_PWD,0.0
+cost_classifier_3m,agency_RCF,0.0
+cost_classifier_3m,agency_RINL,0.0
+cost_classifier_3m,agency_RITES,0.0
+cost_classifier_3m,agency_RITES OF HIGHER,0.0
+cost_classifier_3m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_classifier_3m,agency_RVNL,0.0
+cost_classifier_3m,agency_SAIL,0.0
+cost_classifier_3m,agency_SCCL,0.0
+cost_classifier_3m,agency_SCR,0.0
+cost_classifier_3m,agency_SECL,0.0
+cost_classifier_3m,agency_SECR,0.0
+cost_classifier_3m,agency_SER,0.0
+cost_classifier_3m,agency_SHIPPING & PORTS,0.0
+cost_classifier_3m,agency_SJVNL,0.0
+cost_classifier_3m,agency_SR,0.0
+cost_classifier_3m,agency_STEEL,0.0
+cost_classifier_3m,agency_Sikkim Universi,0.0
+cost_classifier_3m,agency_THDC,0.0
+cost_classifier_3m,agency_THDCIL,0.0
+cost_classifier_3m,agency_THDCL,0.0
+cost_classifier_3m,agency_UKJalNigam,0.0
+cost_classifier_3m,agency_UPJalNigam,0.0
+cost_classifier_3m,agency_URBAN DEVELOPMENT,0.0
+cost_classifier_3m,agency_WATER RESOURCES,0.0
+cost_classifier_3m,agency_WCL,0.0
+cost_classifier_3m,agency_WR,0.0
+cost_classifier_3m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF FERTILISERS,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF FINANCE,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF MINES,0.0
+cost_classifier_3m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0
+cost_classifier_3m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0
+cost_classifier_3m,ministry_department_MINISTRY OF STEEL,0.0
+cost_classifier_3m,sector_ATOMIC ENERGY,0.0
+cost_classifier_3m,sector_CIVIL AVIATION,0.0
+cost_classifier_3m,sector_COAL,0.0
+cost_classifier_3m,sector_HEALTH & FAMILY WELFARE,0.0
+cost_classifier_3m,sector_MINES,0.0
+cost_classifier_3m,sector_OTHER,0.0
+cost_classifier_3m,sector_POWER,0.0
+cost_classifier_3m,sector_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_classifier_3m,sector_SHIPPING & PORTS,0.0
+cost_classifier_3m,sector_STEEL,0.0
+cost_classifier_3m,sector_TELECOMMUNICATIONS,0.0
+cost_classifier_3m,sector_WATER RESOURCES,0.0
+cost_classifier_3m,state_Chandigarh,0.0
+cost_classifier_3m,state_Haryana,0.0
+cost_classifier_3m,state_Karnataka,0.0
+cost_classifier_3m,state_Puducherry,0.0
+cost_classifier_3m,state_Uttarakhand,0.0
+cost_classifier_3m,schedule_status_Completed,0.0
+cost_classifier_6m,cost_overrun_delta_3m,0.28
+cost_classifier_6m,physical_financial_gap_pct,0.1678
+cost_classifier_6m,project_age_months,0.1551
+cost_classifier_6m,expenditure_ratio_pct,0.1531
+cost_classifier_6m,cost_overrun_pct,0.1417
+cost_classifier_6m,expenditure_ratio_delta_3m,0.1144
+cost_classifier_6m,cumulative_expenditure_crore,0.1143
+cost_classifier_6m,original_duration_months,0.1079
+cost_classifier_6m,original_cost_crore,0.0952
+cost_classifier_6m,cost_overrun_trend_slope,0.0897
+cost_classifier_6m,expenditure_ratio_delta_1m,0.081
+cost_classifier_6m,remaining_budget_crore,0.0797
+cost_classifier_6m,snapshot_history_count,0.0654
+cost_classifier_6m,expenditure_velocity_crore_month,0.0644
+cost_classifier_6m,cost_escalation_crore,0.0615
+cost_classifier_6m,agency_RAILWAYS,0.0601
+cost_classifier_6m,cost_overrun_delta_1m,0.0566
+cost_classifier_6m,schedule_status_Delayed,0.0549
+cost_classifier_6m,remaining_work_pct,0.0544
+cost_classifier_6m,revised_cost_crore,0.0537
+cost_classifier_6m,progress_minus_expenditure_gap,0.0513
+cost_classifier_6m,schedule_extension_months,0.0471
+cost_classifier_6m,agency_PGCIL,0.0465
+cost_classifier_6m,cost_escalation_ratio,0.0461
+cost_classifier_6m,extension_rate_pct,0.0424
+cost_classifier_6m,risk_signal_count,0.0421
+cost_classifier_6m,expenditure_minus_progress_gap,0.0409
+cost_classifier_6m,agency_NHAI,0.0396
+cost_classifier_6m,agency_ONGC,0.0361
+cost_classifier_6m,physical_progress_pct,0.0316
+cost_classifier_6m,days_to_original_target,0.0313
+cost_classifier_6m,days_to_revised_target,0.0305
+cost_classifier_6m,revised_remaining_months,0.0296
+cost_classifier_6m,consecutive_stagnant_months,0.0256
+cost_classifier_6m,physical_to_expenditure_ratio,0.0241
+cost_classifier_6m,physical_progress_delta_6m,0.0231
+cost_classifier_6m,state_Mizoram,0.0231
+cost_classifier_6m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.0217
+cost_classifier_6m,overdue_days,0.0212
+cost_classifier_6m,agency_MoRTH,0.0196
+cost_classifier_6m,progress_velocity_6m,0.0175
+cost_classifier_6m,state_Kerala,0.0155
+cost_classifier_6m,state_Rajasthan,0.0153
+cost_classifier_6m,extension_count,0.0146
+cost_classifier_6m,progress_trend_slope,0.0143
+cost_classifier_6m,planned_remaining_months,0.0132
+cost_classifier_6m,progress_velocity_3m,0.0111
+cost_classifier_6m,state_Multi-State,0.0103
+cost_classifier_6m,state_Goa,0.0093
+cost_classifier_6m,state_Chhattisgarh,0.009
+cost_classifier_6m,agency_CPWD,0.0084
+cost_classifier_6m,agency_HPCL,0.008
+cost_classifier_6m,state_West Bengal,0.0079
+cost_classifier_6m,physical_progress_delta_3m,0.0062
+cost_classifier_6m,state_Manipur,0.0061
+cost_classifier_6m,state_Madhya Pradesh,0.0059
+cost_classifier_6m,state_Odisha,0.0059
+cost_classifier_6m,state_Assam,0.0055
+cost_classifier_6m,agency_ECR,0.0053
+cost_classifier_6m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.0049
+cost_classifier_6m,state_Maharashtra,0.0047
+cost_classifier_6m,state_Tamil Nadu,0.0045
+cost_classifier_6m,agency_NFR,0.0044
+cost_classifier_6m,physical_progress_delta_1m,0.004
+cost_classifier_6m,agency_CPWD FOR MHA,0.0038
+cost_classifier_6m,ministry_department_MINISTRY OF RAILWAYS,0.0038
+cost_classifier_6m,state_Nagaland,0.0038
+cost_classifier_6m,agency_NTPC,0.0037
+cost_classifier_6m,state_Bihar,0.0034
+cost_classifier_6m,agency_NEEPCO,0.0033
+cost_classifier_6m,state_Jharkhand,0.0033
+cost_classifier_6m,agency_HSCC,0.0031
+cost_classifier_6m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0029
+cost_classifier_6m,agency_JNPT,0.0026
+cost_classifier_6m,schedule_extension_delta_1m,0.0023
+cost_classifier_6m,sector_PETROLEUM,0.0023
+cost_classifier_6m,agency_NHIDCL,0.002
+cost_classifier_6m,agency_IOCL,0.0019
+cost_classifier_6m,agency_GAIL,0.0018
+cost_classifier_6m,sector_ROAD TRANSPORT & HIGHWAYS,0.0018
+cost_classifier_6m,state_Andaman & Nicobar,0.0018
+cost_classifier_6m,state_Delhi,0.0018
+cost_classifier_6m,state_Uttar Pradesh,0.0018
+cost_classifier_6m,state_Arunachal Pradesh,0.0015
+cost_classifier_6m,high_expenditure_low_progress_flag,0.0014
+cost_classifier_6m,state_Haryana,0.0013
+cost_classifier_6m,state_Himachal Pradesh,0.0013
+cost_classifier_6m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0012
+cost_classifier_6m,schedule_status_On-Schedule,0.0012
+cost_classifier_6m,agency_WCR,0.0011
+cost_classifier_6m,agency_MANGALORE REFIN,0.0009
+cost_classifier_6m,agency_SJVN,0.0009
+cost_classifier_6m,agency_NHPC,0.0006
+cost_classifier_6m,ministry_department_MINISTRY OF WATER RESOURCES,0.0006
+cost_classifier_6m,agency_DMIC FOR DPIIT,0.0005
+cost_classifier_6m,agency_NHDP,0.0005
+cost_classifier_6m,agency_THDCIL,0.0005
+cost_classifier_6m,state_Jammu & Kashmir,0.0005
+cost_classifier_6m,state_Karnataka,0.0005
+cost_classifier_6m,state_Tripura,0.0005
+cost_classifier_6m,agency_DVC,0.0004
+cost_classifier_6m,agency_OIL,0.0004
+cost_classifier_6m,sector_HEALTH & FAMILY WELFARE,0.0004
+cost_classifier_6m,state_Sikkim,0.0004
+cost_classifier_6m,state_Telangana,0.0004
+cost_classifier_6m,agency_CMRL,0.0003
+cost_classifier_6m,agency_SWR,0.0003
+cost_classifier_6m,ministry_department_MINISTRY OF POWER,0.0003
+cost_classifier_6m,sector_RAILWAYS,0.0002
+cost_classifier_6m,state_Andhra Pradesh,0.0002
+cost_classifier_6m,progress_expenditure_mismatch_flag,0.0001
+cost_classifier_6m,agency_RITES,0.0001
+cost_classifier_6m,state_Ladakh,0.0001
+cost_classifier_6m,state_Meghalaya,0.0001
+cost_classifier_6m,cost_overrun_negative_flag,0.0
+cost_classifier_6m,is_overdue_flag,0.0
+cost_classifier_6m,is_extended_flag,0.0
+cost_classifier_6m,agency_AAI,0.0
+cost_classifier_6m,agency_BCCL,0.0
+cost_classifier_6m,agency_BCPL,0.0
+cost_classifier_6m,agency_BHAVNI,0.0
+cost_classifier_6m,agency_BMRCL,0.0
+cost_classifier_6m,agency_BPCL,0.0
+cost_classifier_6m,agency_BRO,0.0
+cost_classifier_6m,agency_BSNL,0.0
+cost_classifier_6m,agency_BUIDCO,0.0
+cost_classifier_6m,agency_CCL,0.0
+cost_classifier_6m,agency_CIVIL AVIATION,0.0
+cost_classifier_6m,agency_COAL,0.0
+cost_classifier_6m,agency_CORE,0.0
+cost_classifier_6m,agency_CPCL,0.0
+cost_classifier_6m,agency_CPWD EDUCATION,0.0
+cost_classifier_6m,agency_CPWD FOR HEALTH,0.0
+cost_classifier_6m,agency_CR,0.0
+cost_classifier_6m,agency_CVPPPL,0.0
+cost_classifier_6m,agency_DFCC,0.0
+cost_classifier_6m,agency_DJB,0.0
+cost_classifier_6m,agency_DMRC,0.0
+cost_classifier_6m,agency_DORTH,0.0
+cost_classifier_6m,agency_ECL,0.0
+cost_classifier_6m,agency_ECOR,0.0
+cost_classifier_6m,agency_ER,0.0
+cost_classifier_6m,agency_GSL,0.0
+cost_classifier_6m,agency_HCL,0.0
+cost_classifier_6m,agency_HITES,0.0
+cost_classifier_6m,agency_HSCL,0.0
+cost_classifier_6m,agency_IGGL,0.0
+cost_classifier_6m,agency_IICC FOR DPIIT,0.0
+cost_classifier_6m,agency_IRCON,0.0
+cost_classifier_6m,agency_IWAI,0.0
+cost_classifier_6m,agency_KMDA,0.0
+cost_classifier_6m,agency_KOMRCL,0.0
+cost_classifier_6m,agency_KPL,0.0
+cost_classifier_6m,agency_LMRCL,0.0
+cost_classifier_6m,agency_MCL,0.0
+cost_classifier_6m,agency_MEGA,0.0
+cost_classifier_6m,agency_MMRC,0.0
+cost_classifier_6m,agency_MMRCL,0.0
+cost_classifier_6m,agency_MPT,0.0
+cost_classifier_6m,agency_MRTP,0.0
+cost_classifier_6m,agency_MRVC,0.0
+cost_classifier_6m,agency_Multi-States (Andhra Pradesh,0.0
+cost_classifier_6m,agency_Multi-States (Arunachal Pradesh,0.0
+cost_classifier_6m,agency_Multi-States (Assam,0.0
+cost_classifier_6m,agency_Multi-States (Bihar,0.0
+cost_classifier_6m,agency_Multi-States (Chhattisgarh,0.0
+cost_classifier_6m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+cost_classifier_6m,agency_Multi-States (Delhi,0.0
+cost_classifier_6m,agency_Multi-States (Goa,0.0
+cost_classifier_6m,agency_Multi-States (Gujarat,0.0
+cost_classifier_6m,agency_Multi-States (Haryana,0.0
+cost_classifier_6m,agency_Multi-States (Himachal Pradesh,0.0
+cost_classifier_6m,agency_Multi-States (Jammu and Kashmir,0.0
+cost_classifier_6m,agency_Multi-States (Jharkhand,0.0
+cost_classifier_6m,agency_Multi-States (Karnataka,0.0
+cost_classifier_6m,agency_Multi-States (Kerala,0.0
+cost_classifier_6m,agency_Multi-States (Madhya Pradesh,0.0
+cost_classifier_6m,agency_Multi-States (Maharashtra,0.0
+cost_classifier_6m,agency_Multi-States (Odisha,0.0
+cost_classifier_6m,agency_Multi-States (Puducherry,0.0
+cost_classifier_6m,agency_Multi-States (Punjab,0.0
+cost_classifier_6m,agency_Multi-States (Rajasthan,0.0
+cost_classifier_6m,agency_Multi-States (Uttar Pradesh,0.0
+cost_classifier_6m,agency_NALCO,0.0
+cost_classifier_6m,agency_NATIS,0.0
+cost_classifier_6m,agency_NBCC,0.0
+cost_classifier_6m,agency_NCL,0.0
+cost_classifier_6m,agency_NCR,0.0
+cost_classifier_6m,agency_NCRTC,0.0
+cost_classifier_6m,agency_NER,0.0
+cost_classifier_6m,agency_NFL,0.0
+cost_classifier_6m,agency_NHSRCL,0.0
+cost_classifier_6m,agency_NLC,0.0
+cost_classifier_6m,agency_NMDC,0.0
+cost_classifier_6m,agency_NPCC,0.0
+cost_classifier_6m,agency_NPCIL,0.0
+cost_classifier_6m,agency_NR,0.0
+cost_classifier_6m,agency_NRL,0.0
+cost_classifier_6m,agency_NWR,0.0
+cost_classifier_6m,agency_PATNA METRO RAI,0.0
+cost_classifier_6m,agency_PETROLEUM,0.0
+cost_classifier_6m,agency_POWER,0.0
+cost_classifier_6m,agency_PPA,0.0
+cost_classifier_6m,agency_PWD,0.0
+cost_classifier_6m,agency_RCF,0.0
+cost_classifier_6m,agency_RINL,0.0
+cost_classifier_6m,agency_RITES OF HIGHER,0.0
+cost_classifier_6m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_classifier_6m,agency_RVNL,0.0
+cost_classifier_6m,agency_SAIL,0.0
+cost_classifier_6m,agency_SCCL,0.0
+cost_classifier_6m,agency_SCR,0.0
+cost_classifier_6m,agency_SECL,0.0
+cost_classifier_6m,agency_SECR,0.0
+cost_classifier_6m,agency_SER,0.0
+cost_classifier_6m,agency_SHIPPING & PORTS,0.0
+cost_classifier_6m,agency_SJVNL,0.0
+cost_classifier_6m,agency_SR,0.0
+cost_classifier_6m,agency_STEEL,0.0
+cost_classifier_6m,agency_Sikkim Universi,0.0
+cost_classifier_6m,agency_THDC,0.0
+cost_classifier_6m,agency_THDCL,0.0
+cost_classifier_6m,agency_UKJalNigam,0.0
+cost_classifier_6m,agency_UPJalNigam,0.0
+cost_classifier_6m,agency_URBAN DEVELOPMENT,0.0
+cost_classifier_6m,agency_WATER RESOURCES,0.0
+cost_classifier_6m,agency_WCL,0.0
+cost_classifier_6m,agency_WR,0.0
+cost_classifier_6m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF COAL,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF FERTILISERS,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF FINANCE,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF MINES,0.0
+cost_classifier_6m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0
+cost_classifier_6m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0
+cost_classifier_6m,ministry_department_MINISTRY OF STEEL,0.0
+cost_classifier_6m,sector_ATOMIC ENERGY,0.0
+cost_classifier_6m,sector_CIVIL AVIATION,0.0
+cost_classifier_6m,sector_COAL,0.0
+cost_classifier_6m,sector_MINES,0.0
+cost_classifier_6m,sector_OTHER,0.0
+cost_classifier_6m,sector_POWER,0.0
+cost_classifier_6m,sector_SHIPPING & PORTS,0.0
+cost_classifier_6m,sector_STEEL,0.0
+cost_classifier_6m,sector_TELECOMMUNICATIONS,0.0
+cost_classifier_6m,sector_URBAN DEVELOPMENT,0.0
+cost_classifier_6m,sector_WATER RESOURCES,0.0
+cost_classifier_6m,state_Chandigarh,0.0
+cost_classifier_6m,state_Gujarat,0.0
+cost_classifier_6m,state_Puducherry,0.0
+cost_classifier_6m,state_Punjab,0.0
+cost_classifier_6m,state_Uttarakhand,0.0
+cost_classifier_6m,schedule_status_Completed,0.0
+cost_classifier_6m,schedule_status_Critical Overdue,0.0
+cost_regressor_3m,cost_overrun_pct,9.3197
+cost_regressor_3m,original_cost_crore,4.2621
+cost_regressor_3m,cost_escalation_ratio,2.4194
+cost_regressor_3m,revised_cost_crore,1.0676
+cost_regressor_3m,cost_overrun_delta_3m,1.0015
+cost_regressor_3m,expenditure_velocity_crore_month,0.9853
+cost_regressor_3m,cost_overrun_trend_slope,0.8509
+cost_regressor_3m,cost_overrun_delta_1m,0.8398
+cost_regressor_3m,snapshot_history_count,0.7707
+cost_regressor_3m,cumulative_expenditure_crore,0.6726
+cost_regressor_3m,agency_PGCIL,0.6163
+cost_regressor_3m,expenditure_ratio_delta_3m,0.5697
+cost_regressor_3m,extension_count,0.5682
+cost_regressor_3m,revised_remaining_months,0.5581
+cost_regressor_3m,project_age_months,0.5573
+cost_regressor_3m,agency_WCR,0.5121
+cost_regressor_3m,physical_financial_gap_pct,0.4924
+cost_regressor_3m,schedule_extension_months,0.39
+cost_regressor_3m,expenditure_ratio_pct,0.3712
+cost_regressor_3m,state_Multi-State,0.3703
+cost_regressor_3m,remaining_budget_crore,0.3666
+cost_regressor_3m,physical_to_expenditure_ratio,0.348
+cost_regressor_3m,consecutive_stagnant_months,0.3147
+cost_regressor_3m,planned_remaining_months,0.3009
+cost_regressor_3m,days_to_revised_target,0.292
+cost_regressor_3m,original_duration_months,0.2747
+cost_regressor_3m,extension_rate_pct,0.2745
+cost_regressor_3m,physical_progress_delta_1m,0.2738
+cost_regressor_3m,agency_SJVN,0.2525
+cost_regressor_3m,expenditure_ratio_delta_1m,0.2369
+cost_regressor_3m,physical_progress_delta_3m,0.2292
+cost_regressor_3m,days_to_original_target,0.2233
+cost_regressor_3m,cost_escalation_crore,0.1918
+cost_regressor_3m,agency_CCL,0.1781
+cost_regressor_3m,agency_MCL,0.145
+cost_regressor_3m,physical_progress_delta_6m,0.1382
+cost_regressor_3m,expenditure_minus_progress_gap,0.1308
+cost_regressor_3m,progress_trend_slope,0.1186
+cost_regressor_3m,physical_progress_pct,0.0803
+cost_regressor_3m,state_Odisha,0.0623
+cost_regressor_3m,ministry_department_MINISTRY OF POWER,0.0553
+cost_regressor_3m,agency_MoRTH,0.044
+cost_regressor_3m,agency_SECL,0.042
+cost_regressor_3m,schedule_status_On-Schedule,0.0403
+cost_regressor_3m,progress_velocity_3m,0.0393
+cost_regressor_3m,progress_minus_expenditure_gap,0.0339
+cost_regressor_3m,risk_signal_count,0.0305
+cost_regressor_3m,agency_IOCL,0.0261
+cost_regressor_3m,schedule_extension_delta_1m,0.024
+cost_regressor_3m,progress_velocity_6m,0.0125
+cost_regressor_3m,ministry_department_MINISTRY OF COAL,0.0119
+cost_regressor_3m,overdue_days,0.0111
+cost_regressor_3m,agency_SAIL,0.0088
+cost_regressor_3m,progress_expenditure_mismatch_flag,0.0044
+cost_regressor_3m,agency_PPA,0.004
+cost_regressor_3m,state_Bihar,0.0032
+cost_regressor_3m,schedule_status_Delayed,0.002
+cost_regressor_3m,ministry_department_MINISTRY OF RAILWAYS,0.0019
+cost_regressor_3m,agency_NFR,0.0018
+cost_regressor_3m,high_expenditure_low_progress_flag,0.0016
+cost_regressor_3m,agency_RAILWAYS,0.0016
+cost_regressor_3m,state_Chhattisgarh,0.0016
+cost_regressor_3m,agency_ER,0.0013
+cost_regressor_3m,agency_SECR,0.0013
+cost_regressor_3m,state_West Bengal,0.0013
+cost_regressor_3m,agency_DFCC,0.0008
+cost_regressor_3m,agency_SR,0.0006
+cost_regressor_3m,state_Rajasthan,0.0006
+cost_regressor_3m,agency_WCL,0.0005
+cost_regressor_3m,state_Chandigarh,0.0004
+cost_regressor_3m,state_Punjab,0.0004
+cost_regressor_3m,state_Assam,0.0003
+cost_regressor_3m,sector_RAILWAYS,0.0002
+cost_regressor_3m,remaining_work_pct,0.0001
+cost_regressor_3m,cost_overrun_negative_flag,0.0
+cost_regressor_3m,is_overdue_flag,0.0
+cost_regressor_3m,is_extended_flag,0.0
+cost_regressor_3m,agency_AAI,0.0
+cost_regressor_3m,agency_BCCL,0.0
+cost_regressor_3m,agency_BCPL,0.0
+cost_regressor_3m,agency_BHAVNI,0.0
+cost_regressor_3m,agency_BMRCL,0.0
+cost_regressor_3m,agency_BPCL,0.0
+cost_regressor_3m,agency_BRO,0.0
+cost_regressor_3m,agency_BSNL,0.0
+cost_regressor_3m,agency_BUIDCO,0.0
+cost_regressor_3m,agency_CIVIL AVIATION,0.0
+cost_regressor_3m,agency_CMRL,0.0
+cost_regressor_3m,agency_COAL,0.0
+cost_regressor_3m,agency_CORE,0.0
+cost_regressor_3m,agency_CPCL,0.0
+cost_regressor_3m,agency_CPWD,0.0
+cost_regressor_3m,agency_CPWD EDUCATION,0.0
+cost_regressor_3m,agency_CPWD FOR HEALTH,0.0
+cost_regressor_3m,agency_CPWD FOR MHA,0.0
+cost_regressor_3m,agency_CR,0.0
+cost_regressor_3m,agency_CVPPPL,0.0
+cost_regressor_3m,agency_DJB,0.0
+cost_regressor_3m,agency_DMIC FOR DPIIT,0.0
+cost_regressor_3m,agency_DMRC,0.0
+cost_regressor_3m,agency_DORTH,0.0
+cost_regressor_3m,agency_DOT,0.0
+cost_regressor_3m,agency_DVC,0.0
+cost_regressor_3m,agency_ECL,0.0
+cost_regressor_3m,agency_ECOR,0.0
+cost_regressor_3m,agency_ECR,0.0
+cost_regressor_3m,agency_GAIL,0.0
+cost_regressor_3m,agency_GSL,0.0
+cost_regressor_3m,agency_HCL,0.0
+cost_regressor_3m,agency_HITES,0.0
+cost_regressor_3m,agency_HPCL,0.0
+cost_regressor_3m,agency_HSCC,0.0
+cost_regressor_3m,agency_HSCL,0.0
+cost_regressor_3m,agency_IGGL,0.0
+cost_regressor_3m,agency_IICC FOR DPIIT,0.0
+cost_regressor_3m,agency_IRCON,0.0
+cost_regressor_3m,agency_IWAI,0.0
+cost_regressor_3m,agency_JNPT,0.0
+cost_regressor_3m,agency_KMDA,0.0
+cost_regressor_3m,agency_KOMRCL,0.0
+cost_regressor_3m,agency_KPL,0.0
+cost_regressor_3m,agency_LMRCL,0.0
+cost_regressor_3m,agency_MANGALORE REFIN,0.0
+cost_regressor_3m,agency_MEGA,0.0
+cost_regressor_3m,agency_MINES,0.0
+cost_regressor_3m,agency_MMRC,0.0
+cost_regressor_3m,agency_MMRCL,0.0
+cost_regressor_3m,agency_MPT,0.0
+cost_regressor_3m,agency_MRTP,0.0
+cost_regressor_3m,agency_MRVC,0.0
+cost_regressor_3m,agency_Multi-States (Andhra Pradesh,0.0
+cost_regressor_3m,agency_Multi-States (Arunachal Pradesh,0.0
+cost_regressor_3m,agency_Multi-States (Assam,0.0
+cost_regressor_3m,agency_Multi-States (Bihar,0.0
+cost_regressor_3m,agency_Multi-States (Chhattisgarh,0.0
+cost_regressor_3m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+cost_regressor_3m,agency_Multi-States (Delhi,0.0
+cost_regressor_3m,agency_Multi-States (Goa,0.0
+cost_regressor_3m,agency_Multi-States (Gujarat,0.0
+cost_regressor_3m,agency_Multi-States (Haryana,0.0
+cost_regressor_3m,agency_Multi-States (Himachal Pradesh,0.0
+cost_regressor_3m,agency_Multi-States (Jammu and Kashmir,0.0
+cost_regressor_3m,agency_Multi-States (Jharkhand,0.0
+cost_regressor_3m,agency_Multi-States (Karnataka,0.0
+cost_regressor_3m,agency_Multi-States (Kerala,0.0
+cost_regressor_3m,agency_Multi-States (Madhya Pradesh,0.0
+cost_regressor_3m,agency_Multi-States (Maharashtra,0.0
+cost_regressor_3m,agency_Multi-States (Odisha,0.0
+cost_regressor_3m,agency_Multi-States (Puducherry,0.0
+cost_regressor_3m,agency_Multi-States (Punjab,0.0
+cost_regressor_3m,agency_Multi-States (Rajasthan,0.0
+cost_regressor_3m,agency_Multi-States (Uttar Pradesh,0.0
+cost_regressor_3m,agency_NALCO,0.0
+cost_regressor_3m,agency_NATIS,0.0
+cost_regressor_3m,agency_NBCC,0.0
+cost_regressor_3m,agency_NCL,0.0
+cost_regressor_3m,agency_NCR,0.0
+cost_regressor_3m,agency_NCRTC,0.0
+cost_regressor_3m,agency_NEEPCO,0.0
+cost_regressor_3m,agency_NER,0.0
+cost_regressor_3m,agency_NFL,0.0
+cost_regressor_3m,agency_NHAI,0.0
+cost_regressor_3m,agency_NHDP,0.0
+cost_regressor_3m,agency_NHIDCL,0.0
+cost_regressor_3m,agency_NHPC,0.0
+cost_regressor_3m,agency_NHSRCL,0.0
+cost_regressor_3m,agency_NLC,0.0
+cost_regressor_3m,agency_NMDC,0.0
+cost_regressor_3m,agency_NPCC,0.0
+cost_regressor_3m,agency_NPCIL,0.0
+cost_regressor_3m,agency_NR,0.0
+cost_regressor_3m,agency_NRL,0.0
+cost_regressor_3m,agency_NTPC,0.0
+cost_regressor_3m,agency_NWR,0.0
+cost_regressor_3m,agency_OIL,0.0
+cost_regressor_3m,agency_ONGC,0.0
+cost_regressor_3m,agency_PATNA METRO RAI,0.0
+cost_regressor_3m,agency_PETROLEUM,0.0
+cost_regressor_3m,agency_POWER,0.0
+cost_regressor_3m,agency_PWD,0.0
+cost_regressor_3m,agency_RCF,0.0
+cost_regressor_3m,agency_RINL,0.0
+cost_regressor_3m,agency_RITES,0.0
+cost_regressor_3m,agency_RITES OF HIGHER,0.0
+cost_regressor_3m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_regressor_3m,agency_RVNL,0.0
+cost_regressor_3m,agency_SCCL,0.0
+cost_regressor_3m,agency_SCR,0.0
+cost_regressor_3m,agency_SER,0.0
+cost_regressor_3m,agency_SHIPPING & PORTS,0.0
+cost_regressor_3m,agency_SJVNL,0.0
+cost_regressor_3m,agency_STEEL,0.0
+cost_regressor_3m,agency_SWR,0.0
+cost_regressor_3m,agency_Sikkim Universi,0.0
+cost_regressor_3m,agency_THDC,0.0
+cost_regressor_3m,agency_THDCIL,0.0
+cost_regressor_3m,agency_THDCL,0.0
+cost_regressor_3m,agency_UKJalNigam,0.0
+cost_regressor_3m,agency_UPJalNigam,0.0
+cost_regressor_3m,agency_URBAN DEVELOPMENT,0.0
+cost_regressor_3m,agency_WATER RESOURCES,0.0
+cost_regressor_3m,agency_WR,0.0
+cost_regressor_3m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF FERTILISERS,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF FINANCE,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF MINES,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.0
+cost_regressor_3m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0
+cost_regressor_3m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF STEEL,0.0
+cost_regressor_3m,ministry_department_MINISTRY OF WATER RESOURCES,0.0
+cost_regressor_3m,sector_ATOMIC ENERGY,0.0
+cost_regressor_3m,sector_CIVIL AVIATION,0.0
+cost_regressor_3m,sector_COAL,0.0
+cost_regressor_3m,sector_HEALTH & FAMILY WELFARE,0.0
+cost_regressor_3m,sector_MINES,0.0
+cost_regressor_3m,sector_OTHER,0.0
+cost_regressor_3m,sector_PETROLEUM,0.0
+cost_regressor_3m,sector_POWER,0.0
+cost_regressor_3m,sector_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_regressor_3m,sector_SHIPPING & PORTS,0.0
+cost_regressor_3m,sector_STEEL,0.0
+cost_regressor_3m,sector_TELECOMMUNICATIONS,0.0
+cost_regressor_3m,sector_URBAN DEVELOPMENT,0.0
+cost_regressor_3m,sector_WATER RESOURCES,0.0
+cost_regressor_3m,state_Andaman & Nicobar,0.0
+cost_regressor_3m,state_Andhra Pradesh,0.0
+cost_regressor_3m,state_Arunachal Pradesh,0.0
+cost_regressor_3m,state_Delhi,0.0
+cost_regressor_3m,state_Goa,0.0
+cost_regressor_3m,state_Gujarat,0.0
+cost_regressor_3m,state_Haryana,0.0
+cost_regressor_3m,state_Himachal Pradesh,0.0
+cost_regressor_3m,state_Jammu & Kashmir,0.0
+cost_regressor_3m,state_Jharkhand,0.0
+cost_regressor_3m,state_Karnataka,0.0
+cost_regressor_3m,state_Kerala,0.0
+cost_regressor_3m,state_Ladakh,0.0
+cost_regressor_3m,state_Madhya Pradesh,0.0
+cost_regressor_3m,state_Maharashtra,0.0
+cost_regressor_3m,state_Manipur,0.0
+cost_regressor_3m,state_Meghalaya,0.0
+cost_regressor_3m,state_Mizoram,0.0
+cost_regressor_3m,state_Nagaland,0.0
+cost_regressor_3m,state_Puducherry,0.0
+cost_regressor_3m,state_Sikkim,0.0
+cost_regressor_3m,state_Tamil Nadu,0.0
+cost_regressor_3m,state_Telangana,0.0
+cost_regressor_3m,state_Tripura,0.0
+cost_regressor_3m,state_Uttar Pradesh,0.0
+cost_regressor_3m,state_Uttarakhand,0.0
+cost_regressor_3m,schedule_status_Completed,0.0
+cost_regressor_3m,schedule_status_Critical Overdue,0.0
+cost_regressor_6m,cost_overrun_pct,11.1277
+cost_regressor_6m,cost_escalation_ratio,3.2772
+cost_regressor_6m,original_cost_crore,2.734
+cost_regressor_6m,days_to_revised_target,1.634
+cost_regressor_6m,revised_cost_crore,1.5641
+cost_regressor_6m,snapshot_history_count,1.5285
+cost_regressor_6m,expenditure_ratio_pct,1.3704
+cost_regressor_6m,cumulative_expenditure_crore,1.3617
+cost_regressor_6m,agency_PGCIL,1.1148
+cost_regressor_6m,expenditure_velocity_crore_month,1.0168
+cost_regressor_6m,remaining_budget_crore,1.0102
+cost_regressor_6m,extension_rate_pct,0.9139
+cost_regressor_6m,cost_overrun_delta_3m,0.9107
+cost_regressor_6m,revised_remaining_months,0.8745
+cost_regressor_6m,project_age_months,0.7637
+cost_regressor_6m,original_duration_months,0.7414
+cost_regressor_6m,cost_overrun_delta_1m,0.7394
+cost_regressor_6m,schedule_extension_months,0.6155
+cost_regressor_6m,agency_CCL,0.6066
+cost_regressor_6m,physical_to_expenditure_ratio,0.6014
+cost_regressor_6m,physical_financial_gap_pct,0.5746
+cost_regressor_6m,progress_minus_expenditure_gap,0.547
+cost_regressor_6m,cost_escalation_crore,0.5394
+cost_regressor_6m,days_to_original_target,0.5172
+cost_regressor_6m,expenditure_minus_progress_gap,0.4978
+cost_regressor_6m,consecutive_stagnant_months,0.4528
+cost_regressor_6m,agency_SJVN,0.3862
+cost_regressor_6m,extension_count,0.3583
+cost_regressor_6m,ministry_department_MINISTRY OF COAL,0.3106
+cost_regressor_6m,planned_remaining_months,0.3095
+cost_regressor_6m,cost_overrun_trend_slope,0.3019
+cost_regressor_6m,expenditure_ratio_delta_1m,0.2896
+cost_regressor_6m,agency_WCR,0.2705
+cost_regressor_6m,physical_progress_pct,0.2584
+cost_regressor_6m,state_Multi-State,0.2506
+cost_regressor_6m,overdue_days,0.1969
+cost_regressor_6m,expenditure_ratio_delta_3m,0.1503
+cost_regressor_6m,agency_MCL,0.1433
+cost_regressor_6m,progress_trend_slope,0.1253
+cost_regressor_6m,agency_SECL,0.0938
+cost_regressor_6m,schedule_status_On-Schedule,0.067
+cost_regressor_6m,sector_POWER,0.0645
+cost_regressor_6m,physical_progress_delta_1m,0.0639
+cost_regressor_6m,remaining_work_pct,0.0605
+cost_regressor_6m,ministry_department_MINISTRY OF POWER,0.0584
+cost_regressor_6m,physical_progress_delta_6m,0.0542
+cost_regressor_6m,agency_NFR,0.0507
+cost_regressor_6m,schedule_extension_delta_1m,0.0494
+cost_regressor_6m,risk_signal_count,0.0426
+cost_regressor_6m,agency_NEEPCO,0.0404
+cost_regressor_6m,physical_progress_delta_3m,0.0374
+cost_regressor_6m,state_Tripura,0.0235
+cost_regressor_6m,ministry_department_MINISTRY OF RAILWAYS,0.0221
+cost_regressor_6m,progress_velocity_6m,0.0206
+cost_regressor_6m,agency_SECR,0.0196
+cost_regressor_6m,agency_SAIL,0.0167
+cost_regressor_6m,state_Bihar,0.0118
+cost_regressor_6m,agency_ONGC,0.0117
+cost_regressor_6m,state_Chhattisgarh,0.0106
+cost_regressor_6m,state_Madhya Pradesh,0.01
+cost_regressor_6m,state_Mizoram,0.0075
+cost_regressor_6m,agency_MoRTH,0.0066
+cost_regressor_6m,is_extended_flag,0.0065
+cost_regressor_6m,agency_NER,0.0055
+cost_regressor_6m,agency_MRTP,0.0047
+cost_regressor_6m,state_Odisha,0.0043
+cost_regressor_6m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.0038
+cost_regressor_6m,state_Goa,0.003
+cost_regressor_6m,agency_ER,0.0027
+cost_regressor_6m,progress_velocity_3m,0.0026
+cost_regressor_6m,ministry_department_MINISTRY OF STEEL,0.0026
+cost_regressor_6m,agency_PPA,0.0025
+cost_regressor_6m,sector_PETROLEUM,0.0025
+cost_regressor_6m,state_Rajasthan,0.0023
+cost_regressor_6m,state_Sikkim,0.0022
+cost_regressor_6m,progress_expenditure_mismatch_flag,0.0017
+cost_regressor_6m,state_Delhi,0.0016
+cost_regressor_6m,agency_SR,0.0014
+cost_regressor_6m,agency_NR,0.0006
+cost_regressor_6m,state_Chandigarh,0.0005
+cost_regressor_6m,schedule_status_Delayed,0.0005
+cost_regressor_6m,agency_NPCIL,0.0004
+cost_regressor_6m,agency_DFCC,0.0003
+cost_regressor_6m,agency_HCL,0.0002
+cost_regressor_6m,high_expenditure_low_progress_flag,0.0
+cost_regressor_6m,cost_overrun_negative_flag,0.0
+cost_regressor_6m,is_overdue_flag,0.0
+cost_regressor_6m,agency_AAI,0.0
+cost_regressor_6m,agency_BCCL,0.0
+cost_regressor_6m,agency_BCPL,0.0
+cost_regressor_6m,agency_BHAVNI,0.0
+cost_regressor_6m,agency_BMRCL,0.0
+cost_regressor_6m,agency_BPCL,0.0
+cost_regressor_6m,agency_BRO,0.0
+cost_regressor_6m,agency_BSNL,0.0
+cost_regressor_6m,agency_BUIDCO,0.0
+cost_regressor_6m,agency_CIVIL AVIATION,0.0
+cost_regressor_6m,agency_CMRL,0.0
+cost_regressor_6m,agency_COAL,0.0
+cost_regressor_6m,agency_CORE,0.0
+cost_regressor_6m,agency_CPCL,0.0
+cost_regressor_6m,agency_CPWD,0.0
+cost_regressor_6m,agency_CPWD EDUCATION,0.0
+cost_regressor_6m,agency_CPWD FOR HEALTH,0.0
+cost_regressor_6m,agency_CPWD FOR MHA,0.0
+cost_regressor_6m,agency_CR,0.0
+cost_regressor_6m,agency_CVPPPL,0.0
+cost_regressor_6m,agency_DJB,0.0
+cost_regressor_6m,agency_DMIC FOR DPIIT,0.0
+cost_regressor_6m,agency_DMRC,0.0
+cost_regressor_6m,agency_DORTH,0.0
+cost_regressor_6m,agency_DVC,0.0
+cost_regressor_6m,agency_ECL,0.0
+cost_regressor_6m,agency_ECOR,0.0
+cost_regressor_6m,agency_ECR,0.0
+cost_regressor_6m,agency_GAIL,0.0
+cost_regressor_6m,agency_GSL,0.0
+cost_regressor_6m,agency_HITES,0.0
+cost_regressor_6m,agency_HPCL,0.0
+cost_regressor_6m,agency_HSCC,0.0
+cost_regressor_6m,agency_HSCL,0.0
+cost_regressor_6m,agency_IGGL,0.0
+cost_regressor_6m,agency_IICC FOR DPIIT,0.0
+cost_regressor_6m,agency_IOCL,0.0
+cost_regressor_6m,agency_IRCON,0.0
+cost_regressor_6m,agency_IWAI,0.0
+cost_regressor_6m,agency_JNPT,0.0
+cost_regressor_6m,agency_KMDA,0.0
+cost_regressor_6m,agency_KOMRCL,0.0
+cost_regressor_6m,agency_KPL,0.0
+cost_regressor_6m,agency_LMRCL,0.0
+cost_regressor_6m,agency_MANGALORE REFIN,0.0
+cost_regressor_6m,agency_MEGA,0.0
+cost_regressor_6m,agency_MMRC,0.0
+cost_regressor_6m,agency_MMRCL,0.0
+cost_regressor_6m,agency_MPT,0.0
+cost_regressor_6m,agency_MRVC,0.0
+cost_regressor_6m,agency_Multi-States (Andhra Pradesh,0.0
+cost_regressor_6m,agency_Multi-States (Arunachal Pradesh,0.0
+cost_regressor_6m,agency_Multi-States (Assam,0.0
+cost_regressor_6m,agency_Multi-States (Bihar,0.0
+cost_regressor_6m,agency_Multi-States (Chhattisgarh,0.0
+cost_regressor_6m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+cost_regressor_6m,agency_Multi-States (Delhi,0.0
+cost_regressor_6m,agency_Multi-States (Goa,0.0
+cost_regressor_6m,agency_Multi-States (Gujarat,0.0
+cost_regressor_6m,agency_Multi-States (Haryana,0.0
+cost_regressor_6m,agency_Multi-States (Himachal Pradesh,0.0
+cost_regressor_6m,agency_Multi-States (Jammu and Kashmir,0.0
+cost_regressor_6m,agency_Multi-States (Jharkhand,0.0
+cost_regressor_6m,agency_Multi-States (Karnataka,0.0
+cost_regressor_6m,agency_Multi-States (Kerala,0.0
+cost_regressor_6m,agency_Multi-States (Madhya Pradesh,0.0
+cost_regressor_6m,agency_Multi-States (Maharashtra,0.0
+cost_regressor_6m,agency_Multi-States (Odisha,0.0
+cost_regressor_6m,agency_Multi-States (Puducherry,0.0
+cost_regressor_6m,agency_Multi-States (Punjab,0.0
+cost_regressor_6m,agency_Multi-States (Rajasthan,0.0
+cost_regressor_6m,agency_Multi-States (Uttar Pradesh,0.0
+cost_regressor_6m,agency_NALCO,0.0
+cost_regressor_6m,agency_NATIS,0.0
+cost_regressor_6m,agency_NBCC,0.0
+cost_regressor_6m,agency_NCL,0.0
+cost_regressor_6m,agency_NCR,0.0
+cost_regressor_6m,agency_NCRTC,0.0
+cost_regressor_6m,agency_NFL,0.0
+cost_regressor_6m,agency_NHAI,0.0
+cost_regressor_6m,agency_NHDP,0.0
+cost_regressor_6m,agency_NHIDCL,0.0
+cost_regressor_6m,agency_NHPC,0.0
+cost_regressor_6m,agency_NHSRCL,0.0
+cost_regressor_6m,agency_NLC,0.0
+cost_regressor_6m,agency_NMDC,0.0
+cost_regressor_6m,agency_NPCC,0.0
+cost_regressor_6m,agency_NRL,0.0
+cost_regressor_6m,agency_NTPC,0.0
+cost_regressor_6m,agency_NWR,0.0
+cost_regressor_6m,agency_OIL,0.0
+cost_regressor_6m,agency_PATNA METRO RAI,0.0
+cost_regressor_6m,agency_PETROLEUM,0.0
+cost_regressor_6m,agency_POWER,0.0
+cost_regressor_6m,agency_PWD,0.0
+cost_regressor_6m,agency_RAILWAYS,0.0
+cost_regressor_6m,agency_RCF,0.0
+cost_regressor_6m,agency_RINL,0.0
+cost_regressor_6m,agency_RITES,0.0
+cost_regressor_6m,agency_RITES OF HIGHER,0.0
+cost_regressor_6m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_regressor_6m,agency_RVNL,0.0
+cost_regressor_6m,agency_SCCL,0.0
+cost_regressor_6m,agency_SCR,0.0
+cost_regressor_6m,agency_SER,0.0
+cost_regressor_6m,agency_SHIPPING & PORTS,0.0
+cost_regressor_6m,agency_SJVNL,0.0
+cost_regressor_6m,agency_STEEL,0.0
+cost_regressor_6m,agency_SWR,0.0
+cost_regressor_6m,agency_Sikkim Universi,0.0
+cost_regressor_6m,agency_THDC,0.0
+cost_regressor_6m,agency_THDCIL,0.0
+cost_regressor_6m,agency_THDCL,0.0
+cost_regressor_6m,agency_UKJalNigam,0.0
+cost_regressor_6m,agency_UPJalNigam,0.0
+cost_regressor_6m,agency_URBAN DEVELOPMENT,0.0
+cost_regressor_6m,agency_WATER RESOURCES,0.0
+cost_regressor_6m,agency_WCL,0.0
+cost_regressor_6m,agency_WR,0.0
+cost_regressor_6m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF FERTILISERS,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF FINANCE,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF MINES,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0
+cost_regressor_6m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0
+cost_regressor_6m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.0
+cost_regressor_6m,ministry_department_MINISTRY OF WATER RESOURCES,0.0
+cost_regressor_6m,sector_ATOMIC ENERGY,0.0
+cost_regressor_6m,sector_CIVIL AVIATION,0.0
+cost_regressor_6m,sector_COAL,0.0
+cost_regressor_6m,sector_HEALTH & FAMILY WELFARE,0.0
+cost_regressor_6m,sector_MINES,0.0
+cost_regressor_6m,sector_OTHER,0.0
+cost_regressor_6m,sector_RAILWAYS,0.0
+cost_regressor_6m,sector_ROAD TRANSPORT & HIGHWAYS,0.0
+cost_regressor_6m,sector_SHIPPING & PORTS,0.0
+cost_regressor_6m,sector_STEEL,0.0
+cost_regressor_6m,sector_TELECOMMUNICATIONS,0.0
+cost_regressor_6m,sector_URBAN DEVELOPMENT,0.0
+cost_regressor_6m,sector_WATER RESOURCES,0.0
+cost_regressor_6m,state_Andaman & Nicobar,0.0
+cost_regressor_6m,state_Andhra Pradesh,0.0
+cost_regressor_6m,state_Arunachal Pradesh,0.0
+cost_regressor_6m,state_Assam,0.0
+cost_regressor_6m,state_Gujarat,0.0
+cost_regressor_6m,state_Haryana,0.0
+cost_regressor_6m,state_Himachal Pradesh,0.0
+cost_regressor_6m,state_Jammu & Kashmir,0.0
+cost_regressor_6m,state_Jharkhand,0.0
+cost_regressor_6m,state_Karnataka,0.0
+cost_regressor_6m,state_Kerala,0.0
+cost_regressor_6m,state_Ladakh,0.0
+cost_regressor_6m,state_Maharashtra,0.0
+cost_regressor_6m,state_Manipur,0.0
+cost_regressor_6m,state_Meghalaya,0.0
+cost_regressor_6m,state_Nagaland,0.0
+cost_regressor_6m,state_Puducherry,0.0
+cost_regressor_6m,state_Punjab,0.0
+cost_regressor_6m,state_Tamil Nadu,0.0
+cost_regressor_6m,state_Telangana,0.0
+cost_regressor_6m,state_Uttar Pradesh,0.0
+cost_regressor_6m,state_Uttarakhand,0.0
+cost_regressor_6m,state_West Bengal,0.0
+cost_regressor_6m,schedule_status_Completed,0.0
+cost_regressor_6m,schedule_status_Critical Overdue,0.0
+time_classifier_3m,revised_remaining_months,0.5299
+time_classifier_3m,days_to_revised_target,0.449
+time_classifier_3m,extension_count,0.1592
+time_classifier_3m,schedule_status_Delayed,0.1319
+time_classifier_3m,planned_remaining_months,0.1127
+time_classifier_3m,ministry_department_MINISTRY OF POWER,0.0956
+time_classifier_3m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.088
+time_classifier_3m,days_to_original_target,0.0877
+time_classifier_3m,snapshot_history_count,0.0729
+time_classifier_3m,physical_progress_pct,0.0607
+time_classifier_3m,original_duration_months,0.0577
+time_classifier_3m,cost_escalation_crore,0.0572
+time_classifier_3m,expenditure_ratio_delta_3m,0.0476
+time_classifier_3m,physical_to_expenditure_ratio,0.047
+time_classifier_3m,agency_MoRTH,0.0468
+time_classifier_3m,state_Maharashtra,0.0459
+time_classifier_3m,extension_rate_pct,0.0436
+time_classifier_3m,schedule_extension_delta_1m,0.0428
+time_classifier_3m,consecutive_stagnant_months,0.0422
+time_classifier_3m,cumulative_expenditure_crore,0.0404
+time_classifier_3m,project_age_months,0.0297
+time_classifier_3m,overdue_days,0.0293
+time_classifier_3m,schedule_extension_months,0.029
+time_classifier_3m,state_Telangana,0.0288
+time_classifier_3m,physical_progress_delta_6m,0.0281
+time_classifier_3m,expenditure_velocity_crore_month,0.0274
+time_classifier_3m,remaining_budget_crore,0.0269
+time_classifier_3m,remaining_work_pct,0.0261
+time_classifier_3m,cost_overrun_pct,0.0258
+time_classifier_3m,sector_PETROLEUM,0.0224
+time_classifier_3m,state_Odisha,0.0218
+time_classifier_3m,sector_POWER,0.0216
+time_classifier_3m,agency_RAILWAYS,0.0202
+time_classifier_3m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.0194
+time_classifier_3m,original_cost_crore,0.0191
+time_classifier_3m,revised_cost_crore,0.0187
+time_classifier_3m,progress_velocity_6m,0.017
+time_classifier_3m,progress_trend_slope,0.0152
+time_classifier_3m,expenditure_ratio_pct,0.0147
+time_classifier_3m,physical_financial_gap_pct,0.0143
+time_classifier_3m,progress_expenditure_mismatch_flag,0.014
+time_classifier_3m,agency_NTPC,0.0121
+time_classifier_3m,agency_NHAI,0.0117
+time_classifier_3m,state_Arunachal Pradesh,0.0116
+time_classifier_3m,expenditure_minus_progress_gap,0.0109
+time_classifier_3m,sector_ROAD TRANSPORT & HIGHWAYS,0.0093
+time_classifier_3m,agency_CPWD,0.0089
+time_classifier_3m,risk_signal_count,0.0074
+time_classifier_3m,physical_progress_delta_3m,0.0074
+time_classifier_3m,agency_ONGC,0.0072
+time_classifier_3m,state_Andhra Pradesh,0.0069
+time_classifier_3m,state_Manipur,0.0069
+time_classifier_3m,progress_velocity_3m,0.0068
+time_classifier_3m,state_Delhi,0.0066
+time_classifier_3m,state_Jammu & Kashmir,0.006
+time_classifier_3m,agency_PGCIL,0.0059
+time_classifier_3m,physical_progress_delta_1m,0.0056
+time_classifier_3m,agency_CPCL,0.0056
+time_classifier_3m,state_Karnataka,0.0053
+time_classifier_3m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0052
+time_classifier_3m,expenditure_ratio_delta_1m,0.0048
+time_classifier_3m,state_Punjab,0.0046
+time_classifier_3m,cost_escalation_ratio,0.0042
+time_classifier_3m,cost_overrun_delta_3m,0.0042
+time_classifier_3m,state_Sikkim,0.0038
+time_classifier_3m,agency_IOCL,0.0035
+time_classifier_3m,agency_HPCL,0.0033
+time_classifier_3m,agency_NHIDCL,0.0029
+time_classifier_3m,state_Uttarakhand,0.0029
+time_classifier_3m,agency_CMRL,0.0028
+time_classifier_3m,cost_overrun_trend_slope,0.0025
+time_classifier_3m,agency_BCPL,0.0025
+time_classifier_3m,schedule_status_On-Schedule,0.0025
+time_classifier_3m,progress_minus_expenditure_gap,0.0024
+time_classifier_3m,state_Nagaland,0.0022
+time_classifier_3m,ministry_department_MINISTRY OF RAILWAYS,0.0019
+time_classifier_3m,state_Haryana,0.0019
+time_classifier_3m,cost_overrun_delta_1m,0.0014
+time_classifier_3m,agency_DORTH,0.0013
+time_classifier_3m,agency_THDCIL,0.0013
+time_classifier_3m,state_Bihar,0.0013
+time_classifier_3m,state_Kerala,0.0013
+time_classifier_3m,agency_MANGALORE REFIN,0.0012
+time_classifier_3m,state_Himachal Pradesh,0.0012
+time_classifier_3m,state_Multi-State,0.0012
+time_classifier_3m,schedule_status_Completed,0.0012
+time_classifier_3m,state_Goa,0.0011
+time_classifier_3m,state_Rajasthan,0.001
+time_classifier_3m,agency_BUIDCO,0.0008
+time_classifier_3m,state_Jharkhand,0.0008
+time_classifier_3m,state_Madhya Pradesh,0.0008
+time_classifier_3m,schedule_status_Critical Overdue,0.0007
+time_classifier_3m,agency_SJVN,0.0006
+time_classifier_3m,agency_BPCL,0.0005
+time_classifier_3m,agency_ECR,0.0005
+time_classifier_3m,state_Tamil Nadu,0.0005
+time_classifier_3m,state_Tripura,0.0005
+time_classifier_3m,state_West Bengal,0.0005
+time_classifier_3m,agency_PWD,0.0004
+time_classifier_3m,state_Uttar Pradesh,0.0004
+time_classifier_3m,agency_CPWD EDUCATION,0.0003
+time_classifier_3m,agency_WCR,0.0003
+time_classifier_3m,state_Assam,0.0003
+time_classifier_3m,state_Gujarat,0.0003
+time_classifier_3m,high_expenditure_low_progress_flag,0.0002
+time_classifier_3m,agency_GAIL,0.0002
+time_classifier_3m,agency_HITES,0.0002
+time_classifier_3m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0002
+time_classifier_3m,is_overdue_flag,0.0001
+time_classifier_3m,agency_ER,0.0001
+time_classifier_3m,agency_NBCC,0.0001
+time_classifier_3m,agency_NCR,0.0001
+time_classifier_3m,agency_NEEPCO,0.0001
+time_classifier_3m,agency_NER,0.0001
+time_classifier_3m,agency_NRL,0.0001
+time_classifier_3m,agency_RVNL,0.0001
+time_classifier_3m,state_Meghalaya,0.0001
+time_classifier_3m,cost_overrun_negative_flag,0.0
+time_classifier_3m,is_extended_flag,0.0
+time_classifier_3m,agency_AAI,0.0
+time_classifier_3m,agency_BCCL,0.0
+time_classifier_3m,agency_BHAVNI,0.0
+time_classifier_3m,agency_BMRCL,0.0
+time_classifier_3m,agency_BRO,0.0
+time_classifier_3m,agency_BSNL,0.0
+time_classifier_3m,agency_CCL,0.0
+time_classifier_3m,agency_CIVIL AVIATION,0.0
+time_classifier_3m,agency_COAL,0.0
+time_classifier_3m,agency_CORE,0.0
+time_classifier_3m,agency_CPWD FOR HEALTH,0.0
+time_classifier_3m,agency_CPWD FOR MHA,0.0
+time_classifier_3m,agency_CR,0.0
+time_classifier_3m,agency_CVPPPL,0.0
+time_classifier_3m,agency_DFCC,0.0
+time_classifier_3m,agency_DJB,0.0
+time_classifier_3m,agency_DMIC FOR DPIIT,0.0
+time_classifier_3m,agency_DMRC,0.0
+time_classifier_3m,agency_DOT,0.0
+time_classifier_3m,agency_DVC,0.0
+time_classifier_3m,agency_ECL,0.0
+time_classifier_3m,agency_ECOR,0.0
+time_classifier_3m,agency_GSL,0.0
+time_classifier_3m,agency_HCL,0.0
+time_classifier_3m,agency_HSCC,0.0
+time_classifier_3m,agency_HSCL,0.0
+time_classifier_3m,agency_IGGL,0.0
+time_classifier_3m,agency_IICC FOR DPIIT,0.0
+time_classifier_3m,agency_IRCON,0.0
+time_classifier_3m,agency_IWAI,0.0
+time_classifier_3m,agency_JNPT,0.0
+time_classifier_3m,agency_KMDA,0.0
+time_classifier_3m,agency_KOMRCL,0.0
+time_classifier_3m,agency_KPL,0.0
+time_classifier_3m,agency_LMRCL,0.0
+time_classifier_3m,agency_MCL,0.0
+time_classifier_3m,agency_MEGA,0.0
+time_classifier_3m,agency_MINES,0.0
+time_classifier_3m,agency_MMRC,0.0
+time_classifier_3m,agency_MMRCL,0.0
+time_classifier_3m,agency_MPT,0.0
+time_classifier_3m,agency_MRTP,0.0
+time_classifier_3m,agency_MRVC,0.0
+time_classifier_3m,agency_Multi-States (Andhra Pradesh,0.0
+time_classifier_3m,agency_Multi-States (Arunachal Pradesh,0.0
+time_classifier_3m,agency_Multi-States (Assam,0.0
+time_classifier_3m,agency_Multi-States (Bihar,0.0
+time_classifier_3m,agency_Multi-States (Chhattisgarh,0.0
+time_classifier_3m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+time_classifier_3m,agency_Multi-States (Delhi,0.0
+time_classifier_3m,agency_Multi-States (Goa,0.0
+time_classifier_3m,agency_Multi-States (Gujarat,0.0
+time_classifier_3m,agency_Multi-States (Haryana,0.0
+time_classifier_3m,agency_Multi-States (Himachal Pradesh,0.0
+time_classifier_3m,agency_Multi-States (Jammu and Kashmir,0.0
+time_classifier_3m,agency_Multi-States (Jharkhand,0.0
+time_classifier_3m,agency_Multi-States (Karnataka,0.0
+time_classifier_3m,agency_Multi-States (Kerala,0.0
+time_classifier_3m,agency_Multi-States (Madhya Pradesh,0.0
+time_classifier_3m,agency_Multi-States (Maharashtra,0.0
+time_classifier_3m,agency_Multi-States (Odisha,0.0
+time_classifier_3m,agency_Multi-States (Puducherry,0.0
+time_classifier_3m,agency_Multi-States (Punjab,0.0
+time_classifier_3m,agency_Multi-States (Rajasthan,0.0
+time_classifier_3m,agency_Multi-States (Uttar Pradesh,0.0
+time_classifier_3m,agency_NALCO,0.0
+time_classifier_3m,agency_NATIS,0.0
+time_classifier_3m,agency_NCL,0.0
+time_classifier_3m,agency_NCRTC,0.0
+time_classifier_3m,agency_NFL,0.0
+time_classifier_3m,agency_NFR,0.0
+time_classifier_3m,agency_NHDP,0.0
+time_classifier_3m,agency_NHPC,0.0
+time_classifier_3m,agency_NHSRCL,0.0
+time_classifier_3m,agency_NLC,0.0
+time_classifier_3m,agency_NMDC,0.0
+time_classifier_3m,agency_NPCC,0.0
+time_classifier_3m,agency_NPCIL,0.0
+time_classifier_3m,agency_NR,0.0
+time_classifier_3m,agency_NWR,0.0
+time_classifier_3m,agency_OIL,0.0
+time_classifier_3m,agency_PATNA METRO RAI,0.0
+time_classifier_3m,agency_PETROLEUM,0.0
+time_classifier_3m,agency_POWER,0.0
+time_classifier_3m,agency_PPA,0.0
+time_classifier_3m,agency_RCF,0.0
+time_classifier_3m,agency_RINL,0.0
+time_classifier_3m,agency_RITES,0.0
+time_classifier_3m,agency_RITES OF HIGHER,0.0
+time_classifier_3m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+time_classifier_3m,agency_SAIL,0.0
+time_classifier_3m,agency_SCCL,0.0
+time_classifier_3m,agency_SCR,0.0
+time_classifier_3m,agency_SECL,0.0
+time_classifier_3m,agency_SECR,0.0
+time_classifier_3m,agency_SER,0.0
+time_classifier_3m,agency_SHIPPING & PORTS,0.0
+time_classifier_3m,agency_SJVNL,0.0
+time_classifier_3m,agency_SR,0.0
+time_classifier_3m,agency_STEEL,0.0
+time_classifier_3m,agency_SWR,0.0
+time_classifier_3m,agency_Sikkim Universi,0.0
+time_classifier_3m,agency_THDC,0.0
+time_classifier_3m,agency_THDCL,0.0
+time_classifier_3m,agency_UKJalNigam,0.0
+time_classifier_3m,agency_UPJalNigam,0.0
+time_classifier_3m,agency_URBAN DEVELOPMENT,0.0
+time_classifier_3m,agency_WATER RESOURCES,0.0
+time_classifier_3m,agency_WCL,0.0
+time_classifier_3m,agency_WR,0.0
+time_classifier_3m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+time_classifier_3m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+time_classifier_3m,ministry_department_MINISTRY OF COAL,0.0
+time_classifier_3m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+time_classifier_3m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+time_classifier_3m,ministry_department_MINISTRY OF FERTILISERS,0.0
+time_classifier_3m,ministry_department_MINISTRY OF FINANCE,0.0
+time_classifier_3m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0
+time_classifier_3m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+time_classifier_3m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+time_classifier_3m,ministry_department_MINISTRY OF MINES,0.0
+time_classifier_3m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0
+time_classifier_3m,ministry_department_MINISTRY OF STEEL,0.0
+time_classifier_3m,ministry_department_MINISTRY OF WATER RESOURCES,0.0
+time_classifier_3m,sector_ATOMIC ENERGY,0.0
+time_classifier_3m,sector_CIVIL AVIATION,0.0
+time_classifier_3m,sector_COAL,0.0
+time_classifier_3m,sector_HEALTH & FAMILY WELFARE,0.0
+time_classifier_3m,sector_MINES,0.0
+time_classifier_3m,sector_OTHER,0.0
+time_classifier_3m,sector_RAILWAYS,0.0
+time_classifier_3m,sector_SHIPPING & PORTS,0.0
+time_classifier_3m,sector_STEEL,0.0
+time_classifier_3m,sector_TELECOMMUNICATIONS,0.0
+time_classifier_3m,sector_URBAN DEVELOPMENT,0.0
+time_classifier_3m,sector_WATER RESOURCES,0.0
+time_classifier_3m,state_Andaman & Nicobar,0.0
+time_classifier_3m,state_Chandigarh,0.0
+time_classifier_3m,state_Chhattisgarh,0.0
+time_classifier_3m,state_Ladakh,0.0
+time_classifier_3m,state_Mizoram,0.0
+time_classifier_3m,state_Puducherry,0.0
+time_classifier_6m,days_to_revised_target,0.4932
+time_classifier_6m,revised_remaining_months,0.3652
+time_classifier_6m,days_to_original_target,0.1444
+time_classifier_6m,extension_count,0.1427
+time_classifier_6m,schedule_status_Delayed,0.14
+time_classifier_6m,ministry_department_MINISTRY OF POWER,0.1096
+time_classifier_6m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.1088
+time_classifier_6m,snapshot_history_count,0.0897
+time_classifier_6m,extension_rate_pct,0.0822
+time_classifier_6m,cost_escalation_crore,0.0741
+time_classifier_6m,physical_progress_pct,0.0587
+time_classifier_6m,original_duration_months,0.0576
+time_classifier_6m,planned_remaining_months,0.0568
+time_classifier_6m,agency_MoRTH,0.0563
+time_classifier_6m,state_Maharashtra,0.0541
+time_classifier_6m,schedule_extension_delta_1m,0.0476
+time_classifier_6m,remaining_work_pct,0.0412
+time_classifier_6m,consecutive_stagnant_months,0.0377
+time_classifier_6m,remaining_budget_crore,0.0353
+time_classifier_6m,agency_PGCIL,0.035
+time_classifier_6m,schedule_extension_months,0.0336
+time_classifier_6m,project_age_months,0.0331
+time_classifier_6m,overdue_days,0.0331
+time_classifier_6m,expenditure_ratio_delta_3m,0.0324
+time_classifier_6m,state_Telangana,0.0315
+time_classifier_6m,revised_cost_crore,0.0309
+time_classifier_6m,sector_POWER,0.026
+time_classifier_6m,physical_to_expenditure_ratio,0.0258
+time_classifier_6m,cumulative_expenditure_crore,0.025
+time_classifier_6m,expenditure_velocity_crore_month,0.025
+time_classifier_6m,original_cost_crore,0.0243
+time_classifier_6m,physical_progress_delta_6m,0.0226
+time_classifier_6m,cost_overrun_pct,0.0197
+time_classifier_6m,state_Odisha,0.0171
+time_classifier_6m,expenditure_ratio_pct,0.016
+time_classifier_6m,expenditure_ratio_delta_1m,0.0157
+time_classifier_6m,physical_financial_gap_pct,0.0148
+time_classifier_6m,agency_NHAI,0.0145
+time_classifier_6m,agency_RAILWAYS,0.0143
+time_classifier_6m,expenditure_minus_progress_gap,0.0142
+time_classifier_6m,cost_escalation_ratio,0.0128
+time_classifier_6m,state_Arunachal Pradesh,0.0127
+time_classifier_6m,sector_PETROLEUM,0.0124
+time_classifier_6m,agency_IOCL,0.01
+time_classifier_6m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.0087
+time_classifier_6m,progress_velocity_6m,0.0084
+time_classifier_6m,physical_progress_delta_1m,0.0076
+time_classifier_6m,agency_NTPC,0.0071
+time_classifier_6m,state_Andhra Pradesh,0.0069
+time_classifier_6m,state_Jammu & Kashmir,0.0058
+time_classifier_6m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0052
+time_classifier_6m,state_Karnataka,0.0051
+time_classifier_6m,state_Punjab,0.0049
+time_classifier_6m,state_Delhi,0.0047
+time_classifier_6m,progress_trend_slope,0.0046
+time_classifier_6m,state_Haryana,0.0046
+time_classifier_6m,agency_CPCL,0.0044
+time_classifier_6m,physical_progress_delta_3m,0.0043
+time_classifier_6m,schedule_status_On-Schedule,0.0042
+time_classifier_6m,agency_CPWD,0.0041
+time_classifier_6m,progress_minus_expenditure_gap,0.0039
+time_classifier_6m,state_Jharkhand,0.0039
+time_classifier_6m,state_Manipur,0.0038
+time_classifier_6m,state_Sikkim,0.0038
+time_classifier_6m,state_Kerala,0.0033
+time_classifier_6m,risk_signal_count,0.0025
+time_classifier_6m,agency_BCPL,0.0025
+time_classifier_6m,agency_HPCL,0.0023
+time_classifier_6m,agency_DORTH,0.0022
+time_classifier_6m,state_Nagaland,0.0022
+time_classifier_6m,progress_velocity_3m,0.0021
+time_classifier_6m,progress_expenditure_mismatch_flag,0.002
+time_classifier_6m,agency_SJVN,0.0019
+time_classifier_6m,sector_ROAD TRANSPORT & HIGHWAYS,0.0019
+time_classifier_6m,agency_ONGC,0.0018
+time_classifier_6m,state_Rajasthan,0.0018
+time_classifier_6m,agency_NHIDCL,0.0016
+time_classifier_6m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0016
+time_classifier_6m,state_Madhya Pradesh,0.0016
+time_classifier_6m,state_Uttarakhand,0.0015
+time_classifier_6m,state_West Bengal,0.0015
+time_classifier_6m,ministry_department_MINISTRY OF RAILWAYS,0.0014
+time_classifier_6m,sector_RAILWAYS,0.0014
+time_classifier_6m,agency_BUIDCO,0.0013
+time_classifier_6m,agency_WCR,0.0013
+time_classifier_6m,state_Bihar,0.0013
+time_classifier_6m,agency_CMRL,0.0012
+time_classifier_6m,agency_THDCIL,0.0011
+time_classifier_6m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0011
+time_classifier_6m,sector_URBAN DEVELOPMENT,0.0011
+time_classifier_6m,agency_NRL,0.001
+time_classifier_6m,state_Multi-State,0.001
+time_classifier_6m,agency_PWD,0.0009
+time_classifier_6m,cost_overrun_delta_3m,0.0008
+time_classifier_6m,schedule_status_Critical Overdue,0.0008
+time_classifier_6m,cost_overrun_trend_slope,0.0005
+time_classifier_6m,agency_LMRCL,0.0005
+time_classifier_6m,agency_RVNL,0.0005
+time_classifier_6m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0005
+time_classifier_6m,state_Chhattisgarh,0.0005
+time_classifier_6m,state_Tripura,0.0005
+time_classifier_6m,agency_BPCL,0.0004
+time_classifier_6m,state_Assam,0.0004
+time_classifier_6m,state_Goa,0.0004
+time_classifier_6m,state_Gujarat,0.0004
+time_classifier_6m,agency_BRO,0.0003
+time_classifier_6m,is_overdue_flag,0.0002
+time_classifier_6m,agency_ER,0.0002
+time_classifier_6m,agency_MANGALORE REFIN,0.0002
+time_classifier_6m,agency_NBCC,0.0002
+time_classifier_6m,agency_OIL,0.0002
+time_classifier_6m,agency_SCR,0.0002
+time_classifier_6m,agency_SWR,0.0002
+time_classifier_6m,state_Himachal Pradesh,0.0002
+time_classifier_6m,state_Tamil Nadu,0.0002
+time_classifier_6m,state_Uttar Pradesh,0.0002
+time_classifier_6m,agency_ECOR,0.0001
+time_classifier_6m,agency_ECR,0.0001
+time_classifier_6m,agency_POWER,0.0001
+time_classifier_6m,agency_ROAD TRANSPORT & HIGHWAYS,0.0001
+time_classifier_6m,state_Mizoram,0.0001
+time_classifier_6m,high_expenditure_low_progress_flag,0.0
+time_classifier_6m,cost_overrun_delta_1m,0.0
+time_classifier_6m,cost_overrun_negative_flag,0.0
+time_classifier_6m,is_extended_flag,0.0
+time_classifier_6m,agency_AAI,0.0
+time_classifier_6m,agency_BCCL,0.0
+time_classifier_6m,agency_BHAVNI,0.0
+time_classifier_6m,agency_BMRCL,0.0
+time_classifier_6m,agency_BSNL,0.0
+time_classifier_6m,agency_CCL,0.0
+time_classifier_6m,agency_CIVIL AVIATION,0.0
+time_classifier_6m,agency_COAL,0.0
+time_classifier_6m,agency_CORE,0.0
+time_classifier_6m,agency_CPWD EDUCATION,0.0
+time_classifier_6m,agency_CPWD FOR HEALTH,0.0
+time_classifier_6m,agency_CPWD FOR MHA,0.0
+time_classifier_6m,agency_CR,0.0
+time_classifier_6m,agency_CVPPPL,0.0
+time_classifier_6m,agency_DFCC,0.0
+time_classifier_6m,agency_DJB,0.0
+time_classifier_6m,agency_DMIC FOR DPIIT,0.0
+time_classifier_6m,agency_DMRC,0.0
+time_classifier_6m,agency_DVC,0.0
+time_classifier_6m,agency_ECL,0.0
+time_classifier_6m,agency_GAIL,0.0
+time_classifier_6m,agency_GSL,0.0
+time_classifier_6m,agency_HCL,0.0
+time_classifier_6m,agency_HITES,0.0
+time_classifier_6m,agency_HSCC,0.0
+time_classifier_6m,agency_HSCL,0.0
+time_classifier_6m,agency_IGGL,0.0
+time_classifier_6m,agency_IICC FOR DPIIT,0.0
+time_classifier_6m,agency_IRCON,0.0
+time_classifier_6m,agency_IWAI,0.0
+time_classifier_6m,agency_JNPT,0.0
+time_classifier_6m,agency_KMDA,0.0
+time_classifier_6m,agency_KOMRCL,0.0
+time_classifier_6m,agency_KPL,0.0
+time_classifier_6m,agency_MCL,0.0
+time_classifier_6m,agency_MEGA,0.0
+time_classifier_6m,agency_MMRC,0.0
+time_classifier_6m,agency_MMRCL,0.0
+time_classifier_6m,agency_MPT,0.0
+time_classifier_6m,agency_MRTP,0.0
+time_classifier_6m,agency_MRVC,0.0
+time_classifier_6m,agency_Multi-States (Andhra Pradesh,0.0
+time_classifier_6m,agency_Multi-States (Arunachal Pradesh,0.0
+time_classifier_6m,agency_Multi-States (Assam,0.0
+time_classifier_6m,agency_Multi-States (Bihar,0.0
+time_classifier_6m,agency_Multi-States (Chhattisgarh,0.0
+time_classifier_6m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+time_classifier_6m,agency_Multi-States (Delhi,0.0
+time_classifier_6m,agency_Multi-States (Goa,0.0
+time_classifier_6m,agency_Multi-States (Gujarat,0.0
+time_classifier_6m,agency_Multi-States (Haryana,0.0
+time_classifier_6m,agency_Multi-States (Himachal Pradesh,0.0
+time_classifier_6m,agency_Multi-States (Jammu and Kashmir,0.0
+time_classifier_6m,agency_Multi-States (Jharkhand,0.0
+time_classifier_6m,agency_Multi-States (Karnataka,0.0
+time_classifier_6m,agency_Multi-States (Kerala,0.0
+time_classifier_6m,agency_Multi-States (Madhya Pradesh,0.0
+time_classifier_6m,agency_Multi-States (Maharashtra,0.0
+time_classifier_6m,agency_Multi-States (Odisha,0.0
+time_classifier_6m,agency_Multi-States (Puducherry,0.0
+time_classifier_6m,agency_Multi-States (Punjab,0.0
+time_classifier_6m,agency_Multi-States (Rajasthan,0.0
+time_classifier_6m,agency_Multi-States (Uttar Pradesh,0.0
+time_classifier_6m,agency_NALCO,0.0
+time_classifier_6m,agency_NATIS,0.0
+time_classifier_6m,agency_NCL,0.0
+time_classifier_6m,agency_NCR,0.0
+time_classifier_6m,agency_NCRTC,0.0
+time_classifier_6m,agency_NEEPCO,0.0
+time_classifier_6m,agency_NER,0.0
+time_classifier_6m,agency_NFL,0.0
+time_classifier_6m,agency_NFR,0.0
+time_classifier_6m,agency_NHDP,0.0
+time_classifier_6m,agency_NHPC,0.0
+time_classifier_6m,agency_NHSRCL,0.0
+time_classifier_6m,agency_NLC,0.0
+time_classifier_6m,agency_NMDC,0.0
+time_classifier_6m,agency_NPCC,0.0
+time_classifier_6m,agency_NPCIL,0.0
+time_classifier_6m,agency_NR,0.0
+time_classifier_6m,agency_NWR,0.0
+time_classifier_6m,agency_PATNA METRO RAI,0.0
+time_classifier_6m,agency_PETROLEUM,0.0
+time_classifier_6m,agency_PPA,0.0
+time_classifier_6m,agency_RCF,0.0
+time_classifier_6m,agency_RINL,0.0
+time_classifier_6m,agency_RITES,0.0
+time_classifier_6m,agency_RITES OF HIGHER,0.0
+time_classifier_6m,agency_SAIL,0.0
+time_classifier_6m,agency_SCCL,0.0
+time_classifier_6m,agency_SECL,0.0
+time_classifier_6m,agency_SECR,0.0
+time_classifier_6m,agency_SER,0.0
+time_classifier_6m,agency_SHIPPING & PORTS,0.0
+time_classifier_6m,agency_SJVNL,0.0
+time_classifier_6m,agency_SR,0.0
+time_classifier_6m,agency_STEEL,0.0
+time_classifier_6m,agency_Sikkim Universi,0.0
+time_classifier_6m,agency_THDC,0.0
+time_classifier_6m,agency_THDCL,0.0
+time_classifier_6m,agency_UKJalNigam,0.0
+time_classifier_6m,agency_UPJalNigam,0.0
+time_classifier_6m,agency_URBAN DEVELOPMENT,0.0
+time_classifier_6m,agency_WATER RESOURCES,0.0
+time_classifier_6m,agency_WCL,0.0
+time_classifier_6m,agency_WR,0.0
+time_classifier_6m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+time_classifier_6m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+time_classifier_6m,ministry_department_MINISTRY OF COAL,0.0
+time_classifier_6m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+time_classifier_6m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+time_classifier_6m,ministry_department_MINISTRY OF FERTILISERS,0.0
+time_classifier_6m,ministry_department_MINISTRY OF FINANCE,0.0
+time_classifier_6m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+time_classifier_6m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+time_classifier_6m,ministry_department_MINISTRY OF MINES,0.0
+time_classifier_6m,ministry_department_MINISTRY OF STEEL,0.0
+time_classifier_6m,ministry_department_MINISTRY OF WATER RESOURCES,0.0
+time_classifier_6m,sector_ATOMIC ENERGY,0.0
+time_classifier_6m,sector_CIVIL AVIATION,0.0
+time_classifier_6m,sector_COAL,0.0
+time_classifier_6m,sector_HEALTH & FAMILY WELFARE,0.0
+time_classifier_6m,sector_MINES,0.0
+time_classifier_6m,sector_OTHER,0.0
+time_classifier_6m,sector_SHIPPING & PORTS,0.0
+time_classifier_6m,sector_STEEL,0.0
+time_classifier_6m,sector_TELECOMMUNICATIONS,0.0
+time_classifier_6m,sector_WATER RESOURCES,0.0
+time_classifier_6m,state_Andaman & Nicobar,0.0
+time_classifier_6m,state_Chandigarh,0.0
+time_classifier_6m,state_Ladakh,0.0
+time_classifier_6m,state_Meghalaya,0.0
+time_classifier_6m,state_Puducherry,0.0
+time_classifier_6m,schedule_status_Completed,0.0
+time_regressor_3m,schedule_extension_months,1.1483
+time_regressor_3m,days_to_revised_target,0.9381
+time_regressor_3m,revised_remaining_months,0.3479
+time_regressor_3m,project_age_months,0.3334
+time_regressor_3m,overdue_days,0.3016
+time_regressor_3m,snapshot_history_count,0.2952
+time_regressor_3m,extension_rate_pct,0.2842
+time_regressor_3m,remaining_budget_crore,0.2284
+time_regressor_3m,schedule_extension_delta_1m,0.1705
+time_regressor_3m,expenditure_velocity_crore_month,0.1505
+time_regressor_3m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.1499
+time_regressor_3m,cost_escalation_crore,0.1495
+time_regressor_3m,physical_to_expenditure_ratio,0.1395
+time_regressor_3m,cumulative_expenditure_crore,0.1069
+time_regressor_3m,original_duration_months,0.1036
+time_regressor_3m,agency_MoRTH,0.0913
+time_regressor_3m,expenditure_ratio_delta_3m,0.0882
+time_regressor_3m,expenditure_ratio_pct,0.085
+time_regressor_3m,ministry_department_MINISTRY OF COAL,0.0829
+time_regressor_3m,revised_cost_crore,0.0805
+time_regressor_3m,days_to_original_target,0.0792
+time_regressor_3m,consecutive_stagnant_months,0.0731
+time_regressor_3m,planned_remaining_months,0.0553
+time_regressor_3m,extension_count,0.0533
+time_regressor_3m,ministry_department_MINISTRY OF POWER,0.0511
+time_regressor_3m,agency_MCL,0.049
+time_regressor_3m,state_Telangana,0.0479
+time_regressor_3m,sector_ROAD TRANSPORT & HIGHWAYS,0.047
+time_regressor_3m,agency_SECL,0.0447
+time_regressor_3m,schedule_status_Critical Overdue,0.0435
+time_regressor_3m,ministry_department_MINISTRY OF RAILWAYS,0.0418
+time_regressor_3m,sector_POWER,0.0361
+time_regressor_3m,cost_overrun_pct,0.0359
+time_regressor_3m,physical_progress_delta_6m,0.033
+time_regressor_3m,expenditure_ratio_delta_1m,0.033
+time_regressor_3m,agency_NHIDCL,0.0304
+time_regressor_3m,physical_progress_pct,0.0275
+time_regressor_3m,progress_trend_slope,0.0265
+time_regressor_3m,physical_financial_gap_pct,0.0253
+time_regressor_3m,sector_COAL,0.0227
+time_regressor_3m,original_cost_crore,0.0213
+time_regressor_3m,expenditure_minus_progress_gap,0.0213
+time_regressor_3m,state_Mizoram,0.0185
+time_regressor_3m,cost_overrun_trend_slope,0.0184
+time_regressor_3m,cost_overrun_delta_3m,0.0161
+time_regressor_3m,state_Chhattisgarh,0.0153
+time_regressor_3m,state_Odisha,0.0134
+time_regressor_3m,agency_WCL,0.0126
+time_regressor_3m,sector_RAILWAYS,0.0122
+time_regressor_3m,cost_escalation_ratio,0.0118
+time_regressor_3m,state_Maharashtra,0.01
+time_regressor_3m,remaining_work_pct,0.0093
+time_regressor_3m,progress_velocity_6m,0.009
+time_regressor_3m,agency_CR,0.0078
+time_regressor_3m,progress_minus_expenditure_gap,0.0074
+time_regressor_3m,agency_CCL,0.0071
+time_regressor_3m,agency_PETROLEUM,0.0071
+time_regressor_3m,agency_CMRL,0.007
+time_regressor_3m,agency_RAILWAYS,0.0061
+time_regressor_3m,cost_overrun_delta_1m,0.006
+time_regressor_3m,agency_ECL,0.006
+time_regressor_3m,risk_signal_count,0.0057
+time_regressor_3m,state_West Bengal,0.0057
+time_regressor_3m,agency_MRTP,0.0041
+time_regressor_3m,physical_progress_delta_1m,0.004
+time_regressor_3m,agency_AAI,0.0037
+time_regressor_3m,agency_NHAI,0.0035
+time_regressor_3m,progress_expenditure_mismatch_flag,0.0034
+time_regressor_3m,agency_SWR,0.0034
+time_regressor_3m,state_Uttarakhand,0.003
+time_regressor_3m,state_Multi-State,0.0029
+time_regressor_3m,schedule_status_Delayed,0.0029
+time_regressor_3m,physical_progress_delta_3m,0.0022
+time_regressor_3m,agency_SER,0.0018
+time_regressor_3m,state_Karnataka,0.0016
+time_regressor_3m,state_Nagaland,0.0014
+time_regressor_3m,progress_velocity_3m,0.0009
+time_regressor_3m,agency_BCCL,0.0009
+time_regressor_3m,agency_CPWD FOR HEALTH,0.0009
+time_regressor_3m,agency_PWD,0.0009
+time_regressor_3m,agency_STEEL,0.0009
+time_regressor_3m,agency_Multi-States (Assam,0.0008
+time_regressor_3m,agency_NTPC,0.0008
+time_regressor_3m,state_Haryana,0.0008
+time_regressor_3m,agency_Multi-States (Gujarat,0.0007
+time_regressor_3m,agency_NER,0.0007
+time_regressor_3m,agency_Multi-States (Bihar,0.0006
+time_regressor_3m,agency_RVNL,0.0006
+time_regressor_3m,state_Andhra Pradesh,0.0006
+time_regressor_3m,agency_ECOR,0.0005
+time_regressor_3m,agency_ECR,0.0005
+time_regressor_3m,agency_NHSRCL,0.0005
+time_regressor_3m,state_Andaman & Nicobar,0.0005
+time_regressor_3m,state_Arunachal Pradesh,0.0005
+time_regressor_3m,agency_DMIC FOR DPIIT,0.0004
+time_regressor_3m,agency_DORTH,0.0004
+time_regressor_3m,state_Assam,0.0004
+time_regressor_3m,state_Sikkim,0.0004
+time_regressor_3m,agency_NFR,0.0003
+time_regressor_3m,agency_WATER RESOURCES,0.0003
+time_regressor_3m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0003
+time_regressor_3m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0003
+time_regressor_3m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0003
+time_regressor_3m,state_Gujarat,0.0003
+time_regressor_3m,high_expenditure_low_progress_flag,0.0002
+time_regressor_3m,agency_BMRCL,0.0002
+time_regressor_3m,agency_BPCL,0.0002
+time_regressor_3m,agency_NEEPCO,0.0002
+time_regressor_3m,ministry_department_MINISTRY OF WATER RESOURCES,0.0002
+time_regressor_3m,state_Kerala,0.0002
+time_regressor_3m,state_Tamil Nadu,0.0002
+time_regressor_3m,agency_ER,0.0001
+time_regressor_3m,agency_KOMRCL,0.0001
+time_regressor_3m,agency_PPA,0.0001
+time_regressor_3m,agency_SECR,0.0001
+time_regressor_3m,cost_overrun_negative_flag,0.0
+time_regressor_3m,is_overdue_flag,0.0
+time_regressor_3m,is_extended_flag,0.0
+time_regressor_3m,agency_BCPL,0.0
+time_regressor_3m,agency_BHAVNI,0.0
+time_regressor_3m,agency_BRO,0.0
+time_regressor_3m,agency_BSNL,0.0
+time_regressor_3m,agency_BUIDCO,0.0
+time_regressor_3m,agency_CIVIL AVIATION,0.0
+time_regressor_3m,agency_COAL,0.0
+time_regressor_3m,agency_CORE,0.0
+time_regressor_3m,agency_CPCL,0.0
+time_regressor_3m,agency_CPWD,0.0
+time_regressor_3m,agency_CPWD EDUCATION,0.0
+time_regressor_3m,agency_CPWD FOR MHA,0.0
+time_regressor_3m,agency_CVPPPL,0.0
+time_regressor_3m,agency_DFCC,0.0
+time_regressor_3m,agency_DJB,0.0
+time_regressor_3m,agency_DMRC,0.0
+time_regressor_3m,agency_DOT,0.0
+time_regressor_3m,agency_DVC,0.0
+time_regressor_3m,agency_GAIL,0.0
+time_regressor_3m,agency_GSL,0.0
+time_regressor_3m,agency_HCL,0.0
+time_regressor_3m,agency_HITES,0.0
+time_regressor_3m,agency_HPCL,0.0
+time_regressor_3m,agency_HSCC,0.0
+time_regressor_3m,agency_HSCL,0.0
+time_regressor_3m,agency_IGGL,0.0
+time_regressor_3m,agency_IICC FOR DPIIT,0.0
+time_regressor_3m,agency_IOCL,0.0
+time_regressor_3m,agency_IRCON,0.0
+time_regressor_3m,agency_IWAI,0.0
+time_regressor_3m,agency_JNPT,0.0
+time_regressor_3m,agency_KMDA,0.0
+time_regressor_3m,agency_KPL,0.0
+time_regressor_3m,agency_LMRCL,0.0
+time_regressor_3m,agency_MANGALORE REFIN,0.0
+time_regressor_3m,agency_MEGA,0.0
+time_regressor_3m,agency_MINES,0.0
+time_regressor_3m,agency_MMRC,0.0
+time_regressor_3m,agency_MMRCL,0.0
+time_regressor_3m,agency_MPT,0.0
+time_regressor_3m,agency_MRVC,0.0
+time_regressor_3m,agency_Multi-States (Andhra Pradesh,0.0
+time_regressor_3m,agency_Multi-States (Arunachal Pradesh,0.0
+time_regressor_3m,agency_Multi-States (Chhattisgarh,0.0
+time_regressor_3m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+time_regressor_3m,agency_Multi-States (Delhi,0.0
+time_regressor_3m,agency_Multi-States (Goa,0.0
+time_regressor_3m,agency_Multi-States (Haryana,0.0
+time_regressor_3m,agency_Multi-States (Himachal Pradesh,0.0
+time_regressor_3m,agency_Multi-States (Jammu and Kashmir,0.0
+time_regressor_3m,agency_Multi-States (Jharkhand,0.0
+time_regressor_3m,agency_Multi-States (Karnataka,0.0
+time_regressor_3m,agency_Multi-States (Kerala,0.0
+time_regressor_3m,agency_Multi-States (Madhya Pradesh,0.0
+time_regressor_3m,agency_Multi-States (Maharashtra,0.0
+time_regressor_3m,agency_Multi-States (Odisha,0.0
+time_regressor_3m,agency_Multi-States (Puducherry,0.0
+time_regressor_3m,agency_Multi-States (Punjab,0.0
+time_regressor_3m,agency_Multi-States (Rajasthan,0.0
+time_regressor_3m,agency_Multi-States (Uttar Pradesh,0.0
+time_regressor_3m,agency_NALCO,0.0
+time_regressor_3m,agency_NATIS,0.0
+time_regressor_3m,agency_NBCC,0.0
+time_regressor_3m,agency_NCL,0.0
+time_regressor_3m,agency_NCR,0.0
+time_regressor_3m,agency_NCRTC,0.0
+time_regressor_3m,agency_NFL,0.0
+time_regressor_3m,agency_NHDP,0.0
+time_regressor_3m,agency_NHPC,0.0
+time_regressor_3m,agency_NLC,0.0
+time_regressor_3m,agency_NMDC,0.0
+time_regressor_3m,agency_NPCC,0.0
+time_regressor_3m,agency_NPCIL,0.0
+time_regressor_3m,agency_NR,0.0
+time_regressor_3m,agency_NRL,0.0
+time_regressor_3m,agency_NWR,0.0
+time_regressor_3m,agency_OIL,0.0
+time_regressor_3m,agency_ONGC,0.0
+time_regressor_3m,agency_PATNA METRO RAI,0.0
+time_regressor_3m,agency_PGCIL,0.0
+time_regressor_3m,agency_POWER,0.0
+time_regressor_3m,agency_RCF,0.0
+time_regressor_3m,agency_RINL,0.0
+time_regressor_3m,agency_RITES,0.0
+time_regressor_3m,agency_RITES OF HIGHER,0.0
+time_regressor_3m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+time_regressor_3m,agency_SAIL,0.0
+time_regressor_3m,agency_SCCL,0.0
+time_regressor_3m,agency_SCR,0.0
+time_regressor_3m,agency_SHIPPING & PORTS,0.0
+time_regressor_3m,agency_SJVN,0.0
+time_regressor_3m,agency_SJVNL,0.0
+time_regressor_3m,agency_SR,0.0
+time_regressor_3m,agency_Sikkim Universi,0.0
+time_regressor_3m,agency_THDC,0.0
+time_regressor_3m,agency_THDCIL,0.0
+time_regressor_3m,agency_THDCL,0.0
+time_regressor_3m,agency_UKJalNigam,0.0
+time_regressor_3m,agency_UPJalNigam,0.0
+time_regressor_3m,agency_URBAN DEVELOPMENT,0.0
+time_regressor_3m,agency_WCR,0.0
+time_regressor_3m,agency_WR,0.0
+time_regressor_3m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+time_regressor_3m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+time_regressor_3m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+time_regressor_3m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+time_regressor_3m,ministry_department_MINISTRY OF FERTILISERS,0.0
+time_regressor_3m,ministry_department_MINISTRY OF FINANCE,0.0
+time_regressor_3m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+time_regressor_3m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+time_regressor_3m,ministry_department_MINISTRY OF MINES,0.0
+time_regressor_3m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0
+time_regressor_3m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.0
+time_regressor_3m,ministry_department_MINISTRY OF STEEL,0.0
+time_regressor_3m,sector_ATOMIC ENERGY,0.0
+time_regressor_3m,sector_CIVIL AVIATION,0.0
+time_regressor_3m,sector_HEALTH & FAMILY WELFARE,0.0
+time_regressor_3m,sector_MINES,0.0
+time_regressor_3m,sector_OTHER,0.0
+time_regressor_3m,sector_PETROLEUM,0.0
+time_regressor_3m,sector_SHIPPING & PORTS,0.0
+time_regressor_3m,sector_STEEL,0.0
+time_regressor_3m,sector_TELECOMMUNICATIONS,0.0
+time_regressor_3m,sector_URBAN DEVELOPMENT,0.0
+time_regressor_3m,sector_WATER RESOURCES,0.0
+time_regressor_3m,state_Bihar,0.0
+time_regressor_3m,state_Chandigarh,0.0
+time_regressor_3m,state_Delhi,0.0
+time_regressor_3m,state_Goa,0.0
+time_regressor_3m,state_Himachal Pradesh,0.0
+time_regressor_3m,state_Jammu & Kashmir,0.0
+time_regressor_3m,state_Jharkhand,0.0
+time_regressor_3m,state_Ladakh,0.0
+time_regressor_3m,state_Madhya Pradesh,0.0
+time_regressor_3m,state_Manipur,0.0
+time_regressor_3m,state_Meghalaya,0.0
+time_regressor_3m,state_Puducherry,0.0
+time_regressor_3m,state_Punjab,0.0
+time_regressor_3m,state_Rajasthan,0.0
+time_regressor_3m,state_Tripura,0.0
+time_regressor_3m,state_Uttar Pradesh,0.0
+time_regressor_3m,schedule_status_Completed,0.0
+time_regressor_3m,schedule_status_On-Schedule,0.0
+time_regressor_6m,days_to_revised_target,1.5248
+time_regressor_6m,schedule_extension_months,1.3754
+time_regressor_6m,extension_rate_pct,0.7678
+time_regressor_6m,snapshot_history_count,0.4663
+time_regressor_6m,revised_remaining_months,0.4521
+time_regressor_6m,project_age_months,0.3939
+time_regressor_6m,overdue_days,0.3588
+time_regressor_6m,ministry_department_MINISTRY OF ROAD TRANSPORT & HIGHWAYS,0.315
+time_regressor_6m,remaining_budget_crore,0.2723
+time_regressor_6m,consecutive_stagnant_months,0.2224
+time_regressor_6m,planned_remaining_months,0.2153
+time_regressor_6m,ministry_department_MINISTRY OF RAILWAYS,0.1994
+time_regressor_6m,ministry_department_MINISTRY OF COAL,0.1833
+time_regressor_6m,physical_to_expenditure_ratio,0.1813
+time_regressor_6m,original_duration_months,0.1623
+time_regressor_6m,schedule_extension_delta_1m,0.1576
+time_regressor_6m,cost_escalation_crore,0.155
+time_regressor_6m,ministry_department_MINISTRY OF POWER,0.1512
+time_regressor_6m,expenditure_ratio_pct,0.1456
+time_regressor_6m,agency_MCL,0.1034
+time_regressor_6m,state_Telangana,0.1025
+time_regressor_6m,expenditure_ratio_delta_3m,0.1013
+time_regressor_6m,original_cost_crore,0.0986
+time_regressor_6m,days_to_original_target,0.0948
+time_regressor_6m,physical_financial_gap_pct,0.0826
+time_regressor_6m,cost_overrun_pct,0.0807
+time_regressor_6m,expenditure_velocity_crore_month,0.0789
+time_regressor_6m,sector_ROAD TRANSPORT & HIGHWAYS,0.0767
+time_regressor_6m,physical_progress_delta_6m,0.073
+time_regressor_6m,agency_SECL,0.0719
+time_regressor_6m,extension_count,0.0699
+time_regressor_6m,progress_velocity_6m,0.0665
+time_regressor_6m,physical_progress_pct,0.0558
+time_regressor_6m,expenditure_ratio_delta_1m,0.053
+time_regressor_6m,revised_cost_crore,0.0515
+time_regressor_6m,agency_NHIDCL,0.051
+time_regressor_6m,state_Maharashtra,0.0505
+time_regressor_6m,agency_MoRTH,0.0487
+time_regressor_6m,expenditure_minus_progress_gap,0.0486
+time_regressor_6m,sector_COAL,0.0463
+time_regressor_6m,remaining_work_pct,0.0441
+time_regressor_6m,state_Mizoram,0.0398
+time_regressor_6m,schedule_status_Critical Overdue,0.0381
+time_regressor_6m,cumulative_expenditure_crore,0.0342
+time_regressor_6m,agency_CCL,0.0342
+time_regressor_6m,sector_RAILWAYS,0.0341
+time_regressor_6m,cost_overrun_delta_3m,0.0298
+time_regressor_6m,cost_overrun_trend_slope,0.0247
+time_regressor_6m,agency_CR,0.0196
+time_regressor_6m,cost_escalation_ratio,0.0194
+time_regressor_6m,progress_minus_expenditure_gap,0.0188
+time_regressor_6m,schedule_status_Delayed,0.0188
+time_regressor_6m,state_Chhattisgarh,0.017
+time_regressor_6m,agency_WCL,0.0149
+time_regressor_6m,sector_POWER,0.0149
+time_regressor_6m,cost_overrun_delta_1m,0.0129
+time_regressor_6m,agency_ECL,0.0099
+time_regressor_6m,agency_ECOR,0.0098
+time_regressor_6m,agency_NHAI,0.0098
+time_regressor_6m,physical_progress_delta_1m,0.0094
+time_regressor_6m,agency_RAILWAYS,0.009
+time_regressor_6m,agency_CMRL,0.0083
+time_regressor_6m,agency_NFR,0.0083
+time_regressor_6m,risk_signal_count,0.0081
+time_regressor_6m,agency_ER,0.0077
+time_regressor_6m,progress_trend_slope,0.0074
+time_regressor_6m,agency_PETROLEUM,0.0067
+time_regressor_6m,progress_velocity_3m,0.0065
+time_regressor_6m,agency_SWR,0.0065
+time_regressor_6m,agency_NEEPCO,0.0063
+time_regressor_6m,ministry_department_MINISTRY OF HOUSING AND URBAN AFFAIRS,0.0061
+time_regressor_6m,physical_progress_delta_3m,0.0059
+time_regressor_6m,state_Uttarakhand,0.0037
+time_regressor_6m,progress_expenditure_mismatch_flag,0.0028
+time_regressor_6m,agency_SER,0.0025
+time_regressor_6m,state_Rajasthan,0.0024
+time_regressor_6m,agency_NER,0.0023
+time_regressor_6m,agency_DORTH,0.0022
+time_regressor_6m,agency_RINL,0.0018
+time_regressor_6m,state_Jharkhand,0.0017
+time_regressor_6m,agency_POWER,0.0015
+time_regressor_6m,agency_PWD,0.0015
+time_regressor_6m,state_West Bengal,0.0015
+time_regressor_6m,agency_GAIL,0.0014
+time_regressor_6m,sector_ATOMIC ENERGY,0.0014
+time_regressor_6m,agency_AAI,0.0013
+time_regressor_6m,agency_DMIC FOR DPIIT,0.0013
+time_regressor_6m,agency_IWAI,0.0013
+time_regressor_6m,state_Jammu & Kashmir,0.0013
+time_regressor_6m,agency_BCCL,0.0012
+time_regressor_6m,agency_Multi-States (Assam,0.0012
+time_regressor_6m,agency_URBAN DEVELOPMENT,0.0012
+time_regressor_6m,agency_HSCL,0.0009
+time_regressor_6m,state_Kerala,0.0009
+time_regressor_6m,agency_NHSRCL,0.0008
+time_regressor_6m,agency_SR,0.0008
+time_regressor_6m,state_Karnataka,0.0008
+time_regressor_6m,agency_BMRCL,0.0007
+time_regressor_6m,agency_MRTP,0.0007
+time_regressor_6m,agency_Multi-States (Gujarat,0.0007
+time_regressor_6m,agency_NALCO,0.0007
+time_regressor_6m,state_Assam,0.0007
+time_regressor_6m,state_Nagaland,0.0006
+time_regressor_6m,schedule_status_On-Schedule,0.0006
+time_regressor_6m,agency_CPWD FOR HEALTH,0.0005
+time_regressor_6m,agency_NLC,0.0005
+time_regressor_6m,sector_HEALTH & FAMILY WELFARE,0.0005
+time_regressor_6m,agency_NTPC,0.0004
+time_regressor_6m,agency_SECR,0.0004
+time_regressor_6m,agency_STEEL,0.0004
+time_regressor_6m,agency_THDCIL,0.0004
+time_regressor_6m,ministry_department_MINISTRY OF HEALTH AND FAMILY WELFARE,0.0004
+time_regressor_6m,state_Himachal Pradesh,0.0004
+time_regressor_6m,state_Tamil Nadu,0.0004
+time_regressor_6m,agency_OIL,0.0002
+time_regressor_6m,agency_SCCL,0.0002
+time_regressor_6m,state_Andhra Pradesh,0.0002
+time_regressor_6m,state_Goa,0.0002
+time_regressor_6m,state_Haryana,0.0002
+time_regressor_6m,state_Multi-State,0.0002
+time_regressor_6m,agency_BPCL,0.0001
+time_regressor_6m,agency_DMRC,0.0001
+time_regressor_6m,agency_SJVN,0.0001
+time_regressor_6m,state_Madhya Pradesh,0.0001
+time_regressor_6m,high_expenditure_low_progress_flag,0.0
+time_regressor_6m,cost_overrun_negative_flag,0.0
+time_regressor_6m,is_overdue_flag,0.0
+time_regressor_6m,is_extended_flag,0.0
+time_regressor_6m,agency_BCPL,0.0
+time_regressor_6m,agency_BHAVNI,0.0
+time_regressor_6m,agency_BRO,0.0
+time_regressor_6m,agency_BSNL,0.0
+time_regressor_6m,agency_BUIDCO,0.0
+time_regressor_6m,agency_CIVIL AVIATION,0.0
+time_regressor_6m,agency_COAL,0.0
+time_regressor_6m,agency_CORE,0.0
+time_regressor_6m,agency_CPCL,0.0
+time_regressor_6m,agency_CPWD,0.0
+time_regressor_6m,agency_CPWD EDUCATION,0.0
+time_regressor_6m,agency_CPWD FOR MHA,0.0
+time_regressor_6m,agency_CVPPPL,0.0
+time_regressor_6m,agency_DFCC,0.0
+time_regressor_6m,agency_DJB,0.0
+time_regressor_6m,agency_DVC,0.0
+time_regressor_6m,agency_ECR,0.0
+time_regressor_6m,agency_GSL,0.0
+time_regressor_6m,agency_HCL,0.0
+time_regressor_6m,agency_HITES,0.0
+time_regressor_6m,agency_HPCL,0.0
+time_regressor_6m,agency_HSCC,0.0
+time_regressor_6m,agency_IGGL,0.0
+time_regressor_6m,agency_IICC FOR DPIIT,0.0
+time_regressor_6m,agency_IOCL,0.0
+time_regressor_6m,agency_IRCON,0.0
+time_regressor_6m,agency_JNPT,0.0
+time_regressor_6m,agency_KMDA,0.0
+time_regressor_6m,agency_KOMRCL,0.0
+time_regressor_6m,agency_KPL,0.0
+time_regressor_6m,agency_LMRCL,0.0
+time_regressor_6m,agency_MANGALORE REFIN,0.0
+time_regressor_6m,agency_MEGA,0.0
+time_regressor_6m,agency_MMRC,0.0
+time_regressor_6m,agency_MMRCL,0.0
+time_regressor_6m,agency_MPT,0.0
+time_regressor_6m,agency_MRVC,0.0
+time_regressor_6m,agency_Multi-States (Andhra Pradesh,0.0
+time_regressor_6m,agency_Multi-States (Arunachal Pradesh,0.0
+time_regressor_6m,agency_Multi-States (Bihar,0.0
+time_regressor_6m,agency_Multi-States (Chhattisgarh,0.0
+time_regressor_6m,agency_Multi-States (Dadra & Nagar Haveli and Daman & Diu,0.0
+time_regressor_6m,agency_Multi-States (Delhi,0.0
+time_regressor_6m,agency_Multi-States (Goa,0.0
+time_regressor_6m,agency_Multi-States (Haryana,0.0
+time_regressor_6m,agency_Multi-States (Himachal Pradesh,0.0
+time_regressor_6m,agency_Multi-States (Jammu and Kashmir,0.0
+time_regressor_6m,agency_Multi-States (Jharkhand,0.0
+time_regressor_6m,agency_Multi-States (Karnataka,0.0
+time_regressor_6m,agency_Multi-States (Kerala,0.0
+time_regressor_6m,agency_Multi-States (Madhya Pradesh,0.0
+time_regressor_6m,agency_Multi-States (Maharashtra,0.0
+time_regressor_6m,agency_Multi-States (Odisha,0.0
+time_regressor_6m,agency_Multi-States (Puducherry,0.0
+time_regressor_6m,agency_Multi-States (Punjab,0.0
+time_regressor_6m,agency_Multi-States (Rajasthan,0.0
+time_regressor_6m,agency_Multi-States (Uttar Pradesh,0.0
+time_regressor_6m,agency_NATIS,0.0
+time_regressor_6m,agency_NBCC,0.0
+time_regressor_6m,agency_NCL,0.0
+time_regressor_6m,agency_NCR,0.0
+time_regressor_6m,agency_NCRTC,0.0
+time_regressor_6m,agency_NFL,0.0
+time_regressor_6m,agency_NHDP,0.0
+time_regressor_6m,agency_NHPC,0.0
+time_regressor_6m,agency_NMDC,0.0
+time_regressor_6m,agency_NPCC,0.0
+time_regressor_6m,agency_NPCIL,0.0
+time_regressor_6m,agency_NR,0.0
+time_regressor_6m,agency_NRL,0.0
+time_regressor_6m,agency_NWR,0.0
+time_regressor_6m,agency_ONGC,0.0
+time_regressor_6m,agency_PATNA METRO RAI,0.0
+time_regressor_6m,agency_PGCIL,0.0
+time_regressor_6m,agency_PPA,0.0
+time_regressor_6m,agency_RCF,0.0
+time_regressor_6m,agency_RITES,0.0
+time_regressor_6m,agency_RITES OF HIGHER,0.0
+time_regressor_6m,agency_ROAD TRANSPORT & HIGHWAYS,0.0
+time_regressor_6m,agency_RVNL,0.0
+time_regressor_6m,agency_SAIL,0.0
+time_regressor_6m,agency_SCR,0.0
+time_regressor_6m,agency_SHIPPING & PORTS,0.0
+time_regressor_6m,agency_SJVNL,0.0
+time_regressor_6m,agency_Sikkim Universi,0.0
+time_regressor_6m,agency_THDC,0.0
+time_regressor_6m,agency_THDCL,0.0
+time_regressor_6m,agency_UKJalNigam,0.0
+time_regressor_6m,agency_UPJalNigam,0.0
+time_regressor_6m,agency_WATER RESOURCES,0.0
+time_regressor_6m,agency_WCR,0.0
+time_regressor_6m,agency_WR,0.0
+time_regressor_6m,ministry_department_DEPARTMENT OF ATOMIC ENERGY,0.0
+time_regressor_6m,ministry_department_MINISTRY OF CIVIL AVIATION,0.0
+time_regressor_6m,ministry_department_MINISTRY OF COMMUNICATIONS,0.0
+time_regressor_6m,ministry_department_MINISTRY OF DEFENCE PRODUCTION,0.0
+time_regressor_6m,ministry_department_MINISTRY OF FERTILISERS,0.0
+time_regressor_6m,ministry_department_MINISTRY OF FINANCE,0.0
+time_regressor_6m,ministry_department_MINISTRY OF HEAVY INDUSTRY,0.0
+time_regressor_6m,ministry_department_MINISTRY OF HOUSING & URBAN AFFAIRS,0.0
+time_regressor_6m,ministry_department_MINISTRY OF MINES,0.0
+time_regressor_6m,ministry_department_MINISTRY OF PETROCHEMICALS,0.0
+time_regressor_6m,ministry_department_MINISTRY OF PETROLEUM & NATURAL GAS,0.0
+time_regressor_6m,"ministry_department_MINISTRY OF PORTS, SHIPPING AND WATERWAYS",0.0
+time_regressor_6m,ministry_department_MINISTRY OF STEEL,0.0
+time_regressor_6m,ministry_department_MINISTRY OF WATER RESOURCES,0.0
+time_regressor_6m,sector_CIVIL AVIATION,0.0
+time_regressor_6m,sector_MINES,0.0
+time_regressor_6m,sector_OTHER,0.0
+time_regressor_6m,sector_PETROLEUM,0.0
+time_regressor_6m,sector_SHIPPING & PORTS,0.0
+time_regressor_6m,sector_STEEL,0.0
+time_regressor_6m,sector_TELECOMMUNICATIONS,0.0
+time_regressor_6m,sector_URBAN DEVELOPMENT,0.0
+time_regressor_6m,sector_WATER RESOURCES,0.0
+time_regressor_6m,state_Andaman & Nicobar,0.0
+time_regressor_6m,state_Arunachal Pradesh,0.0
+time_regressor_6m,state_Bihar,0.0
+time_regressor_6m,state_Chandigarh,0.0
+time_regressor_6m,state_Delhi,0.0
+time_regressor_6m,state_Gujarat,0.0
+time_regressor_6m,state_Ladakh,0.0
+time_regressor_6m,state_Manipur,0.0
+time_regressor_6m,state_Meghalaya,0.0
+time_regressor_6m,state_Odisha,0.0
+time_regressor_6m,state_Puducherry,0.0
+time_regressor_6m,state_Punjab,0.0
+time_regressor_6m,state_Sikkim,0.0
+time_regressor_6m,state_Tripura,0.0
+time_regressor_6m,state_Uttar Pradesh,0.0
+time_regressor_6m,schedule_status_Completed,0.0

@@ -3,6 +3,7 @@ import { ShieldAlert, ArrowRight, ExternalLink, AlertTriangle, Building2, Trendi
 import './PriorityInterventions.css';
 import { api } from '../services/api';
 import { projectsData } from '../data/projectsData';
+import { InfoButton } from './ExplainabilityInfo';
 
 export interface CriticalProject {
   id: string;
@@ -96,7 +97,14 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
             <ShieldAlert size={20} color="#EF4444" />
           </div>
           <div>
-            <h2 className="card-title">Priority Interventions &amp; Critical Projects</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 className="card-title" style={{ margin: 0 }}>Priority Interventions &amp; Critical Projects</h2>
+              <InfoButton
+                title="Priority Projects"
+                summary="These are the most critical projects needing urgent attention due to big delays and large budgets at risk."
+                size="sm"
+              />
+            </div>
             <p className="card-subtitle">Real-time XGBoost risk predictions across active central infrastructure assets</p>
           </div>
         </div>

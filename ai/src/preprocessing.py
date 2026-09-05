@@ -2,7 +2,7 @@
 Preprocessing pipeline for PAIMANA ML models.
 
 Builds sklearn ColumnTransformer for categorical encoding and
-numeric imputation. Fitted ONLY on training data.
+numeric imputation. Fitted ONLY on training data (zero leakage).
 """
 
 import numpy as np
@@ -13,16 +13,17 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 from src.feature_selection import get_available_feature_split
 
 
 def build_preprocessor(df_train: pd.DataFrame,
                        categorical_features: List[str] = None,
-                       numeric_features: List[str] = None) -> ColumnTransformer:
+                       numeric_features: List[str] = None,
+                       is_cold: bool = False) -> ColumnTransformer:
     """
-    Build and fit a preprocessing pipeline on training data.
+    Build and fit a preprocessing pipeline strictly on training data.
 
     Parameters
     ----------
@@ -32,6 +33,8 @@ def build_preprocessor(df_train: pd.DataFrame,
         Categorical column names. Auto-detected if None.
     numeric_features : list, optional
         Numeric column names. Auto-detected if None.
+    is_cold : bool
+        Whether this is for cold-start models.
 
     Returns
     -------
@@ -39,7 +42,7 @@ def build_preprocessor(df_train: pd.DataFrame,
         Fitted preprocessor.
     """
     if categorical_features is None or numeric_features is None:
-        split = get_available_feature_split(df_train)
+        split = get_available_feature_split(df_train, is_cold=is_cold)
         if categorical_features is None:
             categorical_features = split["categorical"]
         if numeric_features is None:
@@ -61,20 +64,19 @@ def build_preprocessor(df_train: pd.DataFrame,
         ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
     ])
 
+    transformers = []
+    if numeric_features:
+        transformers.append(("num", numeric_pipeline, numeric_features))
+    if categorical_features:
+        transformers.append(("cat", categorical_pipeline, categorical_features))
+
     preprocessor = ColumnTransformer(
-        transformers=[
-            ("num", numeric_pipeline, numeric_features),
-            ("cat", categorical_pipeline, categorical_features),
-        ],
+        transformers=transformers,
         remainder="drop",  # Drop any columns not in the lists
     )
 
-    # Fit on training data only
+    # Fit strictly on training data
     preprocessor.fit(df_train)
-
-    print(f"Preprocessor fitted:")
-    print(f"  Numeric features: {len(numeric_features)}")
-    print(f"  Categorical features: {len(categorical_features)}")
 
     return preprocessor
 
@@ -87,7 +89,6 @@ def get_feature_names(preprocessor: ColumnTransformer) -> List[str]:
         if name == "num":
             feature_names.extend(columns)
         elif name == "cat":
-            # Get one-hot feature names
             encoder = transformer.named_steps["encoder"]
             cat_features = encoder.get_feature_names_out(columns)
             feature_names.extend(cat_features)
@@ -123,7 +124,6 @@ def save_preprocessor(preprocessor: ColumnTransformer,
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(preprocessor, path)
-    print(f"Preprocessor saved to: {path}")
     return str(path)
 
 

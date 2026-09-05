@@ -3,6 +3,9 @@ import './DonutChart.css';
 import './NationalRiskCard.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
+
+import { projectsData } from '../data/projectsData';
 
 interface RiskSegment {
   id: string;
@@ -12,10 +15,15 @@ interface RiskSegment {
   percentage: number;
 }
 
+const totalInit = projectsData.length;
+const highInit = projectsData.filter(p => (p.riskScore || 0) >= 70).length;
+const medInit = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
+const lowInit = Math.max(0, totalInit - highInit - medInit);
+
 const DEFAULT_RISK_DIST: RiskSegment[] = [
-  { id: 'high_risk', name: 'High Risk / Critical', count: 455, color: '#EF4444', percentage: 13.5 },
-  { id: 'medium_risk', name: 'Medium Risk', count: 1058, color: '#EAB308', percentage: 31.5 },
-  { id: 'low_risk', name: 'Low Risk', count: 1848, color: '#22C55E', percentage: 55.0 }
+  { id: 'high_risk', name: 'High Risk / Critical', count: highInit, color: '#EF4444', percentage: totalInit > 0 ? parseFloat((highInit / totalInit * 100).toFixed(1)) : 0 },
+  { id: 'medium_risk', name: 'Medium Risk', count: medInit, color: '#EAB308', percentage: totalInit > 0 ? parseFloat((medInit / totalInit * 100).toFixed(1)) : 0 },
+  { id: 'low_risk', name: 'Low Risk', count: lowInit, color: '#22C55E', percentage: totalInit > 0 ? parseFloat((lowInit / totalInit * 100).toFixed(1)) : 0 }
 ];
 
 interface NationalRiskCardProps {
@@ -124,9 +132,18 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
         }
       }}
     >
-      <div className="card-header">
-        <h2 className="card-title">National Risk Distribution</h2>
-        <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
+      <div className="card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 className="card-title" style={{ margin: 0 }}>National Risk Distribution</h2>
+            <InfoButton
+              title="Risk Level"
+              summary="AI calculates how likely projects are to face future delays or budget increases, based on work velocity and past trends."
+              size="sm"
+            />
+          </div>
+          <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
+        </div>
       </div>
 
       <div className="donut-chart-container">
