@@ -1439,11 +1439,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           upwardDrivers = shapData.top_risk_drivers.map((d: any) => ({
             label: d.display_name || d.feature.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
             value: Math.abs(d.shap_value)
-          }));
+          })).sort((a: any, b: any) => b.value - a.value);
           protectiveFactors = shapData.top_protective_factors.map((d: any) => ({
             label: d.display_name || d.feature.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
             value: -Math.abs(d.shap_value)
-          }));
+          })).sort((a: any, b: any) => a.value - b.value);
         } else {
           const fb = getShapAttributions(project, shapTab);
           upwardDrivers = fb.upwardDrivers;
