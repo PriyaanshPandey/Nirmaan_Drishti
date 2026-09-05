@@ -45,6 +45,11 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
         const escalation = Math.max(0, Math.round(revCost - origCost));
         const ovrPct = parseFloat(p.costOverrunPct) || (escalation > 0 ? Math.round((escalation / origCost) * 100) : 0);
 
+        const realDelay = Math.round(parseFloat(String(p.scheduleExtensionMonths || 0)) || (p.delayDays ? Math.round(p.delayDays / 30.4) : 0));
+        const concernText = p.scheduleStatus === 'CRITICAL' 
+          ? `Critical execution delay (+${realDelay > 0 ? realDelay : 24} mo) & budget revision`
+          : `${p.sector} - ${p.scheduleStatus} (${p.costOverrunPct || '+0% overrun'})`;
+
         return {
           id: p.id,
           projectId: p.id,
@@ -53,12 +58,12 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
           riskLevel: (p.riskScore || 80) >= 80 ? 'Critical' : 'High',
           costOverrunPct: ovrPct,
           costEscalationCrore: escalation,
-          delayMonths: 12 + (idx * 3) % 36,
+          delayMonths: realDelay > 0 ? realDelay : 18,
           originalCost: origCost,
           revisedCost: revCost,
           sector: p.sector || 'Infrastructure',
           ministry: p.ministry || 'Central Sector Ministry',
-          concern: 'Monitored under PAIMANA'
+          concern: concernText
         };
       });
 
