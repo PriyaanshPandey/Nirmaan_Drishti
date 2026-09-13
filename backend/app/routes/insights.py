@@ -51,21 +51,19 @@ def get_insights_summary(db: Session = Depends(get_db)) -> Dict[str, Any]:
     ).scalar() or 0.0
     pot_overrun = float(pot_overrun)
 
-    # ─── Emerging Issues — computed from real risk thresholds ─────────────────
-    # Count projects with high impl_risk (proxy for Land Acquisition issues)
-    land_count = db.query(func.count(Project.id)).filter(Project.impl_risk >= 70).scalar() or 0
-    # Cost risk → proxy for Procurement Delays
-    proc_count = db.query(func.count(Project.id)).filter(Project.cost_risk >= 70).scalar() or 0
-    # Both time_risk and impl_risk elevated → Clearance Delays
-    clear_count = db.query(func.count(Project.id)).filter(
-        Project.time_risk >= 65, Project.impl_risk >= 60
+    # ─── Emerging Issues — computed strictly from real dataset fields ─────────
+    cost_ov_count = cost_overrun_count
+    time_ov_count = time_overrun_count
+    fin_lead_count = db.query(func.count(Project.id)).filter(
+        (Project.financial_progress - Project.physical_progress) > 15
     ).scalar() or 0
-    # Overall risk elevated but cost_risk moderate → Contractor Issues
-    contr_count = db.query(func.count(Project.id)).filter(
-        Project.overall_risk >= 65, Project.cost_risk < 70
+    critical_delay_count = db.query(func.count(Project.id)).filter(
+        Project.schedule_extension_months >= 24
     ).scalar() or 0
-    # Schedule extension > 0 → Milestone Slippage
-    mile_count = time_overrun_count
+    high_cap_risk_count = db.query(func.count(Project.id)).filter(
+        Project.revised_cost >= 500,
+        Project.risk_score >= 70
+    ).scalar() or 0
 
     # Compute percentage change vs avg (normalized to project count)
     def pct_of_total(count: int) -> str:
@@ -75,53 +73,50 @@ def get_insights_summary(db: Session = Depends(get_db)) -> Dict[str, Any]:
         return f"+{pct}%"
 
     emerging_issues = [
-        {"label": "Land Acquisition", "count": land_count, "impact": pct_of_total(land_count)},
-        {"label": "Procurement Delays", "count": proc_count, "impact": pct_of_total(proc_count)},
-        {"label": "Clearance Delays", "count": clear_count, "impact": pct_of_total(clear_count)},
-        {"label": "Contractor Issues", "count": contr_count, "impact": pct_of_total(contr_count)},
-        {"label": "Milestone Slippage", "count": mile_count, "impact": pct_of_total(mile_count)},
+        {"label": "Schedule Overrun Exposure", "count": time_ov_count, "impact": pct_of_total(time_ov_count)},
+        {"label": "Cost Overrun Exposure", "count": cost_ov_count, "impact": pct_of_total(cost_ov_count)},
+        {"label": "Financial-Physical Divergence", "count": fin_lead_count, "impact": pct_of_total(fin_lead_count)},
+        {"label": "Critical Delay Zone (>24M)", "count": critical_delay_count, "impact": pct_of_total(critical_delay_count)},
+        {"label": "Major Budget Escalation (>500 Cr)", "count": high_cap_risk_count, "impact": pct_of_total(high_cap_risk_count)},
     ]
 
-    # ─── Pattern Detection Counts ─────────────────────────────────────────────
-    # Pattern 1: High expenditure (>75%) + Low physical progress (<50%) = Milestone Slippage
+    # ─── Pattern Detection Counts — grounded in actual physical/cost telemetry ─
     pat1_count = db.query(func.count(Project.id)).filter(
         Project.financial_progress > 75,
         Project.physical_progress < 50
     ).scalar() or 0
 
-    # Pattern 2: Repeated schedule extension + low progress → Contractor Decline
     pat2_count = db.query(func.count(Project.id)).filter(
-        Project.schedule_extension_months > 12,
-        Project.physical_progress < 60
+        Project.cost_overrun_pct > 10,
+        Project.schedule_extension_months > 12
     ).scalar() or 0
 
-    # Pattern 3: Clearance + Land Acquisition correlation → time_risk + impl_risk both high
     pat3_count = db.query(func.count(Project.id)).filter(
-        Project.time_risk >= 60,
-        Project.impl_risk >= 60
+        Project.physical_progress < 60,
+        Project.schedule_extension_months > 12
     ).scalar() or 0
 
     patterns = [
         {
-            "title": "High Expenditure + Low Progress = Milestone Slippage",
+            "title": "High Expenditure Pacing vs Lagging Physical Completion",
             "count": pat1_count,
             "risk": "High Risk",
             "riskClass": "font-red",
-            "detail": f"{pat1_count} projects affected. Average progress delay observed across portfolio. Immediate review advised."
+            "detail": f"{pat1_count} projects affected. Financial disbursement significantly outpaces certified on-site delivery. Immediate reconciliation recommended."
         },
         {
-            "title": "Repeated Milestone Postponement = Contractor Performance Decline",
+            "title": "Compounded Cost Overrun & Milestone Slippage",
             "count": pat2_count,
-            "risk": "Medium Risk",
-            "riskClass": "font-orange",
-            "detail": f"{pat2_count} projects affected. Low output rates and resource constraints observed on sites."
+            "risk": "High Risk",
+            "riskClass": "font-red",
+            "detail": f"{pat2_count} projects affected. Concurrent timeline extension (>12M) and budget overrun (>10%)."
         },
         {
-            "title": "Clearance Delays = Land Acquisition Issues",
+            "title": "Low Physical Velocity on Extended Infrastructure Corridors",
             "count": pat3_count,
             "risk": "Medium Risk",
             "riskClass": "font-orange",
-            "detail": f"{pat3_count} projects affected. Delay correlation index elevated. Environmental permissions pending."
+            "detail": f"{pat3_count} projects affected. Sub-60% physical completion coupled with over 12 months of accumulated schedule slippage."
         },
     ]
 
@@ -213,108 +208,98 @@ def get_insights_summary(db: Session = Depends(get_db)) -> Dict[str, Any]:
 
     # ─── Risk Driver Percentages ──────────────────────────────────────────────
     denom = total if total > 0 else 1
+    phys_lag_count = db.query(func.count(Project.id)).filter(
+        (Project.physical_progress < Project.physical_progress_target - 5) |
+        ((Project.schedule_extension_months > 0) & (Project.physical_progress < 80))
+    ).scalar() or 0
+    
+    cost_escalation_count = cost_overrun_count
+    mile_slippage_count = time_overrun_count
+    
+    financial_gap_count = db.query(func.count(Project.id)).filter(
+        (Project.financial_progress - Project.physical_progress) > 15
+    ).scalar() or 0
+    
+    stagnation_count = db.query(func.count(Project.id)).filter(
+        Project.physical_progress < 50,
+        Project.schedule_extension_months > 12
+    ).scalar() or 0
+
     risk_drivers = [
         {
             "label": "Physical Progress Lag",
-            "pct": round(
-                db.query(func.count(Project.id)).filter(
-                    Project.physical_progress < Project.physical_progress_target - 5
-                ).scalar() / denom * 100
-            ),
+            "pct": round(phys_lag_count / denom * 100),
             "color": "bg-accent"
         },
         {
             "label": "Milestone Slippage",
-            "pct": round(time_overrun_count / denom * 100),
+            "pct": round(mile_slippage_count / denom * 100),
             "color": "bg-accent"
         },
         {
-            "label": "Fund Flow Delays",
-            "pct": round(
-                db.query(func.count(Project.id)).filter(
-                    Project.expenditure_ratio_pct < 40,
-                    Project.physical_progress > 30
-                ).scalar() / denom * 100
-            ),
+            "label": "Cost Escalation",
+            "pct": round(cost_escalation_count / denom * 100),
+            "color": "bg-accent" if (cost_escalation_count / denom * 100) >= 30 else "bg-orange"
+        },
+        {
+            "label": "Financial Outlay Divergence",
+            "pct": round(financial_gap_count / denom * 100),
             "color": "bg-orange"
         },
         {
-            "label": "Clearance Delays",
-            "pct": round(clear_count / denom * 100),
-            "color": "bg-info"
-        },
-        {
-            "label": "Contractor Performance",
-            "pct": round(contr_count / denom * 100),
+            "label": "Work Stagnation Risk",
+            "pct": round(stagnation_count / denom * 100),
             "color": "bg-info"
         },
     ]
 
     # ─── AI Summary Text ─────────────────────────────────────────────────────
     summary_text = (
-        f"Current patterns indicate escalating delays in land acquisition and procurement, "
+        f"Portfolio telemetry indicates active risk concentration in physical milestone execution and timeline slippage, "
         f"with {high_risk} projects showing elevated risk signals. "
-        f"If current trends continue, overall portfolio delay could increase by "
+        f"Across active projects with timeline extensions, the average recorded schedule extension is "
         f"{avg_delay} months."
     )
 
-    # ─── Recommendations — derived from top risk drivers ─────────────────────
-    recommendations = []
-    if land_count > 0:
-        recommendations.append({
+    # ─── Recommendations — derived from verified portfolio risk drivers ─────
+    recommendations = [
+        {
             "id": 1,
-            "title": "Revise Land Acquisition Processes",
-            "impact": "High Impact",
-            "impactClass": "font-red",
-            "iconType": "shield",
-            "iconBg": "var(--color-accent-red)",
-            "desc": f"Distribution delay affects {land_count} projects in key construction phases.",
-        })
-    if proc_count > 0:
-        recommendations.append({
-            "id": 2,
-            "title": "Restructure Procurement Timelines",
+            "title": "Establish Milestone Recovery Protocols",
             "impact": "High Impact",
             "impactClass": "font-red",
             "iconType": "clock",
             "iconBg": "var(--color-accent-red)",
-            "desc": f"Supply delays propagate risk to equipment installations in {proc_count} projects.",
-        })
-    if clear_count > 0:
-        recommendations.append({
+            "desc": f"Timeline slippage affects {mile_slippage_count} projects across central sector portfolios.",
+        },
+        {
+            "id": 2,
+            "title": "Enforce Strict Physical-Financial Reconciliation",
+            "impact": "High Impact",
+            "impactClass": "font-red",
+            "iconType": "shield",
+            "iconBg": "var(--color-accent-red)",
+            "desc": f"Financial disbursement exceeds certified physical delivery by >15% in {financial_gap_count} projects.",
+        },
+        {
             "id": 3,
-            "title": "Strengthen Clearance Approvals",
+            "title": "Conduct Capital Outlay Audits for Overrun Projects",
             "impact": "Medium Impact",
             "impactClass": "font-orange",
             "iconType": "shield",
             "iconBg": "#F59E0B",
-            "desc": f"Forest clearance permissions represent critical path items in {clear_count} projects.",
-        })
-    if contr_count > 0:
-        recommendations.append({
+            "desc": f"Budget revisions recorded in {cost_escalation_count} projects requiring enhanced expenditure controls.",
+        },
+        {
             "id": 4,
-            "title": "Review Contractor Performance",
+            "title": "Fast-Track Stagnant Project Work Packages",
             "impact": "Medium Impact",
             "impactClass": "font-orange",
             "iconType": "users",
             "iconBg": "#F59E0B",
-            "desc": f"Milestone slippage rates exceed average sector deviations in {contr_count} projects.",
-        })
-
-    # Ensure at least 4 recommendations even if data is sparse
-    if len(recommendations) < 4:
-        fallbacks = [
-            {
-                "id": len(recommendations) + 1,
-                "title": "Improve Financial Reporting Cadence",
-                "impact": "Medium Impact",
-                "impactClass": "font-orange",
-                "iconType": "shield",
-                "iconBg": "#F59E0B",
-                "desc": "Improved expenditure reporting reduces fund flow constraint risk.",
-            }
-        ]
-        recommendations.extend(fallbacks[: 4 - len(recommendations)])
+            "desc": f"Zero or sluggish progress advancement observed in {stagnation_count} extended infrastructure corridors.",
+        }
+    ]
 
     return {
         "as_of_date": datetime.utcnow().strftime("%d %B %Y").lstrip("0"),

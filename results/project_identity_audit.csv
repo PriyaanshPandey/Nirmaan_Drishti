@@ -1,0 +1,6 @@
+Metric,Value
+% records with valid primary key,0.00%
+% records using fallback identifier,100.00%
+Number of unique effective project IDs,6564
+Number of unique raw project IDs,6564
+Duplicate snapshots (effective_id + month),0

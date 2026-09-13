@@ -2,15 +2,15 @@
 Evaluation metrics for PAIMANA ML models.
 
 Computes classification and regression metrics,
-supports per-fold and aggregated reporting.
+supports per-fold and aggregated reporting across chronological walk-forward splits.
 """
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
     roc_auc_score, average_precision_score, precision_score, recall_score,
-    f1_score, confusion_matrix, brier_score_loss, mean_absolute_error,
-    mean_squared_error, r2_score, median_absolute_error
+    f1_score, accuracy_score, confusion_matrix, brier_score_loss,
+    mean_absolute_error, mean_squared_error, r2_score, median_absolute_error
 )
 from typing import Dict, List, Any, Optional
 from pathlib import Path
@@ -35,6 +35,8 @@ def evaluate_classifier(y_true: np.ndarray, y_pred_proba: np.ndarray,
     dict
         Metrics dictionary.
     """
+    y_true = np.asarray(y_true).astype(int)
+    y_pred_proba = np.asarray(y_pred_proba)
     y_pred = (y_pred_proba >= threshold).astype(int)
 
     metrics = {}
@@ -49,6 +51,7 @@ def evaluate_classifier(y_true: np.ndarray, y_pred_proba: np.ndarray,
     except (ValueError, TypeError):
         metrics["pr_auc"] = None
 
+    metrics["accuracy"] = round(float(accuracy_score(y_true, y_pred)), 4)
     metrics["precision"] = round(float(precision_score(y_true, y_pred, zero_division=0)), 4)
     metrics["recall"] = round(float(recall_score(y_true, y_pred, zero_division=0)), 4)
     metrics["f1"] = round(float(f1_score(y_true, y_pred, zero_division=0)), 4)
@@ -81,6 +84,9 @@ def evaluate_regressor(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, Any]
     dict
         Metrics dictionary.
     """
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
     metrics = {
         "mae": round(float(mean_absolute_error(y_true, y_pred)), 4),
         "medae": round(float(median_absolute_error(y_true, y_pred)), 4),
@@ -98,7 +104,7 @@ def aggregate_fold_metrics(fold_metrics: List[Dict[str, Any]]) -> Dict[str, Any]
     """
     Aggregate metrics across walk-forward folds.
 
-    Returns mean and std for each numeric metric.
+    Returns mean, std, min, and max for each numeric metric.
     """
     if not fold_metrics:
         return {}
@@ -115,6 +121,8 @@ def aggregate_fold_metrics(fold_metrics: List[Dict[str, Any]]) -> Dict[str, Any]
             aggregated[f"{key}_max"] = round(float(np.max(values)), 4)
 
     aggregated["n_folds"] = len(fold_metrics)
+    total_val = sum(f.get("total_samples", 0) for f in fold_metrics)
+    aggregated["total_validation_samples"] = total_val
     return aggregated
 
 
@@ -131,28 +139,8 @@ def print_metrics(metrics: Dict[str, Any], title: str = "Evaluation Metrics") ->
             print(f"    {k:<25} {v}")
 
 
-def print_comparison(baseline: Dict, xgb: Dict, model_name: str) -> None:
-    """Print side-by-side comparison between baseline and XGBoost."""
-    print(f"\n{'=' * 60}")
-    print(f"COMPARISON: {model_name}")
-    print(f"{'=' * 60}")
-    print(f"  {'Metric':<28} {'Baseline':>10} {'XGBoost':>12} {'Diff':>10}")
-    print(f"  {'-' * 60}")
-
-    all_keys = sorted(set(list(baseline.keys()) + list(xgb.keys())))
-    for k in all_keys:
-        if k in ("confusion_matrix", "n_folds"):
-            continue
-        b_val = baseline.get(k, None)
-        x_val = xgb.get(k, None)
-        if b_val is not None and x_val is not None and isinstance(b_val, (int, float)) and isinstance(x_val, (int, float)):
-            diff = x_val - b_val
-            sign = "+" if diff > 0 else ""
-            print(f"  {k:<28} {b_val:>10.4f} {x_val:>12.4f} {sign}{diff:>9.4f}")
-
-
 def save_metrics(results: Dict[str, Any], output_dir: str = None) -> None:
-    """Save all evaluation metrics to CSV and JSON."""
+    """Save all evaluation metrics to CSV."""
     if output_dir is None:
         output_dir = Path(__file__).parent.parent / "results"
     output_dir = Path(output_dir)

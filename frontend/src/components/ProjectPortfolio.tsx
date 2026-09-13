@@ -24,6 +24,72 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
   const [newProjectCode, setNewProjectCode] = useState('');
   const [newProjectCost, setNewProjectCost] = useState('');
 
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const fetchProjects = () => {
+    setLoading(true);
+    setError(false);
+
+    api.getProjects(
+      page, 
+      pageSize, 
+      searchQuery, 
+      undefined, 
+      undefined, 
+      selectedStatus !== 'All' ? selectedStatus : undefined,
+      selectedMinistry !== 'All' ? selectedMinistry : undefined,
+      selectedSector !== 'All' ? selectedSector : undefined
+    )
+      .then((res) => {
+        setProjectsList(res.items);
+        setTotalProjects(res.total);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  const handleOnboardProject = async () => {
+    if (!newProjectName.trim()) {
+      setSubmitError('Project Name is required');
+      return;
+    }
+
+    const costNum = parseFloat(newProjectCost) || 1000;
+    const code = newProjectCode.trim() || `PRJ-${Date.now().toString().slice(-5)}`;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await api.createProject({
+        id: code,
+        name: newProjectName.trim(),
+        project_code: code,
+        original_cost: costNum,
+        revised_cost: costNum,
+        schedule_status: 'ON TRACK'
+      });
+
+      // Clear inputs & close modal
+      setNewProjectName('');
+      setNewProjectCode('');
+      setNewProjectCost('');
+      setShowNewProjectModal(false);
+
+      // Re-fetch project list to display newly added project at the top
+      setPage(1);
+      fetchProjects();
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to onboard project');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMinistry, setSelectedMinistry] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
@@ -393,14 +459,21 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
               Projects onboarded here are synchronized to PostgreSQL and immediately become available for XGBoost Risk Assessment and SHAP Explainability.
             </p>
 
+            {submitError && (
+              <div style={{ padding: '8px 12px', background: '#FEE2E2', border: '1px solid #F87171', borderRadius: '6px', color: '#B91C1C', fontSize: '12px', marginBottom: '12px' }}>
+                {submitError}
+              </div>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>Project Name</label>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>Project Name *</label>
                 <input 
                   type="text" 
                   placeholder="e.g. National Corridor Expansion Phase IV"
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
+                  disabled={isSubmitting}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px' }}
                 />
               </div>
@@ -412,6 +485,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                     placeholder="e.g. PRJ-9901"
                     value={newProjectCode}
                     onChange={(e) => setNewProjectCode(e.target.value)}
+                    disabled={isSubmitting}
                     style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px' }}
                   />
                 </div>
@@ -422,6 +496,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                     placeholder="e.g. 1250"
                     value={newProjectCost}
                     onChange={(e) => setNewProjectCost(e.target.value)}
+                    disabled={isSubmitting}
                     style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px' }}
                   />
                 </div>
@@ -430,18 +505,21 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
               <button 
-                onClick={() => setShowNewProjectModal(false)}
+                onClick={() => {
+                  setShowNewProjectModal(false);
+                  setSubmitError(null);
+                }}
+                disabled={isSubmitting}
                 style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#F8FAFC', color: '#475569', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
               >
                 Cancel
               </button>
               <button 
-                onClick={() => {
-                  setShowNewProjectModal(false);
-                }}
-                style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#2563EB', color: '#FFFFFF', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                onClick={handleOnboardProject}
+                disabled={isSubmitting}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: isSubmitting ? '#93C5FD' : '#2563EB', color: '#FFFFFF', fontSize: '13px', fontWeight: 700, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
               >
-                Onboard Project
+                {isSubmitting ? 'Onboarding...' : 'Onboard Project'}
               </button>
             </div>
           </div>

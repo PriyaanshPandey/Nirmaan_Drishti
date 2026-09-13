@@ -14,10 +14,52 @@ import './ProjectDistribution.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import type { DistributionSummaryData } from '../services/api';
+import { projectsData } from '../data/projectsData';
+import { InfoButton } from './ExplainabilityInfo';
 
 export const ProjectDistribution: React.FC = () => {
   const [data, setData] = useState<DistributionSummaryData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Derive dynamic portfolio and regional metrics
+  const delayedCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND') || (p.riskScore || 0) >= 70).length;
+  const totalEscalationCr = projectsData.reduce((acc, p) => {
+    const orig = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const rev = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+    return acc + Math.max(0, rev - orig);
+  }, 0);
+  const totalEscalationFormatted = totalEscalationCr >= 100000 
+    ? `₹${(totalEscalationCr / 100000).toFixed(1)}L Cr` 
+    : `₹${Math.round(totalEscalationCr).toLocaleString('en-IN')} Cr`;
+
+  // Top Sector from data or projectsData
+  const topSector = data && data.sectors && data.sectors.length > 0 ? data.sectors[0] : null;
+  const topSectorName = topSector ? topSector.name : (projectsData[0]?.sector || 'Road Transport & Highways');
+  const topSectorTotal = topSector ? topSector.total : projectsData.filter(p => p.sector === topSectorName).length;
+  const topSectorHighPct = topSector ? topSector.highPct : 18.4;
+  const topSectorAvgRisk = topSector ? topSector.avgRisk : 50;
+
+  // Regional state breakdown
+  const stateCounts: Record<string, { count: number; cost: number }> = {};
+  for (const p of projectsData) {
+    let st = p.location ? p.location.replace(/[\r\n]+/g, ' ').trim() : 'National';
+    if (st.startsWith('Multi-States')) {
+      const match = st.match(/\(([^,)]+)/);
+      st = match ? match[1].trim() : 'Multi-State';
+    } else {
+      st = st.split(',')[0].trim();
+    }
+    if (!stateCounts[st]) stateCounts[st] = { count: 0, cost: 0 };
+    stateCounts[st].count += 1;
+    stateCounts[st].cost += parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  }
+  const sortedStates = Object.entries(stateCounts).sort((a, b) => b[1].count - a[1].count);
+  const topStateName = sortedStates[0] ? sortedStates[0][0] : 'Western';
+  const topStateCount = sortedStates[0] ? sortedStates[0][1].count : 298;
+  const topStateCost = sortedStates[0] ? sortedStates[0][1].cost : 48600;
+  const topStateCostFormatted = topStateCost >= 100000 
+    ? `₹${(topStateCost / 100000).toFixed(1)}L Cr` 
+    : `₹${Math.round(topStateCost).toLocaleString('en-IN')} Cr`;
 
   useEffect(() => {
     setLoading(true);
@@ -44,7 +86,9 @@ export const ProjectDistribution: React.FC = () => {
           chipClass: 'chip-blue',
           accentColor: '#2563EB',
           progressWidth: '100%',
-          progressClass: 'bar-blue'
+          progressClass: 'bar-blue',
+          infoTitle: 'Total Monitored Projects',
+          infoSummary: 'Total active central sector infrastructure projects currently monitored across all national ministries and departments.'
         },
         {
           id: 'high',
@@ -56,7 +100,9 @@ export const ProjectDistribution: React.FC = () => {
           chipClass: 'chip-red',
           accentColor: '#DC2626',
           progressWidth: data.highPct,
-          progressClass: 'bar-red'
+          progressClass: 'bar-red',
+          infoTitle: 'High Priority Tier',
+          infoSummary: 'Projects facing severe schedule delays (>6 months), heavy budget escalation, or critical risk indices (≥70).'
         },
         {
           id: 'medium',
@@ -68,7 +114,9 @@ export const ProjectDistribution: React.FC = () => {
           chipClass: 'chip-amber',
           accentColor: '#D97706',
           progressWidth: data.mediumPct,
-          progressClass: 'bar-amber'
+          progressClass: 'bar-amber',
+          infoTitle: 'Medium Priority Tier',
+          infoSummary: 'Projects with moderate milestone slippages or emerging cost deviations requiring heightened departmental supervision.'
         },
         {
           id: 'low',
@@ -80,7 +128,9 @@ export const ProjectDistribution: React.FC = () => {
           chipClass: 'chip-green',
           accentColor: '#16A34A',
           progressWidth: data.lowPct,
-          progressClass: 'bar-green'
+          progressClass: 'bar-green',
+          infoTitle: 'Low Priority Tier',
+          infoSummary: 'Projects executing stably on schedule within sanctioned budgets with healthy milestone progress.'
         }
       ]
     : [];
@@ -90,7 +140,14 @@ export const ProjectDistribution: React.FC = () => {
       {/* ── Page Header ── */}
       <div className="dist-page-header">
         <div className="dist-header-left">
-          <h1 className="dist-page-title">Project Distribution</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 className="dist-page-title">Project Distribution</h1>
+            <InfoButton 
+              title="Project Distribution Telemetry" 
+              summary="Structural overview of all monitored central infrastructure assets, tracking sector concentration, risk tier distributions, and regional allocations."
+              size="md"
+            />
+          </div>
           <p className="dist-page-subtitle">
             Sectoral composition, risk tier dispersion, and portfolio health across central infrastructure ministries.
           </p>
@@ -117,9 +174,12 @@ export const ProjectDistribution: React.FC = () => {
           ) : (
             summaryCards.map((card) => (
               <div key={card.id} className={`dist-stat-card card-${card.id}`}>
-                {/* Top Row: Title + Icon Chip */}
+                {/* Top Row: Title + Info + Icon Chip */}
                 <div className="dist-stat-top">
-                  <span className="dist-stat-label">{card.title}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="dist-stat-label">{card.title}</span>
+                    <InfoButton title={card.infoTitle} summary={card.infoSummary} size="sm" />
+                  </div>
                   <div className={`dist-stat-icon-chip ${card.chipClass}`}>
                     {card.icon}
                   </div>
@@ -163,7 +223,14 @@ export const ProjectDistribution: React.FC = () => {
                 <Layers size={18} color="#2563EB" />
               </div>
               <div>
-                <h3 className="dist-panel-title">Sectoral Risk Breakdown</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h3 className="dist-panel-title">Sectoral Risk Breakdown</h3>
+                  <InfoButton
+                    title="Sectoral Risk Breakdown"
+                    summary="Evaluates project volume, composite risk severity, and high/medium/low tier distribution for each infrastructure sector."
+                    size="sm"
+                  />
+                </div>
                 <p className="dist-panel-desc">
                   Proportional risk distribution and composite severity indices per national infrastructure sector
                 </p>
@@ -193,12 +260,27 @@ export const ProjectDistribution: React.FC = () => {
               <thead>
                 <tr>
                   <th className="th-col-sector">SECTOR</th>
-                  <th className="th-col-total">TOTAL ASSETS</th>
-                  <th className="th-col-proportion">PROPORTIONAL DISTRIBUTION</th>
+                  <th className="th-col-total">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>TOTAL ASSETS</span>
+                      <InfoButton title="Total Sector Assets" summary="Total number of monitored infrastructure projects within this sector." size="sm" />
+                    </div>
+                  </th>
+                  <th className="th-col-proportion">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>PROPORTIONAL DISTRIBUTION</span>
+                      <InfoButton title="Risk Proportion" summary="Relative share of high risk (red), medium risk (amber), and low risk (green) projects in this sector." size="sm" />
+                    </div>
+                  </th>
                   <th className="th-col-metric">HIGH RISK</th>
                   <th className="th-col-metric">MEDIUM RISK</th>
                   <th className="th-col-metric">LOW RISK</th>
-                  <th className="th-col-score">AVG RISK SCORE</th>
+                  <th className="th-col-score">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
+                      <span>AVG RISK SCORE</span>
+                      <InfoButton title="Average Risk Index" summary="Mean composite risk score (0 to 100) combining schedule delay, cost escalation, and milestone slippage." size="sm" />
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -300,7 +382,14 @@ export const ProjectDistribution: React.FC = () => {
       <section className="dist-section">
         <div className="dist-section-header">
           <span className="dist-section-tag">STRATEGIC INTELLIGENCE</span>
-          <h2 className="dist-section-heading">Priority Interventions &amp; Regional Focus</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 className="dist-section-heading">Priority Interventions &amp; Regional Focus</h2>
+            <InfoButton
+              title="Strategic Intelligence Overview"
+              summary="High-level operational takeaways pinpointing where urgent intervention, capital focus, and targeted policies yield the highest risk reduction."
+              size="md"
+            />
+          </div>
         </div>
 
         <div className="dist-strategic-grid">
@@ -308,22 +397,25 @@ export const ProjectDistribution: React.FC = () => {
           <div className="strategic-card card-critical-action">
             <div className="strategic-top-row">
               <span className="strategic-tag tag-red">CRITICAL ACTION REQUIRED</span>
-              <ShieldAlert size={18} color="#DC2626" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <InfoButton title="Critical Interventions" summary="Total high-risk projects and aggregate cost escalation requiring immediate administrative escalation." size="sm" />
+                <ShieldAlert size={18} color="#DC2626" />
+              </div>
             </div>
-            <h4 className="strategic-card-title text-red">Land Clearance Backlog</h4>
+            <h4 className="strategic-card-title text-red">High Priority Interventions</h4>
             <p className="strategic-card-desc">
-              78 projects across railways and highways are delayed due to ROW clearance issues.
+              {data?.high || delayedCount} projects are flagged as critical or delayed requiring administrative escalation.
             </p>
             <div className="strategic-metrics-box">
               <div className="strategic-metric-item">
                 <span className="strategic-num text-red">
-                  <AnimatedCounter value={78} />
+                  <AnimatedCounter value={data?.high || delayedCount} />
                 </span>
-                <span className="strategic-lbl">Projects Delayed</span>
+                <span className="strategic-lbl">High Risk Projects</span>
               </div>
               <div className="strategic-divider" />
               <div className="strategic-metric-item">
-                <span className="strategic-num">₹14.2K Cr</span>
+                <span className="strategic-num">{totalEscalationFormatted}</span>
                 <span className="strategic-lbl">Escalation Cost</span>
               </div>
             </div>
@@ -336,21 +428,24 @@ export const ProjectDistribution: React.FC = () => {
           {/* Card 2: Prioritised Sector */}
           <div className="strategic-card card-priority-sector">
             <div className="strategic-top-row">
-              <span className="strategic-tag tag-blue">MOST CRITICAL SECTOR</span>
-              <TrendingUp size={18} color="#2563EB" />
+              <span className="strategic-tag tag-blue">TOP CAPITAL SECTOR</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <InfoButton title="Top Capital Sector" summary="Sector accounting for the highest volume of national infrastructure capital and its specific risk concentration." size="sm" />
+                <TrendingUp size={18} color="#2563EB" />
+              </div>
             </div>
-            <h4 className="strategic-card-title">Railways Core</h4>
+            <h4 className="strategic-card-title">{topSectorName}</h4>
             <p className="strategic-card-desc">
-              High severity contractor defaults and equipment shortage during freezing weather windows.
+              Accounts for {topSectorTotal} monitored national assets with {topSectorHighPct}% in elevated risk tier.
             </p>
             <div className="strategic-metrics-box">
               <div className="strategic-metric-item">
-                <span className="strategic-num text-amber">22.9%</span>
+                <span className="strategic-num text-amber">{topSectorHighPct}%</span>
                 <span className="strategic-lbl">High Risk Pct</span>
               </div>
               <div className="strategic-divider" />
               <div className="strategic-metric-item">
-                <span className="strategic-num">65/100</span>
+                <span className="strategic-num">{topSectorAvgRisk}/100</span>
                 <span className="strategic-lbl">Avg Risk Index</span>
               </div>
             </div>
@@ -364,23 +459,26 @@ export const ProjectDistribution: React.FC = () => {
           <div className="strategic-card card-region-focus">
             <div className="strategic-top-row">
               <span className="strategic-tag tag-neutral">REGIONAL CONCENTRATION</span>
-              <MapPin size={18} color="#059669" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <InfoButton title="Regional Allocation" summary="The geographic state or territory with the largest concentration of active monitored projects and sanctioned capital." size="sm" />
+                <MapPin size={18} color="#059669" />
+              </div>
             </div>
-            <h4 className="strategic-card-title">Western Corridor</h4>
+            <h4 className="strategic-card-title">{topStateName} Region</h4>
             <p className="strategic-card-desc">
-              Maharashtra and Gujarat hold 34% of active projects under monitoring phase.
+              Concentration of {topStateCount} active central sector projects across primary corridor nodes.
             </p>
             <div className="strategic-metrics-box">
               <div className="strategic-metric-item">
                 <span className="strategic-num">
-                  <AnimatedCounter value={298} />
+                  <AnimatedCounter value={topStateCount} />
                 </span>
                 <span className="strategic-lbl">Active Projects</span>
               </div>
               <div className="strategic-divider" />
               <div className="strategic-metric-item">
-                <span className="strategic-num">₹48.6K Cr</span>
-                <span className="strategic-lbl">Total Funding</span>
+                <span className="strategic-num">{topStateCostFormatted}</span>
+                <span className="strategic-lbl">Total Sanctioned</span>
               </div>
             </div>
             <button type="button" className="strategic-btn btn-action-neutral">
@@ -389,29 +487,67 @@ export const ProjectDistribution: React.FC = () => {
             </button>
           </div>
 
-          {/* Card 4: AI Policy Strategy */}
+          {/* Card 4: Strategic Policy Playbook */}
           <div className="strategic-card card-ai-policy">
             <div className="strategic-top-row">
-              <span className="strategic-tag tag-purple">AI POLICY STRATEGY</span>
-              <Sparkles size={18} color="#7C3AED" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span className="strategic-tag tag-purple">STRATEGIC PLAYBOOK</span>
+                <span style={{
+                  fontSize: '9px',
+                  fontWeight: 800,
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  backgroundColor: '#FEF3C7',
+                  color: '#B45309',
+                  border: '1px solid #FDE68A',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.4px',
+                  whiteSpace: 'nowrap'
+                }}>
+                  Under Development • Illustration
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <InfoButton 
+                  title="Portfolio Risk Playbook (Under Development)" 
+                  summary="Future expansion: Automated policy recommendation and dispatch engine under active development for illustration of intervention levers." 
+                  size="sm" 
+                />
+                <Sparkles size={18} color="#7C3AED" />
+              </div>
             </div>
-            <h4 className="strategic-card-title">NOC Optimization</h4>
+            <h4 className="strategic-card-title">Portfolio Risk Mitigation</h4>
+
+            {/* Under Development Notice Banner */}
+            <div style={{
+              fontSize: '11px',
+              color: '#6B21A8',
+              backgroundColor: '#FAF5FF',
+              border: '1px dashed #C084FC',
+              borderRadius: '6px',
+              padding: '6px 10px',
+              marginBottom: '10px',
+              lineHeight: 1.4
+            }}>
+              <strong>FUTURE EXPANSION:</strong> Policy dispatch automation is under active development for illustration.
+            </div>
+
             <div className="strategic-checklist">
               <div className="checklist-item">
                 <span className="checklist-dot">✓</span>
-                <span>Automate environment permissions NOC</span>
+                <span>Priority milestone recovery mobilization</span>
               </div>
               <div className="checklist-item">
                 <span className="checklist-dot">✓</span>
-                <span>Trigger PMG fast-track path review</span>
+                <span>Financial outlay &amp; expenditure audit</span>
               </div>
               <div className="checklist-item">
                 <span className="checklist-dot">✓</span>
-                <span>Re-allocate contractor work shares</span>
+                <span>Critical path schedule re-baselining</span>
               </div>
             </div>
             <button type="button" className="strategic-btn btn-action-purple">
-              <span>Apply Policy NOC</span>
+              <span>View Strategic Playbook (Demo)</span>
               <ArrowRight size={14} />
             </button>
           </div>
