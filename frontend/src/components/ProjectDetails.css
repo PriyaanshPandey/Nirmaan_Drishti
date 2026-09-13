@@ -130,13 +130,27 @@
   box-shadow: var(--shadow-sm);
 }
 
-.status-critical,
-.status-delayed {
+.status-critical {
   background-color: #FEE2E2;
   color: #991B1B;
   border: 1px solid #FCA5A5;
 }
 
+.status-delayed {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FCD34D;
+}
+
+.status-in-progress,
+.status-inprogress,
+.status-in-review {
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.status-on-track,
 .status-ontrack {
   background-color: #DCFCE7;
   color: #166534;

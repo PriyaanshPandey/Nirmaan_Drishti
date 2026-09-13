@@ -19,7 +19,7 @@ export interface Project {
   startDate: string;
   phase: string;
   type: string;
-  scheduleStatus: 'DELAYED' | 'ON TRACK' | 'CRITICAL';
+  scheduleStatus: 'DELAYED' | 'ON TRACK' | 'CRITICAL' | 'IN PROGRESS' | 'IN REVIEW';
   costLabel: string;
   costSubtext: string;
   riskScore: number; // 0 to 100
@@ -49,6 +49,35 @@ export interface ProjectBenchmark {
   delay_benchmark: Array<{ label: string; projectVal: string; avg: string; benchmark: string; isAlert?: boolean }>;
   tech_benchmark: Array<{ label: string; projectVal: string; avg: string; benchmark: string; isAlert?: boolean }>;
   recommendation: string;
+}
+
+export function getProjectDisplayStatus(p: {
+  scheduleStatus?: string;
+  riskLevel?: string;
+  riskScore?: number;
+  progressPhysical?: number;
+}): 'CRITICAL' | 'DELAYED' | 'IN REVIEW' | 'ON TRACK' {
+  if (p.scheduleStatus === 'CRITICAL' || p.riskLevel === 'Critical' || (p.riskScore !== undefined && p.riskScore >= 75)) {
+    return 'CRITICAL';
+  }
+  const stat = (p.scheduleStatus || '').toUpperCase();
+  if (stat.includes('CRIT') || stat.includes('OVERDUE')) {
+    return 'CRITICAL';
+  }
+  if (stat.includes('DELAY') || stat.includes('EXTEND')) {
+    return 'DELAYED';
+  }
+  if (
+    stat === 'IN REVIEW' ||
+    stat === 'IN PROGRESS' ||
+    stat.includes('REVIEW') ||
+    stat.includes('PROGRESS') ||
+    stat.includes('MONITOR') ||
+    (stat === 'ON TRACK' && (p.progressPhysical ?? 0) > 0 && (p.progressPhysical ?? 0) < 100 && (((p.riskScore ?? 0) >= 25) || p.riskLevel === 'Medium'))
+  ) {
+    return 'IN REVIEW';
+  }
+  return 'ON TRACK';
 }
 
 export const projectsData: Project[] = [

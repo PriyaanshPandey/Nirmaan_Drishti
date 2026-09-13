@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles, LayoutDashboard, Database, ArrowRight, Cpu, ShieldAlert,
-  TrendingUp, Layers, BarChart3, Globe, Play
+  TrendingUp, Layers, BarChart3, Globe
 } from 'lucide-react';
 import './Home.css';
 import { VideoHero } from './VideoHero';
@@ -19,7 +19,6 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickNonce }) => {
   const [playIntro, setPlayIntro] = useState<boolean>(true);
-  const [replayCount, setReplayCount] = useState<number>(0);
   const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
   const [animIteration, setAnimIteration] = useState<number>(0);
 
@@ -97,7 +96,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       {/* ── Fullscreen Video Intro Overlay (Plays on load for 3s, blurs out, dissolves without scrolling) ── */}
       {playIntro && (
         <VideoHero
-          key={replayCount}
           onFinished={() => setPlayIntro(false)}
         />
       )}
@@ -134,18 +132,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
                 >
                   <span>Launch Dashboard</span>
                   <ArrowRight size={16} />
-                </button>
-                <button
-                  type="button"
-                  className="hero-btn-replay-intro"
-                  onClick={() => {
-                    setPlayIntro(true);
-                    setReplayCount(prev => prev + 1);
-                  }}
-                  title="Watch Video Intro"
-                >
-                  <Play size={14} />
-                  <span>Watch Intro</span>
                 </button>
               </div>
             </div>

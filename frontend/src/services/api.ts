@@ -6,6 +6,7 @@
  */
 
 import { type Project, type ProjectBenchmark, projectsData } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
 
@@ -767,12 +768,46 @@ export const api = {
         filtered = filtered.filter(p => p.sector.toLowerCase() === sector.toLowerCase());
       }
       if (scheduleStatus && scheduleStatus !== 'All') {
-        filtered = filtered.filter(p => p.scheduleStatus === scheduleStatus);
+        const stat = scheduleStatus.toUpperCase().trim();
+        if (stat === 'CRITICAL' || stat.includes('CRIT')) {
+          filtered = filtered.filter(p =>
+            p.scheduleStatus === 'CRITICAL' ||
+            p.riskLevel === 'Critical' ||
+            (p.riskScore && p.riskScore >= 75)
+          );
+        } else if (stat === 'IN REVIEW' || stat.includes('REVIEW') || stat === 'IN PROGRESS' || stat.includes('PROGRESS')) {
+          filtered = filtered.filter(p =>
+            (p.scheduleStatus as string) === 'IN REVIEW' ||
+            (p.scheduleStatus as string) === 'IN PROGRESS' ||
+            (p.scheduleStatus === 'ON TRACK' && p.progressPhysical > 0 && p.progressPhysical < 100 && ((p.riskScore && p.riskScore >= 25) || p.riskLevel === 'Medium'))
+          );
+        } else if (stat === 'DELAYED' || stat.includes('DELAY')) {
+          filtered = filtered.filter(p =>
+            p.scheduleStatus === 'DELAYED' &&
+            p.riskLevel !== 'Critical' &&
+            (!p.riskScore || p.riskScore < 75)
+          );
+        } else if (stat === 'ON TRACK' || stat.includes('TRACK')) {
+          filtered = filtered.filter(p =>
+            p.scheduleStatus === 'ON TRACK' &&
+            p.riskLevel !== 'Critical' &&
+            (!p.riskScore || p.riskScore < 75) &&
+            !(p.progressPhysical > 0 && p.progressPhysical < 100 && ((p.riskScore && p.riskScore >= 25) || p.riskLevel === 'Medium'))
+          );
+        } else {
+          filtered = filtered.filter(p => p.scheduleStatus.toUpperCase() === stat);
+        }
       }
 
+      // Ensure each project has its accurate, verified scheduleStatus (CRITICAL, DELAYED, IN PROGRESS, ON TRACK)
+      const mappedFallback: Project[] = filtered.map(p => ({
+        ...p,
+        scheduleStatus: getProjectDisplayStatus(p)
+      }));
+
       const start = (page - 1) * pageSize;
-      const paginated = filtered.slice(start, start + pageSize);
-      return { items: paginated, total: filtered.length };
+      const paginated = mappedFallback.slice(start, start + pageSize);
+      return { items: paginated, total: mappedFallback.length };
     }
   },
 
@@ -784,7 +819,7 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/projects/${projectId}`);
       if (!res.ok) throw new Error('Project details failed');
       const p = await res.json();
-      return {
+      const projItem = {
         id: p.id,
         name: p.name,
         ministry: p.ministry?.name || 'Ministry of Infrastructure',
@@ -814,9 +849,18 @@ export const api = {
         implRisk: p.impl_risk || 20,
         overallRisk: p.overall_risk || 20,
       };
+      return {
+        ...projItem,
+        scheduleStatus: getProjectDisplayStatus(projItem)
+      };
     } catch (e) {
       console.warn('Backend unavailable, using fallback project record.');
-      return projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0] || null;
+      const fallback = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0] || null;
+      if (!fallback) return null;
+      return {
+        ...fallback,
+        scheduleStatus: getProjectDisplayStatus(fallback)
+      };
     }
   },
 

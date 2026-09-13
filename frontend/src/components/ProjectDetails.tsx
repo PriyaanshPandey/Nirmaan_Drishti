@@ -5,6 +5,7 @@ import {
   AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
 } from 'lucide-react';
 import { type Project } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 import {
   api,
   type RiskPredictionData,
@@ -439,8 +440,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       {/* Project Title & Status */}
       <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
-        <span className={`status-tag-badge status-${project.scheduleStatus.toLowerCase()}`}>
-          {project.scheduleStatus}
+        <span className={`status-tag-badge status-${getProjectDisplayStatus(project).toLowerCase().replace(/\s+/g, '-')}`}>
+          {getProjectDisplayStatus(project)}
         </span>
       </div>
 

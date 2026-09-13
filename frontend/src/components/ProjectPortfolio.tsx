@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { Project } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 import { api } from '../services/api';
 import './ProjectPortfolio.css';
 
 interface ProjectPortfolioProps {
   onSelectProject: (projectId: string) => void;
+  initialStatus?: string;
+  statusFilterNonce?: number;
 }
 
-export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProject }) => {
+export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProject, initialStatus, statusFilterNonce }) => {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [totalProjects, setTotalProjects] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,7 +27,14 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMinistry, setSelectedMinistry] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
-  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
+
+  useEffect(() => {
+    if (initialStatus !== undefined) {
+      setSelectedStatus(initialStatus || 'All');
+      setPage(1);
+    }
+  }, [initialStatus, statusFilterNonce]);
 
   const [ministries, setMinistries] = useState<string[]>(['All']);
   const [sectors, setSectors] = useState<string[]>(['All']);
@@ -105,13 +115,16 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
 
   const filteredProjects = projectsList;
 
-  const getStatusBadge = (status: Project['scheduleStatus'] | string) => {
-    const stat = (status || '').toUpperCase();
-    if (stat.includes('CRIT') || stat.includes('OVERDUE')) {
+  const getStatusBadge = (status: Project['scheduleStatus'] | string, project?: Project) => {
+    const dispStatus = project ? getProjectDisplayStatus(project) : getProjectDisplayStatus({ scheduleStatus: status });
+    if (dispStatus === 'CRITICAL') {
       return <span className="status-badge-pill status-critical">CRITICAL</span>;
     }
-    if (stat.includes('DELAY') || stat.includes('EXTEND')) {
+    if (dispStatus === 'DELAYED') {
       return <span className="status-badge-pill status-delayed">DELAYED</span>;
+    }
+    if (dispStatus === 'IN REVIEW') {
+      return <span className="status-badge-pill status-in-review">IN REVIEW</span>;
     }
     return <span className="status-badge-pill status-on-track">ON TRACK</span>;
   };
@@ -189,6 +202,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             >
               <option value="All">All Schedule Statuses</option>
               <option value="ON TRACK">On Track</option>
+              <option value="IN REVIEW">In Review</option>
               <option value="DELAYED">Delayed</option>
               <option value="CRITICAL">Critical</option>
             </select>
@@ -262,7 +276,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                         </div>
                       </td>
                       <td className="td-schedule-status">
-                        {getStatusBadge(project.scheduleStatus)}
+                        {getStatusBadge(project.scheduleStatus, project)}
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>
                         <button 
