@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { Header } from './components/Header';
 import { MetricCards } from './components/MetricCards';
@@ -16,27 +16,66 @@ import { Home } from './components/Home';
 import { Footer } from './components/Footer';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('home');
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  type NavigationState = { tab: string; projectId: string | null };
+  const initialNavigation = (window.history.state as NavigationState | null) || { tab: 'home', projectId: null };
+  const [activeTab, setActiveTab] = useState(initialNavigation.tab);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialNavigation.projectId);
   const [previousTab, setPreviousTab] = useState<string>('projects');
+
+  const updateHistory = (navigation: NavigationState) => {
+    window.history.pushState(navigation, '', window.location.href);
+  };
+
+  useEffect(() => {
+    const currentState = window.history.state as NavigationState | null;
+    if (!currentState || !currentState.tab) {
+      window.history.replaceState({ tab: activeTab, projectId: selectedProjectId }, '', window.location.href);
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const navigation = (event.state as NavigationState | null) || { tab: 'home', projectId: null };
+      setActiveTab(navigation.tab);
+      setSelectedProjectId(navigation.projectId);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      home: 'Home',
+      dashboard: 'Dashboard',
+      projects: selectedProjectId ? `Project Details — ${selectedProjectId}` : 'Projects',
+      insights: 'AI Insights',
+      'action-centre': 'Action Centre',
+      distribution: 'Distribution',
+    };
+    document.title = `Nirmaan Drishti — ${titles[activeTab] || 'Home'}`;
+  }, [activeTab, selectedProjectId]);
 
   const handleTabChange = (tab: string) => {
     if (tab === activeTab) return;
     setSelectedProjectId(null);
     setActiveTab(tab);
+    updateHistory({ tab, projectId: null });
   };
 
   const handleSelectProject = (id: string) => {
     setPreviousTab(activeTab);
     setSelectedProjectId(id);
     setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: id });
   };
 
   const handleBack = () => {
-    setSelectedProjectId(null);
-    if (previousTab && previousTab !== 'projects') {
-      setActiveTab(previousTab);
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
     }
+
+    setSelectedProjectId(null);
+    setActiveTab(previousTab && previousTab !== 'projects' ? previousTab : 'projects');
   };
 
   return (

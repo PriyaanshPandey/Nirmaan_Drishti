@@ -4,6 +4,7 @@ import './PriorityInterventions.css';
 import { api } from '../services/api';
 import { projectsData } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
+import { StatusIndicator } from './StatusIndicator';
 
 export interface CriticalProject {
   id: string;
@@ -102,6 +103,17 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
               <InfoButton
                 title="Priority Projects"
                 summary="These are the most critical projects needing urgent attention due to big delays and large budgets at risk."
+                dataSummary={{
+                  items: displayedProjects.length > 0
+                    ? displayedProjects.map((project) => ({
+                        label: project.project,
+                        value: `${project.riskScore}/100 risk, ${project.delayMonths} mo delay, ${project.costOverrunPct}% overrun`
+                      }))
+                    : [{ label: 'Status', value: 'No project risk data is currently available' }],
+                  insight: displayedProjects.length > 0
+                    ? `Highest displayed risk score: ${Math.max(...displayedProjects.map((project) => project.riskScore))}/100.`
+                    : undefined
+                }}
                 size="sm"
               />
             </div>
@@ -145,6 +157,15 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                   key={p.id || index}
                   className="critical-project-row"
                   onClick={handleRowClick}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open ${p.project}, ${p.riskLevel} risk, score ${p.riskScore} out of 100`}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleRowClick();
+                    }
+                  }}
                 >
                   {/* Left col: Rank + Name + Sector */}
                   <div className="row-left">
@@ -193,7 +214,11 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                         <span className="score-num">{p.riskScore}</span>
                         <span className="score-denom">/100</span>
                       </div>
-                      <span className="risk-level-tag">{p.riskLevel}</span>
+                      <StatusIndicator
+                        kind={p.riskLevel.toLowerCase().includes('critical') ? 'critical' : p.riskScore >= 70 ? 'high' : 'low'}
+                        label={p.riskLevel.toUpperCase() === 'CRITICAL' ? 'CRITICAL PROJECT' : `${p.riskLevel.toUpperCase()} RISK`}
+                        className="risk-level-tag"
+                      />
                     </div>
 
                     <button className="open-project-btn" title="Open Full Project Profile">

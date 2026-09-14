@@ -89,14 +89,16 @@
 
 /* ── Filters Card ── */
 .portfolio-filters-card {
-  background-color: #FFFFFF;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--border-color);
   padding: 18px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .portfolio-search-input-wrapper {
@@ -116,7 +118,7 @@
 .portfolio-search-input {
   width: 100%;
   padding: 11px 16px 11px 42px;
-  border: 1px solid #CBD5E1;
+  border: 1px solid #64748B;
   border-radius: 8px;
   font-family: inherit;
   font-size: 13.5px;
@@ -184,10 +186,12 @@
 
 /* ── Table Card ── */
 .portfolio-table-card {
-  background-color: #FFFFFF;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -299,6 +303,8 @@
 }
 
 .progress-bar-fill {
+  outline: 1px solid #334155;
+  outline-offset: -1px;
   height: 100%;
   background: linear-gradient(90deg, #2563EB 0%, #3B82F6 100%);
   border-radius: 99px;
@@ -426,6 +432,46 @@
   opacity: 0.35;
   cursor: not-allowed;
   transform: none;
+}
+
+@media (max-width: 900px) {
+  .portfolio-top-bar,
+  .portfolio-title-section,
+  .portfolio-action-buttons,
+  .portfolio-filters-card {
+    flex-wrap: wrap;
+  }
+
+  .portfolio-top-bar,
+  .portfolio-filters-card {
+    gap: 12px;
+  }
+
+  .portfolio-table-responsive-container {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .portfolio-custom-table {
+    min-width: 920px;
+  }
+
+  .portfolio-search-input-wrapper {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .portfolio-action-buttons,
+  .portfolio-action-buttons > button,
+  .portfolio-filter-select-wrapper {
+    width: 100%;
+  }
+
+  .portfolio-pagination-bar {
+    align-items: flex-start;
+  }
 }
 
 @keyframes spin {

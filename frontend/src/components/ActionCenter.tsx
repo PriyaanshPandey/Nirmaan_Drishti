@@ -6,6 +6,7 @@ import {
 import './ActionCenter.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
+import { StatusIndicator } from './StatusIndicator';
 
 interface ActionItem {
   project: string;
@@ -117,11 +118,11 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
   const getSeverityBadge = (sev: ActionItem['severity']) => {
     switch (sev) {
       case 'Critical':
-        return <span className="action-tag tag-critical">Critical</span>;
+        return <StatusIndicator kind="critical" label="CRITICAL" className="action-tag tag-critical" />;
       case 'High':
-        return <span className="action-tag tag-high">High</span>;
+        return <StatusIndicator kind="high" label="HIGH RISK" className="action-tag tag-high" />;
       case 'Medium':
-        return <span className="action-tag tag-medium">Medium</span>;
+        return <StatusIndicator kind="medium" label="MEDIUM RISK" className="action-tag tag-medium" />;
     }
   };
 
@@ -186,7 +187,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                   <div className="sev-icon-wrap icon-crit-wrap">
                     <ShieldAlert size={16} />
                   </div>
-                  <span className="sev-lbl">Critical</span>
+                  <StatusIndicator kind="critical" label="CRITICAL" className="sev-lbl" />
                   <span className="sev-count">
                     <AnimatedCounter value={summaryCounts.critical} triggerKey={summaryCounts.critical} />
                   </span>
@@ -197,7 +198,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                   <div className="sev-icon-wrap icon-high-wrap">
                     <AlertTriangle size={16} />
                   </div>
-                  <span className="sev-lbl">High</span>
+                  <StatusIndicator kind="high" label="HIGH RISK" className="sev-lbl" />
                   <span className="sev-count">
                     <AnimatedCounter value={summaryCounts.high} triggerKey={summaryCounts.high} />
                   </span>
@@ -208,7 +209,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                   <div className="sev-icon-wrap icon-med-wrap">
                     <Clock size={16} />
                   </div>
-                  <span className="sev-lbl">Medium</span>
+                  <StatusIndicator kind="medium" label="MEDIUM RISK" className="sev-lbl" />
                   <span className="sev-count">
                     <AnimatedCounter value={summaryCounts.medium} triggerKey={summaryCounts.medium} />
                   </span>
@@ -222,17 +223,17 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                   className="sev-seg seg-crit"
                   style={{ width: `${(summaryCounts.critical / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
                   title={`Critical: ${summaryCounts.critical}`}
-                />
+                ><span className="sr-only">CRITICAL: {summaryCounts.critical}</span></div>
                 <div
                   className="sev-seg seg-high"
                   style={{ width: `${(summaryCounts.high / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
                   title={`High: ${summaryCounts.high}`}
-                />
+                ><span className="sr-only">HIGH RISK: {summaryCounts.high}</span></div>
                 <div
                   className="sev-seg seg-med"
                   style={{ width: `${(summaryCounts.medium / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
                   title={`Medium: ${summaryCounts.medium}`}
-                />
+                ><span className="sr-only">MEDIUM RISK: {summaryCounts.medium}</span></div>
               </div>
 
               {/* Exposure Highlights Banner */}
@@ -421,26 +422,34 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
             <button 
               className={`ac-tab-btn ${activeFilterTab === 'all' ? 'active' : ''}`}
               onClick={() => setActiveFilterTab('all')}
+              aria-selected={activeFilterTab === 'all'}
+              role="tab"
             >
               All Actions ({actionItems.length})
             </button>
             <button 
               className={`ac-tab-btn ${activeFilterTab === 'critical' ? 'active' : ''}`}
               onClick={() => setActiveFilterTab('critical')}
+              aria-selected={activeFilterTab === 'critical'}
+              role="tab"
             >
-              Critical ({summaryCounts?.critical ?? '...'})
+              <StatusIndicator kind="critical" label={`CRITICAL (${summaryCounts?.critical ?? '...'})`} />
             </button>
             <button 
               className={`ac-tab-btn ${activeFilterTab === 'high' ? 'active' : ''}`}
               onClick={() => setActiveFilterTab('high')}
+              aria-selected={activeFilterTab === 'high'}
+              role="tab"
             >
-              High ({summaryCounts?.high ?? '...'})
+              <StatusIndicator kind="high" label={`HIGH RISK (${summaryCounts?.high ?? '...'})`} />
             </button>
             <button 
               className={`ac-tab-btn ${activeFilterTab === 'medium' ? 'active' : ''}`}
               onClick={() => setActiveFilterTab('medium')}
+              aria-selected={activeFilterTab === 'medium'}
+              role="tab"
             >
-              Medium ({summaryCounts?.medium ?? '...'})
+              <StatusIndicator kind="medium" label={`MEDIUM RISK (${summaryCounts?.medium ?? '...'})`} />
             </button>
           </div>
 
@@ -498,9 +507,11 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                       <td className="td-delay">{item.delayExposure}</td>
                       <td className="td-due">{item.dueDate}</td>
                       <td className="td-status">
-                        <span className={`status-pill pill-${item.status.toLowerCase().replace(' ', '-')}`}>
-                          {item.status}
-                        </span>
+                        <StatusIndicator
+                          kind={item.status === 'Open' ? 'high' : item.status === 'In Progress' ? 'medium' : 'low'}
+                          label={item.status.toUpperCase()}
+                          className={`status-pill pill-${item.status.toLowerCase().replace(' ', '-')}`}
+                        />
                       </td>
                       <td className="td-act">
                         <button 

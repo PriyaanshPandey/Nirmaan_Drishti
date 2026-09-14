@@ -89,7 +89,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background-color: #FFFFFF;
+  background-color: transparent;
 }
 
 .home-navbar-sticky {
@@ -295,18 +295,22 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #FFFFFF;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   border-radius: 16px;
   padding: 24px 22px;
   min-height: 94px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
 }
 
 .metric-strip-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  transform: translateY(-3px);
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-lg);
 }
 
 .strip-icon {
@@ -337,7 +341,7 @@
 .strip-lbl {
   font-size: 12px;
   font-weight: 650;
-  color: #94A3B8;
+  color: #64748B;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -390,20 +394,24 @@
   flex-direction: column;
   justify-content: space-between;
   min-height: 195px;
-  background: #FFFFFF;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   border-radius: 18px;
   padding: 24px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
   cursor: pointer;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
   overflow: hidden;
 }
 
 .module-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-lg);
 }
 
 .module-card-top {
@@ -538,5 +546,25 @@
 @media (max-width: 768px) {
   .metrics-strip-row {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-hero,
+  .paimana-map-section,
+  .home-modules,
+  .metrics-strip-row {
+    min-width: 0;
+  }
+
+  .home-hero {
+    min-height: auto;
+  }
+
+  .hero-content-wrapper,
+  .hero-text-col,
+  .hero-subtitle-main,
+  .modules-header-row {
+    max-width: 100%;
   }
 }

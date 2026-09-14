@@ -14,6 +14,7 @@ import './ProjectDistribution.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import type { DistributionSummaryData } from '../services/api';
+import { StatusIndicator } from './StatusIndicator';
 
 export const ProjectDistribution: React.FC = () => {
   const [data, setData] = useState<DistributionSummaryData | null>(null);
@@ -173,16 +174,13 @@ export const ProjectDistribution: React.FC = () => {
             {/* Interactive Color Legend */}
             <div className="dist-table-legend">
               <span className="dist-legend-item">
-                <span className="dist-legend-dot legend-dot-high" />
-                <span>High Risk</span>
+                <StatusIndicator kind="high" label="HIGH RISK" />
               </span>
               <span className="dist-legend-item">
-                <span className="dist-legend-dot legend-dot-med" />
-                <span>Medium Risk</span>
+                <StatusIndicator kind="medium" label="MEDIUM RISK" />
               </span>
               <span className="dist-legend-item">
-                <span className="dist-legend-dot legend-dot-low" />
-                <span>Low Risk</span>
+                <StatusIndicator kind="low" label="LOW RISK" />
               </span>
             </div>
           </div>
@@ -234,23 +232,24 @@ export const ProjectDistribution: React.FC = () => {
                             className="composite-bar-segment segment-high"
                             style={{ width: `${row.highPct}%` }}
                             title={`High: ${row.high} (${row.highPct}%)`}
-                          />
+                          ><span className="sr-only">HIGH RISK: {row.high} ({row.highPct}%)</span></div>
                           <div
                             className="composite-bar-segment segment-med"
                             style={{ width: `${row.mediumPct}%` }}
                             title={`Medium: ${row.medium} (${row.mediumPct}%)`}
-                          />
+                          ><span className="sr-only">MEDIUM RISK: {row.medium} ({row.mediumPct}%)</span></div>
                           <div
                             className="composite-bar-segment segment-low"
                             style={{ width: `${row.lowPct}%` }}
                             title={`Low: ${row.low} (${row.lowPct}%)`}
-                          />
+                          ><span className="sr-only">LOW RISK: {row.low} ({row.lowPct}%)</span></div>
                         </div>
                       </td>
 
                       {/* High Risk Count + Percent */}
                       <td className="td-col-metric">
                         <span className="risk-pill pill-high">
+                          <StatusIndicator kind="high" label="HIGH RISK" />
                           <span className="risk-count">{row.high}</span>
                           <span className="risk-pct">({row.highPct}%)</span>
                         </span>
@@ -259,6 +258,7 @@ export const ProjectDistribution: React.FC = () => {
                       {/* Medium Risk Count + Percent */}
                       <td className="td-col-metric">
                         <span className="risk-pill pill-med">
+                          <StatusIndicator kind="medium" label="MEDIUM RISK" />
                           <span className="risk-count">{row.medium}</span>
                           <span className="risk-pct">({row.mediumPct}%)</span>
                         </span>
@@ -267,6 +267,7 @@ export const ProjectDistribution: React.FC = () => {
                       {/* Low Risk Count + Percent */}
                       <td className="td-col-metric">
                         <span className="risk-pill pill-low">
+                          <StatusIndicator kind="low" label="LOW RISK" />
                           <span className="risk-count">{row.low}</span>
                           <span className="risk-pct">({row.lowPct}%)</span>
                         </span>

@@ -4,6 +4,8 @@ import './NationalRiskCard.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import { InfoButton } from './ExplainabilityInfo';
+import { StatusIndicator } from './StatusIndicator';
+import { summarizeRiskDistribution } from './chartSummaries';
 
 interface RiskSegment {
   id: string;
@@ -14,9 +16,9 @@ interface RiskSegment {
 }
 
 const DEFAULT_RISK_DIST: RiskSegment[] = [
-  { id: 'high_risk', name: 'High Risk / Critical', count: 455, color: '#EF4444', percentage: 13.5 },
-  { id: 'medium_risk', name: 'Medium Risk', count: 1058, color: '#EAB308', percentage: 31.5 },
-  { id: 'low_risk', name: 'Low Risk', count: 1848, color: '#22C55E', percentage: 55.0 }
+  { id: 'high_risk', name: 'High Risk / Critical', count: 455, color: '#B91C1C', percentage: 13.5 },
+  { id: 'medium_risk', name: 'Medium Risk', count: 1058, color: '#B45309', percentage: 31.5 },
+  { id: 'low_risk', name: 'Low Risk', count: 1848, color: '#15803D', percentage: 55.0 }
 ];
 
 interface NationalRiskCardProps {
@@ -109,10 +111,22 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
 
   // Active segment: hover takes precedence while mouse is interacting, falls back to selected
   const activeSegment = hoveredSegment || selectedSegment;
+  const getSegmentColor = (segment: RiskSegment) => {
+    if (segment.id === 'high_risk') return '#B91C1C';
+    if (segment.id === 'medium_risk') return '#B45309';
+    return '#15803D';
+  };
 
   const handleSegmentClick = (segment: RiskSegment, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedSegment((prev) => (prev?.id === segment.id ? null : segment));
+  };
+
+  const handleSegmentKeyDown = (segment: RiskSegment, e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSegmentClick(segment, e as unknown as React.MouseEvent);
+    }
   };
 
   return (
@@ -132,6 +146,7 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
             <InfoButton
               title="Risk Level"
               summary="AI calculates how likely projects are to face future delays or budget increases, based on work velocity and past trends."
+              dataSummary={summarizeRiskDistribution(data)}
               size="sm"
             />
           </div>
@@ -140,6 +155,7 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
       </div>
 
       <div className="donut-chart-container">
+        <p className="sr-only">National risk distribution: {data.map((segment) => `${segment.name}: ${segment.count} projects, ${segment.percentage} percent`).join('; ')}.</p>
         <div className="donut-svg-wrapper">
           <svg viewBox="0 0 140 140" className="donut-svg">
             {/* Background track circle */}
@@ -182,7 +198,7 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
                     cy="70"
                     r={radius}
                     fill="none"
-                    stroke={segment.color}
+                    stroke={getSegmentColor(segment)}
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${mounted ? segment.strokeLength : 0} ${circumference}`}
                     strokeDashoffset={0}
@@ -198,6 +214,11 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
                     onMouseEnter={() => setHoveredSegment(segment)}
                     onMouseLeave={() => setHoveredSegment(null)}
                     onClick={(e) => handleSegmentClick(segment, e)}
+                    onKeyDown={(e) => handleSegmentKeyDown(segment, e)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${segment.name}: ${segment.count} projects, ${segment.percentage}%`}
+                    aria-pressed={isActive}
                   />
                 </g>
               );
@@ -231,14 +252,23 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab })
                 onMouseEnter={() => setHoveredSegment(segment)}
                 onMouseLeave={() => setHoveredSegment(null)}
                 onClick={(e) => handleSegmentClick(segment, e)}
+                onKeyDown={(e) => handleSegmentKeyDown(segment, e)}
+                tabIndex={0}
+                role="button"
+                aria-label={`${segment.name}: ${segment.count} projects, ${segment.percentage}%`}
+                aria-pressed={isActive}
               >
                 <div className="legend-row-top">
                   <div className="legend-label-left">
                     <span
                       className="legend-color-dot"
-                      style={{ backgroundColor: segment.color, boxShadow: isActive ? `0 0 6px ${segment.color}` : 'none' }}
+                      style={{ backgroundColor: getSegmentColor(segment), boxShadow: isActive ? `0 0 6px ${getSegmentColor(segment)}` : 'none' }}
                     />
-                    <span className="legend-name">{segment.name}</span>
+                    <StatusIndicator
+                      kind={segment.id === 'high_risk' ? 'high' : segment.id === 'medium_risk' ? 'medium' : 'low'}
+                      label={segment.name.toUpperCase()}
+                      className="legend-name"
+                    />
                   </div>
                   <div className="legend-stats-right">
                     <span className="legend-count">

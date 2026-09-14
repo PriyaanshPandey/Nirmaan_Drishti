@@ -76,11 +76,13 @@
 
 /* Left Side: PAIMANA State Metrics Card */
 .state-metrics-card {
-  background: #FFFFFF;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   border-radius: 18px;
   padding: 24px 28px;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -212,6 +214,12 @@
   filter: brightness(1.1) drop-shadow(0 3px 8px rgba(15, 23, 42, 0.3)) !important;
 }
 
+.state-path-real:focus-visible {
+  outline: 3px solid #0F172A;
+  outline-offset: 2px;
+  filter: brightness(1.1) drop-shadow(0 0 0.01px #0F172A) !important;
+}
+
 .map-loading {
   display: flex;
   flex-direction: column;
@@ -257,6 +265,16 @@
 @media (max-width: 992px) {
   .paimana-map-container {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .paimana-map-container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .india-map-wrapper {
+    min-height: 360px;
   }
 }
 

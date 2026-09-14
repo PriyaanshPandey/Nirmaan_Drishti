@@ -18,6 +18,7 @@ export const ScrollHero: React.FC<ScrollHeroProps> = ({ activeTab }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hintRef = useRef<HTMLDivElement | null>(null);
   const dissolveOverlayRef = useRef<HTMLDivElement | null>(null);
+  const reducedMotionRef = useRef(false);
 
   // In-memory image buffer
   const imagesRef = useRef<(HTMLImageElement | null)[]>(new Array(TOTAL_FRAMES).fill(null));
@@ -153,12 +154,14 @@ export const ScrollHero: React.FC<ScrollHeroProps> = ({ activeTab }) => {
 
   // Scroll listener mapped to frame index + smooth white dissolve to match the main page
   useEffect(() => {
+    reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const handleScroll = () => {
       if (rafIdRef.current !== null) return;
 
       rafIdRef.current = requestAnimationFrame(() => {
         rafIdRef.current = null;
         if (!containerRef.current) return;
+        if (reducedMotionRef.current) return;
 
         const rect = containerRef.current.getBoundingClientRect();
         const totalScrollDistance = rect.height - window.innerHeight;
@@ -237,14 +240,19 @@ export const ScrollHero: React.FC<ScrollHeroProps> = ({ activeTab }) => {
         <canvas
           className="scroll-hero-canvas"
           ref={canvasRef}
-          aria-label="Full-screen scroll-driven sequence animation"
+          role="img"
+          aria-labelledby="scroll-hero-title scroll-hero-description"
         />
+        <h2 id="scroll-hero-title" className="sr-only">Infrastructure overview animation</h2>
+        <p id="scroll-hero-description" className="sr-only">
+          A 101-frame visual sequence showing national infrastructure projects. Scrolling advances through the sequence before the project overview begins. The animation remains on its first frame when reduced motion is enabled.
+        </p>
 
         {/* Feathered bottom dissolve to eliminate any hard line into the main page */}
-        <div className="scroll-hero-bottom-feather" />
+        <div className="scroll-hero-bottom-feather" aria-hidden="true" />
 
         {/* Gentle white blend overlay active during scroll to smooth transition into main page */}
-        <div className="scroll-hero-dissolve-overlay" ref={dissolveOverlayRef} />
+        <div className="scroll-hero-dissolve-overlay" ref={dissolveOverlayRef} aria-hidden="true" />
 
         {/* Minimal scroll hint on initial frame (fades on first scroll) */}
         <div className="scroll-hero-hint" ref={hintRef}>

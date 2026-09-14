@@ -102,7 +102,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748B;
+  color: #CBD5E1;
 }
 
 .nav-links-grid {
@@ -140,7 +140,7 @@
 .footer-bottom-simple p {
   margin: 0;
   font-size: 12px;
-  color: #64748B;
+  color: #94A3B8;
 }
 
 @media (max-width: 768px) {

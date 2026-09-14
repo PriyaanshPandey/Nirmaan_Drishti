@@ -3,6 +3,8 @@ import './DonutChart.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import { InfoButton } from './ExplainabilityInfo';
+import { StatusIndicator } from './StatusIndicator';
+import { summarizeRiskDistribution } from './chartSummaries';
 
 interface ChartSegment {
   id: string;
@@ -13,9 +15,9 @@ interface ChartSegment {
 }
 
 const DEFAULT_HEALTH_DIST: ChartSegment[] = [
-  { id: 'on-track', name: 'On Track', count: 1848, color: '#22C55E', percentage: 55.0 },
+  { id: 'on-track', name: 'On Track', count: 1848, color: '#15803D', percentage: 55.0 },
   { id: 'monitoring', name: 'Monitoring', count: 638, color: '#3B82F6', percentage: 19.0 },
-  { id: 'at-risk', name: 'At Risk', count: 420, color: '#F59E0B', percentage: 12.5 },
+  { id: 'at-risk', name: 'At Risk', count: 420, color: '#B45309', percentage: 12.5 },
   { id: 'critical', name: 'Critical Delay', count: 455, color: '#EF4444', percentage: 13.5 }
 ];
 
@@ -116,10 +118,23 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
 
   // Active segment: hover takes precedence during active mouse interaction, falls back to selected
   const activeSegment = hoveredSegment || selectedSegment;
+  const getSegmentColor = (segment: ChartSegment) => {
+    if (segment.id === 'on-track') return '#15803D';
+    if (segment.id === 'at-risk') return '#B45309';
+    if (segment.id === 'critical') return '#B91C1C';
+    return '#2563EB';
+  };
 
   const handleSegmentClick = (segment: ChartSegment, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedSegment((prev) => (prev?.id === segment.id ? null : segment));
+  };
+
+  const handleSegmentKeyDown = (segment: ChartSegment, e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSegmentClick(segment, e as unknown as React.MouseEvent);
+    }
   };
 
   return (
@@ -140,6 +155,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
             <InfoButton
               title="Project Health"
               summary="Shows how projects are performing. Green means on schedule, yellow means slightly delayed, and red means major delays or budget overruns."
+              dataSummary={summarizeRiskDistribution(data)}
               size="sm"
             />
           </div>
@@ -148,6 +164,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
       </div>
 
       <div className="donut-chart-container">
+        <p className="sr-only">Project health distribution: {data.map((segment) => `${segment.name}: ${segment.count} projects, ${segment.percentage} percent`).join('; ')}.</p>
         <div className="donut-svg-wrapper">
           <svg viewBox="0 0 140 140" className="donut-svg">
             {/* Background track circle */}
@@ -190,7 +207,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                     cy="70"
                     r={radius}
                     fill="none"
-                    stroke={segment.color}
+                    stroke={getSegmentColor(segment)}
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${mounted ? segment.strokeLength : 0} ${circumference}`}
                     strokeDashoffset={0}
@@ -206,6 +223,11 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                     onMouseEnter={() => setHoveredSegment(segment)}
                     onMouseLeave={() => setHoveredSegment(null)}
                     onClick={(e) => handleSegmentClick(segment, e)}
+                    onKeyDown={(e) => handleSegmentKeyDown(segment, e)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${segment.name}: ${segment.count} projects, ${segment.percentage}%`}
+                    aria-pressed={isActive}
                   />
                 </g>
               );
@@ -239,14 +261,23 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                 onMouseEnter={() => setHoveredSegment(segment)}
                 onMouseLeave={() => setHoveredSegment(null)}
                 onClick={(e) => handleSegmentClick(segment, e)}
+                onKeyDown={(e) => handleSegmentKeyDown(segment, e)}
+                tabIndex={0}
+                role="button"
+                aria-label={`${segment.name}: ${segment.count} projects, ${segment.percentage}%`}
+                aria-pressed={isActive}
               >
                 <div className="legend-row-top">
                   <div className="legend-label-left">
                     <span
                       className="legend-color-dot"
-                      style={{ backgroundColor: segment.color, boxShadow: isActive ? `0 0 6px ${segment.color}` : 'none' }}
+                      style={{ backgroundColor: getSegmentColor(segment), boxShadow: isActive ? `0 0 6px ${getSegmentColor(segment)}` : 'none' }}
                     />
-                    <span className="legend-name">{segment.name}</span>
+                    <StatusIndicator
+                      kind={segment.id === 'on-track' ? 'on-track' : segment.id === 'monitoring' ? 'medium' : segment.id === 'at-risk' ? 'high' : 'critical'}
+                      label={segment.name.toUpperCase()}
+                      className="legend-name"
+                    />
                   </div>
                   <div className="legend-stats-right">
                     <span className="legend-count">
