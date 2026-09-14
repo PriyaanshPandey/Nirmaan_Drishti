@@ -425,10 +425,10 @@ export function getFallbackDashboard(): DashboardSummaryData {
       cost_overrun_formatted: `+${overrunPct.toFixed(1)}% overrun`
     },
     health_distribution: [
-      { id: 'on_track', name: 'On Track', count: onTrackCount, color: '#22C55E', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
+      { id: 'on_track', name: 'On Track', count: onTrackCount, color: '#15803D', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
       { id: 'monitoring', name: 'Needs Attention', count: monitoringCount, color: '#3B82F6', percentage: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0 },
-      { id: 'at_risk', name: 'High Risk', count: highCount, color: '#EAB308', percentage: total > 0 ? parseFloat((highCount / total * 100).toFixed(1)) : 0 },
-      { id: 'critical_delay', name: 'Critical Delay', count: critCount, color: '#EF4444', percentage: total > 0 ? parseFloat((critCount / total * 100).toFixed(1)) : 0 }
+      { id: 'at_risk', name: 'At Risk', count: highCount, color: '#B45309', percentage: total > 0 ? parseFloat((highCount / total * 100).toFixed(1)) : 0 },
+      { id: 'critical_delay', name: 'Critical Delay', count: critCount, color: '#B91C1C', percentage: total > 0 ? parseFloat((critCount / total * 100).toFixed(1)) : 0 }
     ],
     priority_interventions: topCritical,
     delay_factors: [

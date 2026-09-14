@@ -36,9 +36,9 @@ const monitoringInit = Math.max(0, totalInitHealth - onTrackInit - highRiskInit 
 
 const DEFAULT_HEALTH_DIST: ChartSegment[] = [
   { id: 'on-track', name: 'On Track', count: onTrackInit, color: '#15803D', percentage: totalInitHealth > 0 ? parseFloat((onTrackInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'monitoring', name: 'Monitoring', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  ...(monitoringInit > 0 ? [{ id: 'monitoring', name: 'Monitoring', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 }] : []),
   { id: 'at-risk', name: 'At Risk', count: highRiskInit, color: '#B45309', percentage: totalInitHealth > 0 ? parseFloat((highRiskInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'critical', name: 'Critical Delay', count: critInit, color: '#EF4444', percentage: totalInitHealth > 0 ? parseFloat((critInit / totalInitHealth * 100).toFixed(1)) : 0 }
+  { id: 'critical', name: 'Critical Delay', count: critInit, color: '#B91C1C', percentage: totalInitHealth > 0 ? parseFloat((critInit / totalInitHealth * 100).toFixed(1)) : 0 }
 ];
 
 interface DonutChartProps {
@@ -66,6 +66,18 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
     };
   }, []);
 
+  // Active segment: hover takes precedence during active mouse interaction, falls back to selected
+  const activeSegment = hoveredSegment || selectedSegment;
+  const getSegmentColor = (segment: ChartSegment) => {
+    const sId = (segment.id || '').toLowerCase().replace(/_/g, '-');
+    const sName = (segment.name || '').toLowerCase();
+    if (sId.includes('crit') || sId.includes('delay') || sName.includes('crit') || sName.includes('delay')) return '#B91C1C';
+    if (sId.includes('risk') || sName.includes('risk')) return '#B45309';
+    if (sId.includes('monitor') || sName.includes('monitor') || sId.includes('attention') || sName.includes('attention')) return '#3B82F6';
+    if (sId.includes('track') || sId.includes('low') || sName.includes('track') || sName.includes('low')) return '#15803D';
+    return segment.color || '#15803D';
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -78,14 +90,16 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
     api.getDashboardSummary().then((res) => {
       if (!isMounted) return;
       if (res && res.health_distribution && res.health_distribution.length > 0) {
-        const total = res.health_distribution.reduce((a, b) => a + b.count, 0);
+        const nonZero = res.health_distribution.filter(d => d.count > 0);
+        const toUse = nonZero.length > 0 ? nonZero : res.health_distribution;
+        const total = toUse.reduce((a, b) => a + b.count, 0);
         if (total > 0) {
-          setData(res.health_distribution.map(d => ({
+          setData(toUse.map(d => ({
             id: d.id,
-            name: d.name,
+            name: d.name === 'High Risk' ? 'At Risk' : d.name,
             count: d.count,
-            color: d.color,
-            percentage: d.percentage,
+            color: getSegmentColor(d as ChartSegment),
+            percentage: total > 0 ? parseFloat((d.count / total * 100).toFixed(1)) : d.percentage,
           })));
         }
       }
@@ -137,14 +151,6 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
     });
   }, [data, circumference, popDistance]);
 
-  // Active segment: hover takes precedence during active mouse interaction, falls back to selected
-  const activeSegment = hoveredSegment || selectedSegment;
-  const getSegmentColor = (segment: ChartSegment) => {
-    if (segment.id === 'on-track') return '#15803D';
-    if (segment.id === 'at-risk') return '#B45309';
-    if (segment.id === 'critical') return '#B91C1C';
-    return '#2563EB';
-  };
 
   const handleSegmentClick = (segment: ChartSegment, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -239,7 +245,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                       transition: 'stroke-dasharray 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease',
                       cursor: 'pointer',
                       pointerEvents: 'stroke',
-                      filter: isActive ? `drop-shadow(0 0 8px ${segment.color})` : 'none',
+                      filter: isActive ? `drop-shadow(0 0 8px ${getSegmentColor(segment)})` : 'none',
                     }}
                     onMouseEnter={() => setHoveredSegment(segment)}
                     onMouseLeave={() => setHoveredSegment(null)}
@@ -297,7 +303,13 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                       style={{ backgroundColor: getSegmentColor(segment), boxShadow: isActive ? `0 0 6px ${getSegmentColor(segment)}` : 'none' }}
                     />
                     <StatusIndicator
-                      kind={segment.id === 'on-track' ? 'on-track' : segment.id === 'monitoring' ? 'medium' : segment.id === 'at-risk' ? 'high' : 'critical'}
+                      kind={(() => {
+                        const sId = (segment.id || '').toLowerCase().replace(/_/g, '-');
+                        if (sId.includes('crit') || sId.includes('delay')) return 'critical';
+                        if (sId.includes('risk')) return 'high';
+                        if (sId.includes('monitor') || sId.includes('attention')) return 'medium';
+                        return 'on-track';
+                      })()}
                       label={segment.name.toUpperCase()}
                       className="legend-name"
                     />
@@ -315,7 +327,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                     className="legend-bar-fill"
                     style={{
                       width: `${mounted ? segmentPct : 0}%`,
-                      backgroundColor: segment.color
+                      backgroundColor: getSegmentColor(segment)
                     }}
                   />
                 </div>
