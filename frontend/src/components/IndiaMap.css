@@ -210,14 +210,16 @@
   overflow: visible;
 }
 
+.state-path-real {
+  outline: none;
+}
+
 .state-path-real:hover {
-  filter: brightness(1.1) drop-shadow(0 3px 8px rgba(15, 23, 42, 0.3)) !important;
+  filter: brightness(1.08) drop-shadow(0 2px 6px rgba(26, 31, 76, 0.3)) !important;
 }
 
 .state-path-real:focus-visible {
-  outline: 3px solid #0F172A;
-  outline-offset: 2px;
-  filter: brightness(1.1) drop-shadow(0 0 0.01px #0F172A) !important;
+  outline: none;
 }
 
 .map-loading {

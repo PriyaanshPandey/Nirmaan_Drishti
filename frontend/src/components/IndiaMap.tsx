@@ -340,8 +340,8 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                   key={loc.id}
                   d={loc.path}
                   fill={getStateFillColor(loc.id)}
-                  stroke={isHovered ? '#1D4ED8' : isSelected ? '#0F172A' : '#334155'}
-                  strokeWidth={isHovered ? 2.0 : isSelected ? 2.2 : 0.8}
+                  stroke={isHovered ? '#1A1F4C' : '#334155'}
+                  strokeWidth={isHovered ? 1.4 : 0.8}
                   strokeLinejoin="round"
                   strokeLinecap="round"
                   className="state-path-real"
@@ -361,10 +361,9 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     filter: isHovered 
-                      ? 'drop-shadow(0 2px 8px rgba(37, 99, 235, 0.45))' 
-                      : isSelected 
-                      ? 'drop-shadow(0 2px 6px rgba(15, 23, 42, 0.35))' 
-                      : 'none'
+                      ? 'drop-shadow(0 2px 8px rgba(26, 31, 76, 0.35))' 
+                      : 'none',
+                    outline: 'none'
                   }}
                   role="button"
                   tabIndex={0}
