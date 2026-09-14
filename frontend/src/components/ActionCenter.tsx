@@ -6,6 +6,7 @@ import {
 import './ActionCenter.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
 
 interface ActionItem {
   project: string;
@@ -38,7 +39,7 @@ interface ActionCenterProps {
 export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) => {
   const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'critical' | 'high' | 'medium'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSimCategory, setSelectedSimCategory] = useState<string>('land');
+  const [selectedSimCategory, setSelectedSimCategory] = useState<string>('milestone');
   const [mounted, setMounted] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -94,7 +95,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
     return () => clearTimeout(t);
   }, []);
 
-  const currentSim = simulatorData[selectedSimCategory] || simulatorData.land || Object.values(simulatorData)[0] || {
+  const currentSim = simulatorData[selectedSimCategory] || simulatorData.milestone || Object.values(simulatorData)[0] || {
     currentDelay: '—', currentCost: '—', projDelay: '—', projDelayReduction: '—', projSaving: '—', confidence: 0
   };
 
@@ -141,7 +142,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
       {/* Top Header */}
       <div className="action-center-header">
         <div>
-          <h1 className="ac-page-title">Action Centre</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 className="ac-page-title">Action Centre</h1>
+            <InfoButton
+              title="Action Centre Hub"
+              summary="Centralized operational console to triage, prioritize, simulate, and resolve execution bottlenecks across high-risk national infrastructure projects."
+              size="md"
+            />
+          </div>
           <p className="ac-page-subtitle">Prioritized interventions and resolution simulations for critical infrastructure.</p>
         </div>
         <button 
@@ -165,7 +173,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                 <Activity size={18} color="#DC2626" />
               </div>
               <div>
-                <h2 className="ac-title">Action Queue Status</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 className="ac-title">Action Queue Status</h2>
+                  <InfoButton
+                    title="Action Queue Status"
+                    summary="Live inventory of critical infrastructure projects requiring active intervention, segmented by urgency tier."
+                    size="sm"
+                  />
+                </div>
                 <p className="ac-subtitle">Active interventions by urgency tier</p>
               </div>
             </div>
@@ -183,8 +198,15 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
               {/* 3 Severity Cards */}
               <div className="ac-severity-boxes">
                 <div className="sev-box box-crit">
-                  <div className="sev-icon-wrap icon-crit-wrap">
-                    <ShieldAlert size={16} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div className="sev-icon-wrap icon-crit-wrap">
+                      <ShieldAlert size={16} />
+                    </div>
+                    <InfoButton
+                      title="Critical Urgency Tier"
+                      summary="Projects facing >12 months delay or severe cost escalation, requiring immediate Cabinet or PMG fast-track intervention."
+                      size="sm"
+                    />
                   </div>
                   <span className="sev-lbl">Critical</span>
                   <span className="sev-count">
@@ -194,8 +216,15 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                 </div>
 
                 <div className="sev-box box-high">
-                  <div className="sev-icon-wrap icon-high-wrap">
-                    <AlertTriangle size={16} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div className="sev-icon-wrap icon-high-wrap">
+                      <AlertTriangle size={16} />
+                    </div>
+                    <InfoButton
+                      title="High Urgency Tier"
+                      summary="Projects experiencing substantial milestone deviations or budget growth needing Secretary or Ministry-level escalation."
+                      size="sm"
+                    />
                   </div>
                   <span className="sev-lbl">High</span>
                   <span className="sev-count">
@@ -205,14 +234,21 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                 </div>
 
                 <div className="sev-box box-med">
-                  <div className="sev-icon-wrap icon-med-wrap">
-                    <Clock size={16} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div className="sev-icon-wrap icon-med-wrap">
+                      <Clock size={16} />
+                    </div>
+                    <InfoButton
+                      title="Medium Urgency Tier"
+                      summary="Projects with early warning signals or moderate deviations manageable at the implementing agency or zonal level."
+                      size="sm"
+                    />
                   </div>
                   <span className="sev-lbl">Medium</span>
                   <span className="sev-count">
                     <AnimatedCounter value={summaryCounts.medium} triggerKey={summaryCounts.medium} />
                   </span>
-                  <span className="sev-sub">Agency Level NOC</span>
+                  <span className="sev-sub">Agency Level Review</span>
                 </div>
               </div>
 
@@ -242,7 +278,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                     <IndianRupee size={15} />
                   </div>
                   <div className="exp-text-wrap">
-                    <span className="exp-lbl">Financial Exposure</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className="exp-lbl">Financial Exposure</span>
+                      <InfoButton
+                        title="Total Financial Exposure"
+                        summary="Aggregated capital at risk and cost escalation across all projects currently in the intervention queue."
+                        size="sm"
+                      />
+                    </div>
                     <span className="exp-val exp-red">{summaryCounts.totalExp}</span>
                   </div>
                 </div>
@@ -252,7 +295,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                     <Clock size={15} />
                   </div>
                   <div className="exp-text-wrap">
-                    <span className="exp-lbl">Avg Delay Exposure</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span className="exp-lbl">Avg Delay Exposure</span>
+                      <InfoButton
+                        title="Average Delay Exposure"
+                        summary="Average completion schedule delay across all projects needing administrative action."
+                        size="sm"
+                      />
+                    </div>
                     <span className="exp-val exp-orange">{summaryCounts.avgDelay}</span>
                   </div>
                 </div>
@@ -269,14 +319,55 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                 <Sparkles size={18} color="#2563EB" />
               </div>
               <div>
-                <h2 className="ac-title">Resolution Simulator</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <h2 className="ac-title">Resolution Simulator</h2>
+                  <InfoButton
+                    title="Resolution Simulator (Under Development)"
+                    summary="Future expansion: Counterfactual scenario modeling engine predicting how targeted administrative interventions reduce delay months and recover financial exposure (Illustrative Demo)."
+                    size="sm"
+                  />
+                </div>
                 <p className="ac-subtitle">Counterfactual scenario projection</p>
               </div>
             </div>
-            <span className="ac-head-pill pill-ai-active">
-              <span className="ai-spark-dot" />
-              {currentSim.confidence}% Confidence
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+              <span className="ac-head-pill pill-ai-active">
+                <span className="ai-spark-dot" />
+                {currentSim.confidence}% Confidence
+              </span>
+              <span style={{
+                fontSize: '9.5px',
+                fontWeight: 800,
+                color: '#B45309',
+                backgroundColor: '#FEF3C7',
+                border: '1px solid #FDE68A',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.4px',
+                whiteSpace: 'nowrap'
+              }}>
+                Under Development • Illustration
+              </span>
+            </div>
+          </div>
+
+          {/* Under Development Notice Banner */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            backgroundColor: '#FFFBEB',
+            border: '1px dashed #F59E0B',
+            borderRadius: '8px',
+            marginBottom: '12px',
+            fontSize: '11.5px',
+            color: '#92400E',
+            lineHeight: 1.4
+          }}>
+            <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>FUTURE EXPANSION:</span>
+            <span>Counterfactual intervention simulation is under active development for illustration and what-if policy exploration.</span>
           </div>
 
           <div className="sim-dropdown-wrapper">
@@ -287,11 +378,11 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                 onChange={(e) => setSelectedSimCategory(e.target.value)}
                 className="sim-custom-select"
               >
-                <option value="land">Land Acquisition (ROW Acceleration)</option>
-                <option value="procurement">Procurement (Expedited Tendership)</option>
-                <option value="contractor">Contractor Defaults (Subcontract Fast-track)</option>
-                <option value="milestone">Milestone Slippage (Overtime Mobilization)</option>
-                <option value="clearance">Clearance Delays (Statutory Green Channel)</option>
+                <option value="milestone">Milestone Slippage (Fast-Tracking &amp; Expedited Mobilization)</option>
+                <option value="financial">Financial Outlay Divergence (Reconciliation &amp; Fund Release)</option>
+                <option value="cost">Cost Escalation Controls (Value Engineering &amp; Scope Review)</option>
+                <option value="stagnation">Work Pacing &amp; Physical Progress Acceleration</option>
+                <option value="schedule">Schedule Baseline Realignment</option>
               </select>
               <ChevronDown size={15} className="sim-select-arrow" />
             </div>
@@ -302,7 +393,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
             {/* Delay Impact Card */}
             <div className="sim-impact-card impact-card-delay">
               <div className="impact-top">
-                <span className="impact-tag">DELAY REDUCTION</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="impact-tag">DELAY REDUCTION</span>
+                  <InfoButton
+                    title="Delay Reduction Impact"
+                    summary="Estimated schedule compression achieved by deploying this targeted resolution policy."
+                    size="sm"
+                  />
+                </div>
                 <span className="impact-pill pill-green">▼ {currentSim.projDelayReduction}</span>
               </div>
               <div className="impact-numbers-row">
@@ -324,7 +422,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
             {/* Cost Impact Card */}
             <div className="sim-impact-card impact-card-cost">
               <div className="impact-top">
-                <span className="impact-tag">FINANCIAL RECOVERY</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="impact-tag">FINANCIAL RECOVERY</span>
+                  <InfoButton
+                    title="Financial Recovery Impact"
+                    summary="Estimated monetary savings achieved by halting delay penalties and inflationary project cost overruns."
+                    size="sm"
+                  />
+                </div>
                 <span className="impact-pill pill-emerald">Saved Exposure</span>
               </div>
               <div className="impact-numbers-row">
@@ -367,7 +472,14 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
                 <BarChart3 size={18} color="#7C3AED" />
               </div>
               <div>
-                <h2 className="ac-title">Prioritization Weights</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 className="ac-title">Prioritization Weights</h2>
+                  <InfoButton
+                    title="Prioritization Scoring Weights"
+                    summary="Multi-criteria weights calibrated against national risk severity, financial exposure, delay months, and dependency criticality."
+                    size="sm"
+                  />
+                </div>
                 <p className="ac-subtitle">Scoring model configuration</p>
               </div>
             </div>
@@ -462,12 +574,42 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) =
             <table className="ac-data-table">
               <thead>
                 <tr>
-                  <th className="th-proj">PROJECT & MINISTRY</th>
-                  <th className="th-risk-event">RISK EVENT</th>
-                  <th className="th-sev">SEVERITY</th>
-                  <th className="th-score">SCORE</th>
-                  <th className="th-fin">FIN. EXPOSURE</th>
-                  <th className="th-delay">DELAY EXPOSURE</th>
+                  <th className="th-proj">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>PROJECT &amp; MINISTRY</span>
+                      <InfoButton title="Project & Ministry" summary="Identified national project and its supervising central ministry." size="sm" />
+                    </div>
+                  </th>
+                  <th className="th-risk-event">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>RISK EVENT</span>
+                      <InfoButton title="Risk Event Trigger" summary="Primary operational bottleneck diagnosed from live progress and milestone telemetry." size="sm" />
+                    </div>
+                  </th>
+                  <th className="th-sev">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>SEVERITY</span>
+                      <InfoButton title="Urgency Severity" summary="Assigned intervention level: Critical (Immediate PMG), High (Ministry), or Medium (Agency)." size="sm" />
+                    </div>
+                  </th>
+                  <th className="th-score">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>SCORE</span>
+                      <InfoButton title="Priority Urgency Score" summary="Composite 0–100 urgency score calculated from weighted delay, cost, and progress parameters." size="sm" />
+                    </div>
+                  </th>
+                  <th className="th-fin">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>FIN. EXPOSURE</span>
+                      <InfoButton title="Financial Exposure" summary="Total cost escalation or capital outlay currently exposed to delay risks." size="sm" />
+                    </div>
+                  </th>
+                  <th className="th-delay">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>DELAY EXPOSURE</span>
+                      <InfoButton title="Delay Exposure" summary="Months elapsed past the approved baseline commissioning date." size="sm" />
+                    </div>
+                  </th>
                   <th className="th-due">DUE DATE</th>
                   <th className="th-status">STATUS</th>
                   <th className="th-act">ACTION</th>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Navbar } from './components/Navbar';
 import { Header } from './components/Header';
 import { MetricCards } from './components/MetricCards';
 import { DonutChart } from './components/DonutChart';
@@ -20,6 +19,8 @@ function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [previousTab, setPreviousTab] = useState<string>('projects');
   const [homeClickNonce, setHomeClickNonce] = useState<number>(0);
+  const [projectStatusFilter, setProjectStatusFilter] = useState<string>('All');
+  const [statusFilterNonce, setStatusFilterNonce] = useState<number>(0);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'home') {
@@ -36,6 +37,17 @@ function App() {
     setActiveTab('projects');
   };
 
+  const handleFilterStatus = (status: string) => {
+    if (projectStatusFilter === status) {
+      setProjectStatusFilter('All');
+    } else {
+      setProjectStatusFilter(status);
+    }
+    setStatusFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+  };
+
   const handleBack = () => {
     setSelectedProjectId(null);
     if (previousTab && previousTab !== 'projects') {
@@ -45,10 +57,17 @@ function App() {
 
   return (
     <div className="app-layout">
-      {/* ── Main Application Content (Unified 1360px container with Top Navbar) ── */}
+      {/* ── Official National Infrastructure Intelligence Portal Header with Integrated Rectangular Navbar ── */}
+      <Header
+        activeTab={activeTab}
+        onNavigateTab={handleTabChange}
+        onSelectProject={handleSelectProject}
+        onFilterStatus={handleFilterStatus}
+        currentStatusFilter={projectStatusFilter}
+      />
+
+      {/* ── Main Application Content (Unified container) ── */}
       <div className="app-main-content">
-        {/* Pill-shaped Top Navbar across all pages */}
-        <Navbar activeTab={activeTab} setActiveTab={handleTabChange} />
 
         {/* ── Home ── */}
         <PageSlot id="home" activeTab={activeTab}>
@@ -61,7 +80,16 @@ function App() {
 
         {/* ── Dashboard ── */}
         <PageSlot id="dashboard" activeTab={activeTab}>
-          <Header />
+          <div className="dashboard-subbar">
+            <div className="dashboard-subbar-left">
+              <span className="dashboard-subbar-title">National Executive Overview</span>
+              <span className="dashboard-subbar-tag">3,361 Central Assets</span>
+            </div>
+            <div className="insight-badge">
+              <span className="badge-dot"></span>
+              <span className="badge-text">Monitoring Period: July 2025 – May 2026</span>
+            </div>
+          </div>
           <main className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
             {/* Row 1: Top Dashboard Grid (Left 3 Metrics Stacked | Middle Health Donut | Right National Risk Donut) */}
             <section className="dashboard-grid">
@@ -99,6 +127,8 @@ function App() {
             ) : (
               <ProjectPortfolio
                 onSelectProject={handleSelectProject}
+                initialStatus={projectStatusFilter}
+                statusFilterNonce={statusFilterNonce}
               />
             )}
           </main>
@@ -134,7 +164,7 @@ function App() {
       </div>
 
       {/* Official Government MoSPI & PAIMANA Footer ending the page cleanly with 0 whitespace */}
-      <Footer onNavigateTab={handleTabChange} />
+      <Footer activeTab={activeTab} onNavigateTab={handleTabChange} />
     </div>
   );
 }

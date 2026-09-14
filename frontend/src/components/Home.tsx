@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles, LayoutDashboard, Database, ArrowRight, Cpu, ShieldAlert,
-  TrendingUp, Layers, BarChart3, Globe, Play
+  TrendingUp, Layers, BarChart3, Globe
 } from 'lucide-react';
 import './Home.css';
 import { VideoHero } from './VideoHero';
@@ -11,6 +11,37 @@ import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
 import heroIllustrationBase from '../assets/hero_illustration_base.png';
 
+import { projectsData } from '../data/projectsData';
+import { api } from '../services/api';
+
+const initialProjectsCount = projectsData.length;
+const initialTotalRevCostCr = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialLakhCrores = initialTotalRevCostCr > 0 ? initialTotalRevCostCr / 100000 : 106.52;
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+];
+
+const initialStatesCount = (() => {
+  const covered = new Set<string>();
+  for (const p of projectsData) {
+    const loc = p.location || '';
+    for (const state of INDIAN_STATES) {
+      if (loc.includes(state)) {
+        covered.add(state);
+      }
+    }
+  }
+  return covered.size || 28;
+})();
+
 interface HomeProps {
   activeTab?: string;
   onNavigateTab: (tab: string) => void;
@@ -19,9 +50,33 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickNonce }) => {
   const [playIntro, setPlayIntro] = useState<boolean>(true);
-  const [replayCount, setReplayCount] = useState<number>(0);
   const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
   const [animIteration, setAnimIteration] = useState<number>(0);
+
+  const [totalProjects, setTotalProjects] = useState<number>(initialProjectsCount);
+  const [portfolioCostLakhCr, setPortfolioCostLakhCr] = useState<number>(initialLakhCrores);
+  const statesCount = initialStatesCount;
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getDashboardSummary()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.metrics) {
+          if (res.metrics.total_projects > 0) {
+            setTotalProjects(res.metrics.total_projects);
+          }
+          if (res.metrics.total_revised_cost > 0) {
+            setPortfolioCostLakhCr(res.metrics.total_revised_cost / 100000);
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Trigger convergence animation on home load or after video intro dismisses or whenever home is clicked
   useEffect(() => {
@@ -65,7 +120,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
     {
       tab: 'projects',
       title: 'Project Portfolio',
-      desc: 'Browse all 3,361 infrastructure assets with search, filters, and detailed milestone tracking.',
+      desc: `Browse all ${totalProjects.toLocaleString()} infrastructure assets with search, filters, and detailed milestone tracking.`,
       icon: <Database size={22} color="#059669" />,
       color: 'green'
     },
@@ -97,7 +152,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       {/* ── Fullscreen Video Intro Overlay (Plays on load for 3s, blurs out, dissolves without scrolling) ── */}
       {playIntro && (
         <VideoHero
-          key={replayCount}
           onFinished={() => setPlayIntro(false)}
         />
       )}
@@ -134,18 +188,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
                 >
                   <span>Launch Dashboard</span>
                   <ArrowRight size={16} />
-                </button>
-                <button
-                  type="button"
-                  className="hero-btn-replay-intro"
-                  onClick={() => {
-                    setPlayIntro(true);
-                    setReplayCount(prev => prev + 1);
-                  }}
-                  title="Watch Video Intro"
-                >
-                  <Play size={14} />
-                  <span>Watch Intro</span>
                 </button>
               </div>
             </div>
@@ -220,7 +262,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           <div className="strip-icon"><BarChart3 size={20} color="#2563EB" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              <AnimatedCounter value={3361} duration={1000} resetKey={activeTab} />
+              <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
             </span>
             <span className="strip-lbl">Projects Monitored</span>
           </div>
@@ -230,7 +272,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           <div className="strip-icon"><TrendingUp size={20} color="#059669" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              ₹<AnimatedCounter value={42.78} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
+              ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
             </span>
             <span className="strip-lbl">Total Portfolio</span>
           </div>
@@ -248,7 +290,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           <div className="strip-icon"><Globe size={20} color="#D97706" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              <AnimatedCounter value={28} duration={800} resetKey={activeTab} />+
+              <AnimatedCounter value={statesCount} duration={800} resetKey={activeTab} />+
             </span>
             <span className="strip-lbl">States Covered</span>
           </div>

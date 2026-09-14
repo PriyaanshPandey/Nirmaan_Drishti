@@ -19,7 +19,7 @@
   left: -10%;
   width: 120%;
   height: 300px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(186,230,253,0.15) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(186, 230, 253, 0.15) 100%);
   transform: rotate(-5deg);
   pointer-events: none;
   z-index: 0;
@@ -32,7 +32,7 @@
   left: -5%;
   width: 110%;
   height: 200px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(186,230,253,0.1) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(186, 230, 253, 0.1) 100%);
   transform: rotate(3deg);
   pointer-events: none;
   z-index: 0;
@@ -250,7 +250,7 @@
   width: 12px;
   height: 150px;
   border-radius: 6px;
-  background: linear-gradient(180deg, #7F1D1D 0%, #991B1B 15%, #B91C1C 30%, #DC2626 45%, #E8866A 60%, #F4B99A 75%, #FDDCBF 90%, #FFF5E1 100%);
+  background: linear-gradient(180deg, #7F1D1D 0%, #991B1B 15%, #B91C1C 35%, #DC2626 52%, #EA580C 65%, #FB923C 78%, #FDBA74 88%, #FED7AA 95%, #FFEDD5 100%);
   border: 1px solid #E2E8F0;
 }
 

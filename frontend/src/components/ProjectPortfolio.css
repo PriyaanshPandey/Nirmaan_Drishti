@@ -344,6 +344,13 @@
   border: 1px solid #FECACA;
 }
 
+.status-in-progress,
+.status-in-review {
+  background-color: #DBEAFE;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
 .view-project-details-btn {
   padding: 6px 14px;
   border-radius: 6px;

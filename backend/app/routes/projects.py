@@ -298,6 +298,7 @@ def get_project_by_id(project_id: str, db: Session = Depends(get_db)):
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED, summary="Create Project")
 def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
     """Create a new project record."""
+    from app.routes.dashboard import invalidate_dashboard_cache
     existing = db.query(Project).filter(Project.id == payload.id).first()
     if existing:
         raise HTTPException(
@@ -310,6 +311,8 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
     db.add(new_project)
     db.commit()
     db.refresh(new_project)
+
+    invalidate_dashboard_cache()
 
     log_audit_event(
         db=db,
@@ -325,6 +328,7 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
 @router.patch("/{project_id}", response_model=ProjectResponse, summary="Update Project")
 def update_project(project_id: str, payload: ProjectUpdate, db: Session = Depends(get_db)):
     """Update fields on an existing project."""
+    from app.routes.dashboard import invalidate_dashboard_cache
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(
@@ -341,6 +345,8 @@ def update_project(project_id: str, payload: ProjectUpdate, db: Session = Depend
     db.commit()
     db.refresh(project)
 
+    invalidate_dashboard_cache()
+
     log_audit_event(
         db=db,
         action="UPDATE_PROJECT",
@@ -356,6 +362,7 @@ def update_project(project_id: str, payload: ProjectUpdate, db: Session = Depend
 @router.delete("/{project_id}", response_model=MessageResponse, summary="Delete Project")
 def delete_project(project_id: str, db: Session = Depends(get_db)):
     """Delete a project and its associated records."""
+    from app.routes.dashboard import invalidate_dashboard_cache
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(
@@ -365,6 +372,8 @@ def delete_project(project_id: str, db: Session = Depends(get_db)):
 
     db.delete(project)
     db.commit()
+
+    invalidate_dashboard_cache()
 
     log_audit_event(
         db=db,
