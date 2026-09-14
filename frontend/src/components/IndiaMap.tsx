@@ -232,8 +232,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
   // Color generator based on project count (calibrated across full portfolio range to make differences clearly visible)
   const getStateFillColor = (stateId: string) => {
     const stateName = ID_TO_STATE[stateId] || '';
-    if (stateId === selectedStateId) return '#1D2A54';
-    if (stateId === hoveredStateId) return '#2D3A64';
+    if (stateId === hoveredStateId) return '#2563EB';
 
     const count = stateDataMap.get(stateName)?.projectCount || 0;
     if (count > maxProjectCount * 0.85) return '#7F1D1D';
@@ -341,8 +340,8 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                   key={loc.id}
                   d={loc.path}
                   fill={getStateFillColor(loc.id)}
-                  stroke={isSelected ? '#38BDF8' : isHovered ? '#60A5FA' : '#334155'}
-                  strokeWidth={isSelected ? 2.5 : isHovered ? 1.8 : 0.8}
+                  stroke={isHovered ? '#1D4ED8' : isSelected ? '#0F172A' : '#334155'}
+                  strokeWidth={isHovered ? 2.0 : isSelected ? 2.2 : 0.8}
                   strokeLinejoin="round"
                   strokeLinecap="round"
                   className="state-path-real"
@@ -360,8 +359,12 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                   onBlur={() => setHoveredStateId(null)}
                   style={{
                     cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    filter: isSelected ? 'drop-shadow(0 2px 6px rgba(29,42,84,0.4))' : 'none'
+                    transition: 'all 0.2s ease',
+                    filter: isHovered 
+                      ? 'drop-shadow(0 2px 8px rgba(37, 99, 235, 0.45))' 
+                      : isSelected 
+                      ? 'drop-shadow(0 2px 6px rgba(15, 23, 42, 0.35))' 
+                      : 'none'
                   }}
                   role="button"
                   tabIndex={0}
