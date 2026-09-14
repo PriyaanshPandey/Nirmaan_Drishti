@@ -232,7 +232,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
   // Color generator based on project count (calibrated across full portfolio range to make differences clearly visible)
   const getStateFillColor = (stateId: string) => {
     const stateName = ID_TO_STATE[stateId] || '';
-    if (stateId === hoveredStateId) return '#2563EB';
+    if (stateId === hoveredStateId) return '#1A1F4C';
 
     const count = stateDataMap.get(stateName)?.projectCount || 0;
     if (count > maxProjectCount * 0.85) return '#7F1D1D';
