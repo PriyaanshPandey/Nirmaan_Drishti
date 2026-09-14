@@ -3,16 +3,30 @@ import './MetricCards.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api, type DashboardSummaryData } from '../services/api';
 import { InfoButton } from './ExplainabilityInfo';
+import { projectsData } from '../data/projectsData';
+
+const initialTotalProjects = projectsData.length;
+const initialTotalOrigCost = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialTotalRevCost = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialOverrunPct = initialTotalOrigCost > 0
+  ? Math.round(((initialTotalRevCost - initialTotalOrigCost) / initialTotalOrigCost * 100) * 10) / 10
+  : 0;
 
 const DEFAULT_METRICS: DashboardSummaryData['metrics'] = {
-  total_projects: 3361,
-  total_projects_subtext: '+124 this quarter',
-  total_original_cost: 3713000,
-  total_original_cost_formatted: '₹37.13 L Cr',
-  total_revised_cost: 4278000,
-  total_revised_cost_formatted: '₹42.78 L Cr',
-  cost_overrun_percentage: 15.2,
-  cost_overrun_formatted: '+15.2% overrun'
+  total_projects: initialTotalProjects,
+  total_projects_subtext: 'Live MoSPI Data',
+  total_original_cost: Math.round(initialTotalOrigCost),
+  total_original_cost_formatted: `₹${(initialTotalOrigCost / 100000).toFixed(2)} L Cr`,
+  total_revised_cost: Math.round(initialTotalRevCost),
+  total_revised_cost_formatted: `₹${(initialTotalRevCost / 100000).toFixed(2)} L Cr`,
+  cost_overrun_percentage: initialOverrunPct,
+  cost_overrun_formatted: `+${initialOverrunPct.toFixed(1)}% overrun`
 };
 
 interface MetricCardsProps {
@@ -30,7 +44,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
         setMetrics(res.metrics);
       }
     }).catch(() => {
-      // keep default fallback metrics
+      // keep dynamic fallback metrics
     });
 
     return () => {
@@ -38,10 +52,10 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
     };
   }, []);
 
-  const origCostCr = metrics.total_original_cost || 3713000;
-  const revCostCr = metrics.total_revised_cost || 4278000;
-  const overrunPct = metrics.cost_overrun_percentage || 15.2;
-  const totalProjects = metrics.total_projects || 3361;
+  const origCostCr = metrics.total_original_cost || initialTotalOrigCost;
+  const revCostCr = metrics.total_revised_cost || initialTotalRevCost;
+  const overrunPct = metrics.cost_overrun_percentage ?? initialOverrunPct;
+  const totalProjects = metrics.total_projects || initialTotalProjects;
 
   return (
     <div className="metrics-column">

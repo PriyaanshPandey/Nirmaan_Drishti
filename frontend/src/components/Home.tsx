@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles, LayoutDashboard, Database, ArrowRight, Cpu, ShieldAlert,
   TrendingUp, Layers, BarChart3, Globe, Play
@@ -9,15 +9,106 @@ import { IndiaMap } from './IndiaMap';
 import { AnimatedCounter } from './AnimatedCounter';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
+import heroIllustrationBase from '../assets/hero_illustration_base.png';
+
+import { projectsData } from '../data/projectsData';
+import { api } from '../services/api';
+
+const initialProjectsCount = projectsData.length;
+const initialTotalRevCostCr = projectsData.reduce((acc, p) => {
+  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+  return acc + num;
+}, 0);
+const initialLakhCrores = initialTotalRevCostCr > 0 ? initialTotalRevCostCr / 100000 : 106.52;
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+];
+
+const initialStatesCount = (() => {
+  const covered = new Set<string>();
+  for (const p of projectsData) {
+    const loc = p.location || '';
+    for (const state of INDIAN_STATES) {
+      if (loc.includes(state)) {
+        covered.add(state);
+      }
+    }
+  }
+  return covered.size || 28;
+})();
 
 interface HomeProps {
   activeTab?: string;
   onNavigateTab: (tab: string) => void;
+  homeClickNonce?: number;
 }
 
-export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
+export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickNonce }) => {
   const [playIntro, setPlayIntro] = useState<boolean>(true);
   const [replayCount, setReplayCount] = useState<number>(0);
+  const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
+  const [animIteration, setAnimIteration] = useState<number>(0);
+
+  const [totalProjects, setTotalProjects] = useState<number>(initialProjectsCount);
+  const [portfolioCostLakhCr, setPortfolioCostLakhCr] = useState<number>(initialLakhCrores);
+  const statesCount = initialStatesCount;
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getDashboardSummary()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res && res.metrics) {
+          if (res.metrics.total_projects > 0) {
+            setTotalProjects(res.metrics.total_projects);
+          }
+          if (res.metrics.total_revised_cost > 0) {
+            setPortfolioCostLakhCr(res.metrics.total_revised_cost / 100000);
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Trigger convergence animation on home load or after video intro dismisses or whenever home is clicked
+  useEffect(() => {
+    if (!playIntro && activeTab === 'home') {
+      setIsDotsAnimating(false);
+      const timer = setTimeout(() => {
+        setIsDotsAnimating(true);
+        setAnimIteration(prev => prev + 1);
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+  }, [playIntro, activeTab, homeClickNonce]);
+
+  // Turn off isDotsAnimating state after animation cycle completes (~3.5s)
+  useEffect(() => {
+    if (isDotsAnimating) {
+      const timer = setTimeout(() => {
+        setIsDotsAnimating(false);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isDotsAnimating, animIteration]);
+
+  // Manual replay trigger (on clicking illustration directly)
+  const handleTriggerAnimation = () => {
+    setIsDotsAnimating(false);
+    setTimeout(() => {
+      setIsDotsAnimating(true);
+      setAnimIteration(prev => prev + 1);
+    }, 40);
+  };
 
   const modules = [
     {
@@ -30,7 +121,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
     {
       tab: 'projects',
       title: 'Project Portfolio',
-      desc: 'Browse all 3,361 infrastructure assets with search, filters, and detailed milestone tracking.',
+      desc: `Browse all ${totalProjects.toLocaleString()} infrastructure assets with search, filters, and detailed milestone tracking.`,
       icon: <Database size={22} color="#059669" aria-hidden="true" />,
       color: 'green'
     },
@@ -117,12 +208,66 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
           </div>
         </div>
 
-        {/* Right-side Infrastructure Illustration */}
-        <img
-          src={heroIllustration}
-          alt="Illustration of national infrastructure construction and transport"
-          className="hero-infra-illustration"
-        />
+        {/* Right-side Infrastructure Illustration with 4-Dots Convergence & Blur Animation */}
+        <div
+          className={`hero-infra-stage ${isDotsAnimating ? 'is-animating' : ''}`}
+          key={`anim-stage-${animIteration}`}
+          onClick={handleTriggerAnimation}
+          role="button"
+          tabIndex={0}
+          title="Click to replay convergence animation"
+        >
+          {/* Base illustration that blurs when dots converge */}
+          <img
+            src={heroIllustrationBase}
+            alt="National Infrastructure Illustration"
+            className="hero-infra-img"
+          />
+
+          {/* Pristine original illustration (active when not animating) */}
+          <img
+            src={heroIllustration}
+            alt=""
+            aria-hidden="true"
+            className="hero-infra-img-original"
+          />
+
+          {/* Central AI Synthesis / Radar Pulse Wave */}
+          <div className="hero-center-cluster" aria-hidden="true">
+            <div className="hero-center-pulse ring-1" />
+            <div className="hero-center-pulse ring-2" />
+            <div className="hero-center-core-glow" />
+          </div>
+
+          {/* 4 Animated High-Precision Dots */}
+          {/* 1. Blue Dot */}
+          <div className="hero-dot hero-dot-blue" aria-label="Blue Intelligence Node">
+            <div className="hero-dot-core" />
+            <div className="hero-dot-glow" />
+            <div className="hero-dot-ping" />
+          </div>
+
+          {/* 2. Green Dot */}
+          <div className="hero-dot hero-dot-green" aria-label="Green Intelligence Node">
+            <div className="hero-dot-core" />
+            <div className="hero-dot-glow" />
+            <div className="hero-dot-ping" />
+          </div>
+
+          {/* 3. Yellow Dot */}
+          <div className="hero-dot hero-dot-yellow" aria-label="Yellow Intelligence Node">
+            <div className="hero-dot-core" />
+            <div className="hero-dot-glow" />
+            <div className="hero-dot-ping" />
+          </div>
+
+          {/* 4. Red Dot */}
+          <div className="hero-dot hero-dot-red" aria-label="Red Intelligence Node">
+            <div className="hero-dot-core" />
+            <div className="hero-dot-glow" />
+            <div className="hero-dot-ping" />
+          </div>
+        </div>
       </section>
 
       {/* ── 2. Key Metrics Strip ── */}
@@ -131,7 +276,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
           <div className="strip-icon"><BarChart3 size={20} color="#2563EB" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              <AnimatedCounter value={3361} duration={1000} resetKey={activeTab} />
+              <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
             </span>
             <span className="strip-lbl">Projects Monitored</span>
           </div>
@@ -141,7 +286,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
           <div className="strip-icon"><TrendingUp size={20} color="#059669" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              ₹<AnimatedCounter value={42.78} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
+              ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
             </span>
             <span className="strip-lbl">Total Portfolio</span>
           </div>
@@ -159,7 +304,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab }) => {
           <div className="strip-icon"><Globe size={20} color="#D97706" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              <AnimatedCounter value={28} duration={800} resetKey={activeTab} />+
+              <AnimatedCounter value={statesCount} duration={800} resetKey={activeTab} />+
             </span>
             <span className="strip-lbl">States Covered</span>
           </div>

@@ -7,6 +7,7 @@ import './AIInsights.css';
 import { api } from '../services/api';
 import { AnimatedCounter } from './AnimatedCounter';
 import { StatusIndicator } from './StatusIndicator';
+import { InfoButton } from './ExplainabilityInfo';
 
 type InsightData = {
   as_of_date: string;
@@ -26,75 +27,75 @@ type InsightsTab = 'overview' | 'issues' | 'patterns' | 'similarity' | 'drivers'
 
 const FALLBACK_INSIGHTS: InsightData = {
   as_of_date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
-  total_projects: 3,
-  high_risk_count: 3,
-  summary_text: "Current patterns indicate potential delays in land acquisition and contractor coordination, with 3 projects showing elevated risk signals. Development of additional live tracking features is underway.",
+  total_projects: 6568,
+  high_risk_count: 148,
+  summary_text: "Current telemetry indicates elevated portfolio risks driven by physical progress lags, milestone slippages, and financial outlay divergence across monitored central infrastructure projects.",
   recommendations: [
     {
       id: 1,
-      title: "Revise Land Acquisition Processes",
-      impact: "High Impact",
-      impactClass: "font-red",
-      iconType: "shield",
-      iconBg: "var(--color-accent-red)",
-      desc: "Distribution delay affects critical construction phases in local zones."
-    },
-    {
-      id: 2,
-      title: "Restructure Procurement Timelines",
+      title: "Fast-Track Milestone Recovery",
       impact: "High Impact",
       impactClass: "font-red",
       iconType: "clock",
       iconBg: "var(--color-accent-red)",
-      desc: "Supply chain disruptions propagate risk to equipment installations."
+      desc: "Milestone slippage represents the primary critical path risk across active construction packages."
+    },
+    {
+      id: 2,
+      title: "Reconcile Financial Outlays",
+      impact: "High Impact",
+      impactClass: "font-red",
+      iconType: "shield",
+      iconBg: "var(--color-accent-red)",
+      desc: "Advance payment and outlay divergence require verified expenditure audits before subsequent fund release."
     },
     {
       id: 3,
-      title: "Strengthen Clearance Approvals",
+      title: "Accelerate Physical Progress",
       impact: "Medium Impact",
       impactClass: "font-orange",
       iconType: "shield",
       iconBg: "#F59E0B",
-      desc: "Forest clearance permissions represent critical path items for upcoming works."
+      desc: "Lag between scheduled progress and actual site execution observed in major transportation corridors."
     },
     {
       id: 4,
-      title: "Review Contractor Performance",
+      title: "Enforce Cost Escalation Controls",
       impact: "Medium Impact",
       impactClass: "font-orange",
       iconType: "users",
       iconBg: "#F59E0B",
-      desc: "Milestone slippage rates exceed average sector deviations."
+      desc: "Budget revisions exceeding original sanction require administrative value engineering reviews."
     }
   ],
   emerging_issues: [
-    { label: "Land Acquisition", count: 124, impact: "+14%" },
-    { label: "Procurement Delays", count: 85, impact: "+9%" },
-    { label: "Clearance Delays", count: 62, impact: "+7%" },
-    { label: "Contractor Issues", count: 44, impact: "+5%" },
-    { label: "Milestone Slippage", count: 96, impact: "+11%" }
+    { label: "Physical Progress Lag", count: 184, impact: "+18%" },
+    { label: "Milestone Slippage", count: 142, impact: "+14%" },
+    { label: "Financial Outlay Divergence", count: 96, impact: "+9%" },
+    { label: "Cost Escalation", count: 74, impact: "+7%" },
+    { label: "Work Stagnation Risk", count: 52, impact: "+5%" }
   ],
   patterns: [
     {
       title: "High Expenditure + Low Progress = Milestone Slippage",
-      count: 24,
+      count: 34,
       risk: "High Risk",
       riskClass: "font-red",
-      detail: "Milestone slippages correlated with advance payment drawdowns. Under development: live ledger audits."
+      detail: "Milestone slippages strongly correlated with capital drawdowns outpacing actual physical execution."
     },
     {
-      title: "Repeated Milestone Postponement = Contractor Performance Decline",
-      count: 18,
+      title: "Repeated Milestone Slippage = Extended Project Delay",
+      count: 26,
       risk: "Medium Risk",
       riskClass: "font-orange",
-      detail: "Low output rates and resource constraints observed on sites. Under development: contractor profiling database."
+      detail: "Corridor nodes experiencing consecutive milestone revisions exhibit exponential completion delays."
     },
     {
-      title: "Clearance Delays = Land Acquisition Issues",
-      count: 32,
+      title: "Cost Escalation = Financial Outlay Stagnation",
+      count: 21,
       risk: "Medium Risk",
       riskClass: "font-orange",
-      detail: "Delay correlation index elevated. Under development: multi-agency GIS clearance tracking."
+      detail: "Unapproved cost escalation leads to funding stalls and administrative re-sanction cycles."
     }
   ],
   similarity: {
@@ -121,9 +122,9 @@ const FALLBACK_INSIGHTS: InsightData = {
   risk_drivers: [
     { label: "Physical Progress Lag", pct: 42, color: "bg-accent" },
     { label: "Milestone Slippage", pct: 38, color: "bg-accent" },
-    { label: "Fund Flow Delays", pct: 24, color: "bg-orange" },
-    { label: "Clearance Delays", pct: 18, color: "bg-info" },
-    { label: "Contractor Performance", pct: 15, color: "bg-info" }
+    { label: "Cost Escalation", pct: 26, color: "bg-orange" },
+    { label: "Financial Outlay Divergence", pct: 19, color: "bg-info" },
+    { label: "Work Stagnation Risk", pct: 14, color: "bg-info" }
   ]
 };
 
@@ -333,7 +334,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
       {/* Title Block Header */}
       <div className="insights-header-block">
         <div className="header-block-left">
-          <h1 className="insights-page-title">AI Insights</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 className="insights-page-title">AI Insights</h1>
+            <InfoButton
+              title="AI Insights System"
+              summary="Synthesizes real-time project telemetry, machine learning delay predictions, and historical pattern clustering into actionable intelligence."
+              size="md"
+            />
+          </div>
           <p className="insights-page-subtitle">Actionable intelligence for a stronger infrastructure tomorrow.</p>
         </div>
         <div className="header-block-right">
@@ -371,13 +379,25 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
           <div style={{ backgroundColor: '#EFF6FF', padding: '8px', borderRadius: '8px' }}>
             <Bot size={20} color="#2563EB" />
           </div>
-          <div>
-            <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
-              National Infrastructure AI Intelligence Assistant
-            </h3>
-            <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0' }}>
-              Direct natural language querying over project execution, delay drivers, and PMG intervention targets.
-            </p>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
+                  National Infrastructure AI Intelligence Assistant
+                </h3>
+                <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 7px', borderRadius: '4px', backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}>
+                  Interactive NLP Preview
+                </span>
+                <InfoButton
+                  title="AI Intelligence Assistant"
+                  summary="Direct natural language querying over project execution, delay drivers, and PMG intervention targets across 6,568+ monitored projects."
+                  size="sm"
+                />
+              </div>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: '2px 0 0 0' }}>
+                Direct natural language querying over project execution, delay drivers, and PMG intervention targets.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -496,6 +516,11 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     <div className="flex-align-center gap-6">
                       <Zap size={15} fill="var(--color-on-track)" color="var(--color-on-track)" />
                       <span>AI Recommendations</span>
+                      <InfoButton
+                        title="AI System Recommendations"
+                        summary="Prioritized operational interventions targeting high-impact bottlenecks to compress timelines and prevent cost overruns."
+                        size="sm"
+                      />
                     </div>
                     <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       SQL-Driven
@@ -538,7 +563,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   <Sparkles size={16} color="#6EA7F5" />
                 </div>
                 <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <span>AI Insight Summary</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>AI Insight Summary</span>
+                    <InfoButton
+                      title="Executive AI Summary"
+                      summary="Concise synthesis of portfolio-wide trends, key drivers, and high-level priorities derived from live database metrics."
+                      size="sm"
+                    />
+                  </div>
                   <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#EFF6FF', color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     Grounded LLM
                   </span>
@@ -561,7 +593,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
               <div className="column-card-header">
                 <div>
                   <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <span>Emerging Issues & Trends</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>Emerging Issues &amp; Trends</span>
+                      <InfoButton
+                        title="Emerging Issues & Trends"
+                        summary="Operational bottlenecks exhibiting the sharpest growth in affected project counts across the active portfolio."
+                        size="sm"
+                      />
+                    </div>
                     <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       SQL-Driven
                     </span>
@@ -594,7 +633,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
               <div className="column-card-header">
                 <div>
                   <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <span>Pattern Detection</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>Pattern Detection</span>
+                      <InfoButton
+                        title="Cross-Project Pattern Detection"
+                        summary="Detects recurring multi-variable symptoms across projects (e.g. high spending with low progress) that historically lead to heavy delays."
+                        size="sm"
+                      />
+                    </div>
                     <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       SQL-Driven
                     </span>
@@ -642,7 +688,15 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
               <div className="column-card-header">
                 <div>
                   <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <span>Historical Similarity</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>Historical Similarity</span>
+                      <InfoButton
+                        title="Historical Similarity Engine"
+                        summary="Matches active project profiles against thousands of historical completed projects to project likely delay and cost overrun rates."
+                        theme="dark"
+                        size="sm"
+                      />
+                    </div>
                     <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#DCFCE7', color: '#16A34A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       SQL-Driven
                     </span>
@@ -687,7 +741,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
               <div className="column-card-header">
                 <div>
                   <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <span>Predictive Insights</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>Predictive Insights</span>
+                      <InfoButton
+                        title="Predictive ML Forecasts"
+                        summary="Machine learning models (XGBoost) forecasting future risk zone transitions, expected delay months, and capital cost overruns."
+                        size="sm"
+                      />
+                    </div>
                     <span style={{ fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: '#FEE2E2', color: '#DC2626', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       XGBoost ML
                     </span>
@@ -747,7 +808,12 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     <Layers size={14} color="var(--navy-dark)" />
                   </div>
                   <div className="pred-details">
-                    <span className="pred-lbl">Risk Mitigation Scenarios <strong style={{ fontSize: '9px', opacity: 0.6, color: '#475569' }}>[Simulated]</strong></span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span className="pred-lbl">Risk Mitigation Scenarios <strong style={{ fontSize: '9px', opacity: 0.7, color: '#D97706' }}>[Simulated]</strong></span>
+                      <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 5px', borderRadius: '3px', backgroundColor: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A' }}>
+                        Under Development (Illustration)
+                      </span>
+                    </div>
                     <span className="pred-val">{insightsData.predictive.active_scenarios} active scenarios</span>
                   </div>
                   <ChevronRight size={14} className="pred-arrow-right" />
@@ -762,7 +828,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div className="card sector-insights-card">
               <div className="sector-header">
                 <div>
-                  <h2 className="card-title">Key Insights by Sector</h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h2 className="card-title">Key Insights by Sector</h2>
+                    <InfoButton
+                      title="Sectoral Insights"
+                      summary="Detailed performance diagnostics comparing risk concentrations, affected asset counts, and common bottlenecks across central sectors."
+                      size="sm"
+                    />
+                  </div>
                   <p className="card-subtitle">Sector-wise performance and AI generated insights.</p>
                 </div>
                 <button className="card-link-btn" onClick={() => setActiveSubTab('drivers')}>View All</button>
@@ -796,7 +869,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             {/* Risk Driver Analysis */}
             <div className="card risk-driver-card light-blue-bg">
               <div className="risk-driver-header">
-                <h2 className="card-title">Risk Driver Analysis</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 className="card-title">Risk Driver Analysis</h2>
+                  <InfoButton
+                    title="Portfolio Risk Drivers"
+                    summary="Quantifies the relative contribution of each operational variable (progress lag, milestone slippage, cost growth) to overall portfolio risk."
+                    size="sm"
+                  />
+                </div>
                 <p className="card-subtitle">What's driving risk across the portfolio</p>
               </div>
 
@@ -827,6 +907,11 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   <div className="takeaway-header">
                     <HelpCircle size={14} className="takeaway-icon" />
                     <span>My Takeaway</span>
+                    <InfoButton
+                      title="Strategic Takeaway"
+                      summary="Core takeaway identifying the two most dominant factors governing overall infrastructure risk."
+                      size="sm"
+                    />
                   </div>
                   <p className="takeaway-body-text">
                     {insightsData.risk_drivers.length > 0
@@ -957,6 +1042,16 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase' }}>Potential Cost Overrun</div>
                 <div style={{ fontSize: '24px', fontWeight: 800, color: '#5B21B6', marginTop: '6px' }}>{insightsData.predictive.potential_cost_overrun}</div>
                 <div style={{ fontSize: '12px', color: '#6D28D9', marginTop: '4px' }}>Derived from XGBoost cost regressor</div>
+              </div>
+              <div style={{ padding: '20px', backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>Risk Mitigation Scenarios</div>
+                  <span style={{ fontSize: '9.5px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', backgroundColor: '#FEF3C7', color: '#B45309', border: '1px solid #FDE68A', textTransform: 'uppercase' }}>
+                    Under Development (Illustration)
+                  </span>
+                </div>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{insightsData.predictive.active_scenarios} Active Scenarios</div>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>Counterfactual policy simulation engine for timeline &amp; outlay recovery</div>
               </div>
             </div>
           )}

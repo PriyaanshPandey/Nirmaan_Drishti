@@ -5,6 +5,7 @@ import {
   AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
 } from 'lucide-react';
 import { type Project } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 import {
   api,
   type RiskPredictionData,
@@ -413,8 +414,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </button>
           
           <div className="filter-pill-dropdown">
-            <span className="pill-label">Dept:</span>
-            <span className="pill-val">Rail (CO-02)</span>
+            <span className="pill-label">Sector:</span>
+            <span className="pill-val">{project.sector || 'Infrastructure'}</span>
             <ChevronDown size={12} className="pill-chevron" />
           </div>
           
@@ -438,10 +439,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="filters-right">
-          <span className="as-of-date">As of <span className="date-strong">31 July 2026</span></span>
+          <span className="as-of-date">Target Completion: <span className="date-strong">{project.expectedCompletion || 'Ongoing'}</span></span>
           <div className="insight-badge active-pulsing">
             <span className="badge-dot-glowing"></span>
-            <span className="badge-txt">AI Insight Active — 12 new risk correlations detected.</span>
+            <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
           </div>
         </div>
       </div>
@@ -449,11 +450,17 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       {/* Project Title & Status */}
       <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
-        <StatusIndicator
-          kind={project.scheduleStatus.toLowerCase().includes('critical') ? 'critical' : project.scheduleStatus.toLowerCase().includes('delay') ? 'delayed' : 'on-track'}
-          label={project.scheduleStatus.toUpperCase().includes('CRIT') ? 'CRITICAL PROJECT' : project.scheduleStatus.toUpperCase()}
-          className={`status-tag-badge status-${project.scheduleStatus.toLowerCase()}`}
-        />
+        {(() => {
+          const displayStatus = getProjectDisplayStatus(project);
+          const kind = displayStatus === 'CRITICAL' ? 'critical' : displayStatus === 'DELAYED' ? 'delayed' : displayStatus === 'IN REVIEW' ? 'medium' : 'on-track';
+          return (
+            <StatusIndicator
+              kind={kind}
+              label={displayStatus === 'CRITICAL' ? 'CRITICAL PROJECT' : displayStatus}
+              className={`status-tag-badge status-${displayStatus.toLowerCase().replace(/\s+/g, '-')}`}
+            />
+          );
+        })()}
       </div>
 
       {/* Row 1: Dashboard Metrics (Moved Above) */}
@@ -738,13 +745,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         // 3M Schedule Metrics
         const t3mProb = predT3?.additional_delay_probability !== undefined && predT3?.additional_delay_probability !== null
           ? (predT3.additional_delay_probability * 100).toFixed(1)
-          : pred3m?.time_overrun_probability !== undefined ? (pred3m.time_overrun_probability * 100).toFixed(1) : (tRisk * 0.88).toFixed(1);
+          : pred3m?.time_overrun_probability !== undefined ? (pred3m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
 
         const t3mDelayMo = predT3?.predicted_additional_delay_months !== undefined && predT3?.predicted_additional_delay_months !== null
           ? predT3.predicted_additional_delay_months.toFixed(1)
-          : pred3m?.predicted_additional_delay_months !== undefined ? pred3m.predicted_additional_delay_months.toFixed(1) : ((tRisk / 100) * 3.4).toFixed(1);
+          : pred3m?.predicted_additional_delay_months !== undefined ? pred3m.predicted_additional_delay_months.toFixed(1) : '0.0';
 
-        const t3mNeeded = predT3?.estimated_time_needed_completion || pred3m?.estimated_time_needed || (tRisk >= 70 ? '1 year 10 months' : '1 year 4 months');
+        const t3mNeeded = predT3?.estimated_time_needed_completion || pred3m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
 
         const t3mTotalExt = predT3?.predicted_total_schedule_extension_months !== undefined && predT3?.predicted_total_schedule_extension_months !== null
           ? predT3.predicted_total_schedule_extension_months.toFixed(1)
@@ -769,34 +776,34 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           return baseDateStr;
         };
 
-        const t3mTentative = (predT3?.tentative_completion_date && predT3.tentative_completion_date !== 'N/A' && predT3.tentative_completion_date !== project.expectedCompletion)
+        const t3mTentative = (predT3?.tentative_completion_date && predT3.tentative_completion_date !== 'N/A')
           ? predT3.tentative_completion_date
-          : (pred3m?.tentative_completion_date && pred3m.tentative_completion_date !== 'N/A' && pred3m.tentative_completion_date !== project.expectedCompletion)
+          : (pred3m?.tentative_completion_date && pred3m.tentative_completion_date !== 'N/A')
           ? pred3m.tentative_completion_date
-          : shiftDateByMonths(project.expectedCompletion, parseFloat(t3mDelayMo) || 1.6);
+          : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t3mDelayMo)) ? parseFloat(t3mDelayMo) : 0);
 
         const t3mBadge = predT3?.risk_tier ? `${predT3.risk_tier} RISK` : parseFloat(t3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t3mProb) >= 50 ? 'HIGH RISK' : parseFloat(t3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
 
         // 6M Schedule Metrics
         const t6mProb = predT6?.additional_delay_probability !== undefined && predT6?.additional_delay_probability !== null
           ? (predT6.additional_delay_probability * 100).toFixed(1)
-          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : Math.min(99, tRisk * 1.20).toFixed(1);
+          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
 
         const t6mDelayMo = predT6?.predicted_additional_delay_months !== undefined && predT6?.predicted_additional_delay_months !== null
           ? predT6.predicted_additional_delay_months.toFixed(1)
-          : pred6m?.predicted_additional_delay_months !== undefined ? pred6m.predicted_additional_delay_months.toFixed(1) : ((tRisk / 100) * 7.2).toFixed(1);
+          : pred6m?.predicted_additional_delay_months !== undefined ? pred6m.predicted_additional_delay_months.toFixed(1) : '0.0';
 
-        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (tRisk >= 70 ? '2 years 4 months' : '1 year 9 months');
+        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
 
         const t6mTotalExt = predT6?.predicted_total_schedule_extension_months !== undefined && predT6?.predicted_total_schedule_extension_months !== null
           ? predT6.predicted_total_schedule_extension_months.toFixed(1)
           : pred6m?.predicted_total_schedule_extension_months !== undefined ? pred6m.predicted_total_schedule_extension_months.toFixed(1) : (currentExtMonths + parseFloat(t6mDelayMo)).toFixed(1);
 
-        const t6mTentative = (predT6?.tentative_completion_date && predT6.tentative_completion_date !== 'N/A' && predT6.tentative_completion_date !== t3mTentative)
+        const t6mTentative = (predT6?.tentative_completion_date && predT6.tentative_completion_date !== 'N/A')
           ? predT6.tentative_completion_date
-          : (pred6m?.tentative_completion_date && pred6m.tentative_completion_date !== 'N/A' && pred6m.tentative_completion_date !== t3mTentative)
+          : (pred6m?.tentative_completion_date && pred6m.tentative_completion_date !== 'N/A')
           ? pred6m.tentative_completion_date
-          : shiftDateByMonths(project.expectedCompletion, parseFloat(t6mDelayMo) || 5.3);
+          : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t6mDelayMo)) ? parseFloat(t6mDelayMo) : 0);
 
         const t6mBadge = predT6?.risk_tier ? `${predT6.risk_tier} RISK` : parseFloat(t6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t6mProb) >= 50 ? 'HIGH RISK' : parseFloat(t6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
 

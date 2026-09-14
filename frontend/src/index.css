@@ -106,11 +106,11 @@ body {
   width: 100%;
   max-width: 1360px;
   margin: 0 auto;
-  padding: 32px 48px 40px 48px;
+  padding: 16px 48px 40px 48px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 /* Typography Utility - Increased Sizes */
@@ -159,11 +159,29 @@ h3 {
   overflow: hidden;
 }
 
+/* Hover effects to add character and interaction */
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #010256, transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
 .card:hover {
   transform: translateY(-4px);
   background: var(--bg-card-hover);
   box-shadow: var(--shadow-lg);
   border-color: var(--border-color-hover);
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 /* Dashboard Layout Grid */

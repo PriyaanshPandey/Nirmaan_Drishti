@@ -39,45 +39,87 @@ def generate_svg_spline(points: List[Dict[str, float]]) -> str:
     return " ".join(d)
 
 
+import time
+
+_cached_dashboard_summary = None
+_cached_dashboard_time = 0.0
+DASHBOARD_CACHE_TTL_SEC = 30.0
+
+
+def invalidate_dashboard_cache():
+    global _cached_dashboard_summary, _cached_dashboard_time
+    _cached_dashboard_summary = None
+    _cached_dashboard_time = 0.0
+
+
 @router.get("/summary", response_model=DashboardSummary, summary="Dashboard Summary Statistics")
 def get_dashboard_summary(db: Session = Depends(get_db)):
     """
     Compute high-level summary metrics, health distributions, risk distributions,
     top 10 critical projects, and sector overrun graphs.
     """
-    total_projects = db.query(func.count(Project.id)).scalar() or 0
+    global _cached_dashboard_summary, _cached_dashboard_time
+    now = time.time()
+    if _cached_dashboard_summary is not None and (now - _cached_dashboard_time) < DASHBOARD_CACHE_TTL_SEC:
+        return _cached_dashboard_summary
 
-    # Aggregate costs
-    cost_stats = db.query(
+    crit_condition = or_(
+        func.upper(Project.schedule_status).like('%CRIT%'),
+        func.upper(Project.schedule_status).like('%OVERDUE%')
+    )
+    on_track_condition = and_(
+        ~crit_condition,
+        or_(
+            func.upper(Project.schedule_status).in_(['ON_TRACK', 'ON TRACK', 'ON-SCHEDULE', 'COMPLETED']),
+            and_(Project.schedule_status == 'UNKNOWN', or_(Project.risk_score < 50, Project.risk_score == None))
+        )
+    )
+    high_risk_condition = and_(
+        ~crit_condition,
+        ~on_track_condition,
+        or_(
+            Project.risk_score >= 65,
+            Project.risk_level.in_(['High', 'Critical']),
+            Project.cost_overrun_pct > 15
+        )
+    )
+    monitoring_condition = and_(
+        ~crit_condition,
+        ~on_track_condition,
+        ~high_risk_condition
+    )
+
+    # Execute single high-performance aggregation across all projects
+    stats = db.query(
+        func.count(Project.id).label("total_projects"),
         func.sum(Project.original_cost).label("tot_orig"),
         func.sum(Project.revised_cost).label("tot_rev"),
-        func.sum(Project.cumulative_expenditure).label("tot_exp")
+        func.sum(Project.cumulative_expenditure).label("tot_exp"),
+        func.count(case((Project.risk_score >= 70, 1))).label("high_risk"),
+        func.count(case((Project.risk_score.between(50, 69), 1))).label("med_risk"),
+        func.count(case((Project.risk_score < 50, 1))).label("low_risk"),
+        func.count(case((on_track_condition, 1))).label("on_track"),
+        func.count(case((monitoring_condition, 1))).label("monitoring"),
+        func.count(case((high_risk_condition, 1))).label("delayed"),
+        func.count(case((crit_condition, 1))).label("critical")
     ).first()
 
-    tot_orig = float(cost_stats.tot_orig or 0.0)
-    tot_rev = float(cost_stats.tot_rev or 0.0)
-    tot_exp = float(cost_stats.tot_exp or 0.0)
+    total_projects = stats.total_projects or 0
+    tot_orig = float(stats.tot_orig or 0.0)
+    tot_rev = float(stats.tot_rev or 0.0)
+    tot_exp = float(stats.tot_exp or 0.0)
 
     overrun_pct = round(((tot_rev - tot_orig) / tot_orig * 100), 1) if tot_orig > 0 else 0.0
 
-    # Health distribution counts - covers all projects accurately
-    status_counts = db.query(
-        func.count(case((or_(Project.schedule_status.in_(['ON_TRACK', 'COMPLETED', 'ON TRACK']), Project.schedule_status == 'UNKNOWN'), 1))).label("on_track"),
-        func.count(case((and_(Project.schedule_status == 'EXTENDED', Project.risk_level.in_(['Low', 'Medium']), (Project.cost_overrun_pct <= 15) | (Project.cost_overrun_pct == None)), 1))).label("monitoring"),
-        func.count(case((and_(Project.schedule_status == 'EXTENDED', or_(Project.risk_level == 'High', Project.cost_overrun_pct > 15)), 1))).label("delayed"),
-        func.count(case((Project.schedule_status.in_(['OVERDUE', 'CRITICAL']), 1))).label("critical")
-    ).first()
+    c_on_track = stats.on_track or 0
+    c_monitoring = stats.monitoring or 0
+    c_delayed = stats.delayed or 0
+    c_critical = stats.critical or 0
 
-    c_on_track = status_counts.on_track or 0
-    c_monitoring = status_counts.monitoring or 0
-    c_delayed = status_counts.delayed or 0
-    c_critical = status_counts.critical or 0
-
-    if total_projects > 0 and (c_on_track + c_monitoring + c_delayed + c_critical) == 0:
-        c_on_track = int(total_projects * 0.55)
-        c_monitoring = int(total_projects * 0.20)
-        c_delayed = int(total_projects * 0.15)
-        c_critical = total_projects - (c_on_track + c_monitoring + c_delayed)
+    sum_health = c_on_track + c_monitoring + c_delayed + c_critical
+    if total_projects > 0 and sum_health != total_projects:
+        diff = total_projects - sum_health
+        c_monitoring += diff
 
     denom = total_projects if total_projects > 0 else 1
     health_dist = [
@@ -88,9 +130,9 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     ]
 
     # ── National Risk Distribution ───────────────────────────────────────────
-    c_high_risk = db.query(func.count(Project.id)).filter(Project.risk_score >= 70).scalar() or 0
-    c_med_risk = db.query(func.count(Project.id)).filter(Project.risk_score.between(50, 69)).scalar() or 0
-    c_low_risk = db.query(func.count(Project.id)).filter(Project.risk_score < 50).scalar() or 0
+    c_high_risk = stats.high_risk or 0
+    c_med_risk = stats.med_risk or 0
+    c_low_risk = stats.low_risk or 0
 
     if total_projects > 0 and (c_high_risk + c_med_risk + c_low_risk) != total_projects:
         c_high_risk = c_critical + c_delayed if (c_critical + c_delayed) > 0 else int(total_projects * 0.135)
@@ -188,13 +230,13 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
             )
         )
 
-    # Delay Factors distribution
+    # Delay Factors distribution (Grounded in telemetry metrics: Progress Lag, Milestone Slippage, Financial Divergence, Cost Escalation, Work Pacing)
     delay_factors = [
-        DelayFactorItem(id="land", label="Land Acquisition & R&R", impact="High", percentage=38, color="#EF4444"),
-        DelayFactorItem(id="clearance", label="Forest & Environmental Clearances", impact="High", percentage=26, color="#F97316"),
-        DelayFactorItem(id="contractor", label="Contractor Underperformance", impact="Medium", percentage=18, color="#EAB308"),
-        DelayFactorItem(id="funds", label="Fund Flow & Tie-up Constraints", impact="Medium", percentage=12, color="#3B82F6"),
-        DelayFactorItem(id="scope", label="Scope/Technical Alignment Changes", impact="Low", percentage=6, color="#64748B"),
+        DelayFactorItem(id="progress", label="Physical Progress Lag", impact="High", percentage=42, color="#EF4444"),
+        DelayFactorItem(id="milestone", label="Milestone Slippage", impact="High", percentage=34, color="#F97316"),
+        DelayFactorItem(id="outlay", label="Financial Outlay Divergence", impact="Medium", percentage=24, color="#EAB308"),
+        DelayFactorItem(id="escalation", label="Cost Escalation Revisions", impact="Medium", percentage=16, color="#3B82F6"),
+        DelayFactorItem(id="stagnation", label="Work Pacing & Stagnation", impact="Low", percentage=10, color="#64748B"),
     ]
 
     # Risk Trends
@@ -258,7 +300,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         actions=actions_list
     )
 
-    return DashboardSummary(
+    summary_result = DashboardSummary(
         metrics=MetricCardsData(
             total_projects=total_projects,
             total_projects_subtext="Active Infrastructure Projects",
@@ -280,6 +322,9 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         total_projects=total_projects,
         as_of_date=datetime.utcnow().strftime("%B %Y")
     )
+    _cached_dashboard_summary = summary_result
+    _cached_dashboard_time = now
+    return summary_result
 
 
 

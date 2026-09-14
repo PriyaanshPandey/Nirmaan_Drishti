@@ -7,6 +7,8 @@ import { InfoButton } from './ExplainabilityInfo';
 import { StatusIndicator } from './StatusIndicator';
 import { summarizeRiskDistribution } from './chartSummaries';
 
+import { projectsData } from '../data/projectsData';
+
 interface RiskSegment {
   id: string;
   name: string;
@@ -15,10 +17,15 @@ interface RiskSegment {
   percentage: number;
 }
 
+const totalInit = projectsData.length;
+const highInit = projectsData.filter(p => (p.riskScore || 0) >= 70).length;
+const medInit = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
+const lowInit = Math.max(0, totalInit - highInit - medInit);
+
 const DEFAULT_RISK_DIST: RiskSegment[] = [
-  { id: 'high_risk', name: 'High Risk / Critical', count: 455, color: '#B91C1C', percentage: 13.5 },
-  { id: 'medium_risk', name: 'Medium Risk', count: 1058, color: '#B45309', percentage: 31.5 },
-  { id: 'low_risk', name: 'Low Risk', count: 1848, color: '#15803D', percentage: 55.0 }
+  { id: 'high_risk', name: 'High Risk / Critical', count: highInit, color: '#B91C1C', percentage: totalInit > 0 ? parseFloat((highInit / totalInit * 100).toFixed(1)) : 0 },
+  { id: 'medium_risk', name: 'Medium Risk', count: medInit, color: '#B45309', percentage: totalInit > 0 ? parseFloat((medInit / totalInit * 100).toFixed(1)) : 0 },
+  { id: 'low_risk', name: 'Low Risk', count: lowInit, color: '#15803D', percentage: totalInit > 0 ? parseFloat((lowInit / totalInit * 100).toFixed(1)) : 0 }
 ];
 
 interface NationalRiskCardProps {

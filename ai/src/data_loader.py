@@ -47,10 +47,21 @@ def load_master_csv(csv_path: str = None, config: dict = None) -> pd.DataFrame:
     csv_path = Path(csv_path)
 
     if not csv_path.exists():
-        raise FileNotFoundError(f"CSV file not found: {csv_path}")
+        # Auto-combine tracked constituent CSVs if the 110MB master is omitted from git
+        p1 = csv_path.parent / "New_data_2011-jun25.csv"
+        p2 = csv_path.parent / "New_data_july2025-may26.csv"
+        if p1.exists() and p2.exists():
+            print(f"Combining {p1.name} and {p2.name} into {csv_path}...")
+            df1 = pd.read_csv(p1, dtype={"project_id": str}, low_memory=False)
+            df2 = pd.read_csv(p2, dtype={"project_id": str}, low_memory=False)
+            combined = pd.concat([df1, df2], ignore_index=True)
+            csv_path.parent.mkdir(parents=True, exist_ok=True)
+            combined.to_csv(csv_path, index=False)
+        else:
+            raise FileNotFoundError(f"CSV file not found: {csv_path}")
 
     print(f"Loading dataset from: {csv_path}")
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, dtype={"project_id": str}, low_memory=False)
 
     if df.empty:
         raise ValueError("CSV file is empty.")
@@ -61,14 +72,15 @@ def load_master_csv(csv_path: str = None, config: dict = None) -> pd.DataFrame:
     if missing_critical:
         raise ValueError(f"Missing critical columns: {missing_critical}")
 
-    # Parse report_month as datetime
-    df["report_month"] = pd.to_datetime(df["report_month"])
+    # Parse report_month as datetime and standardize project_id as str
+    df["project_id"] = df["project_id"].astype(str).str.strip()
+    df["report_month"] = pd.to_datetime(df["report_month"], format="mixed", dayfirst=True)
 
     # Parse date columns if present
     date_cols = ["approval_start", "original_target_doc", "revised_doc"]
     for col in date_cols:
         if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+            df[col] = pd.to_datetime(df[col], errors="coerce", format="mixed", dayfirst=True)
 
     # Sort by project_id and report_month
     df = df.sort_values(["project_id", "report_month"]).reset_index(drop=True)

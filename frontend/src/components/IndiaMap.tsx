@@ -221,21 +221,31 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     };
   }, [selectedStateName, stateDataMap]);
 
-  // Color generator based on project count (PAIMANA choropleth scale)
+  const maxProjectCount = useMemo(() => {
+    let max = 0;
+    stateDataMap.forEach((v) => {
+      if (v.projectCount > max) max = v.projectCount;
+    });
+    return max > 0 ? Math.ceil(max / 50) * 50 : 750;
+  }, [stateDataMap]);
+
+  // Color generator based on project count (calibrated across full portfolio range to make differences clearly visible)
   const getStateFillColor = (stateId: string) => {
     const stateName = ID_TO_STATE[stateId] || '';
     if (stateId === selectedStateId) return '#1D2A54';
     if (stateId === hoveredStateId) return '#2D3A64';
 
     const count = stateDataMap.get(stateName)?.projectCount || 0;
-    if (count > 250) return '#7F1D1D';
-    if (count > 180) return '#991B1B';
-    if (count > 130) return '#B91C1C';
-    if (count > 90) return '#DC2626';
-    if (count > 60) return '#E8866A';
-    if (count > 30) return '#F4B99A';
-    if (count > 10) return '#FDDCBF';
-    return '#FFF5E1';
+    if (count > maxProjectCount * 0.85) return '#7F1D1D';
+    if (count > maxProjectCount * 0.65) return '#991B1B';
+    if (count > maxProjectCount * 0.48) return '#B91C1C';
+    if (count > maxProjectCount * 0.35) return '#DC2626';
+    if (count > maxProjectCount * 0.24) return '#EA580C';
+    if (count > maxProjectCount * 0.15) return '#FB923C';
+    if (count > maxProjectCount * 0.08) return '#FDBA74';
+    if (count > maxProjectCount * 0.03) return '#FED7AA';
+    if (count > 0) return '#FFEDD5';
+    return '#FFF7ED';
   };
 
 
@@ -380,7 +390,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
           {/* PAIMANA Vertical Choropleth Legend */}
           <div className="choropleth-legend">
             <span className="sr-only">Map colors show the number of monitored projects in each state. Each state is also identified by its accessible state name and project count.</span>
-            <span className="legend-max">326</span>
+            <span className="legend-max">{maxProjectCount}</span>
             <div className="legend-gradient-bar" />
             <span className="legend-min">0</span>
           </div>
