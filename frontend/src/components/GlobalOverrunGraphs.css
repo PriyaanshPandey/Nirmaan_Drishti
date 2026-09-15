@@ -160,6 +160,15 @@
   transition: color 0.2s ease;
 }
 
+@media (max-width: 900px) {
+  .v-bar-sector-lbl {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+}
+
 .svg-bar-column:hover .v-bar-sector-lbl {
   color: #0F172A;
   font-weight: 850;
@@ -222,5 +231,20 @@
 @media (max-width: 900px) {
   .global-overruns-grid-2 {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .global-overruns-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .v-bars-flex-container {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .svg-bar-column {
+    flex: 0 0 64px;
   }
 }

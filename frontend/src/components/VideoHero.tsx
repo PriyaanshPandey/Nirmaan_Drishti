@@ -74,15 +74,21 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ onFinished }) => {
       dismissVideo();
     }, 3000);
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') dismissVideo();
+    };
+    document.addEventListener('keydown', handleEscape);
+
     return () => {
       clearTimeout(blurTimer);
       clearTimeout(dismissTimer);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, []);
 
   // Render via portal directly into document.body to cover every inch of the screen edge-to-edge
   return ReactDOM.createPortal(
-    <div className={`video-hero-overlay ${isDismissed ? 'is-dismissed' : ''}`}>
+    <div className={`video-hero-overlay ${isDismissed ? 'is-dismissed' : ''}`} role="dialog" aria-label="Nirmaan Drishti video introduction">
       {/* Full-viewport Background Video (Plays in 3 seconds at 2.8x speed) */}
       <video
         ref={videoRef}
@@ -92,15 +98,16 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ onFinished }) => {
         muted={isMuted}
         playsInline
         preload="auto"
+        aria-label="Video introduction to the Nirmaan Drishti infrastructure monitoring platform"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleVideoEnded}
       />
 
       {/* Dreamy white blur/dissolve overlay triggered near the end */}
-      <div className={`video-hero-dissolve ${isBlurring ? 'is-active' : ''}`} />
+      <div className={`video-hero-dissolve ${isBlurring ? 'is-active' : ''}`} aria-hidden="true" />
 
       {/* Feathered bottom dissolve */}
-      <div className="video-hero-bottom-feather" />
+      <div className="video-hero-bottom-feather" aria-hidden="true" />
 
       {/* Sound Toggle Button */}
       {!isDismissed && (
@@ -111,7 +118,7 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ onFinished }) => {
           title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
           aria-label={isMuted ? 'Unmute Audio' : 'Mute Audio'}
         >
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          {isMuted ? <VolumeX size={18} aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />}
           <span>{isMuted ? 'Sound Off' : 'Sound On'}</span>
         </button>
       )}
@@ -125,7 +132,7 @@ export const VideoHero: React.FC<VideoHeroProps> = ({ onFinished }) => {
           aria-label="Skip video intro"
         >
           <span>Explore Overview</span>
-          <ChevronDown size={16} className="skip-arrow-bounce" />
+          <ChevronDown size={16} className="skip-arrow-bounce" aria-hidden="true" />
         </button>
       )}
     </div>,

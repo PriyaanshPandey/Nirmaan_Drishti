@@ -59,6 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             key={item.id}
             className={`nav-pill-btn ${activeTab === item.id ? 'active' : ''}`}
             onClick={() => setActiveTab(item.id)}
+            aria-current={activeTab === item.id ? 'page' : undefined}
             style={{
               position: 'relative',
               zIndex: 2,

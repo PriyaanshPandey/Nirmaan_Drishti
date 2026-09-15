@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles, LayoutDashboard, Database, ArrowRight, Cpu, ShieldAlert,
-  TrendingUp, Layers, BarChart3, Globe
+  TrendingUp, Layers, BarChart3, Globe, Play
 } from 'lucide-react';
 import './Home.css';
 import { VideoHero } from './VideoHero';
@@ -50,6 +50,7 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickNonce }) => {
   const [playIntro, setPlayIntro] = useState<boolean>(true);
+  const [replayCount, setReplayCount] = useState<number>(0);
   const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
   const [animIteration, setAnimIteration] = useState<number>(0);
 
@@ -114,35 +115,35 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       tab: 'dashboard',
       title: 'Analytics Dashboard',
       desc: 'National health overview with real-time risk scores, sector breakdowns, and priority interventions.',
-      icon: <LayoutDashboard size={22} color="#2563EB" />,
+      icon: <LayoutDashboard size={22} color="#2563EB" aria-hidden="true" />,
       color: 'blue'
     },
     {
       tab: 'projects',
       title: 'Project Portfolio',
       desc: `Browse all ${totalProjects.toLocaleString()} infrastructure assets with search, filters, and detailed milestone tracking.`,
-      icon: <Database size={22} color="#059669" />,
+      icon: <Database size={22} color="#059669" aria-hidden="true" />,
       color: 'green'
     },
     {
       tab: 'insights',
       title: 'AI Intelligence',
       desc: 'Qwen-8B powered executive Q&A with SHAP feature attributions and root-cause analysis.',
-      icon: <Sparkles size={22} color="#7C3AED" />,
+      icon: <Sparkles size={22} color="#7C3AED" aria-hidden="true" />,
       color: 'purple'
     },
     {
       tab: 'distribution',
       title: 'Sector Distribution',
       desc: 'Geographic and sector-level breakdown across all central infrastructure ministries.',
-      icon: <Layers size={22} color="#0284C7" />,
+      icon: <Layers size={22} color="#0284C7" aria-hidden="true" />,
       color: 'teal'
     },
     {
       tab: 'action-centre',
       title: 'Action Center',
       desc: 'Automated executive alerts, inter-ministerial task assignments, and contractor milestone resolutions.',
-      icon: <ShieldAlert size={22} color="#DC2626" />,
+      icon: <ShieldAlert size={22} color="#DC2626" aria-hidden="true" />,
       color: 'red'
     }
   ];
@@ -152,6 +153,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       {/* ── Fullscreen Video Intro Overlay (Plays on load for 3s, blurs out, dissolves without scrolling) ── */}
       {playIntro && (
         <VideoHero
+          key={replayCount}
           onFinished={() => setPlayIntro(false)}
         />
       )}
@@ -187,7 +189,19 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
                   onClick={() => onNavigateTab('dashboard')}
                 >
                   <span>Launch Dashboard</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="hero-btn-replay-intro"
+                  onClick={() => {
+                    setPlayIntro(true);
+                    setReplayCount(prev => prev + 1);
+                  }}
+                  title="Watch Video Intro"
+                >
+                  <Play size={14} aria-hidden="true" />
+                  <span>Watch Intro</span>
                 </button>
               </div>
             </div>
@@ -259,7 +273,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       {/* ── 2. Key Metrics Strip ── */}
       <section className="metrics-strip-row">
         <div className="metric-strip-card">
-          <div className="strip-icon"><BarChart3 size={20} color="#2563EB" /></div>
+          <div className="strip-icon"><BarChart3 size={20} color="#2563EB" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
               <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
@@ -269,7 +283,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         </div>
 
         <div className="metric-strip-card">
-          <div className="strip-icon"><TrendingUp size={20} color="#059669" /></div>
+          <div className="strip-icon"><TrendingUp size={20} color="#059669" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
               ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
@@ -279,7 +293,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         </div>
 
         <div className="metric-strip-card">
-          <div className="strip-icon"><Cpu size={20} color="#7C3AED" /></div>
+          <div className="strip-icon"><Cpu size={20} color="#7C3AED" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">3 &amp; 6 Mo</span>
             <span className="strip-lbl">Forecast Horizon</span>
@@ -287,7 +301,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         </div>
 
         <div className="metric-strip-card">
-          <div className="strip-icon"><Globe size={20} color="#D97706" /></div>
+          <div className="strip-icon"><Globe size={20} color="#D97706" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
               <AnimatedCounter value={statesCount} duration={800} resetKey={activeTab} />+
@@ -312,13 +326,21 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
               key={i}
               className={`module-card module-${m.color}`}
               onClick={() => onNavigateTab(m.tab)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onNavigateTab(m.tab);
+                }
+              }}
               role="button"
               tabIndex={0}
+              aria-label={`Open ${m.title}`}
+              aria-current={activeTab === m.tab ? 'page' : undefined}
             >
               <div className="module-card-top">
                 <div className={`module-icon icon-${m.color}`}>{m.icon}</div>
                 <div className="module-arrow-wrap">
-                  <ArrowRight size={15} className="module-arrow" />
+                  <ArrowRight size={15} className="module-arrow" aria-hidden="true" />
                 </div>
               </div>
               <div className="module-body">

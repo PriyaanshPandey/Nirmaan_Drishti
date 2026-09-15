@@ -18,6 +18,7 @@ import {
   type ModelExplanationItem
 } from '../services/api';
 import './ProjectDetails.css';
+import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
 
 interface ProjectDetailsProps {
@@ -213,6 +214,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [aiQuerying, setAiQuerying] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!aiAssistantOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAiAssistantOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [aiAssistantOpen]);
 
   // Tab selections & Horizon Filters
   const [forecastHorizonFilter, setForecastHorizonFilter] = useState<'all' | '3m' | '6m'>('all');
@@ -440,9 +450,17 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       {/* Project Title & Status */}
       <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
-        <span className={`status-tag-badge status-${getProjectDisplayStatus(project).toLowerCase().replace(/\s+/g, '-')}`}>
-          {getProjectDisplayStatus(project)}
-        </span>
+        {(() => {
+          const displayStatus = getProjectDisplayStatus(project);
+          const kind = displayStatus === 'CRITICAL' ? 'critical' : displayStatus === 'DELAYED' ? 'delayed' : displayStatus === 'IN REVIEW' ? 'medium' : 'on-track';
+          return (
+            <StatusIndicator
+              kind={kind}
+              label={displayStatus === 'CRITICAL' ? 'CRITICAL PROJECT' : displayStatus}
+              className={`status-tag-badge status-${displayStatus.toLowerCase().replace(/\s+/g, '-')}`}
+            />
+          );
+        })()}
       </div>
 
       {/* Row 1: Dashboard Metrics (Moved Above) */}
@@ -523,7 +541,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       </div>
 
       {/* Row 2: Project Metadata Table (Enlarged for High Visibility) */}
-      <div style={{ padding: '18px 24px', backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1.5px solid #E2E8F0', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '16px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+      <div className="card" style={{ padding: '18px 24px', borderRadius: '14px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '16px' }}>
         <div style={{ borderRight: '1px solid #F1F5F9', paddingRight: '12px' }}>
           <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Project Type</div>
           <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.type}</div>
@@ -597,19 +615,16 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
         return (
           <div className="card" style={{
-            backgroundColor: '#FFFFFF',
             padding: '20px 24px',
             borderRadius: '16px',
             border: '1px solid #C7D2FE',
-            background: 'linear-gradient(90deg, rgba(238, 242, 255, 0.45) 0%, #FFFFFF 50%, rgba(239, 246, 255, 0.35) 100%)',
-            boxShadow: '0 2px 6px rgba(15, 23, 42, 0.04)',
             marginTop: '6px',
             marginBottom: '6px',
             position: 'relative',
             overflow: 'hidden'
           }}>
             {/* Glowing side accent bar */}
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '5px', background: 'linear-gradient(180deg, #6366F1 0%, #03045E 100%)' }} />
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '5px', background: '#4F46E5' }} />
 
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
               <div style={{ padding: '8px', backgroundColor: '#EEF2FF', color: '#4338CA', borderRadius: '10px', flexShrink: 0, marginTop: '2px' }}>
@@ -703,8 +718,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : pred3m?.predicted_final_revised_cost_crore !== undefined ? pred3m.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : (numericRevisedCost + parseFloat(c3mDeltaCr)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
         const c3mBadge = predC3?.risk_tier ? `${predC3.risk_tier} RISK` : parseFloat(c3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(c3mProb) >= 50 ? 'HIGH RISK' : parseFloat(c3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const c3mColor = parseFloat(c3mProb) >= 70 ? '#D62F39' : parseFloat(c3mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const c3mBg = parseFloat(c3mProb) >= 70 ? '#FEE2E2' : parseFloat(c3mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         // 6M Cost Metrics
         const c6mProb = predC6?.additional_escalation_probability !== undefined && predC6?.additional_escalation_probability !== null
@@ -728,8 +741,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : pred6m?.predicted_final_revised_cost_crore !== undefined ? pred6m.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : (numericRevisedCost + parseFloat(c6mDeltaCr)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
         const c6mBadge = predC6?.risk_tier ? `${predC6.risk_tier} RISK` : parseFloat(c6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(c6mProb) >= 50 ? 'HIGH RISK' : parseFloat(c6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const c6mColor = parseFloat(c6mProb) >= 70 ? '#D62F39' : parseFloat(c6mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const c6mBg = parseFloat(c6mProb) >= 70 ? '#FEE2E2' : parseFloat(c6mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         // 3M Schedule Metrics
         const t3mProb = predT3?.additional_delay_probability !== undefined && predT3?.additional_delay_probability !== null
@@ -772,8 +783,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t3mDelayMo)) ? parseFloat(t3mDelayMo) : 0);
 
         const t3mBadge = predT3?.risk_tier ? `${predT3.risk_tier} RISK` : parseFloat(t3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t3mProb) >= 50 ? 'HIGH RISK' : parseFloat(t3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const t3mColor = parseFloat(t3mProb) >= 70 ? '#D62F39' : parseFloat(t3mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const t3mBg = parseFloat(t3mProb) >= 70 ? '#FEE2E2' : parseFloat(t3mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         // 6M Schedule Metrics
         const t6mProb = predT6?.additional_delay_probability !== undefined && predT6?.additional_delay_probability !== null
@@ -797,8 +806,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t6mDelayMo)) ? parseFloat(t6mDelayMo) : 0);
 
         const t6mBadge = predT6?.risk_tier ? `${predT6.risk_tier} RISK` : parseFloat(t6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t6mProb) >= 50 ? 'HIGH RISK' : parseFloat(t6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const t6mColor = parseFloat(t6mProb) >= 70 ? '#D62F39' : parseFloat(t6mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const t6mBg = parseFloat(t6mProb) >= 70 ? '#FEE2E2' : parseFloat(t6mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px', marginBottom: '12px' }}>
@@ -813,6 +820,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <InfoButton
                   title="Forecast Engine"
                   summary="Predicts if this project will face extra costs or extra months of delay in the next 3 to 6 months."
+                  dataSummary={{
+                    items: [
+                      { label: '3-month cost', value: `${c3mBadge}, ${c3mProb}% probability, +${c3mDeltaPct}% overrun` },
+                      { label: '6-month cost', value: `${c6mBadge}, ${c6mProb}% probability, +${c6mDeltaPct}% overrun` },
+                      { label: '3-month schedule', value: `${t3mProb}% additional-delay probability` },
+                      { label: '6-month schedule', value: `${t6mProb}% additional-delay probability` }
+                    ],
+                    insight: `The forecast indicates ${c6mBadge.toLowerCase()} cost risk over six months and ${t6mProb}% additional-delay probability over three months.`
+                  }}
                   size="sm"
                 />
                 <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, backgroundColor: '#F1F5F9', padding: '3px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
@@ -825,18 +841,24 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <button 
                   className={`horizon-toggle-btn ${forecastHorizonFilter === 'all' ? 'active' : ''}`}
                   onClick={() => setForecastHorizonFilter('all')}
+                  aria-selected={forecastHorizonFilter === 'all'}
+                  role="tab"
                 >
                   All Horizons (Combined)
                 </button>
                 <button 
                   className={`horizon-toggle-btn ${forecastHorizonFilter === '3m' ? 'active' : ''}`}
                   onClick={() => setForecastHorizonFilter('3m')}
+                  aria-selected={forecastHorizonFilter === '3m'}
+                  role="tab"
                 >
                   3-Month Horizon
                 </button>
                 <button 
                   className={`horizon-toggle-btn ${forecastHorizonFilter === '6m' ? 'active' : ''}`}
                   onClick={() => setForecastHorizonFilter('6m')}
+                  aria-selected={forecastHorizonFilter === '6m'}
+                  role="tab"
                 >
                   6-Month Horizon
                 </button>
@@ -871,9 +893,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           3-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: c3mColor, backgroundColor: c3mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${c3mColor}40` }}>
-                          {c3mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={c3mBadge.includes('CRITICAL') ? 'critical' : c3mBadge.includes('HIGH') ? 'high' : c3mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={c3mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -912,7 +936,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(c3mProb)} suffix="%" decimals={1} /> Escalation Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="cost3mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -943,9 +967,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           6-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: c6mColor, backgroundColor: c6mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${c6mColor}40` }}>
-                          {c6mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={c6mBadge.includes('CRITICAL') ? 'critical' : c6mBadge.includes('HIGH') ? 'high' : c6mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={c6mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -984,7 +1010,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(c6mProb)} suffix="%" decimals={1} /> Escalation Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="cost6mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1034,9 +1060,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           3-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: t3mColor, backgroundColor: t3mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${t3mColor}40` }}>
-                          {t3mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={t3mBadge.includes('CRITICAL') ? 'critical' : t3mBadge.includes('HIGH') ? 'high' : t3mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={t3mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -1073,7 +1101,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(t3mProb)} suffix="%" decimals={1} /> Delay Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="sched3mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1102,9 +1130,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           6-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: t6mColor, backgroundColor: t6mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${t6mColor}40` }}>
-                          {t6mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={t6mBadge.includes('CRITICAL') ? 'critical' : t6mBadge.includes('HIGH') ? 'high' : t6mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={t6mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -1141,7 +1171,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(t6mProb)} suffix="%" decimals={1} /> Delay Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="sched6mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1245,7 +1275,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         }
 
         return (
-          <div className="card explainable-ai-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="card explainable-ai-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
@@ -1258,6 +1288,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                   <InfoButton
                     title="Why It Is Delayed"
                     summary="Shows what is causing delays (in red) and what factors are helping this project stay on track (in green)."
+                    dataSummary={{
+                      items: [
+                        ...upwardDrivers.slice(0, 5).map((driver) => ({ label: driver.label, value: `+${driver.value.toFixed(4)} risk impact` })),
+                        ...protectiveFactors.slice(0, 5).map((driver) => ({ label: driver.label, value: driver.value.toFixed(4) + ' protective impact' }))
+                      ],
+                      insight: `${upwardDrivers.length} factors increase predicted risk and ${protectiveFactors.length} factors mitigate risk in the active ${shapTab} analysis.`
+                    }}
                     size="sm"
                   />
                 </div>
@@ -1640,7 +1677,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const activeProvider = liveModelExp?.provider || 'Qwen3-8B / Grounded AI Engine';
 
         return (
-          <div className="card nlp-explanation-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="card nlp-explanation-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
@@ -1863,7 +1900,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             }));
 
         return (
-          <div className="card early-warnings-recommendations-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="card early-warnings-recommendations-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
@@ -2015,7 +2052,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         <div className="ai-floating-widget-container">
           {/* Floating Interactive Project AI Assistant Chatbot Modal */}
           {aiAssistantOpen && (
-            <div className="ai-chatbot-modal">
+            <div className="ai-chatbot-modal" role="dialog" aria-modal="true" aria-labelledby="project-ai-assistant-title">
               {/* Header */}
               <div style={{ backgroundColor: '#03045E', padding: '16px 20px', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -2023,7 +2060,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                     <Bot size={18} color="#FFFFFF" />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '14px', fontWeight: 850, margin: 0, color: '#FFFFFF' }}>
+                    <h3 id="project-ai-assistant-title" style={{ fontSize: '14px', fontWeight: 850, margin: 0, color: '#FFFFFF' }}>
                       Project AI Intelligence Assistant
                     </h3>
                     <span style={{ fontSize: '11px', color: '#93C5FD', display: 'block', marginTop: '1px' }}>
@@ -2174,8 +2211,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               className="ai-floating-chat-btn"
               onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
               title={aiAssistantOpen ? "Close AI Assistant" : "Open Project AI Assistant"}
+              aria-label={aiAssistantOpen ? "Close AI Assistant" : "Open Project AI Assistant"}
             >
-              {aiAssistantOpen ? <X size={24} /> : <Bot size={24} />}
+              {aiAssistantOpen ? <X size={24} aria-hidden="true" /> : <Bot size={24} aria-hidden="true" />}
               {!aiAssistantOpen && (
                 <span className="ai-pulse-ring" />
               )}

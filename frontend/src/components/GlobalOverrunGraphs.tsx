@@ -4,6 +4,7 @@ import './GlobalOverrunGraphs.css';
 import { api } from '../services/api';
 import { AnimatedCounter } from './AnimatedCounter';
 import { InfoButton } from './ExplainabilityInfo';
+import { summarizeSectorValues } from './chartSummaries';
 
 export interface SectorOverrun {
   sector_name: string;
@@ -91,6 +92,11 @@ const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
       className={`svg-bar-column ${isHovered ? 'bar-hovered' : ''}`}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
+      onFocus={() => onHover(true)}
+      onBlur={() => onHover(false)}
+      tabIndex={0}
+      role="img"
+      aria-label={`${sectorName}: ${tooltipContent.val}, ${tooltipContent.sub}`}
     >
       {/* 3D Floating Tooltip */}
       {isHovered && (
@@ -115,6 +121,7 @@ const Svg3DCuboidBar: React.FC<Svg3DCuboidProps> = ({
           height="175"
           viewBox="0 0 48 175"
           className="iso-3d-svg"
+          aria-hidden="true"
         >
           {/* Top Value Tag (moved up by 5px) */}
           <text
@@ -200,6 +207,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
 
   const totalEscalationCrore = sectors.reduce((sum, s) => sum + s.total_cost_escalation, 0);
   const totalDelayedProjects = sectors.reduce((sum, s) => sum + s.delayed_projects_count, 0);
+  const highestCostSector = sectors.reduce((highest, sector) => sector.total_cost_escalation > highest.total_cost_escalation ? sector : highest, sectors[0]);
 
   return (
     <div className="global-overruns-grid-2">
@@ -216,6 +224,10 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
                 <InfoButton
                   title="Cost Increases"
                   summary="Shows which sectors (like Railways or Roads) have the highest extra costs above their starting plans."
+                  dataSummary={{
+                    ...summarizeSectorValues(sectors.map((sector) => ({ name: sector.sector_name, value: sector.total_cost_escalation, suffix: ' Cr' }))),
+                    insight: `${highestCostSector?.sector_name || 'The leading sector'} has the highest displayed cost escalation at ${highestCostSector?.total_cost_escalation.toLocaleString('en-IN') || '0'} Cr.`
+                  }}
                   size="sm"
                 />
               </div>
@@ -232,6 +244,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
 
         {/* Crisp SVG 3D Solid Bar Graph for Cost Escalation */}
         <div className="vertical-chart-area">
+          <p className="sr-only">Cost escalation by sector. {sectors.map((sector) => `${sector.sector_name}: ${sector.total_cost_escalation.toLocaleString()} crore, plus ${sector.avg_cost_overrun_pct}% average overrun.`).join(' ')}</p>
           <div className="v-bars-flex-container">
             {sectors.map((sec, idx) => {
               const heightPct = Math.min(100, Math.max(16, (sec.total_cost_escalation / maxEscalation) * 100));
@@ -242,7 +255,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
                   valText={`${(sec.total_cost_escalation / 1000).toFixed(0)}k`}
                   heightPct={heightPct}
                   frontColor="#0284C7"
-                  topColor="#38BDF8"
+                  topColor="#0E7490"
                   sideColor="#0369A1"
                   textColor="#0284C7"
                   isHovered={hoveredCostIndex === idx}
@@ -275,6 +288,10 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
                 <InfoButton
                   title="Timeline Delays"
                   summary="Shows the average number of extra months projects in each sector are delayed past their deadline."
+                  dataSummary={{
+                    ...summarizeSectorValues(sectors.map((sector) => ({ name: sector.sector_name, value: sector.avg_delay_months, suffix: ' months' }))),
+                    insight: `The displayed sector with the longest average delay is ${sectors.reduce((longest, sector) => sector.avg_delay_months > longest.avg_delay_months ? sector : longest, sectors[0])?.sector_name || 'not available'}.`
+                  }}
                   size="sm"
                 />
               </div>
@@ -291,6 +308,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
 
         {/* Crisp SVG 3D Solid Bar Graph for Time Overrun */}
         <div className="vertical-chart-area">
+          <p className="sr-only">Average schedule delay by sector. {sectors.map((sector) => `${sector.sector_name}: ${sector.avg_delay_months} months, ${sector.delayed_projects_count} delayed assets.`).join(' ')}</p>
           <div className="v-bars-flex-container">
             {sectors.map((sec, idx) => {
               const heightPct = Math.min(100, Math.max(16, (sec.avg_delay_months / maxDelay) * 100));
@@ -301,7 +319,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
                   valText={`${sec.avg_delay_months}d`}
                   heightPct={heightPct}
                   frontColor="#D97706"
-                  topColor="#FBBF24"
+                  topColor="#B45309"
                   sideColor="#B45309"
                   textColor="#D97706"
                   isHovered={hoveredTimeIndex === idx}

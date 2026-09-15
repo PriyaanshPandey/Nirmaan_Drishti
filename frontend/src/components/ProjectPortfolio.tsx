@@ -4,6 +4,7 @@ import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 import { api } from '../services/api';
 import './ProjectPortfolio.css';
+import { StatusIndicator } from './StatusIndicator';
 
 interface ProjectPortfolioProps {
   onSelectProject: (projectId: string) => void;
@@ -105,6 +106,15 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
   const [ministries, setMinistries] = useState<string[]>(['All']);
   const [sectors, setSectors] = useState<string[]>(['All']);
 
+  useEffect(() => {
+    if (!showNewProjectModal) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowNewProjectModal(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showNewProjectModal]);
+
   // Fetch filter options (Ministries & Sectors) from backend
   useEffect(() => {
     let isMounted = true;
@@ -184,15 +194,15 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
   const getStatusBadge = (status: Project['scheduleStatus'] | string, project?: Project) => {
     const dispStatus = project ? getProjectDisplayStatus(project) : getProjectDisplayStatus({ scheduleStatus: status });
     if (dispStatus === 'CRITICAL') {
-      return <span className="status-badge-pill status-critical">CRITICAL</span>;
+      return <StatusIndicator kind="critical" label="CRITICAL" className="status-badge-pill status-critical" />;
     }
     if (dispStatus === 'DELAYED') {
-      return <span className="status-badge-pill status-delayed">DELAYED</span>;
+      return <StatusIndicator kind="delayed" label="DELAYED" className="status-badge-pill status-delayed" />;
     }
     if (dispStatus === 'IN REVIEW') {
-      return <span className="status-badge-pill status-in-review">IN REVIEW</span>;
+      return <StatusIndicator kind="medium" label="IN REVIEW" className="status-badge-pill status-in-review" />;
     }
-    return <span className="status-badge-pill status-on-track">ON TRACK</span>;
+    return <StatusIndicator kind="on-track" label="ON TRACK" className="status-badge-pill status-on-track" />;
   };
 
   const totalPages = Math.ceil(totalProjects / pageSize) || 1;
@@ -307,7 +317,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
               <tbody>
                 {filteredProjects.length === 0 ? (
                   <tr>
-                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                       No infrastructure projects found matching the criteria.
                     </td>
                   </tr>
@@ -317,6 +327,14 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                       key={project.id} 
                       className="portfolio-table-row"
                       onClick={() => onSelectProject(project.id)}
+                      tabIndex={0}
+                      aria-label={`Open project ${project.name}`}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onSelectProject(project.id);
+                        }
+                      }}
                     >
                       <td className="td-project-id">{project.id}</td>
                       <td className="td-project-name">
@@ -372,8 +390,9 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                 disabled={page <= 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 title="Previous Page"
+                aria-label="Previous page"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={16} aria-hidden="true" />
               </button>
 
               {(() => {
@@ -393,6 +412,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                     key={pNum}
                     className={`page-btn ${page === pNum ? 'active' : ''}`}
                     onClick={() => setPage(pNum)}
+                    aria-label={`Page ${pNum}`}
+                    aria-current={page === pNum ? 'page' : undefined}
                   >
                     {pNum}
                   </button>
@@ -404,8 +425,9 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 title="Next Page"
+                aria-label="Next page"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={16} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -414,7 +436,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
 
       {/* New Project Modal */}
       {showNewProjectModal && (
-        <div 
+        <div className="portfolio-modal-backdrop"
+          role="presentation"
           style={{
             position: 'fixed',
             top: 0,
@@ -431,7 +454,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
           }}
           onClick={() => setShowNewProjectModal(false)}
         >
-          <div 
+          <div className="portfolio-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="new-project-modal-title"
             style={{
               backgroundColor: '#FFFFFF',
               borderRadius: '16px',
@@ -444,14 +470,15 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
+              <h2 id="new-project-modal-title" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
                 Onboard New Infrastructure Project
               </h2>
               <button 
                 onClick={() => setShowNewProjectModal(false)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#64748B' }}
+                aria-label="Close new project dialog"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 

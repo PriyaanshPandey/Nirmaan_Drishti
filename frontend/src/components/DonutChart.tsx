@@ -3,6 +3,8 @@ import './DonutChart.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import { InfoButton } from './ExplainabilityInfo';
+import { StatusIndicator } from './StatusIndicator';
+import { summarizeRiskDistribution } from './chartSummaries';
 
 import { projectsData } from '../data/projectsData';
 
@@ -33,10 +35,10 @@ const highRiskInit = projectsData.filter(p => {
 const monitoringInit = Math.max(0, totalInitHealth - onTrackInit - highRiskInit - critInit);
 
 const DEFAULT_HEALTH_DIST: ChartSegment[] = [
-  { id: 'on_track', name: 'On Track', count: onTrackInit, color: '#22C55E', percentage: totalInitHealth > 0 ? parseFloat((onTrackInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'monitoring', name: 'Needs Attention', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'at_risk', name: 'High Risk', count: highRiskInit, color: '#EAB308', percentage: totalInitHealth > 0 ? parseFloat((highRiskInit / totalInitHealth * 100).toFixed(1)) : 0 },
-  { id: 'critical_delay', name: 'Critical Delay', count: critInit, color: '#EF4444', percentage: totalInitHealth > 0 ? parseFloat((critInit / totalInitHealth * 100).toFixed(1)) : 0 }
+  { id: 'on-track', name: 'On Track', count: onTrackInit, color: '#15803D', percentage: totalInitHealth > 0 ? parseFloat((onTrackInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  ...(monitoringInit > 0 ? [{ id: 'monitoring', name: 'Monitoring', count: monitoringInit, color: '#3B82F6', percentage: totalInitHealth > 0 ? parseFloat((monitoringInit / totalInitHealth * 100).toFixed(1)) : 0 }] : []),
+  { id: 'at-risk', name: 'At Risk', count: highRiskInit, color: '#B45309', percentage: totalInitHealth > 0 ? parseFloat((highRiskInit / totalInitHealth * 100).toFixed(1)) : 0 },
+  { id: 'critical', name: 'Critical Delay', count: critInit, color: '#B91C1C', percentage: totalInitHealth > 0 ? parseFloat((critInit / totalInitHealth * 100).toFixed(1)) : 0 }
 ];
 
 interface DonutChartProps {
@@ -64,6 +66,18 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
     };
   }, []);
 
+  // Active segment: hover takes precedence during active mouse interaction, falls back to selected
+  const activeSegment = hoveredSegment || selectedSegment;
+  const getSegmentColor = (segment: ChartSegment) => {
+    const sId = (segment.id || '').toLowerCase().replace(/_/g, '-');
+    const sName = (segment.name || '').toLowerCase();
+    if (sId.includes('crit') || sId.includes('delay') || sName.includes('crit') || sName.includes('delay')) return '#B91C1C';
+    if (sId.includes('risk') || sName.includes('risk')) return '#B45309';
+    if (sId.includes('monitor') || sName.includes('monitor') || sId.includes('attention') || sName.includes('attention')) return '#3B82F6';
+    if (sId.includes('track') || sId.includes('low') || sName.includes('track') || sName.includes('low')) return '#15803D';
+    return segment.color || '#15803D';
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -76,14 +90,16 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
     api.getDashboardSummary().then((res) => {
       if (!isMounted) return;
       if (res && res.health_distribution && res.health_distribution.length > 0) {
-        const total = res.health_distribution.reduce((a, b) => a + b.count, 0);
+        const nonZero = res.health_distribution.filter(d => d.count > 0);
+        const toUse = nonZero.length > 0 ? nonZero : res.health_distribution;
+        const total = toUse.reduce((a, b) => a + b.count, 0);
         if (total > 0) {
-          setData(res.health_distribution.map(d => ({
+          setData(toUse.map(d => ({
             id: d.id,
-            name: d.name,
+            name: d.name === 'High Risk' ? 'At Risk' : d.name,
             count: d.count,
-            color: d.color,
-            percentage: d.percentage,
+            color: getSegmentColor(d as ChartSegment),
+            percentage: total > 0 ? parseFloat((d.count / total * 100).toFixed(1)) : d.percentage,
           })));
         }
       }
@@ -135,12 +151,17 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
     });
   }, [data, circumference, popDistance]);
 
-  // Active segment: hover takes precedence during active mouse interaction, falls back to selected
-  const activeSegment = hoveredSegment || selectedSegment;
 
   const handleSegmentClick = (segment: ChartSegment, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedSegment((prev) => (prev?.id === segment.id ? null : segment));
+  };
+
+  const handleSegmentKeyDown = (segment: ChartSegment, e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSegmentClick(segment, e as unknown as React.MouseEvent);
+    }
   };
 
   return (
@@ -161,6 +182,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
             <InfoButton
               title="Project Health"
               summary="Shows how projects are performing. Green means on schedule, yellow means slightly delayed, and red means major delays or budget overruns."
+              dataSummary={summarizeRiskDistribution(data)}
               size="sm"
             />
           </div>
@@ -169,6 +191,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
       </div>
 
       <div className="donut-chart-container">
+        <p className="sr-only">Project health distribution: {data.map((segment) => `${segment.name}: ${segment.count} projects, ${segment.percentage} percent`).join('; ')}.</p>
         <div className="donut-svg-wrapper">
           <svg viewBox="0 0 140 140" className="donut-svg">
             {/* Background track circle */}
@@ -211,7 +234,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                     cy="70"
                     r={radius}
                     fill="none"
-                    stroke={segment.color}
+                    stroke={getSegmentColor(segment)}
                     strokeWidth={strokeWidth}
                     strokeDasharray={`${mounted ? segment.strokeLength : 0} ${circumference}`}
                     strokeDashoffset={0}
@@ -222,11 +245,16 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                       transition: 'stroke-dasharray 1.1s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease',
                       cursor: 'pointer',
                       pointerEvents: 'stroke',
-                      filter: isActive ? `drop-shadow(0 0 8px ${segment.color})` : 'none',
+                      filter: isActive ? `drop-shadow(0 0 8px ${getSegmentColor(segment)})` : 'none',
                     }}
                     onMouseEnter={() => setHoveredSegment(segment)}
                     onMouseLeave={() => setHoveredSegment(null)}
                     onClick={(e) => handleSegmentClick(segment, e)}
+                    onKeyDown={(e) => handleSegmentKeyDown(segment, e)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${segment.name}: ${segment.count} projects, ${segment.percentage}%`}
+                    aria-pressed={isActive}
                   />
                 </g>
               );
@@ -262,14 +290,29 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                 onMouseEnter={() => setHoveredSegment(segment)}
                 onMouseLeave={() => setHoveredSegment(null)}
                 onClick={(e) => handleSegmentClick(segment, e)}
+                onKeyDown={(e) => handleSegmentKeyDown(segment, e)}
+                tabIndex={0}
+                role="button"
+                aria-label={`${segment.name}: ${segment.count} projects, ${segment.percentage}%`}
+                aria-pressed={isActive}
               >
                 <div className="legend-row-top">
                   <div className="legend-label-left">
                     <span
                       className="legend-color-dot"
-                      style={{ backgroundColor: segment.color, boxShadow: isActive ? `0 0 6px ${segment.color}` : 'none' }}
+                      style={{ backgroundColor: getSegmentColor(segment), boxShadow: isActive ? `0 0 6px ${getSegmentColor(segment)}` : 'none' }}
                     />
-                    <span className="legend-name">{segment.name}</span>
+                    <StatusIndicator
+                      kind={(() => {
+                        const sId = (segment.id || '').toLowerCase().replace(/_/g, '-');
+                        if (sId.includes('crit') || sId.includes('delay')) return 'critical';
+                        if (sId.includes('risk')) return 'high';
+                        if (sId.includes('monitor') || sId.includes('attention')) return 'medium';
+                        return 'on-track';
+                      })()}
+                      label={segment.name.toUpperCase()}
+                      className="legend-name"
+                    />
                   </div>
                   <div className="legend-stats-right">
                     <span className="legend-count">
@@ -284,7 +327,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab }) => {
                     className="legend-bar-fill"
                     style={{
                       width: `${mounted ? segmentPct : 0}%`,
-                      backgroundColor: segment.color
+                      backgroundColor: getSegmentColor(segment)
                     }}
                   />
                 </div>

@@ -110,26 +110,30 @@
 }
 
 .dist-stat-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  border: 1px solid var(--border-color);
   border-radius: 18px;
   padding: 22px 24px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
   cursor: default;
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease;
+              border-color 0.25s ease,
+              background-color 0.25s ease;
 }
 
 /* Polished Lift & Soft Shadow on Hover for ALL 4 Cards */
 .dist-stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-lg);
 }
 
 .dist-stat-card.card-total:hover {
@@ -263,10 +267,12 @@
 
 /* ── SECTION 2: Hybrid Table Panel with Composite Progress Bars ── */
 .dist-table-panel {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   width: 100%;
 }
@@ -524,22 +530,26 @@
 }
 
 .strategic-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  border: 1px solid var(--border-color);
   border-radius: 18px;
   padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  box-shadow: var(--shadow-md);
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease;
+              border-color 0.25s ease,
+              background-color 0.25s ease;
 }
 
 .strategic-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-lg);
 }
 
 .card-critical-action:hover { border-color: #FCA5A5; }
@@ -574,7 +584,7 @@
 }
 
 .text-red   { color: #DC2626 !important; }
-.text-amber { color: #D97706 !important; }
+.text-amber { color: #92400E !important; }
 
 .strategic-card-desc {
   font-size: 12.5px;
@@ -763,5 +773,36 @@
   .th-col-proportion,
   .td-col-proportion {
     display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .dist-summary-grid,
+  .dist-strategic-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dist-table-panel-header {
+    align-items: flex-start;
+  }
+
+  .dist-table-scroll-container {
+    overflow-x: auto;
+  }
+
+  .dist-hybrid-table {
+    min-width: 900px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dist-summary-grid,
+  .dist-strategic-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dist-table-legend {
+    flex-wrap: wrap;
+    border-radius: 12px;
   }
 }

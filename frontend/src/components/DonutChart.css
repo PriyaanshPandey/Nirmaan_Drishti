@@ -146,6 +146,14 @@
   letter-spacing: -0.01em;
 }
 
+@media (max-width: 900px) {
+  .legend-name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
 .legend-stats-right {
   display: flex;
   align-items: center;
