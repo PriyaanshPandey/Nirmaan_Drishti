@@ -49,4 +49,9 @@ Thumbs.db
 # Large / Generated data files (>100MB exceeds GitHub limit)
 data/New_data_2011-26.csv
 data/input/
-ai/data/input/New_data_*.csv
+ai/data/input/
+frontend/public/scroll_backup/
+*(1)*
+backend/package-lock.json
+
+

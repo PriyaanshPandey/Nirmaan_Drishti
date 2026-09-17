@@ -51,7 +51,15 @@ class MLRiskClient:
                 self._models = {}
 
     def get_master_df(self) -> Optional[pd.DataFrame]:
-        """Lazy-load the reference PAIMANA master dataset for snapshot features."""
+        """Lazy-load or reuse the reference PAIMANA master dataset from AIEngine."""
+        try:
+            from app.services.ai_engine_service import AIEngine
+            engine_inst = AIEngine.get_instance()
+            if engine_inst.df_cache is not None:
+                return engine_inst.df_cache
+        except Exception:
+            pass
+
         if self._master_df is None and RAW_DATA_PATH.exists():
             try:
                 from src.data_loader import load_master_csv
@@ -68,68 +76,21 @@ class MLRiskClient:
         """
         logger.info(f"[ML] Prediction requested for project: {project_id}")
         self.initialize()
-        df = custom_df if custom_df is not None else self.get_master_df()
-
-        if df is None:
-            raise RuntimeError("Reference PAIMANA dataset is not available for feature calculation.")
-
-        if not self._models:
-            raise RuntimeError("ML Models are not loaded.")
-
-        logger.info(f"[ML] Loading project features for project: {project_id}")
-        
-        # Check if project_id exists in master dataset, otherwise construct from latest known snapshot
-        pid_str = str(project_id).strip()
-        mask = df["project_id"].astype(str) == pid_str
-        if not mask.any():
-            # If not found directly, find closest or match by project code, or derive snapshot
-            logger.info(f"[ML] Project {project_id} not in static CSV; creating feature dataframe for inference")
-            sample_row = df.iloc[0].copy()
-            sample_row["project_id"] = pid_str
-            sample_df = pd.DataFrame([sample_row])
-            df_to_use = pd.concat([df, sample_df], ignore_index=True)
-        else:
-            df_to_use = df
-
-        from src.project_service import get_full_prediction
-        logger.info(f"[ML] XGBoost inference started for project: {project_id}")
-        res = get_full_prediction(pid_str, df_to_use, self._models)
-        logger.info(f"[ML] XGBoost inference completed for project: {project_id}")
-        logger.info(f"[ML] SHAP explanation generated for project: {project_id}")
-        logger.info(f"[ML] Prediction returned to caller for project: {project_id}")
-        return res
+        from app.services.ai_engine_service import AIEngine
+        return AIEngine.get_instance().get_full_project_prediction(project_id)
 
     def explain_project(self, project_id: str, custom_df: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
         """
         Generate AI natural language narrative summary for a project.
         """
         logger.info(f"[AI] Qwen explanation requested for project: {project_id}")
-        logger.info(f"[AI] Model context prepared with XGBoost and SHAP predictions")
         prediction_result = self.predict_project(project_id, custom_df)
-        df = custom_df if custom_df is not None else self.get_master_df()
-
-        try:
-            from src.qwen_service import QwenExplainer
-            explainer = QwenExplainer()
-            summary_res = explainer.generate_project_narrative_summary(str(project_id), df, prediction_result)
-            logger.info(f"[AI] Qwen inference completed for project: {project_id}")
-            return {
-                "prediction": prediction_result,
-                "narrative": summary_res
-            }
-        except Exception as e:
-            logger.warning(f"Qwen explainer fallback: {e}")
-            logger.info(f"[AI] Qwen inference completed (deterministic rule-based narrative)")
-            return {
-                "prediction": prediction_result,
-                "narrative": {
-                    "summary": f"Predictive intelligence generated for project {project_id}.",
-                    "key_alerts": [
-                        "ML model predicts moderate escalation probability over trailing 3-month horizon.",
-                        "SHAP indicates project physical-vs-financial progress alignment is key driver."
-                    ]
-                }
-            }
+        from app.services.ai_engine_service import AIEngine
+        summary_res = AIEngine.get_instance().get_ai_project_summary(project_id)
+        return {
+            "prediction": prediction_result,
+            "narrative": summary_res
+        }
 
 
 _client = MLRiskClient()

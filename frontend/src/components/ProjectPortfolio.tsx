@@ -336,7 +336,16 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                         }
                       }}
                     >
-                      <td className="td-project-id">{project.id}</td>
+                      <td className="td-project-id">
+                        <div style={{ fontWeight: 600 }}>{project.id}</div>
+                        {(project.legacyOcmsCode || (project as any).legacy_ocms_code) && (
+                          <div style={{ fontSize: '11px', marginTop: '3px' }}>
+                            <span style={{ background: '#FEF3C7', color: '#92400E', padding: '1px 5px', borderRadius: '4px', border: '1px solid #FDE68A', fontWeight: 600 }}>
+                              OCMS: {project.legacyOcmsCode || (project as any).legacy_ocms_code}
+                            </span>
+                          </div>
+                        )}
+                      </td>
                       <td className="td-project-name">
                         <div className="project-primary-name">{project.name}</div>
                         <div className="project-sub-meta">{project.sector} • {project.ministry}</div>

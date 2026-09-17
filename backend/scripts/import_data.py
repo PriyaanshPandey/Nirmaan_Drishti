@@ -244,9 +244,15 @@ def run_import():
 
             risk_score, risk_lvl, cost_r, time_r, impl_r, over_r = calculate_project_risk(latest_row)
 
+            is_completed = (phys_prog >= 100.0) or ("COMPLETED" in sched_status)
+            proj_status = "COMPLETED" if is_completed else "ACTIVE"
+            actual_doc = (rev_doc or orig_doc) if is_completed else None
+            legacy_ocms = clean_str(latest_row.get("legacy_ocms_code"), 100)
+
             project_records.append((
                 p_id_str,
                 p_code,
+                legacy_ocms,
                 p_name,
                 f"{p_name} monitored under National Infrastructure PAIMANA framework.",
                 m_id,
@@ -254,11 +260,12 @@ def run_import():
                 clean_str(latest_row.get("state"), 500),
                 clean_str(latest_row.get("state"), 255),
                 clean_str(latest_row.get("agency"), 255),
-                "COMPLETED" if phys_prog >= 100 else "ACTIVE",
+                proj_status,
                 sched_status,
                 start_d,
                 orig_doc,
                 rev_doc or orig_doc,
+                actual_doc,
                 clean_num(latest_row.get("project_age_months")),
                 sched_ext,
                 int(clean_num(latest_row.get("overdue_days"), 0)),
@@ -285,9 +292,9 @@ def run_import():
         # Bulk upsert projects into PostgreSQL
         project_upsert_sql = """
         INSERT INTO projects (
-            id, project_code, name, description, ministry_id, sector_id,
+            id, project_code, legacy_ocms_code, name, description, ministry_id, sector_id,
             location, state, implementing_agency, project_status, schedule_status,
-            start_date, original_completion_date, expected_completion_date,
+            start_date, original_completion_date, expected_completion_date, actual_completion_date,
             project_age_months, schedule_extension_months, delay_days,
             original_cost, revised_cost, cumulative_expenditure, cost_overrun_pct,
             cost_escalation_crore, expenditure_ratio_pct, physical_progress, physical_progress_target, financial_progress,
@@ -296,6 +303,7 @@ def run_import():
         ) VALUES %s
         ON CONFLICT (id) DO UPDATE SET
             project_code = EXCLUDED.project_code,
+            legacy_ocms_code = COALESCE(projects.legacy_ocms_code, EXCLUDED.legacy_ocms_code),
             name = EXCLUDED.name,
             ministry_id = EXCLUDED.ministry_id,
             sector_id = EXCLUDED.sector_id,
@@ -307,6 +315,7 @@ def run_import():
             start_date = EXCLUDED.start_date,
             original_completion_date = EXCLUDED.original_completion_date,
             expected_completion_date = EXCLUDED.expected_completion_date,
+            actual_completion_date = EXCLUDED.actual_completion_date,
             project_age_months = EXCLUDED.project_age_months,
             schedule_extension_months = EXCLUDED.schedule_extension_months,
             delay_days = EXCLUDED.delay_days,

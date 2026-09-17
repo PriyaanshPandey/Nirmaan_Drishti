@@ -10,6 +10,7 @@ from app.models.progress import ProjectProgress
 from app.models.risk_prediction import RiskPrediction
 from app.models.user import User
 from app.models.audit_log import AuditLog
+from app.models.identifier_mapping import ProjectIdentifierMapping
 
 __all__ = [
     "Ministry",
@@ -20,4 +21,5 @@ __all__ = [
     "RiskPrediction",
     "User",
     "AuditLog",
+    "ProjectIdentifierMapping",
 ]

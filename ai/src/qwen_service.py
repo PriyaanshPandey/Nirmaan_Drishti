@@ -798,18 +798,18 @@ class QwenExplainer:
 
         # Priority: explicit arg -> QWEN_API_KEY -> DASHSCOPE_API_KEY -> empty
         raw_key = api_key or os.environ.get("QWEN_API_KEY", "").strip() or os.environ.get("DASHSCOPE_API_KEY", "").strip()
-        if "your_" in raw_key.lower():
+        if "your_" in raw_key.lower() or raw_key.startswith("hf_") or not raw_key.startswith("sk-") or len(raw_key) < 20:
             raw_key = ""
         self.api_key = raw_key
         self.api_base = os.environ.get("QWEN_API_BASE") or llm_cfg.get("api_base", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
         self.model_name = os.environ.get("QWEN_MODEL_NAME") or llm_cfg.get("model_name", "qwen/qwen3-8b")
         self.temperature = float(llm_cfg.get("temperature", 0.2))
         self.max_tokens = int(llm_cfg.get("max_tokens", 800))
-        self.timeout_seconds = int(llm_cfg.get("timeout_seconds", 30))
+        self.timeout_seconds = int(llm_cfg.get("timeout_seconds", 5))
 
     def get_status(self) -> Dict[str, Any]:
         """Check whether live AI generation or rule-based fallback is active."""
-        is_active = bool(self.api_key and len(self.api_key) > 5)
+        is_active = bool(self.api_key and len(self.api_key) >= 20 and self.api_key.startswith("sk-"))
         return {
             "is_configured": is_active,
             "model_name": self.model_name,
@@ -1305,6 +1305,14 @@ class QwenExplainer:
         raw_progress = latest_row.get("physical_progress_pct")
         curr_progress = float(raw_progress) if pd.notna(raw_progress) else 0.0
 
+        # Check prediction_result current_status / project_info if available and higher
+        cs_prog = prediction_result.get("current_status", {}).get("physical_progress_pct")
+        if pd.notna(cs_prog) and float(cs_prog) > curr_progress:
+            curr_progress = float(cs_prog)
+        info_prog = prediction_result.get("project_info", {}).get("physical_progress_pct")
+        if pd.notna(info_prog) and float(info_prog) > curr_progress:
+            curr_progress = float(info_prog)
+
         schedule_status = str(latest_row.get("schedule_status", "")).upper()
         is_completed_flag = (curr_progress >= 100.0) or (schedule_status == "COMPLETED")
 
@@ -1758,6 +1766,8 @@ class QwenExplainer:
                 })
 
         return {
+            "project_id": str(ctx.get("project_id", "")),
+            "project_name": pname,
             "stage_case": stage_case,
             "alerts_title": alerts_title,
             "summary": summary,

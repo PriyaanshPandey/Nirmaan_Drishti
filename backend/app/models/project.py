@@ -15,6 +15,7 @@ class Project(Base):
 
     id = Column(String(100), primary_key=True, index=True)
     project_code = Column(String(100), nullable=True, index=True)
+    legacy_ocms_code = Column(String(100), nullable=True, index=True)
     name = Column(String(500), nullable=False, index=True)
     description = Column(Text, nullable=True)
 

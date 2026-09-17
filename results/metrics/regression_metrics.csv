@@ -1,0 +1,9 @@
+Task,Target,Type,Model,MAE,RMSE,R2,MedAE
+Future Anticipated Cost (3M),future_anticipated_cost_3m,Regression,Old XGBoost (Static),255.5547,1926.1867,0.8399,22.3182
+Future Anticipated Cost (3M),future_anticipated_cost_3m,Regression,New XGBoost (Project-History-Aware),272.7296,2096.6017,0.8103,24.61
+Future Schedule Delay (3M),future_delay_months_3m,Regression,Old XGBoost (Static),11.4358,25.4032,0.6524,3.6965
+Future Schedule Delay (3M),future_delay_months_3m,Regression,New XGBoost (Project-History-Aware),10.6586,22.2563,0.7332,3.5743
+Cost Overrun Delta % (3M),additional_cost_overrun_pct_3m,Regression,Old XGBoost (Static),15.4994,61.079,-0.1265,2.4804
+Cost Overrun Delta % (3M),additional_cost_overrun_pct_3m,Regression,New XGBoost (Project-History-Aware),19.0426,64.3863,-0.2518,3.4661
+Schedule Delay Delta (3M),additional_delay_months_3m,Regression,Old XGBoost (Static),10.2137,24.6947,-0.0426,2.5954
+Schedule Delay Delta (3M),additional_delay_months_3m,Regression,New XGBoost (Project-History-Aware),9.6099,24.0503,0.0111,2.1715

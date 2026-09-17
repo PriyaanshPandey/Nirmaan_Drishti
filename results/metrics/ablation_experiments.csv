@@ -1,0 +1,9 @@
+Stage,Description,Val_R2,Val_MAE,Val_MedAE,Val_P50,Val_P75,Val_P90,Holdout_R2,Holdout_MAE,Holdout_MedAE,Holdout_P50,Holdout_P75,Holdout_P90,Holdout_P95,Holdout_P99,Holdout_RMSE
+1. Persistence,Future Delay = Current Delay,0.6821,5.7,0.0,0.0,4.0,15.0,0.6808,9.13,0.0,0.0,4.0,27.0,56.0,131.0,26.88
+2. Current Model,Direct absolute delay regression (Baseline features),0.7174,6.53,1.72,1.72,4.58,17.45,0.67,11.74,2.67,2.67,9.44,34.41,57.13,125.54,27.34
+3. Delta Model,ΔDelay formulation with persistence anchor,0.7107,6.37,1.6,1.6,4.0,17.62,0.7004,9.7,1.65,1.65,5.11,27.79,54.0,123.0,26.04
+4. Trajectory Model,Delta + Longitudinal trajectory & revisions,0.7378,6.06,1.42,1.42,4.47,15.78,0.7042,9.79,1.46,1.46,6.0,28.35,54.0,120.61,25.88
+5. Regime Model,"3-Regime MoE (Stable, Moderate, Severe)",0.6842,8.0,3.94,3.94,6.77,15.71,0.7101,10.64,3.56,3.56,7.02,25.15,54.0,119.59,25.62
+6. Quantile Model,P50 & P75 Quantile Regressors (Tail learning),0.6949,5.9,0.68,0.68,3.48,16.11,0.6936,9.23,0.52,0.52,3.8,28.0,55.96,124.0,26.34
+7. Regime + Quantile,MoE probabilities blended with Quantile modulation,0.6968,6.88,2.52,2.52,4.78,15.06,0.7037,9.89,2.19,2.19,4.96,26.08,54.55,121.21,25.9
+8. Final Ensemble,Persistence Anchor + LGBM/XGB Delta + MoE + Quantiles + Risk Dampener,0.7208,5.89,0.99,0.99,3.79,15.42,0.6989,9.37,0.84,0.84,4.57,27.75,54.67,123.06,26.11
