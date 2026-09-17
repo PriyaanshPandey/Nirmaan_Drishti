@@ -25,6 +25,8 @@ class SectorSimple(BaseModel):
 class ProjectBase(BaseModel):
     name: str
     project_code: Optional[str] = None
+    legacy_ocms_code: Optional[str] = None
+    legacyOcmsCode: Optional[str] = None
     description: Optional[str] = None
     ministry_id: Optional[int] = None
     sector_id: Optional[int] = None
@@ -66,6 +68,8 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     project_code: Optional[str] = None
+    legacy_ocms_code: Optional[str] = None
+    legacyOcmsCode: Optional[str] = None
     description: Optional[str] = None
     ministry_id: Optional[int] = None
     sector_id: Optional[int] = None
@@ -112,6 +116,11 @@ class ProjectResponse(ProjectBase):
     startDateFormatted: Optional[str] = None
     expectedCompletionFormatted: Optional[str] = None
     originalCompletionFormatted: Optional[str] = None
+    actualCompletionFormatted: Optional[str] = None
+    revisedCompletionFormatted: Optional[str] = None
+    timeOverrunMonths: Optional[float] = None
+    timeOverrunFormatted: Optional[str] = None
+    isCompleted: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,0 +1,5 @@
+Task,Target,Type,Model,ROC_AUC,PR_AUC,F1_Score,Precision,Recall
+Cost Escalation Risk (3M),target_cost_escalation_risk_3m,Classification,Old XGBoost (Static),0.8813,0.7231,0.7026,0.7467,0.6634
+Cost Escalation Risk (3M),target_cost_escalation_risk_3m,Classification,New XGBoost (Project-History-Aware),0.8995,0.7609,0.7146,0.7948,0.6491
+Schedule Delay Risk (3M),target_schedule_delay_risk_3m,Classification,Old XGBoost (Static),0.7346,0.5193,0.5332,0.4409,0.6744
+Schedule Delay Risk (3M),target_schedule_delay_risk_3m,Classification,New XGBoost (Project-History-Aware),0.762,0.5519,0.5433,0.4718,0.6401

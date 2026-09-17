@@ -21,7 +21,7 @@
 .trend-tabs {
   display: flex;
   background-color: #F1F5F9;
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid #64748B;
   border-radius: 100px;
   padding: 3px;
 }

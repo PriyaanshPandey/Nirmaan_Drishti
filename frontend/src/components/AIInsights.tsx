@@ -6,6 +6,7 @@ import {
 import './AIInsights.css';
 import { api } from '../services/api';
 import { AnimatedCounter } from './AnimatedCounter';
+import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
 
 type InsightData = {
@@ -179,6 +180,15 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
     }
   };
 
+  useEffect(() => {
+    if (!selectedRecModal) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedRecModal(null);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [selectedRecModal]);
+
   // Interactive Portfolio AI Assistant state
   const [queryText, setQueryText] = useState('');
   const [queryAnswer, setQueryAnswer] = useState<string | null>(null);
@@ -241,7 +251,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
 
   // Emerging Trends sparkline helper
   const renderSparkline = (points: string, color: string) => (
-    <svg width="45" height="15" viewBox="0 0 50 20" className="trend-sparkline-svg">
+    <svg aria-hidden="true" width="45" height="15" viewBox="0 0 50 20" className="trend-sparkline-svg">
       <path d={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
@@ -257,10 +267,20 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
       <div
         className={`similarity-circle-unit ${isActive ? 'active' : ''}`}
         onClick={() => setSelectedSimilarity(key)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setSelectedSimilarity(key);
+          }
+        }}
         style={{ cursor: 'pointer' }}
+        role="button"
+        tabIndex={0}
+        aria-label={`${label}: ${pct}% similarity`}
+        aria-pressed={isActive}
       >
         <div className="similarity-circle-svg-wrapper">
-          <svg width="44" height="44" viewBox="0 0 44 44">
+          <svg aria-hidden="true" width="44" height="44" viewBox="0 0 44 44">
             <circle cx="22" cy="22" r={radius} fill="none" stroke="#F1F5F9" strokeWidth="3" />
             <circle
               cx="22"
@@ -354,7 +374,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
       ) : (
         <>
       {/* Interactive AI Intelligence Query Bar */}
-      <div className="card" style={{ backgroundColor: '#FFFFFF', padding: '18px 24px', borderRadius: '14px', border: '1.5px solid #2563EB', marginBottom: '16px', boxShadow: '0 4px 12px rgba(37,99,235,0.06)' }}>
+      <div className="card" style={{ padding: '18px 24px', borderRadius: '14px', border: '1.5px solid #2563EB', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
           <div style={{ backgroundColor: '#EFF6FF', padding: '8px', borderRadius: '8px' }}>
             <Bot size={20} color="#2563EB" />
@@ -475,6 +495,8 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             key={tab.id}
             className={`insights-sub-tab-btn ${activeSubTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveSubTab(tab.id as InsightsTab)}
+            aria-selected={activeSubTab === tab.id}
+            role="tab"
           >
             {tab.label}
           </button>
@@ -518,7 +540,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                       </div>
                       <span
                         className="rec-impact-tag"
-                        style={{ color: rec.impactClass === 'font-red' ? 'var(--color-accent-red)' : '#D97706' }}
+                        style={{ color: rec.impactClass === 'font-red' ? '#B91C1C' : '#B45309' }}
                       >
                         {rec.impact}
                       </span>
@@ -634,11 +656,24 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                     key={idx}
                     className={`pattern-panel ${expandedPattern === idx ? 'expanded' : ''}`}
                     onClick={() => setExpandedPattern(expandedPattern === idx ? null : idx)}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={expandedPattern === idx}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setExpandedPattern(expandedPattern === idx ? null : idx);
+                      }
+                    }}
                   >
                     <div className="panel-header">
                       <div className="panel-header-title">{pat.title}</div>
                       <div className="panel-meta-row">
-                        <span className={`panel-status-tag ${pat.riskClass}`}>{pat.risk}</span>
+                        <StatusIndicator
+                          kind={pat.risk.toLowerCase().includes('high') ? 'high' : 'medium'}
+                          label={pat.risk.toUpperCase()}
+                          className={`panel-status-tag ${pat.riskClass}`}
+                        />
                         <ChevronDown size={12} className="panel-arrow" />
                       </div>
                     </div>
@@ -757,7 +792,18 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   </div>
                 </div>
 
-                <div className="predictive-row-item action-row" onClick={() => setActiveSubTab('predictive')}>
+                <div
+                  className="predictive-row-item action-row"
+                  onClick={() => setActiveSubTab('predictive')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setActiveSubTab('predictive');
+                    }
+                  }}
+                >
                   <div className="pred-icon-wrapper grey-glow">
                     <Layers size={14} color="var(--navy-dark)" />
                   </div>
@@ -800,7 +846,11 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   <div key={idx} className="sector-box">
                     <div className="sector-box-header">
                       <span className="sector-box-name">{s.name}</span>
-                      <span className={`sector-box-tag ${s.labelClass === 'font-red' ? 'tag-red' : s.labelClass === 'font-orange' ? 'tag-orange' : 'tag-blue'}`}>{s.label}</span>
+                      <StatusIndicator
+                        kind={s.label.toLowerCase().includes('high risk') ? 'high' : s.label.toLowerCase().includes('common') ? 'medium' : 'low'}
+                        label={s.label.toUpperCase()}
+                        className={`sector-box-tag ${s.labelClass === 'font-red' ? 'tag-red' : s.labelClass === 'font-orange' ? 'tag-orange' : 'tag-blue'}`}
+                      />
                     </div>
                     <div className="sector-box-pct-row">
                       <span className="sector-box-pct font-red">{s.pct}</span>
@@ -874,7 +924,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
           </div>
         </div>
       ) : (
-        <div style={{ padding: '40px 20px', backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', marginTop: '20px' }}>
+        <div className="card" style={{ padding: '40px 24px', marginTop: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
               {subTabs.find(t => t.id === activeSubTab)?.label}
@@ -923,7 +973,11 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
                   <div className="panel-header">
                     <div className="panel-header-title" style={{ fontSize: '15px' }}>{pat.title}</div>
                     <div className="panel-meta-row">
-                      <span className={`panel-status-tag ${pat.riskClass}`}>{pat.risk} ({pat.count} projects)</span>
+                      <StatusIndicator
+                        kind={pat.risk.toLowerCase().includes('high') ? 'high' : 'medium'}
+                        label={`${pat.risk.toUpperCase()} (${pat.count} PROJECTS)`}
+                        className={`panel-status-tag ${pat.riskClass}`}
+                      />
                     </div>
                   </div>
                   <div className="panel-body" style={{ display: 'block', fontSize: '13px', color: '#475569' }}>{pat.detail}</div>
@@ -1006,7 +1060,8 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
 
       {/* Affected Projects Modal */}
       {selectedRecModal && (
-        <div 
+        <div className="ai-insights-modal-backdrop"
+          role="presentation"
           style={{
             position: 'fixed',
             top: 0,
@@ -1023,7 +1078,10 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
           }}
           onClick={() => setSelectedRecModal(null)}
         >
-          <div 
+          <div className="ai-insights-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="affected-projects-modal-title"
             style={{
               backgroundColor: '#FFFFFF',
               borderRadius: '16px',
@@ -1041,10 +1099,10 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ onSelectProject }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '16px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: selectedRecModal.rec.impactClass === 'font-red' ? '#FEE2E2' : '#FEF3C7', color: selectedRecModal.rec.impactClass === 'font-red' ? '#DC2626' : '#D97706' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '4px', backgroundColor: selectedRecModal.rec.impactClass === 'font-red' ? '#FEE2E2' : '#FEF3C7', color: selectedRecModal.rec.impactClass === 'font-red' ? '#B91C1C' : '#92400E' }}>
                     {selectedRecModal.rec.impact}
                   </span>
-                  <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
+                  <h2 id="affected-projects-modal-title" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
                     {selectedRecModal.rec.title}
                   </h2>
                 </div>

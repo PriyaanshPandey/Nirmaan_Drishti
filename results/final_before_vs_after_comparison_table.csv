@@ -1,0 +1,9 @@
+Prediction Task,Priority,Old MAE,New MAE,Old R²,New R²,Old ROC-AUC,New ROC-AUC,Old PR-AUC,New PR-AUC,Old F1,New F1,Production Status
+Cost Regression 3M,P1 (Highest),20.69%,2.38%,-27.33,+0.354,N/A,N/A,N/A,N/A,N/A,N/A,USABLE / PRODUCTION READY
+Cost Regression 6M,P1 (Highest),21.88%,3.84%,-12.45,+0.321,N/A,N/A,N/A,N/A,N/A,N/A,USABLE / PRODUCTION READY
+Cost Classification 3M,P2,N/A,N/A,N/A,N/A,0.751,0.824,0.247,0.382,0.000,0.412,USABLE (Calibrated + Opt Thresh 0.18)
+Cost Classification 6M,P2,N/A,N/A,N/A,N/A,0.760,0.835,0.311,0.439,0.000,0.468,USABLE (Calibrated + Opt Thresh 0.22)
+Time Regression 3M,P3,4.13 mo,1.82 mo,-0.146,+0.418,N/A,N/A,N/A,N/A,N/A,N/A,PRODUCTION READY
+Time Regression 6M,P3,6.48 mo,2.94 mo,-0.167,+0.452,N/A,N/A,N/A,N/A,N/A,N/A,PRODUCTION READY
+Time Classification 3M,P4,N/A,N/A,N/A,N/A,0.805,0.862,0.581,0.714,0.305,0.684,PRODUCTION READY
+Time Classification 6M,P4,N/A,N/A,N/A,N/A,0.809,0.871,0.716,0.782,0.570,0.728,PRODUCTION READY

@@ -136,7 +136,8 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     setTooltip(prev => ({ ...prev, visible: false }));
   };
 
-  const activeResetTrigger = `${selectedStateId}-${resetKey !== undefined ? resetKey : activeTab}`;
+  const displayedStateId = hoveredStateId || selectedStateId;
+  const activeResetTrigger = `${displayedStateId}-${resetKey !== undefined ? resetKey : activeTab}`;
 
   // Helper parser: strips '₹', 'Cr', commas and returns numeric crore float
   const parseCrores = (val: any): number => {
@@ -206,7 +207,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     return map;
   }, []);
 
-  const selectedStateName = ID_TO_STATE[selectedStateId] || 'Uttar Pradesh';
+  const selectedStateName = ID_TO_STATE[displayedStateId] || 'Uttar Pradesh';
 
   const currentStateSummary: StateSummary = useMemo(() => {
     return stateDataMap.get(selectedStateName) || {
@@ -231,8 +232,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
   // Color generator based on project count (calibrated across full portfolio range to make differences clearly visible)
   const getStateFillColor = (stateId: string) => {
     const stateName = ID_TO_STATE[stateId] || '';
-    if (stateId === selectedStateId) return '#1D2A54';
-    if (stateId === hoveredStateId) return '#2D3A64';
+    if (stateId === hoveredStateId) return '#1A1F4C';
 
     const count = stateDataMap.get(stateName)?.projectCount || 0;
     if (count > maxProjectCount * 0.85) return '#7F1D1D';
@@ -253,10 +253,10 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
   const viewBox = indiaMapData.viewBox || '0 0 612 696';
 
   return (
-    <div className="paimana-map-section">
+    <section className="paimana-map-section" aria-labelledby="india-map-title">
       <div className="map-section-header">
         <div>
-          <h2 className="map-section-title">State-wise Projects <span className="as-of-tag">(as of July, 2026)</span></h2>
+          <h2 id="india-map-title" className="map-section-title">State-wise Projects <span className="as-of-tag">(as of July, 2026)</span></h2>
           <p className="map-section-subtitle">Real-time geographic dataset &amp; approved financial outlay across India</p>
         </div>
       </div>
@@ -265,7 +265,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
         {/* Left Side: PAIMANA State Metrics Card */}
         <div className="state-metrics-card">
           <div className="state-card-header">
-            <span className="state-header-title">{ID_TO_LABEL[selectedStateId] || selectedStateName}</span>
+            <span className="state-header-title">{ID_TO_LABEL[displayedStateId] || selectedStateName}</span>
           </div>
 
           <div className="state-metrics-grid">
@@ -321,10 +321,15 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
 
         {/* Right Side: Real Accurate SVG Map of India from @svg-maps/india */}
         <div className="india-map-wrapper">
+          <p className="sr-only" id="india-map-description">
+            Interactive map of India showing project counts by state. The displayed state is {ID_TO_LABEL[displayedStateId] || selectedStateName}, with {currentStateSummary.projectCount} monitored projects, original cost of {Math.round(currentStateSummary.originalCostCrore)} crore rupees, revised cost of {Math.round(currentStateSummary.revisedCostCrore)} crore rupees, and expenditure of {Math.round(currentStateSummary.expenditureCrore)} crore rupees.
+          </p>
           <svg
             viewBox={viewBox}
             className="india-svg-map"
             preserveAspectRatio="xMidYMid meet"
+            role="group"
+            aria-labelledby="india-map-title india-map-description"
           >
             {mapLocations.map((loc: any) => {
               const isSelected = loc.id === selectedStateId;
@@ -335,20 +340,35 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
                   key={loc.id}
                   d={loc.path}
                   fill={getStateFillColor(loc.id)}
-                  stroke={isSelected ? '#38BDF8' : isHovered ? '#60A5FA' : '#475569'}
-                  strokeWidth={isSelected ? 2.5 : isHovered ? 1.5 : 0.6}
+                  stroke={isHovered ? '#1A1F4C' : '#334155'}
+                  strokeWidth={isHovered ? 1.4 : 0.8}
                   strokeLinejoin="round"
                   strokeLinecap="round"
                   className="state-path-real"
                   onClick={() => setSelectedStateId(loc.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedStateId(loc.id);
+                    }
+                  }}
                   onMouseEnter={(e) => handleStateMouseEnter(loc.id, loc.name, e)}
                   onMouseMove={handleStateMouseMove}
                   onMouseLeave={handleStateMouseLeave}
+                  onFocus={() => setHoveredStateId(loc.id)}
+                  onBlur={() => setHoveredStateId(null)}
                   style={{
                     cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    filter: isSelected ? 'drop-shadow(0 2px 6px rgba(29,42,84,0.4))' : 'none'
+                    transition: 'all 0.2s ease',
+                    filter: isHovered 
+                      ? 'drop-shadow(0 2px 8px rgba(26, 31, 76, 0.35))' 
+                      : 'none',
+                    outline: 'none'
                   }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${ID_TO_LABEL[loc.id] || loc.name}: ${stateDataMap.get(ID_TO_STATE[loc.id] || '')?.projectCount || 0} projects`}
+                  aria-pressed={isSelected}
                 />
               );
             })}
@@ -371,12 +391,13 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
 
           {/* PAIMANA Vertical Choropleth Legend */}
           <div className="choropleth-legend">
+            <span className="sr-only">Map colors show the number of monitored projects in each state. Each state is also identified by its accessible state name and project count.</span>
             <span className="legend-max">{maxProjectCount}</span>
             <div className="legend-gradient-bar" />
             <span className="legend-min">0</span>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

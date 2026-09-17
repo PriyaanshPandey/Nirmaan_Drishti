@@ -6,8 +6,18 @@
  */
 
 import { type Project, type ProjectBenchmark, projectsData } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api';
+
+export function findProjectByIdOrOcms(projectId: string): Project | undefined {
+  const clean = String(projectId).trim();
+  return projectsData.find(
+    p => String(p.id) === clean || 
+         (p.legacyOcmsCode && String(p.legacyOcmsCode) === clean) || 
+         (p.legacy_ocms_code && String(p.legacy_ocms_code) === clean)
+  );
+}
 
 export interface DashboardSummaryData {
   metrics: {
@@ -424,10 +434,10 @@ export function getFallbackDashboard(): DashboardSummaryData {
       cost_overrun_formatted: `+${overrunPct.toFixed(1)}% overrun`
     },
     health_distribution: [
-      { id: 'on_track', name: 'On Track', count: onTrackCount, color: '#22C55E', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
+      { id: 'on_track', name: 'On Track', count: onTrackCount, color: '#15803D', percentage: total > 0 ? parseFloat((onTrackCount / total * 100).toFixed(1)) : 0 },
       { id: 'monitoring', name: 'Needs Attention', count: monitoringCount, color: '#3B82F6', percentage: total > 0 ? parseFloat((monitoringCount / total * 100).toFixed(1)) : 0 },
-      { id: 'at_risk', name: 'High Risk', count: highCount, color: '#EAB308', percentage: total > 0 ? parseFloat((highCount / total * 100).toFixed(1)) : 0 },
-      { id: 'critical_delay', name: 'Critical Delay', count: critCount, color: '#EF4444', percentage: total > 0 ? parseFloat((critCount / total * 100).toFixed(1)) : 0 }
+      { id: 'at_risk', name: 'At Risk', count: highCount, color: '#B45309', percentage: total > 0 ? parseFloat((highCount / total * 100).toFixed(1)) : 0 },
+      { id: 'critical_delay', name: 'Critical Delay', count: critCount, color: '#B91C1C', percentage: total > 0 ? parseFloat((critCount / total * 100).toFixed(1)) : 0 }
     ],
     priority_interventions: topCritical,
     delay_factors: [
@@ -726,6 +736,10 @@ export const api = {
       const mapped: Project[] = (data.items || []).map((p: any) => ({
         id: p.id,
         name: p.name,
+        legacyOcmsCode: p.legacy_ocms_code || null,
+        legacy_ocms_code: p.legacy_ocms_code || null,
+        projectStatus: p.project_status || (p.isCompleted ? 'COMPLETED' : 'ACTIVE'),
+        isCompleted: p.isCompleted || false,
         ministry: p.ministry?.name || 'Ministry of Infrastructure',
         sector: p.sector?.name || 'Infrastructure',
         location: p.location || p.state || 'India',
@@ -739,10 +753,16 @@ export const api = {
         progressFinancial: p.financial_progress || 0,
         expectedCompletion: p.expectedCompletionFormatted || 'N/A',
         originalCompletion: p.originalCompletionFormatted || 'N/A',
+        actualCompletion: p.actualCompletionFormatted || null,
+        revisedCompletion: p.revisedCompletionFormatted || null,
+        timeOverrunMonths: p.timeOverrunMonths ?? null,
+        timeOverrunFormatted: p.timeOverrunFormatted || null,
         startDate: p.startDateFormatted || 'N/A',
         phase: p.phase || 'Construction',
         type: p.type || 'Infrastructure',
         scheduleStatus: p.schedule_status || 'ON TRACK',
+        scheduleExtensionMonths: p.schedule_extension_months ?? p.timeOverrunMonths ?? 0,
+        delayDays: p.delay_days ?? 0,
         costLabel: p.costLabel || `₹${p.revised_cost || 0} Cr`,
         costSubtext: p.costSubtext || '',
         riskScore: p.risk_score || 30,
@@ -776,12 +796,46 @@ export const api = {
         filtered = filtered.filter(p => p.sector.toLowerCase() === sector.toLowerCase());
       }
       if (scheduleStatus && scheduleStatus !== 'All') {
-        filtered = filtered.filter(p => p.scheduleStatus === scheduleStatus);
+        const stat = scheduleStatus.toUpperCase().trim();
+        if (stat === 'CRITICAL' || stat.includes('CRIT')) {
+          filtered = filtered.filter(p =>
+            p.scheduleStatus === 'CRITICAL' ||
+            p.riskLevel === 'Critical' ||
+            (p.riskScore && p.riskScore >= 75)
+          );
+        } else if (stat === 'IN REVIEW' || stat.includes('REVIEW') || stat === 'IN PROGRESS' || stat.includes('PROGRESS')) {
+          filtered = filtered.filter(p =>
+            (p.scheduleStatus as string) === 'IN REVIEW' ||
+            (p.scheduleStatus as string) === 'IN PROGRESS' ||
+            (p.scheduleStatus === 'ON TRACK' && p.progressPhysical > 0 && p.progressPhysical < 100 && ((p.riskScore && p.riskScore >= 25) || p.riskLevel === 'Medium'))
+          );
+        } else if (stat === 'DELAYED' || stat.includes('DELAY')) {
+          filtered = filtered.filter(p =>
+            p.scheduleStatus === 'DELAYED' &&
+            p.riskLevel !== 'Critical' &&
+            (!p.riskScore || p.riskScore < 75)
+          );
+        } else if (stat === 'ON TRACK' || stat.includes('TRACK')) {
+          filtered = filtered.filter(p =>
+            p.scheduleStatus === 'ON TRACK' &&
+            p.riskLevel !== 'Critical' &&
+            (!p.riskScore || p.riskScore < 75) &&
+            !(p.progressPhysical > 0 && p.progressPhysical < 100 && ((p.riskScore && p.riskScore >= 25) || p.riskLevel === 'Medium'))
+          );
+        } else {
+          filtered = filtered.filter(p => p.scheduleStatus.toUpperCase() === stat);
+        }
       }
 
+      // Ensure each project has its accurate, verified scheduleStatus (CRITICAL, DELAYED, IN PROGRESS, ON TRACK)
+      const mappedFallback: Project[] = filtered.map(p => ({
+        ...p,
+        scheduleStatus: getProjectDisplayStatus(p)
+      }));
+
       const start = (page - 1) * pageSize;
-      const paginated = filtered.slice(start, start + pageSize);
-      return { items: paginated, total: filtered.length };
+      const paginated = mappedFallback.slice(start, start + pageSize);
+      return { items: paginated, total: mappedFallback.length };
     }
   },
 
@@ -793,9 +847,13 @@ export const api = {
       const res = await fetch(`${API_BASE_URL}/projects/${projectId}`);
       if (!res.ok) throw new Error('Project details failed');
       const p = await res.json();
-      return {
+      const projItem: Project = {
         id: p.id,
         name: p.name,
+        legacyOcmsCode: p.legacy_ocms_code || null,
+        legacy_ocms_code: p.legacy_ocms_code || null,
+        projectStatus: p.project_status || (p.isCompleted ? 'COMPLETED' : 'ACTIVE'),
+        isCompleted: p.isCompleted || false,
         ministry: p.ministry?.name || 'Ministry of Infrastructure',
         sector: p.sector?.name || 'Infrastructure',
         location: p.location || p.state || 'India',
@@ -809,10 +867,16 @@ export const api = {
         progressFinancial: p.financial_progress || 0,
         expectedCompletion: p.expectedCompletionFormatted || 'N/A',
         originalCompletion: p.originalCompletionFormatted || 'N/A',
+        actualCompletion: p.actualCompletionFormatted || null,
+        revisedCompletion: p.revisedCompletionFormatted || null,
+        timeOverrunMonths: p.timeOverrunMonths ?? null,
+        timeOverrunFormatted: p.timeOverrunFormatted || null,
         startDate: p.startDateFormatted || 'N/A',
         phase: p.phase || 'Construction',
         type: p.type || 'Infrastructure',
         scheduleStatus: p.schedule_status || 'ON TRACK',
+        scheduleExtensionMonths: p.schedule_extension_months ?? p.timeOverrunMonths ?? 0,
+        delayDays: p.delay_days ?? 0,
         costLabel: p.costLabel || `₹${p.revised_cost || 0} Cr`,
         costSubtext: p.costSubtext || '',
         riskScore: p.risk_score || 30,
@@ -823,9 +887,18 @@ export const api = {
         implRisk: p.impl_risk || 20,
         overallRisk: p.overall_risk || 20,
       };
+      return {
+        ...projItem,
+        scheduleStatus: getProjectDisplayStatus(projItem)
+      };
     } catch (e) {
       console.warn('Backend unavailable, using fallback project record.');
-      return projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0] || null;
+      const fallback = findProjectByIdOrOcms(projectId) || null;
+      if (!fallback) return null;
+      return {
+        ...fallback,
+        scheduleStatus: getProjectDisplayStatus(fallback)
+      };
     }
   },
 
@@ -978,7 +1051,7 @@ export const api = {
       if (!res.ok) throw new Error('Benchmark fetch failed');
       return await res.json();
     } catch (e) {
-      const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+      const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
       return {
         project_id: proj.id,
         project_name: proj.name,
@@ -1196,7 +1269,7 @@ export const api = {
       // Fall through to dynamic PAIMANA ML logic
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currOverrunPct = parseFloat(String(proj.costOverrunPct).replace(/[^0-9.-]/g, '')) || ((costRev - costApp) / costApp * 100);
@@ -1305,7 +1378,7 @@ export const api = {
       if (!res.ok) return null;
       return await res.json();
     } catch (e) {
-      const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+      const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
       return {
         prediction: { project_id: proj.id },
         narrative: {
@@ -1389,7 +1462,7 @@ export const api = {
       // fallback below
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currOverrunPct = parseFloat(proj.costOverrunPct || '0');
@@ -1554,7 +1627,7 @@ export const api = {
       // fallback below
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
 
@@ -1685,13 +1758,14 @@ export const api = {
       // fallback below
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId);
+    if (!proj) return null;
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currExp = parseFloat(String((proj as any).expenditure || '').replace(/[^0-9.]/g, '')) || +(costRev * (proj.progressFinancial / 100)).toFixed(2);
-    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 12));
-    const currProg = proj.progressPhysical || 50;
-    const progFin = proj.progressFinancial || 50;
+    const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
+    const currProg = proj.progressPhysical || 0;
+    const progFin = proj.progressFinancial || 0;
     const rScore = proj.riskScore || 50;
     const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : rScore;
     const delayProb = (tRisk * 0.88).toFixed(1);
@@ -1702,7 +1776,7 @@ export const api = {
 
     // Dynamic stage case matching Nirmaan Drishti
     let stageCase = "CASE 5 – NORMAL ACTIVE PROJECT";
-    if (currProg >= 100 || (proj.scheduleStatus as string) === 'COMPLETED') {
+    if (currProg >= 100 || (proj.scheduleStatus as string) === 'COMPLETED' || proj.isCompleted) {
       stageCase = "CASE 1 – COMPLETED PROJECT";
     } else if (currProg >= 99.0) {
       stageCase = "CASE 2 – ALMOST COMPLETED PROJECT";
@@ -1717,10 +1791,12 @@ export const api = {
     }
 
     // 1. Current State Sentence
-    const statusClause = extMo > 0
+    const statusClause = (proj.isCompleted || currProg >= 100)
+      ? `has been completed and commissioned`
+      : extMo > 0
       ? `remains behind its planned trajectory with ${extMo.toFixed(1)} months of accumulated schedule extension`
       : `is currently tracking on its planned timeline`;
-    const l1 = `The ${proj.name} under ${proj.ministry || 'Ministry of Railways'} (${proj.sector || proj.type || 'Infrastructure'}) stands at ${currProg.toFixed(2)}% physical completion and ${statusClause}, with cumulative expenditure reaching ₹${currExp.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} crore after ${(currProg * 0.8).toFixed(0)} months of execution.`;
+    const l1 = `The ${proj.name} under ${proj.ministry || 'Ministry of Railways'} (${proj.sector || proj.type || 'Infrastructure'}) stands at ${currProg.toFixed(2)}% physical completion and ${statusClause}, with cumulative expenditure reaching ₹${currExp.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} crore.`;
 
     // 2. History & Baseline Sentence (Cost revisions / baseline)
     let l2 = "";
@@ -1740,7 +1816,9 @@ export const api = {
       : `Trajectory analysis reveals consistent physical execution pacing advancing in steady alignment with capital disbursements across the reporting period despite recorded historical schedule extensions.`;
 
     // 5. Future Outlook (ML) & Executive Attention Focus
-    const l5 = `Dual-horizon predictive ML models project a ${delayProb}% probability of additional schedule slippage (+${delayMonths} months), shifting effective completion toward ${proj.expectedCompletion || 'March 2027'}, requiring senior monitoring focus on Right of Way (RoW) clearances, utility shifting, and contractor site equipment mobilization.`;
+    const l5 = (proj.isCompleted || currProg >= 100)
+      ? `Having completed physical construction, operational focus transitions to commercial asset handover, financial audit finalization, and post-commissioning defect liability monitoring.`
+      : `Dual-horizon predictive ML models project a ${delayProb}% probability of additional schedule slippage (+${delayMonths} months), shifting effective completion toward ${proj.expectedCompletion || 'March 2027'}, requiring senior monitoring focus on Right of Way (RoW) clearances, utility shifting, and contractor site equipment mobilization.`;
 
     const detailedSummary = `${l1} ${l2} ${l3} ${l4} ${l5}`;
 
@@ -1758,7 +1836,7 @@ export const api = {
         },
         {
           issue: 'Critical-Path Milestone Slippage',
-          evidence: `Recorded schedule extension has reached ${proj.scheduleExtensionMonths || 12} months beyond baseline.`,
+          evidence: `Recorded schedule extension has reached ${extMo} months beyond baseline.`,
           why_it_matters: 'Cascades downstream handover delays onto structural commissioning phases.'
         }
       ],
@@ -1777,10 +1855,11 @@ export const api = {
       // fallback below
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId);
+    if (!proj) return null;
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
-    const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
+    const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
     const cRisk = (proj.costRisk !== undefined ? proj.costRisk : proj.riskScore);
     const tRisk = (proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore);
 
@@ -1902,7 +1981,7 @@ export const api = {
       // fallback below
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
     const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
     const gap = (proj.progressFinancial || 0) - (proj.progressPhysical || 0);
     const costOverrun = parseFloat(String(proj.costOverrunPct || 0));
@@ -1981,7 +2060,7 @@ export const api = {
       // fallback below
     }
 
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
     const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
     const gap = (proj.progressFinancial || 0) - (proj.progressPhysical || 0);
     const costOverrun = parseFloat(String(proj.costOverrunPct || 0));
@@ -2064,7 +2143,7 @@ export const api = {
     }
 
     // Grounded deterministic Q&A fallback structured for Government Decision-Makers
-    const proj = projectsData.find(p => String(p.id) === String(projectId)) || projectsData[0];
+    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
     const qLower = question.toLowerCase();
     let ans = '';
 

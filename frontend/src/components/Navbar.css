@@ -12,10 +12,12 @@
   display: flex;
   margin: 0 auto;
   background-color: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   padding: 6px;
   border-radius: 100px;
-  border: 1px solid rgba(226, 232, 240, 0.9);
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
   max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;

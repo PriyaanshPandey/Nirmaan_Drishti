@@ -1,0 +1,5 @@
+Age_Group,Snapshot_Count,Projects_Count,Cost_R2,Cost_MAE_Cr,Delay_R2,Delay_MAE_Months,Cost_Risk_ROC_AUC
+< 2 Years (New),853,248,0.7774,146.34,0.9311,3.49,0.9788
+2-5 Years (Early),12365,1833,0.771,121.12,0.7432,6.07,0.946
+5-10 Years (Mature),18476,1596,0.8139,215.58,0.6968,9.59,0.8811
+> 10 Years (Aging),7895,470,0.8019,585.34,0.7012,18.86,0.8278

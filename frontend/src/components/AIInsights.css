@@ -948,9 +948,11 @@
 
 /* ── Dark Navy Theme (Historical Similarity Card) ── */
 .dark-navy-theme {
-  background: linear-gradient(135deg, #050720 0%, #0D1140 100%) !important;
-  border: none !important;
-  box-shadow: 0 10px 28px rgba(5, 7, 32, 0.22) !important;
+  background: rgba(9, 11, 46, 0.92) !important;
+  backdrop-filter: var(--card-backdrop-dark) !important;
+  -webkit-backdrop-filter: var(--card-backdrop-dark) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  box-shadow: 0 10px 28px rgba(5, 7, 32, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 .dark-navy-theme .column-card-header {
@@ -962,19 +964,28 @@
 }
 
 .dark-navy-theme .card-subtitle {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.dark-navy-theme .score-max {
+  color: #CBD5E1;
 }
 
 .dark-navy-theme .card-link-btn {
   color: #6EA7F5 !important;
 }
 
+.dark-navy-theme .text-muted,
+.dark-navy-theme .text-light {
+  color: #CBD5E1 !important;
+}
+
 /* ── Color Utility Tokens ── */
-.font-red    { color: #D62F39 !important; }
-.font-orange { color: #F59E0B !important; }
-.font-green  { color: #22C55E !important; }
+.font-red    { color: #B91C1C !important; }
+.font-orange { color: #B45309 !important; }
+.font-green  { color: #15803D !important; }
 .font-blue   { color: var(--color-on-track) !important; }
-.font-purple { color: #A855F7 !important; }
+.font-purple { color: #7E22CE !important; }
 .font-weight-bold { font-weight: 700 !important; }
 .bold-cell { font-weight: 700; color: var(--navy-dark); }
 .center-text { text-align: center; }
@@ -1038,4 +1049,65 @@
 .sector-box-tag.tag-blue {
   background-color: #EBF3FF;
   color: var(--color-on-track);
+}
+
+@media (max-width: 900px) {
+  .insights-row-recommendations-summary,
+  .insights-row-4-columns,
+  .insights-row-bottom-split,
+  .insights-row-2-columns,
+  .insights-row-3-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insights-header-block,
+  .header-block-right {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .header-block-right {
+    gap: 10px;
+  }
+
+  .recommendations-horizontal-row,
+  .sector-sub-cards-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .recommendations-horizontal-row,
+  .sector-sub-cards-row,
+  .similarity-circles-row {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-sub-tabs-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .insights-sub-tab-btn {
+    flex: 0 0 auto;
+  }
+}
+
+.ai-insights-modal-backdrop,
+.portfolio-modal-backdrop {
+  overflow-y: auto;
+}
+
+@media (max-width: 560px) {
+  .ai-insights-modal,
+  .portfolio-modal {
+    max-height: calc(100vh - 24px) !important;
+    padding: 18px !important;
+  }
+
+  .ai-insights-modal .info-popover-card,
+  .portfolio-modal .info-popover-card {
+    max-width: 100%;
+  }
 }

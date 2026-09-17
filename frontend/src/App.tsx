@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Navbar } from './components/Navbar';
+import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { MetricCards } from './components/MetricCards';
 import { DonutChart } from './components/DonutChart';
@@ -16,10 +15,46 @@ import { Home } from './components/Home';
 import { Footer } from './components/Footer';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('home');
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  type NavigationState = { tab: string; projectId: string | null };
+  const initialNavigation = (window.history.state as NavigationState | null) || { tab: 'home', projectId: null };
+  const [activeTab, setActiveTab] = useState(initialNavigation.tab);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialNavigation.projectId);
   const [previousTab, setPreviousTab] = useState<string>('projects');
   const [homeClickNonce, setHomeClickNonce] = useState<number>(0);
+  const [projectStatusFilter, setProjectStatusFilter] = useState<string>('All');
+  const [statusFilterNonce, setStatusFilterNonce] = useState<number>(0);
+
+  const updateHistory = (navigation: NavigationState) => {
+    window.history.pushState(navigation, '', window.location.href);
+  };
+
+  useEffect(() => {
+    const currentState = window.history.state as NavigationState | null;
+    if (!currentState || !currentState.tab) {
+      window.history.replaceState({ tab: activeTab, projectId: selectedProjectId }, '', window.location.href);
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const navigation = (event.state as NavigationState | null) || { tab: 'home', projectId: null };
+      setActiveTab(navigation.tab);
+      setSelectedProjectId(navigation.projectId);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      home: 'Home',
+      dashboard: 'Dashboard',
+      projects: selectedProjectId ? `Project Details — ${selectedProjectId}` : 'Projects',
+      insights: 'AI Insights',
+      'action-centre': 'Action Centre',
+      distribution: 'Distribution',
+    };
+    document.title = `Nirmaan Drishti — ${titles[activeTab] || 'Home'}`;
+  }, [activeTab, selectedProjectId]);
 
   const handleTabChange = (tab: string) => {
     if (tab === 'home') {
@@ -28,27 +63,50 @@ function App() {
     if (tab === activeTab && tab !== 'home') return;
     setSelectedProjectId(null);
     setActiveTab(tab);
+    updateHistory({ tab, projectId: null });
   };
 
   const handleSelectProject = (id: string) => {
     setPreviousTab(activeTab);
     setSelectedProjectId(id);
     setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: id });
+  };
+
+  const handleFilterStatus = (status: string) => {
+    if (projectStatusFilter === status) {
+      setProjectStatusFilter('All');
+    } else {
+      setProjectStatusFilter(status);
+    }
+    setStatusFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
   };
 
   const handleBack = () => {
-    setSelectedProjectId(null);
-    if (previousTab && previousTab !== 'projects') {
-      setActiveTab(previousTab);
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
     }
+
+    setSelectedProjectId(null);
+    setActiveTab(previousTab && previousTab !== 'projects' ? previousTab : 'projects');
   };
 
   return (
     <div className="app-layout">
-      {/* ── Main Application Content (Unified 1360px container with Top Navbar) ── */}
+      {/* ── Official National Infrastructure Intelligence Portal Header with Integrated Rectangular Navbar ── */}
+      <Header
+        activeTab={activeTab}
+        onNavigateTab={handleTabChange}
+        onSelectProject={handleSelectProject}
+        onFilterStatus={handleFilterStatus}
+        currentStatusFilter={projectStatusFilter}
+      />
+
+      {/* ── Main Application Content (Unified container) ── */}
       <div className="app-main-content">
-        {/* Pill-shaped Top Navbar across all pages */}
-        <Navbar activeTab={activeTab} setActiveTab={handleTabChange} />
 
         {/* ── Home ── */}
         <PageSlot id="home" activeTab={activeTab}>
@@ -61,7 +119,16 @@ function App() {
 
         {/* ── Dashboard ── */}
         <PageSlot id="dashboard" activeTab={activeTab}>
-          <Header />
+          <div className="dashboard-subbar">
+            <div className="dashboard-subbar-left">
+              <span className="dashboard-subbar-title">National Executive Overview</span>
+              <span className="dashboard-subbar-tag">3,361 Central Assets</span>
+            </div>
+            <div className="insight-badge">
+              <span className="badge-dot"></span>
+              <span className="badge-text">Monitoring Period: July 2025 – May 2026</span>
+            </div>
+          </div>
           <main className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
             {/* Row 1: Top Dashboard Grid (Left 3 Metrics Stacked | Middle Health Donut | Right National Risk Donut) */}
             <section className="dashboard-grid">
@@ -99,6 +166,8 @@ function App() {
             ) : (
               <ProjectPortfolio
                 onSelectProject={handleSelectProject}
+                initialStatus={projectStatusFilter}
+                statusFilterNonce={statusFilterNonce}
               />
             )}
           </main>
@@ -134,7 +203,7 @@ function App() {
       </div>
 
       {/* Official Government MoSPI & PAIMANA Footer ending the page cleanly with 0 whitespace */}
-      <Footer onNavigateTab={handleTabChange} />
+      <Footer activeTab={activeTab} onNavigateTab={handleTabChange} />
     </div>
   );
 }
