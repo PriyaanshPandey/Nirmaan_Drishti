@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
   Home, LayoutDashboard, Database, Sparkles, Layers, ShieldAlert,
-  SlidersHorizontal, CornerDownLeft
+  SlidersHorizontal, CornerDownLeft, FileSpreadsheet, ExternalLink
 } from 'lucide-react';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import { projectsData } from '../data/projectsData';
@@ -47,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'insights', label: 'AI Insights', icon: <Sparkles size={15} /> },
     { id: 'distribution', label: 'Distribution', icon: <Layers size={15} /> },
     { id: 'action-centre', label: 'Action centre', icon: <ShieldAlert size={15} /> },
+    { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} /> },
   ];
 
   // Dynamically compute exact counts from 3,361 master dataset so buttons match results 100%
@@ -320,10 +321,20 @@ export const Header: React.FC<HeaderProps> = ({
                   key={item.id}
                   type="button"
                   className={`header-nav-rectangular-tab ${isActive ? 'active' : ''}`}
-                  onClick={() => onNavigateTab?.(item.id)}
+                  onClick={() => {
+                    if (item.id === 'extractor') {
+                      window.open('http://localhost:8000', '_blank', 'noopener,noreferrer');
+                    } else {
+                      onNavigateTab?.(item.id);
+                    }
+                  }}
+                  title={item.id === 'extractor' ? "Open MoSPI PDF Extractor (New Tab)" : undefined}
                 >
                   <span className="nav-tab-icon">{item.icon}</span>
                   <span className="nav-tab-label">{item.label}</span>
+                  {item.id === 'extractor' && (
+                    <ExternalLink size={11} style={{ opacity: 0.65, marginLeft: 2 }} />
+                  )}
                 </button>
               );
             })}
