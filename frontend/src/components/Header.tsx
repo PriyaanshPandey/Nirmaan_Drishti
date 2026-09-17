@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
-  SlidersHorizontal, CornerDownLeft
+  SlidersHorizontal, CornerDownLeft, Home, LayoutDashboard,
+  Database, Sparkles, Layers, ShieldAlert, FileSpreadsheet, ExternalLink
 } from 'lucide-react';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import type { Project } from '../data/projectsData';
@@ -46,13 +47,14 @@ export const Header: React.FC<HeaderProps> = ({
   const cardRef = useRef<HTMLDivElement | null>(null);
   const resultsContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Exact 5 nav items: Home, Dashboard, Project, Distribution, Action Center
+  // Exact nav items with icons and PDF Extractor link
   const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'projects', label: 'Project' },
-    { id: 'distribution', label: 'Distribution' },
-    { id: 'action-centre', label: 'Action Center' },
+    { id: 'home', label: 'Home', icon: <Home size={15} /> },
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
+    { id: 'projects', label: 'Projects', icon: <Database size={15} /> },
+    { id: 'distribution', label: 'Distribution', icon: <Layers size={15} /> },
+    { id: 'action-centre', label: 'Action Center', icon: <ShieldAlert size={15} /> },
+    { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} /> },
   ];
 
   // Compute exact counts from 3,361 master dataset
@@ -313,10 +315,21 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={item.id}
                   type="button"
-                  className={`navy-nav-item ${isActive ? 'active' : ''}`}
-                  onClick={() => onNavigateTab?.(item.id)}
+                  className={`header-nav-rectangular-tab ${isActive ? 'active' : ''}`}
+                  onClick={() => {
+                    if (item.id === 'extractor') {
+                      window.open('http://localhost:8000', '_blank', 'noopener,noreferrer');
+                    } else {
+                      onNavigateTab?.(item.id);
+                    }
+                  }}
+                  title={item.id === 'extractor' ? "Open MoSPI PDF Extractor (New Tab)" : undefined}
                 >
-                  <span className="navy-nav-label">{item.label}</span>
+                  <span className="nav-tab-icon">{item.icon}</span>
+                  <span className="nav-tab-label">{item.label}</span>
+                  {item.id === 'extractor' && (
+                    <ExternalLink size={11} style={{ opacity: 0.65, marginLeft: 2 }} />
+                  )}
                 </button>
               );
             })}

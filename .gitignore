@@ -54,4 +54,9 @@ frontend/public/scroll_backup/
 *(1)*
 backend/package-lock.json
 
-
+# PDF Extractor temporary directories
+pdfextractor/backend/uploads/*
+!pdfextractor/backend/uploads/.gitkeep
+pdfextractor/backend/exports/*
+!pdfextractor/backend/exports/.gitkeep
+pdfextractor/frontend/node_modules/
