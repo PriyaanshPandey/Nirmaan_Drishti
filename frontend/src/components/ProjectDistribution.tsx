@@ -15,16 +15,21 @@ import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 import type { DistributionSummaryData } from '../services/api';
 import { StatusIndicator } from './StatusIndicator';
-import { projectsData } from '../data/projectsData';
+import type { Project } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
 
 export const ProjectDistribution: React.FC = () => {
   const [data, setData] = useState<DistributionSummaryData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
+
+  useEffect(() => {
+    import('../data/projectsData').then(mod => setProjectsList(mod.projectsData));
+  }, []);
 
   // Derive dynamic portfolio and regional metrics
-  const delayedCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND') || (p.riskScore || 0) >= 70).length;
-  const totalEscalationCr = projectsData.reduce((acc, p) => {
+  const delayedCount = projectsList.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND') || (p.riskScore || 0) >= 70).length;
+  const totalEscalationCr = projectsList.reduce((acc, p) => {
     const orig = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
     const rev = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
     return acc + Math.max(0, rev - orig);
@@ -35,14 +40,14 @@ export const ProjectDistribution: React.FC = () => {
 
   // Top Sector from data or projectsData
   const topSector = data && data.sectors && data.sectors.length > 0 ? data.sectors[0] : null;
-  const topSectorName = topSector ? topSector.name : (projectsData[0]?.sector || 'Road Transport & Highways');
-  const topSectorTotal = topSector ? topSector.total : projectsData.filter(p => p.sector === topSectorName).length;
+  const topSectorName = topSector ? topSector.name : (projectsList[0]?.sector || 'Road Transport & Highways');
+  const topSectorTotal = topSector ? topSector.total : projectsList.filter(p => p.sector === topSectorName).length;
   const topSectorHighPct = topSector ? topSector.highPct : 18.4;
   const topSectorAvgRisk = topSector ? topSector.avgRisk : 50;
 
   // Regional state breakdown
   const stateCounts: Record<string, { count: number; cost: number }> = {};
-  for (const p of projectsData) {
+  for (const p of projectsList) {
     let st = p.location ? p.location.replace(/[\r\n]+/g, ' ').trim() : 'National';
     if (st.startsWith('Multi-States')) {
       const match = st.match(/\(([^,)]+)/);

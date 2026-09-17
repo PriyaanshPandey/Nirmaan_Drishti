@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Sparkles, LayoutDashboard, Database, ArrowRight, Cpu, ShieldAlert,
-  TrendingUp, Layers, BarChart3, Globe, Play
+  ArrowRight, Cpu, TrendingUp, BarChart3, Globe, Play
 } from 'lucide-react';
 import './Home.css';
 import { VideoHero } from './VideoHero';
@@ -11,36 +10,11 @@ import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
 import heroIllustrationBase from '../assets/hero_illustration_base.png';
 
-import { projectsData } from '../data/projectsData';
 import { api } from '../services/api';
 
-const initialProjectsCount = projectsData.length;
-const initialTotalRevCostCr = projectsData.reduce((acc, p) => {
-  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
-  return acc + num;
-}, 0);
-const initialLakhCrores = initialTotalRevCostCr > 0 ? initialTotalRevCostCr / 100000 : 106.52;
-const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
-  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
-  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
-  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
-  'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
-];
-
-const initialStatesCount = (() => {
-  const covered = new Set<string>();
-  for (const p of projectsData) {
-    const loc = p.location || '';
-    for (const state of INDIAN_STATES) {
-      if (loc.includes(state)) {
-        covered.add(state);
-      }
-    }
-  }
-  return covered.size || 28;
-})();
+const initialProjectsCount = 6568;
+const initialLakhCrores = 35.8;
+const initialStatesCount = 28;
 
 interface HomeProps {
   activeTab?: string;
@@ -113,37 +87,30 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
   const modules = [
     {
       tab: 'dashboard',
-      title: 'Analytics Dashboard',
-      desc: 'National health overview with real-time risk scores, sector breakdowns, and priority interventions.',
-      icon: <LayoutDashboard size={22} color="#2563EB" aria-hidden="true" />,
+      tag: 'Executive Overview',
+      title: 'Dashboard',
+      desc: 'National health index, budget overruns, and priority interventions.',
       color: 'blue'
     },
     {
       tab: 'projects',
-      title: 'Project Portfolio',
-      desc: `Browse all ${totalProjects.toLocaleString()} infrastructure assets with search, filters, and detailed milestone tracking.`,
-      icon: <Database size={22} color="#059669" aria-hidden="true" />,
+      tag: 'Master Portfolio',
+      title: 'Projects',
+      desc: 'Telemetry, risk diagnostics, and milestone tracking across 3,361 assets.',
       color: 'green'
     },
     {
-      tab: 'insights',
-      title: 'AI Intelligence',
-      desc: 'Qwen-8B powered executive Q&A with SHAP feature attributions and root-cause analysis.',
-      icon: <Sparkles size={22} color="#7C3AED" aria-hidden="true" />,
-      color: 'purple'
-    },
-    {
       tab: 'distribution',
-      title: 'Sector Distribution',
-      desc: 'Geographic and sector-level breakdown across all central infrastructure ministries.',
-      icon: <Layers size={22} color="#0284C7" aria-hidden="true" />,
+      tag: 'Resource Allocation',
+      title: 'Distribution',
+      desc: 'Cross-ministry expenditure and state-level infrastructure spread.',
       color: 'teal'
     },
     {
       tab: 'action-centre',
+      tag: 'Intervention Matrix',
       title: 'Action Center',
-      desc: 'Automated executive alerts, inter-ministerial task assignments, and contractor milestone resolutions.',
-      icon: <ShieldAlert size={22} color="#DC2626" aria-hidden="true" />,
+      desc: 'Bottleneck escalations, contractor accountability, and resolution alerts.',
       color: 'red'
     }
   ];
@@ -295,7 +262,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         <div className="metric-strip-card">
           <div className="strip-icon"><Cpu size={20} color="#7C3AED" aria-hidden="true" /></div>
           <div className="strip-info">
-            <span className="strip-val">3 &amp; 6 Mo</span>
+            <span className="strip-val">3 &amp; 6 Months</span>
             <span className="strip-lbl">Forecast Horizon</span>
           </div>
         </div>
@@ -338,10 +305,8 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
               aria-current={activeTab === m.tab ? 'page' : undefined}
             >
               <div className="module-card-top">
-                <div className={`module-icon icon-${m.color}`}>{m.icon}</div>
-                <div className="module-arrow-wrap">
-                  <ArrowRight size={15} className="module-arrow" aria-hidden="true" />
-                </div>
+                <span className="module-tag">{m.tag}</span>
+                <span className="module-arrow" aria-hidden="true">→</span>
               </div>
               <div className="module-body">
                 <h3 className="module-name">{m.title}</h3>

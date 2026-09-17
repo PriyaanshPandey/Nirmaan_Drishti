@@ -10,9 +10,17 @@ interface ProjectPortfolioProps {
   onSelectProject: (projectId: string) => void;
   initialStatus?: string;
   statusFilterNonce?: number;
+  initialRisk?: string;
+  riskFilterNonce?: number;
 }
 
-export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProject, initialStatus, statusFilterNonce }) => {
+export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ 
+  onSelectProject, 
+  initialStatus, 
+  statusFilterNonce,
+  initialRisk,
+  riskFilterNonce
+}) => {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [totalProjects, setTotalProjects] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,6 +36,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMinistry, setSelectedMinistry] = useState('All');
+  const [selectedSector, setSelectedSector] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
+  const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
+
   const fetchProjects = () => {
     setLoading(true);
     setError(false);
@@ -40,7 +54,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
       undefined, 
       selectedStatus !== 'All' ? selectedStatus : undefined,
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
-      selectedSector !== 'All' ? selectedSector : undefined
+      selectedSector !== 'All' ? selectedSector : undefined,
+      selectedRisk !== 'All' ? selectedRisk : undefined
     )
       .then((res) => {
         setProjectsList(res.items);
@@ -91,17 +106,19 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     }
   };
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMinistry, setSelectedMinistry] = useState('All');
-  const [selectedSector, setSelectedSector] = useState('All');
-  const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
-
   useEffect(() => {
     if (initialStatus !== undefined) {
       setSelectedStatus(initialStatus || 'All');
       setPage(1);
     }
   }, [initialStatus, statusFilterNonce]);
+
+  useEffect(() => {
+    if (initialRisk !== undefined) {
+      setSelectedRisk(initialRisk || 'All');
+      setPage(1);
+    }
+  }, [initialRisk, riskFilterNonce]);
 
   const [ministries, setMinistries] = useState<string[]>(['All']);
   const [sectors, setSectors] = useState<string[]>(['All']);
@@ -155,6 +172,20 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     setPage(1);
   };
 
+  const handleRiskChange = (val: string) => {
+    setSelectedRisk(val);
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedStatus('All');
+    setSelectedRisk('All');
+    setSelectedMinistry('All');
+    setSelectedSector('All');
+    setSearchQuery('');
+    setPage(1);
+  };
+
   // Fetch paginated & filtered projects from backend
   useEffect(() => {
     let isMounted = true;
@@ -169,7 +200,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
       undefined, 
       selectedStatus !== 'All' ? selectedStatus : undefined,
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
-      selectedSector !== 'All' ? selectedSector : undefined
+      selectedSector !== 'All' ? selectedSector : undefined,
+      selectedRisk !== 'All' ? selectedRisk : undefined
     )
       .then((res) => {
         if (!isMounted) return;
@@ -187,7 +219,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     return () => {
       isMounted = false;
     };
-  }, [page, searchQuery, selectedMinistry, selectedSector, selectedStatus]);
+  }, [page, searchQuery, selectedMinistry, selectedSector, selectedStatus, selectedRisk]);
 
   const filteredProjects = projectsList;
 
@@ -278,12 +310,63 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             >
               <option value="All">All Schedule Statuses</option>
               <option value="ON TRACK">On Track</option>
-              <option value="IN REVIEW">In Review</option>
+              <option value="Needs Attention">Needs Attention</option>
               <option value="DELAYED">Delayed</option>
-              <option value="CRITICAL">Critical</option>
+              <option value="High Risk">High Risk</option>
+              <option value="CRITICAL">Critical Delay</option>
+            </select>
+          </div>
+
+          <div className="portfolio-filter-select-wrapper">
+            <select
+              value={selectedRisk}
+              onChange={(e) => handleRiskChange(e.target.value)}
+              className="portfolio-filter-select"
+            >
+              <option value="All">All Risk Levels</option>
+              <option value="Critical">Critical Risk</option>
+              <option value="High">High Risk</option>
+              <option value="Medium">Medium Risk</option>
+              <option value="Low">Low Risk</option>
             </select>
           </div>
         </div>
+
+        {(selectedStatus !== 'All' || selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || searchQuery) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Active Filters:</span>
+            {selectedStatus !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#EFF6FF', color: '#1D4ED8', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                Status: {selectedStatus}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleStatusChange('All')} />
+              </span>
+            )}
+            {selectedRisk !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF2F2', color: '#B91C1C', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                Risk: {selectedRisk}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleRiskChange('All')} />
+              </span>
+            )}
+            {selectedMinistry !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', color: '#334155', padding: '3px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                Ministry: {selectedMinistry}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleMinistryChange('All')} />
+              </span>
+            )}
+            {selectedSector !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', color: '#334155', padding: '3px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                Sector: {selectedSector}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleSectorChange('All')} />
+              </span>
+            )}
+            <button
+              onClick={handleClearFilters}
+              style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '12px', textDecoration: 'underline', cursor: 'pointer', padding: '2px 6px' }}
+            >
+              Reset all
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Table Card Section */}

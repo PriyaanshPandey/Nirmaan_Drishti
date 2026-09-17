@@ -7,7 +7,6 @@ import { PriorityInterventions } from './components/PriorityInterventions';
 import { GlobalOverrunGraphs } from './components/GlobalOverrunGraphs';
 import { ProjectPortfolio } from './components/ProjectPortfolio';
 import { ProjectDetails } from './components/ProjectDetails';
-import { AIInsights } from './components/AIInsights';
 import { ActionCenter } from './components/ActionCenter';
 import { ProjectDistribution } from './components/ProjectDistribution';
 import { PageSlot } from './components/PageTransition';
@@ -23,6 +22,8 @@ function App() {
   const [homeClickNonce, setHomeClickNonce] = useState<number>(0);
   const [projectStatusFilter, setProjectStatusFilter] = useState<string>('All');
   const [statusFilterNonce, setStatusFilterNonce] = useState<number>(0);
+  const [projectRiskFilter, setProjectRiskFilter] = useState<string>('All');
+  const [riskFilterNonce, setRiskFilterNonce] = useState<number>(0);
 
   const updateHistory = (navigation: NavigationState) => {
     window.history.pushState(navigation, '', window.location.href);
@@ -49,14 +50,14 @@ function App() {
       home: 'Home',
       dashboard: 'Dashboard',
       projects: selectedProjectId ? `Project Details — ${selectedProjectId}` : 'Projects',
-      insights: 'AI Insights',
-      'action-centre': 'Action Centre',
+      'action-centre': 'Action Center',
       distribution: 'Distribution',
     };
     document.title = `Nirmaan Drishti — ${titles[activeTab] || 'Home'}`;
   }, [activeTab, selectedProjectId]);
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (rawTab: string) => {
+    const tab = rawTab === 'project' ? 'projects' : rawTab;
     if (tab === 'home') {
       setHomeClickNonce(prev => prev + 1);
     }
@@ -74,14 +75,26 @@ function App() {
   };
 
   const handleFilterStatus = (status: string) => {
-    if (projectStatusFilter === status) {
-      setProjectStatusFilter('All');
-    } else {
-      setProjectStatusFilter(status);
-    }
+    setProjectStatusFilter(status);
+    setProjectRiskFilter('All');
     setStatusFilterNonce(prev => prev + 1);
     setSelectedProjectId(null);
     setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: null });
+  };
+
+  const handleFilterRisk = (risk: string) => {
+    let mappedRisk = risk;
+    if (risk.includes('High') || risk.includes('Critical')) mappedRisk = 'High';
+    else if (risk.includes('Med')) mappedRisk = 'Medium';
+    else if (risk.includes('Low')) mappedRisk = 'Low';
+
+    setProjectRiskFilter(mappedRisk);
+    setProjectStatusFilter('All');
+    setRiskFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: null });
   };
 
   const handleBack = () => {
@@ -119,27 +132,29 @@ function App() {
 
         {/* ── Dashboard ── */}
         <PageSlot id="dashboard" activeTab={activeTab}>
-          <div className="dashboard-subbar">
-            <div className="dashboard-subbar-left">
-              <span className="dashboard-subbar-title">National Executive Overview</span>
-              <span className="dashboard-subbar-tag">3,361 Central Assets</span>
-            </div>
-            <div className="insight-badge">
-              <span className="badge-dot"></span>
-              <span className="badge-text">Monitoring Period: July 2025 – May 2026</span>
-            </div>
-          </div>
           <main className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
+            {/* National Executive Overview Header */}
+            <div className="dashboard-header-block">
+              <div className="dashboard-header-text">
+                <h1 className="dashboard-main-title">Nirmaan Drishti</h1>
+                <p className="dashboard-main-subtitle">National Infrastructure Early Warning &amp; Predictive Monitoring Platform</p>
+              </div>
+              <div className="dashboard-period-badge">
+                <span className="period-badge-dot" />
+                <span>July 2025 – May 2026</span>
+              </div>
+            </div>
+
             {/* Row 1: Top Dashboard Grid (Left 3 Metrics Stacked | Middle Health Donut | Right National Risk Donut) */}
             <section className="dashboard-grid">
               <div className="grid-col-1">
                 <MetricCards activeTab={activeTab} />
               </div>
               <div className="grid-col-2">
-                <DonutChart activeTab={activeTab} />
+                <DonutChart activeTab={activeTab} onSelectHealthStatus={handleFilterStatus} />
               </div>
               <div className="grid-col-3">
-                <NationalRiskCard activeTab={activeTab} />
+                <NationalRiskCard activeTab={activeTab} onSelectRiskLevel={handleFilterRisk} />
               </div>
             </section>
 
@@ -168,21 +183,12 @@ function App() {
                 onSelectProject={handleSelectProject}
                 initialStatus={projectStatusFilter}
                 statusFilterNonce={statusFilterNonce}
+                initialRisk={projectRiskFilter}
+                riskFilterNonce={riskFilterNonce}
               />
             )}
           </main>
         </PageSlot>
-
-        {/* ── AI Insights ── */}
-        <PageSlot id="insights" activeTab={activeTab}>
-          <main className="insights-content">
-            <AIInsights
-              onSelectProject={handleSelectProject}
-              onNavigateTab={handleTabChange}
-            />
-          </main>
-        </PageSlot>
-
 
         {/* ── Action Centre ── */}
         <PageSlot id="action-centre" activeTab={activeTab}>

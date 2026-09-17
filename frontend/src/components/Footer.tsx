@@ -1,6 +1,5 @@
 import React from 'react';
-import { ExternalLink, Globe, Cpu } from 'lucide-react';
-import nirmaanEmblem from '../assets/nirmaan_emblem.png';
+import { Mail } from 'lucide-react';
 import './Footer.css';
 
 interface FooterProps {
@@ -8,108 +7,112 @@ interface FooterProps {
   activeTab?: string;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigateTab, activeTab }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigateTab, activeTab = 'home' }) => {
+  const quickLinks = [
+    { id: 'home', label: 'Home' },
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'projects', label: 'Project' },
+    { id: 'distribution', label: 'Distribution' },
+    { id: 'action-centre', label: 'Action Center' },
+  ];
+
   return (
-    <footer className="simple-govt-footer">
-      <div className="footer-simple-container">
-        {/* Left: Brand Identity & External Official Links in clean aligned column */}
-        <div className="footer-brand-section">
-          <div className="footer-emblem-container">
-            <img
-              src={nirmaanEmblem}
-              alt="Nirmaan Drishti Emblem"
-              className="footer-emblem-img"
-            />
-          </div>
-          <div className="brand-content-col">
-            <div className="brand-title-row">
-              <span className="brand-title">NIRMAAN DRISHTI</span>
-              <span className="brand-govt-badge">GOVT OF INDIA</span>
-            </div>
-            <span className="brand-sub">
-              MoSPI &amp; PAIMANA Infrastructure Intelligence Platform
-            </span>
-            <div className="official-link-row">
-              <a 
-                href="https://www.mospi.gov.in" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="simple-link-pill"
-                title="Visit Official MoSPI Portal"
-              >
-                <Globe size={13} />
-                <span>MoSPI Official Site</span>
-                <ExternalLink size={11} />
-              </a>
+    <footer className="nirmaan-unified-navy-footer" aria-label="Official Portal Footer">
+      {/* Distinction Top Accent Line */}
+      <div className="footer-accent-stripe" aria-hidden="true" />
 
-              <a 
-                href="https://www.mospi.gov.in" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="simple-link-pill pill-paimana"
-                title="Access PAIMANA Platform"
-              >
-                <Cpu size={13} />
-                <span>PAIMANA Platform</span>
-                <ExternalLink size={11} />
-              </a>
+      <div className="footer-main-wrapper">
+        {/* ── Top Row: Logos on Left, Quick Links on Right ── */}
+        <div className="footer-top-row">
+          {/* LEFT: 3 Cleaned Logos in Sleek Cards */}
+          <div className="footer-logos-left" aria-label="Official Institutional Logos">
+            {/* MoSPI Logo (Clickable) */}
+            <a
+              href="https://www.mospi.gov.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-logo-card clickable"
+              title="Ministry of Statistics and Programme Implementation (MoSPI) — Visit Official Portal"
+            >
+              <img
+                src="/mospi%20logo.png"
+                alt="MoSPI Government of India"
+                className="logo-img mospi-logo-img"
+              />
+            </a>
+
+            {/* NavDrishti Logo (Brand Identity — No redirect needed) */}
+            <div
+              className="footer-logo-card brand-card"
+              title="NavDrishti — National Infrastructure Intelligence Dashboard"
+            >
+              <img
+                src="/navdrishti.png"
+                alt="NavDrishti"
+                className="logo-img navdrishti-logo-img"
+              />
             </div>
+
+            {/* PAIMANA Logo (Clickable) */}
+            <a
+              href="https://www.mospi.gov.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-logo-card clickable"
+              title="PAIMANA — Project Monitoring & Telemetry Platform"
+            >
+              <img
+                src="/paimana.png"
+                alt="PAIMANA Monitoring Platform"
+                className="logo-img paimana-logo-img"
+              />
+            </a>
+          </div>
+
+          {/* RIGHT: Quick Links with ONLY Underline on Active / Click */}
+          <div className="footer-links-right">
+            <span className="footer-links-label">Quick Links:</span>
+            <nav className="footer-nav-group" aria-label="Footer Quick Navigation">
+              {quickLinks.map((item) => {
+                const isActive = activeTab === item.id || (item.id === 'projects' && activeTab === 'project');
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`footer-underline-nav-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => {
+                      onNavigateTab?.(item.id);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    title={`Navigate to ${item.label}`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
 
-        {/* Right: Quick Pages Navigation aligned with header */}
-        <div className="footer-nav-section">
-          <span className="nav-section-title">Quick Pages</span>
-          <div className="nav-links-grid">
-            <button 
-              className={`footer-nav-btn ${activeTab === 'home' ? 'active-nav' : ''}`} 
-              onClick={() => onNavigateTab?.('home')}
-            >
-              Home
-            </button>
-            <button 
-              className={`footer-nav-btn ${activeTab === 'dashboard' ? 'active-nav' : ''}`} 
-              onClick={() => onNavigateTab?.('dashboard')}
-            >
-              Dashboard
-            </button>
-            <button 
-              className={`footer-nav-btn ${activeTab === 'projects' ? 'active-nav' : ''}`} 
-              onClick={() => onNavigateTab?.('projects')}
-            >
-              Projects
-            </button>
-            <button 
-              className={`footer-nav-btn ${activeTab === 'insights' ? 'active-nav' : ''}`} 
-              onClick={() => onNavigateTab?.('insights')}
-            >
-              AI Insights
-            </button>
-            <button 
-              className={`footer-nav-btn ${activeTab === 'action-centre' ? 'active-nav' : ''}`} 
-              onClick={() => onNavigateTab?.('action-centre')}
-            >
-              Action Center
-            </button>
-            <button 
-              className={`footer-nav-btn ${activeTab === 'distribution' ? 'active-nav' : ''}`} 
-              onClick={() => onNavigateTab?.('distribution')}
-            >
-              Distribution
-            </button>
-          </div>
-        </div>
-      </div>
+        {/* Divider */}
+        <div className="footer-inner-divider" />
 
-      {/* Bottom Copyright Bar */}
-      <div className="footer-bottom-simple">
-        <div className="footer-bottom-inner">
-          <p>© 2026 Ministry of Statistics &amp; Programme Implementation (MoSPI), Government of India. All Rights Reserved.</p>
+        {/* ── Bottom Row: Copyright & Email ── */}
+        <div className="footer-bottom-row">
+          <p className="footer-copyright-text">
+            Copyright © 2026 Team NavDrishti. All Rights Reserved.
+          </p>
+
+          <a
+            href="mailto:teamnavdrishti@gmail.com"
+            className="footer-email-text-link"
+            title="Send email to Team NavDrishti"
+          >
+            <Mail size={13} className="footer-mail-icon" />
+            <span>teamnavdrishti@gmail.com</span>
+          </a>
         </div>
       </div>
     </footer>
   );
 };
-
-
-

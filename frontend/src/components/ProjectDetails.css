@@ -6,6 +6,139 @@
   padding-bottom: 40px;
 }
 
+/* ─── Sidebar + Main Content Layout ─── */
+.pd-layout-wrapper {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  /* Fixed sidebar is 250px wide; push content right with margin */
+  padding-left: 265px;
+  transition: padding-left 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* When sidebar collapses to 70px */
+.pd-layout-wrapper--sidebar-collapsed {
+  padding-left: 82px;
+}
+
+.pd-main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Section anchors — scroll-to targets */
+.pd-section-anchor {
+  display: block;
+}
+
+/* Scroll margin so sticky header doesn't cover content */
+#pd-section-basic,
+#pd-section-forecasts,
+#pd-section-escalation,
+#pd-section-warnings {
+  scroll-margin-top: 88px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION DIVIDER — strong visual separation
+   ═══════════════════════════════════════════════════ */
+
+/* Space ABOVE each section except the first */
+#pd-section-forecasts,
+#pd-section-escalation,
+#pd-section-warnings {
+  margin-top: 56px;
+}
+
+.pd-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+/* Horizontal rule line filling the rest of the row */
+.pd-section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, #E2E8F0 0%, transparent 100%);
+}
+
+/* Number badge */
+.pd-section-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section title text */
+.pd-section-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+/* ── Per-section color themes ── */
+.pd-section-header--basic .pd-section-tag {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+.pd-section-header--basic .pd-section-name {
+  color: #1D4ED8;
+}
+.pd-section-header--basic::after {
+  background: linear-gradient(90deg, #BFDBFE 0%, transparent 100%);
+}
+
+.pd-section-header--forecasts .pd-section-tag {
+  background: #CFFAFE;
+  color: #0E7490;
+}
+.pd-section-header--forecasts .pd-section-name {
+  color: #0E7490;
+}
+.pd-section-header--forecasts::after {
+  background: linear-gradient(90deg, #A5F3FC 0%, transparent 100%);
+}
+
+.pd-section-header--escalation .pd-section-tag {
+  background: #FEF3C7;
+  color: #B45309;
+}
+.pd-section-header--escalation .pd-section-name {
+  color: #B45309;
+}
+.pd-section-header--escalation::after {
+  background: linear-gradient(90deg, #FDE68A 0%, transparent 100%);
+}
+
+.pd-section-header--warnings .pd-section-tag {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+.pd-section-header--warnings .pd-section-name {
+  color: #B91C1C;
+}
+.pd-section-header--warnings::after {
+  background: linear-gradient(90deg, #FECACA 0%, transparent 100%);
+}
+
+
 /* Filters Top Bar */
 .details-filters-bar {
   display: flex;

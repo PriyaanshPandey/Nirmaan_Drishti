@@ -233,17 +233,34 @@ def get_projects(
     # Apply smart schedule status filter
     if schedule_status and schedule_status.strip() and schedule_status.strip().upper() != "ALL":
         stat = schedule_status.strip().upper()
-        if "ON" in stat or "TRACK" in stat:
-            query = query.filter(or_(Project.schedule_status.ilike("%ON%TRACK%"), Project.schedule_status.ilike("%COMPLETED%")))
-        elif "DELAY" in stat:
-            query = query.filter(or_(Project.schedule_status.ilike("%DELAY%"), Project.schedule_status.ilike("%EXTENDED%")))
+        if "ATTENTION" in stat or "MONITOR" in stat:
+            crit_sub = or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%"))
+            on_track_sub = or_(func.upper(Project.schedule_status).in_(['ON_TRACK', 'ON TRACK', 'ON-SCHEDULE', 'COMPLETED']))
+            high_risk_sub = or_(Project.risk_score >= 65, Project.risk_level.in_(['High', 'Critical']), Project.cost_overrun_pct > 15)
+            query = query.filter(and_(~crit_sub, ~on_track_sub, ~high_risk_sub))
+        elif "AT RISK" in stat or "HIGH RISK" in stat or "AT_RISK" in stat:
+            crit_sub = or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%"))
+            on_track_sub = or_(func.upper(Project.schedule_status).in_(['ON_TRACK', 'ON TRACK', 'ON-SCHEDULE', 'COMPLETED']))
+            query = query.filter(and_(~crit_sub, ~on_track_sub, or_(Project.risk_score >= 65, Project.risk_level.in_(['High', 'Critical']), Project.cost_overrun_pct > 15)))
+        elif "ON" in stat or "TRACK" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%ON%TRACK%"), Project.schedule_status.ilike("%COMPLETED%"), Project.schedule_status.ilike("%Schedule%")))
         elif "CRIT" in stat or "OVERDUE" in stat:
             query = query.filter(or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%")))
+        elif "DELAY" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%DELAY%"), Project.schedule_status.ilike("%EXTENDED%")))
         else:
             query = query.filter(Project.schedule_status.ilike(f"%{stat}%"))
 
     if risk_level and risk_level.strip() and risk_level.strip().upper() != "ALL":
-        query = query.filter(Project.risk_level.ilike(risk_level.strip()))
+        r_clean = risk_level.strip().upper()
+        if "CRIT" in r_clean or "HIGH" in r_clean:
+            query = query.filter(Project.risk_level.in_(["High", "Critical"]))
+        elif "MED" in r_clean:
+            query = query.filter(Project.risk_level.ilike("%Medium%"))
+        elif "LOW" in r_clean:
+            query = query.filter(Project.risk_level.ilike("%Low%"))
+        else:
+            query = query.filter(Project.risk_level.ilike(risk_level.strip()))
     if state and state.strip() and state.strip().upper() != "ALL":
         query = query.filter(Project.state.ilike(f"%{state.strip()}%"))
 

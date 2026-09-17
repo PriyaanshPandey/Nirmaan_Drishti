@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Building2, Coins, TrendingUp, Clock } from 'lucide-react';
 import './IndiaMap.css';
-import { projectsData, type Project } from '../data/projectsData';
+import type { Project } from '../data/projectsData';
 // @ts-ignore - no types available for this package
 import indiaMapData from '@svg-maps/india';
 import { AnimatedCounter } from './AnimatedCounter';
@@ -146,11 +146,17 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     return parseFloat(cleaned) || 0;
   };
 
+  const [projectsList, setProjectsList] = React.useState<Project[]>([]);
+
+  React.useEffect(() => {
+    import('../data/projectsData').then(mod => setProjectsList(mod.projectsData));
+  }, []);
+
   // Compute 100% REAL state-by-state aggregations from projectsData (3,361 dataset)
   const stateDataMap = useMemo(() => {
     const map = new Map<string, StateSummary>();
 
-    projectsData.forEach((p: Project) => {
+    projectsList.forEach((p: Project) => {
       let loc = (p.location || '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
 
       if (loc.includes('Uttar Pradesh')) loc = 'Uttar Pradesh';

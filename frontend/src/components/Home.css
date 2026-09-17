@@ -946,14 +946,14 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 195px;
-  background: var(--bg-card);
+  min-height: 140px;
+  background: var(--bg-card, #FFFFFF);
   backdrop-filter: var(--card-backdrop);
   -webkit-backdrop-filter: var(--card-backdrop);
-  border-radius: 18px;
-  padding: 24px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
+  border-radius: 12px;
+  padding: 20px 22px;
+  border: 1px solid var(--border-color, #E2E8F0);
+  box-shadow: var(--shadow-sm, 0 1px 4px rgba(15, 23, 42, 0.04));
   cursor: pointer;
   position: relative;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
@@ -989,74 +989,40 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
-.module-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
-}
-
-.module-card:hover .module-icon {
-  transform: scale(1.08);
-}
-
-.icon-blue {
-  background: #EFF6FF;
-  border: 1px solid #DBEAFE;
-}
-
-.icon-green {
-  background: #ECFDF5;
-  border: 1px solid #D1FAE5;
-}
-
-.icon-purple {
-  background: #F5F3FF;
-  border: 1px solid #DDD6FE;
-}
-
-.icon-red {
-  background: #FEF2F2;
-  border: 1px solid #FEE2E2;
-}
-
-.icon-teal {
-  background: #F0F9FF;
-  border: 1px solid #BAE6FD;
-}
-
-.module-arrow-wrap {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+.module-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
   background: #F8FAFC;
+  padding: 4px 10px;
+  border-radius: 6px;
   border: 1px solid #E2E8F0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s ease;
+  transition: all 0.22s ease;
+}
+
+.module-card:hover .module-tag {
+  color: #05083a;
+  background: #EEF2F6;
+  border-color: #CBD5E1;
 }
 
 .module-arrow {
+  font-size: 16px;
+  font-weight: 600;
   color: #94A3B8;
-  transition: all 0.25s ease;
-}
-
-.module-card:hover .module-arrow-wrap {
-  background: #010256;
-  border-color: #010256;
+  transition: all 0.22s ease;
+  user-select: none;
+  line-height: 1;
 }
 
 .module-card:hover .module-arrow {
-  color: #FFFFFF;
-  transform: translateX(2px);
+  color: #05083a;
+  transform: translateX(4px);
 }
 
 .module-body {

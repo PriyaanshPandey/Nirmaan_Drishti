@@ -5,14 +5,23 @@
  * with resilient offline fallbacks so the UI remains 100% functional even when backend is restarting or offline.
  */
 
-import { type Project, type ProjectBenchmark, projectsData } from '../data/projectsData';
+import type { Project, ProjectBenchmark } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api';
 
-export function findProjectByIdOrOcms(projectId: string): Project | undefined {
+let _localProjectsCache: Project[] | null = null;
+export async function getLocalProjects(): Promise<Project[]> {
+  if (_localProjectsCache) return _localProjectsCache;
+  const mod = await import('../data/projectsData');
+  _localProjectsCache = mod.projectsData;
+  return _localProjectsCache;
+}
+
+export async function findProjectByIdOrOcms(projectId: string): Promise<Project | undefined> {
   const clean = String(projectId).trim();
-  return projectsData.find(
+  const projects = await getLocalProjects();
+  return projects.find(
     p => String(p.id) === clean || 
          (p.legacyOcmsCode && String(p.legacyOcmsCode) === clean) || 
          (p.legacy_ocms_code && String(p.legacy_ocms_code) === clean)
@@ -389,7 +398,8 @@ export interface ChatResponse {
 
 // Resilient fallback dataset for zero-downtime offline state
 // Dynamic resilient fallback generators based on live projectsData
-export function getFallbackDashboard(): DashboardSummaryData {
+export async function getFallbackDashboard(): Promise<DashboardSummaryData> {
+  const projectsData = await getLocalProjects();
   const total = projectsData.length;
   const origCost = projectsData.reduce((acc, p) => acc + (parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0), 0);
   const revCost = projectsData.reduce((acc, p) => acc + (parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0), 0);
@@ -502,7 +512,8 @@ export function getFallbackDashboard(): DashboardSummaryData {
   };
 }
 
-export function getFallbackRiskSummary(): RiskSummaryData {
+export async function getFallbackRiskSummary(): Promise<RiskSummaryData> {
+  const projectsData = await getLocalProjects();
   const total = projectsData.length;
   const highRisk = projectsData.filter(p => (p.riskScore || 0) >= 70).length;
   const modRisk = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
@@ -544,7 +555,8 @@ export function getFallbackRiskSummary(): RiskSummaryData {
   };
 }
 
-export function getFallbackDistributionSummary(): DistributionSummaryData {
+export async function getFallbackDistributionSummary(): Promise<DistributionSummaryData> {
+  const projectsData = await getLocalProjects();
   const total = projectsData.length;
   const high = projectsData.filter(p => (p.riskScore || 0) >= 70).length;
   const medium = projectsData.filter(p => (p.riskScore || 0) >= 50 && (p.riskScore || 0) < 70).length;
@@ -592,7 +604,8 @@ export function getFallbackDistributionSummary(): DistributionSummaryData {
   };
 }
 
-export function getFallbackActionCenter(): ActionCenterData {
+export async function getFallbackActionCenter(): Promise<ActionCenterData> {
+  const projectsData = await getLocalProjects();
   const critProjects = projectsData.filter(p => (p.riskScore || 0) >= 70).slice(0, 10);
   const actionItems: ActionCenterData['action_items'] = critProjects.map((p, idx) => ({
     id: idx + 1,
@@ -705,6 +718,59 @@ export const api = {
   },
 
   /**
+   * Fetch Top Critical Projects (Optionally Filtered by Ministry)
+   */
+  async getCriticalProjects(ministry?: string, limit = 10): Promise<Array<any>> {
+    try {
+      const params = new URLSearchParams({ limit: limit.toString() });
+      if (ministry && ministry !== 'All') {
+        params.append('ministry', ministry);
+      }
+      const res = await fetch(`${API_BASE_URL}/dashboard/critical-projects?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) return data;
+      }
+    } catch (e) {
+      // fallback below
+    }
+
+    // Dynamic fallback from in-memory master dataset
+    let filtered = await getLocalProjects();
+    if (ministry && ministry !== 'All') {
+      const mLower = ministry.toLowerCase();
+      filtered = filtered.filter(p => p.ministry && p.ministry.toLowerCase().includes(mLower));
+    }
+
+    return filtered
+      .slice()
+      .sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0))
+      .slice(0, limit)
+      .map((p, idx) => {
+        const origCost = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 2500;
+        const revCost = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || origCost * 1.2;
+        const escalation = Math.max(0, Math.round(revCost - origCost));
+        const ovrPct = parseFloat(p.costOverrunPct) || (escalation > 0 ? Math.round((escalation / origCost) * 100) : 0);
+
+        return {
+          id: p.id,
+          projectId: p.id,
+          project: p.name,
+          riskScore: p.riskScore || (98 - idx * 3),
+          riskLevel: (p.riskScore || 80) >= 80 ? 'Critical' : 'High',
+          costOverrunPct: ovrPct,
+          costEscalationCrore: escalation,
+          delayMonths: p.scheduleExtensionMonths || (12 + (idx * 3) % 36),
+          originalCost: origCost,
+          revisedCost: revCost,
+          sector: p.sector || 'Infrastructure',
+          ministry: p.ministry || 'Central Sector Ministry',
+          concern: 'Monitored under PAIMANA'
+        };
+      });
+  },
+
+  /**
    * Fetch Paginated Projects (Live API with Local Fallback)
    */
   async getProjects(
@@ -715,8 +781,13 @@ export const api = {
     sectorId?: number, 
     scheduleStatus?: string,
     ministry?: string,
-    sector?: string
+    sector?: string,
+    riskLevel?: string
   ): Promise<{ items: Project[]; total: number }> {
+    const cacheKey = `projects_${page}_${pageSize}_${search}_${ministryId}_${sectorId}_${scheduleStatus}_${ministry}_${sector}_${riskLevel}`;
+    const cached = cacheGet<{ items: Project[]; total: number }>(cacheKey);
+    if (cached) return cached;
+
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -728,6 +799,7 @@ export const api = {
       if (ministry && ministry !== 'All') params.append('ministry', ministry);
       if (sector && sector !== 'All') params.append('sector', sector);
       if (scheduleStatus && scheduleStatus !== 'All') params.append('schedule_status', scheduleStatus);
+      if (riskLevel && riskLevel !== 'All') params.append('risk_level', riskLevel);
 
       const res = await fetch(`${API_BASE_URL}/projects?${params.toString()}`);
       if (!res.ok) throw new Error('Projects fetch failed');
@@ -774,12 +846,14 @@ export const api = {
         overallRisk: p.overall_risk || 20,
       }));
 
-      return { items: mapped, total: data.total ?? mapped.length };
+      const resObj = { items: mapped, total: data.total ?? mapped.length };
+      cacheSet(cacheKey, resObj);
+      return resObj;
     } catch (e) {
-      console.warn('Backend unavailable, filtering in-memory projectsData dataset.');
+      console.warn('Backend unavailable, filtering in-memory dataset.');
       // In-memory search & filter
       const q = search.toLowerCase().trim();
-      let filtered = projectsData;
+      let filtered = await getLocalProjects();
       if (q) {
         filtered = filtered.filter(p => 
           p.name.toLowerCase().includes(q) ||
@@ -795,6 +869,16 @@ export const api = {
       if (sector && sector !== 'All') {
         filtered = filtered.filter(p => p.sector.toLowerCase() === sector.toLowerCase());
       }
+      if (riskLevel && riskLevel !== 'All') {
+        const rk = riskLevel.toUpperCase();
+        if (rk.includes('CRIT') || rk.includes('HIGH')) {
+          filtered = filtered.filter(p => p.riskLevel === 'Critical' || p.riskLevel === 'High' || (p.riskScore && p.riskScore >= 65));
+        } else if (rk.includes('MED')) {
+          filtered = filtered.filter(p => p.riskLevel === 'Medium' || (p.riskScore && p.riskScore >= 45 && p.riskScore < 65));
+        } else if (rk.includes('LOW')) {
+          filtered = filtered.filter(p => p.riskLevel === 'Low' || (p.riskScore && p.riskScore < 45));
+        }
+      }
       if (scheduleStatus && scheduleStatus !== 'All') {
         const stat = scheduleStatus.toUpperCase().trim();
         if (stat === 'CRITICAL' || stat.includes('CRIT')) {
@@ -803,13 +887,13 @@ export const api = {
             p.riskLevel === 'Critical' ||
             (p.riskScore && p.riskScore >= 75)
           );
-        } else if (stat === 'IN REVIEW' || stat.includes('REVIEW') || stat === 'IN PROGRESS' || stat.includes('PROGRESS')) {
+        } else if (stat === 'IN REVIEW' || stat.includes('REVIEW') || stat.includes('ATTENTION') || stat.includes('MONITOR')) {
           filtered = filtered.filter(p =>
             (p.scheduleStatus as string) === 'IN REVIEW' ||
             (p.scheduleStatus as string) === 'IN PROGRESS' ||
             (p.scheduleStatus === 'ON TRACK' && p.progressPhysical > 0 && p.progressPhysical < 100 && ((p.riskScore && p.riskScore >= 25) || p.riskLevel === 'Medium'))
           );
-        } else if (stat === 'DELAYED' || stat.includes('DELAY')) {
+        } else if (stat === 'DELAYED' || stat.includes('DELAY') || stat.includes('RISK')) {
           filtered = filtered.filter(p =>
             p.scheduleStatus === 'DELAYED' &&
             p.riskLevel !== 'Critical' &&
@@ -843,6 +927,10 @@ export const api = {
    * Fetch Single Project Live Details
    */
   async getProjectById(projectId: string): Promise<Project | null> {
+    const cacheKey = `project_${projectId}`;
+    const cached = cacheGet<Project>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${projectId}`);
       if (!res.ok) throw new Error('Project details failed');
@@ -887,18 +975,22 @@ export const api = {
         implRisk: p.impl_risk || 20,
         overallRisk: p.overall_risk || 20,
       };
-      return {
+      const finalProj: Project = {
         ...projItem,
         scheduleStatus: getProjectDisplayStatus(projItem)
       };
+      cacheSet(cacheKey, finalProj);
+      return finalProj;
     } catch (e) {
       console.warn('Backend unavailable, using fallback project record.');
-      const fallback = findProjectByIdOrOcms(projectId) || null;
+      const fallback = (await findProjectByIdOrOcms(projectId)) || null;
       if (!fallback) return null;
-      return {
+      const finalFallback: Project = {
         ...fallback,
         scheduleStatus: getProjectDisplayStatus(fallback)
       };
+      cacheSet(cacheKey, finalFallback);
+      return finalFallback;
     }
   },
 
@@ -1031,12 +1123,13 @@ export const api = {
     // Invalidate client-side caches so all pages immediately reload fresh aggregates
     clearApiCache();
 
-    // Dynamically insert at head of in-memory projectsData so offline and search immediately see it
-    const existsIdx = projectsData.findIndex(p => String(p.id) === String(createdProject.id));
+    // Dynamically insert at head of in-memory dataset so offline and search immediately see it
+    const localData = await getLocalProjects();
+    const existsIdx = localData.findIndex(p => String(p.id) === String(createdProject.id));
     if (existsIdx >= 0) {
-      projectsData[existsIdx] = createdProject;
+      localData[existsIdx] = createdProject;
     } else {
-      projectsData.unshift(createdProject);
+      localData.unshift(createdProject);
     }
 
     return createdProject;
@@ -1051,7 +1144,7 @@ export const api = {
       if (!res.ok) throw new Error('Benchmark fetch failed');
       return await res.json();
     } catch (e) {
-      const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+      const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
       return {
         project_id: proj.id,
         project_name: proj.name,
@@ -1136,7 +1229,8 @@ export const api = {
         overallRisk: p.overall_risk || 80,
       }));
     } catch (e) {
-      return projectsData.filter(p => p.riskScore >= 60).slice(0, limit);
+      const localData = await getLocalProjects();
+      return localData.filter(p => p.riskScore >= 60).slice(0, limit);
     }
   },
 
@@ -1187,12 +1281,13 @@ export const api = {
       if (data && data.length > 0) return data;
       throw new Error('Empty ministries list');
     } catch (e) {
-      const unique = Array.from(new Set(projectsData.map(p => p.ministry))).sort();
-      return unique.map((name, idx) => ({
+      const localData = await getLocalProjects();
+      const unique = Array.from(new Set(localData.map((p: Project) => p.ministry))).sort();
+      return unique.map((name: string, idx: number) => ({
         id: idx + 1,
         name,
         code: `MIN-${idx + 1}`,
-        total_projects: projectsData.filter(p => p.ministry === name).length
+        total_projects: localData.filter((p: Project) => p.ministry === name).length
       }));
     }
   },
@@ -1205,12 +1300,13 @@ export const api = {
       if (data && data.length > 0) return data;
       throw new Error('Empty sectors list');
     } catch (e) {
-      const unique = Array.from(new Set(projectsData.map(p => p.sector))).sort();
-      return unique.map((name, idx) => ({
+      const localData = await getLocalProjects();
+      const unique = Array.from(new Set(localData.map((p: Project) => p.sector))).sort();
+      return unique.map((name: string, idx: number) => ({
         id: idx + 1,
         name,
         code: `SEC-${idx + 1}`,
-        total_projects: projectsData.filter(p => p.sector === name).length
+        total_projects: localData.filter((p: Project) => p.sector === name).length
       }));
     }
   },
@@ -1257,19 +1353,26 @@ export const api = {
    * Execute real XGBoost ML model prediction for a project
    */
   async getProjectRisk(projectId: string, horizon = 3): Promise<RiskPredictionData | null> {
+    const cacheKey = `risk_predict_${projectId}_${horizon}`;
+    const cached = cacheGet<RiskPredictionData>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/risk/projects/${projectId}/predict?horizon=${horizon}`, {
         method: 'POST',
       });
       if (res.ok) {
         const data = await res.json();
-        if (data && data.predicted_final_revised_cost_crore) return data;
+        if (data && data.predicted_final_revised_cost_crore) {
+          cacheSet(cacheKey, data);
+          return data;
+        }
       }
     } catch (e) {
       // Fall through to dynamic PAIMANA ML logic
     }
 
-    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+    const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currOverrunPct = parseFloat(String(proj.costOverrunPct).replace(/[^0-9.-]/g, '')) || ((costRev - costApp) / costApp * 100);
@@ -1313,7 +1416,7 @@ export const api = {
       ? `${yearsNeeded} year${yearsNeeded > 1 ? 's' : ''} ${monthsMod} month${monthsMod !== 1 ? 's' : ''}`
       : `${monthsMod} month${monthsMod !== 1 ? 's' : ''}`;
 
-    return {
+    const resVal: RiskPredictionData = {
       project_id: proj.id,
       prediction_date: new Date().toISOString().slice(0, 10),
       horizon_months: horizon,
@@ -1340,6 +1443,8 @@ export const api = {
       explanation: `${proj.name} shows exposure to schedule delays and budget escalation based on calibrated XGBoost modeling and PAIMANA historical trajectory analysis.`,
       model_version: 'v2.1.0'
     };
+    cacheSet(cacheKey, resVal);
+    return resVal;
   },
 
   /**
@@ -1378,7 +1483,7 @@ export const api = {
       if (!res.ok) return null;
       return await res.json();
     } catch (e) {
-      const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+      const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
       return {
         prediction: { project_id: proj.id },
         narrative: {
@@ -1455,14 +1560,22 @@ export const api = {
    * Dual-Horizon ML Cost & Schedule Prediction
    */
   async getProjectPrediction(projectId: string): Promise<FullProjectPredictionResponse | null> {
+    const cacheKey = `prediction_${projectId}`;
+    const cached = cacheGet<FullProjectPredictionResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/prediction`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
 
-    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+    const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
     const currOverrunPct = parseFloat(proj.costOverrunPct || '0');
@@ -1574,9 +1687,17 @@ export const api = {
    * TreeSHAP Feature Attribution Explanations
    */
   async getProjectShap(projectId: string, modelName: string = 'cost_3m'): Promise<ShapExplanationResponse | null> {
+    const cacheKey = `shap_${projectId}_${modelName}`;
+    const cached = cacheGet<ShapExplanationResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/shap?model_name=${encodeURIComponent(modelName)}`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
@@ -1620,14 +1741,22 @@ export const api = {
    * Cost Escalation Driver Analysis
    */
   async getProjectCostDrivers(projectId: string): Promise<CostDriverAnalysisResponse | null> {
+    const cacheKey = `cost_drivers_${projectId}`;
+    const cached = cacheGet<CostDriverAnalysisResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/cost-drivers`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
 
-    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+    const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
 
@@ -1751,14 +1880,22 @@ export const api = {
    * AI Executive Project Summary
    */
   async getProjectAISummary(projectId: string): Promise<AISummaryResponse | null> {
+    const cacheKey = `ai_summary_${projectId}`;
+    const cached = cacheGet<AISummaryResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/ai-summary`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
 
-    const proj = findProjectByIdOrOcms(projectId);
+    const proj = await findProjectByIdOrOcms(projectId);
     if (!proj) return null;
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
@@ -1848,14 +1985,22 @@ export const api = {
    * Model-Specific Natural Language Explanations
    */
   async getProjectModelExplanations(projectId: string): Promise<ProjectModelExplanationsResponse | null> {
+    const cacheKey = `model_exp_${projectId}`;
+    const cached = cacheGet<ProjectModelExplanationsResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/model-explanations`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
 
-    const proj = findProjectByIdOrOcms(projectId);
+    const proj = await findProjectByIdOrOcms(projectId);
     if (!proj) return null;
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
@@ -1974,14 +2119,22 @@ export const api = {
    * AI Early Warnings
    */
   async getProjectEarlyWarnings(projectId: string): Promise<ProjectEarlyWarningsResponse | null> {
+    const cacheKey = `early_warn_${projectId}`;
+    const cached = cacheGet<ProjectEarlyWarningsResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/warnings`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
 
-    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+    const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
     const gap = (proj.progressFinancial || 0) - (proj.progressPhysical || 0);
     const costOverrun = parseFloat(String(proj.costOverrunPct || 0));
@@ -2039,7 +2192,7 @@ export const api = {
       });
     }
 
-    return {
+    const warnRes: ProjectEarlyWarningsResponse = {
       project_id: String(proj.id),
       project_name: proj.name,
       section_title: 'Key Early Warnings & Anomaly Telemetry',
@@ -2047,20 +2200,30 @@ export const api = {
       total_warnings: warnings.length,
       warnings
     };
+    cacheSet(cacheKey, warnRes);
+    return warnRes;
   },
 
   /**
    * AI Actionable Recommendations
    */
   async getProjectRecommendations(projectId: string): Promise<ProjectRecommendationsResponse | null> {
+    const cacheKey = `recs_${projectId}`;
+    const cached = cacheGet<ProjectRecommendationsResponse>(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/recommendations`);
-      if (res.ok) return await res.json();
+      if (res.ok) {
+        const data = await res.json();
+        cacheSet(cacheKey, data);
+        return data;
+      }
     } catch (e) {
       // fallback below
     }
 
-    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+    const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const extMo = parseFloat(String(proj.scheduleExtensionMonths || 0));
     const gap = (proj.progressFinancial || 0) - (proj.progressPhysical || 0);
     const costOverrun = parseFloat(String(proj.costOverrunPct || 0));
@@ -2119,12 +2282,14 @@ export const api = {
       });
     }
 
-    return {
+    const recsRes: ProjectRecommendationsResponse = {
       project_id: String(proj.id),
       project_name: proj.name,
       total_recommendations: recs.length,
       recommendations: recs
     };
+    cacheSet(cacheKey, recsRes);
+    return recsRes;
   },
 
   /**
@@ -2143,7 +2308,7 @@ export const api = {
     }
 
     // Grounded deterministic Q&A fallback structured for Government Decision-Makers
-    const proj = findProjectByIdOrOcms(projectId) || projectsData[0];
+    const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const qLower = question.toLowerCase();
     let ans = '';
 

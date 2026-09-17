@@ -1,214 +1,168 @@
-.simple-govt-footer {
+/* ═══════════════════════════════════════════════════════════════════════════
+   NIRMAAN DRISHTI — PROFESSIONAL UNIFIED NAVY FOOTER
+   Single Distinguished Navy Color (#05083a)
+   - Logos on Left (MoSPI, NavDrishti, PAIMANA) in clean white cards
+   - Quick Links on Right with clean underline on active
+   - Clean professional text links (zero neon boxes)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nirmaan-unified-navy-footer {
   width: 100%;
-  background: #FFFFFF;
-  color: #08103A;
-  font-family: inherit;
+  background-color: #05083a;
+  color: #CBD5E1;
   margin-top: auto;
-  border-top: 1px solid #E2E8F0;
   box-sizing: border-box;
+  font-family: inherit;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.footer-simple-container {
+/* ── Clean 1px distinction border ── */
+.footer-accent-stripe {
   width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.footer-main-wrapper {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 32px 48px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 40px;
-  flex-wrap: wrap;
+  padding: 22px 48px 18px;
   box-sizing: border-box;
-}
-
-/* ── Left Column: Brand Identity & Links ── */
-.footer-brand-section {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 16px;
-  max-width: 580px;
 }
 
-.footer-emblem-container {
-  width: 48px;
-  height: 48px;
+/* ── Top Row: Logos on Left, Quick Links on Right ── */
+.footer-top-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+/* ── LEFT: 3 Cleaned Logos in Crisp White Cards ── */
+.footer-logos-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-logo-card {
   background: #FFFFFF;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 50%;
-  padding: 3px;
-  box-shadow: 0 2px 8px rgba(9, 11, 46, 0.05);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  border-radius: 6px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
 
-.footer-emblem-container:hover {
-  transform: scale(1.05);
-  border-color: #2F6BF4;
+.footer-logo-card.clickable {
+  cursor: pointer;
 }
 
-.footer-emblem-img {
-  width: 100%;
-  height: 100%;
+.footer-logo-card.clickable:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.footer-logo-card.brand-card {
+  cursor: default;
+  user-select: none;
+}
+
+/* Clean Logo Dimensions */
+.logo-img {
+  width: auto;
   object-fit: contain;
 }
 
-.brand-content-col {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.logo-img.mospi-logo-img {
+  height: 36px;
+  max-width: 90px;
 }
 
-.brand-title-row {
+.logo-img.navdrishti-logo-img {
+  height: 28px;
+  max-width: 135px;
+}
+
+.logo-img.paimana-logo-img {
+  height: 32px;
+  max-width: 145px;
+}
+
+/* ── RIGHT: Quick Links (Only Underline on Active / Click) ── */
+.footer-links-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
-.brand-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: #08103A;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-}
-
-.brand-govt-badge {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #1D4ED8;
-  background: #EFF6FF;
-  border: 1px solid #DBEAFE;
-  padding: 2px 6px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.brand-sub {
-  font-size: 12.5px;
-  color: #64748B;
-  font-weight: 500;
-  line-height: 1.4;
-  margin-top: 1px;
-}
-
-.official-link-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-.simple-link-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  color: #1E293B;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-}
-
-.simple-link-pill:hover {
-  background: #EFF6FF;
-  border-color: #93C5FD;
-  color: #1D4ED8;
-  transform: translateY(-1px);
-}
-
-.pill-paimana {
-  color: #92400E;
-  border-color: #FEF3C7;
-  background: #FFFBEB;
-}
-
-.pill-paimana:hover {
-  background: #FEF3C7;
-  border-color: #F59E0B;
-  color: #78350F;
-}
-
-/* ── Right Column: Quick Pages Navigation ── */
-.footer-nav-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.nav-section-title {
+.footer-links-label {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: #64748B;
-  line-height: 1;
+  letter-spacing: 0.06em;
 }
 
-.nav-links-grid {
+.footer-nav-group {
   display: flex;
   align-items: center;
   gap: 18px;
   flex-wrap: wrap;
 }
 
-.footer-nav-btn {
-  background: none;
+/* Clean text button with ONLY an underline on active/click */
+.footer-underline-nav-btn {
+  background: transparent;
   border: none;
-  color: #475569;
-  font-size: 13.5px;
-  font-weight: 600;
+  border-radius: 0;
+  padding: 4px 1px;
   font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94A3B8;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  padding: 2px 0;
-  transition: all 0.2s ease;
-  position: relative;
+  transition: color 0.18s ease;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
 }
 
-.footer-nav-btn:hover {
-  color: #2563EB;
+.footer-underline-nav-btn:hover {
+  color: #FFFFFF;
 }
 
-.footer-nav-btn.active-nav {
-  color: #08103A;
-  font-weight: 750;
+/* ACTIVE STATE: Only a clean underline */
+.footer-underline-nav-btn.active {
+  color: #FFFFFF;
+  font-weight: 650;
+  border-bottom-color: #38BDF8;
 }
 
-.footer-nav-btn.active-nav::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
+/* ── Divider ── */
+.footer-inner-divider {
   width: 100%;
-  height: 2px;
-  background: #2563EB;
-  border-radius: 1px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 2px 0;
 }
 
-/* ── Bottom Bar ── */
-.footer-bottom-simple {
-  border-top: 1px solid #E2E8F0;
-  background: #F8FAFC;
-  padding: 14px 48px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.footer-bottom-inner {
-  max-width: 1360px;
-  margin: 0 auto;
+/* ── Bottom Row: Copyright & Email ── */
+.footer-bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -216,35 +170,65 @@
   flex-wrap: wrap;
 }
 
-.footer-bottom-inner p {
+.footer-copyright-text {
   margin: 0;
   font-size: 12px;
-  color: #64748B;
-  font-weight: 500;
+  color: #94A3B8;
+  font-weight: 450;
+  letter-spacing: -0.005em;
 }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  .footer-simple-container {
+/* Clean, Professional Email Link (No Neon Pill Border) */
+.footer-email-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.footer-email-text-link:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
+}
+
+.footer-mail-icon {
+  color: #64748B;
+  transition: color 0.18s ease;
+}
+
+.footer-email-text-link:hover .footer-mail-icon {
+  color: #38BDF8;
+}
+
+/* ── Responsive Design ── */
+@media (max-width: 1024px) {
+  .footer-top-row {
     flex-direction: column;
     align-items: flex-start;
-    padding: 24px 20px;
-    gap: 24px;
-  }
-
-  .footer-nav-section {
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .nav-links-grid {
-    gap: 14px;
-  }
-
-  .footer-bottom-simple {
-    padding: 14px 20px;
+    gap: 16px;
   }
 }
 
-
-
+@media (max-width: 680px) {
+  .footer-main-wrapper {
+    padding: 18px 20px 14px;
+  }
+  .footer-logos-left {
+    gap: 10px;
+  }
+  .footer-nav-group {
+    gap: 12px;
+  }
+  .footer-bottom-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

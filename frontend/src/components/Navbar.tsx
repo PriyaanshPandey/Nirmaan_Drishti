@@ -10,10 +10,9 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: 'home', label: 'Home' },
     { id: 'dashboard', label: 'Dashboard' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'insights', label: 'AI Insights' },
+    { id: 'projects', label: 'Project' },
     { id: 'distribution', label: 'Distribution' },
-    { id: 'action-centre', label: 'Action centre' },
+    { id: 'action-centre', label: 'Action Center' },
   ];
 
   const containerRef = useRef<HTMLDivElement | null>(null);

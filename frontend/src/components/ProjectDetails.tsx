@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ChevronDown, ShieldAlert, Award,
   AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
 } from 'lucide-react';
-import { type Project } from '../data/projectsData';
+import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 import {
   api,
@@ -20,6 +20,7 @@ import {
 import './ProjectDetails.css';
 import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
+import { ProjectNavSidebar, type SidebarSection } from './ProjectNavSidebar';
 
 interface ProjectDetailsProps {
   projectId: string;
@@ -215,6 +216,47 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
+  // Sidebar navigation state
+  const [sidebarSection, setSidebarSection] = useState<SidebarSection>('basic');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = useCallback((sectionId: SidebarSection) => {
+    setSidebarSection(sectionId);
+    const el = document.getElementById(`pd-section-${sectionId}`);
+    if (el) {
+      const headerOffset = 88; // sticky header height
+      const elementTop = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementTop - headerOffset,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Track active section on scroll
+  useEffect(() => {
+    const sections: SidebarSection[] = ['basic', 'forecasts', 'escalation', 'warnings'];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace('pd-section-', '') as SidebarSection;
+            if (sections.includes(id)) {
+              setSidebarSection(id);
+            }
+          }
+        }
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+    sections.forEach((sec) => {
+      const el = document.getElementById(`pd-section-${sec}`);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [project]);
+
   useEffect(() => {
     if (!aiAssistantOpen) return;
     const handleEscape = (event: KeyboardEvent) => {
@@ -274,43 +316,38 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     };
   }, [projectId]);
 
-  // Fetch Full AI Engine Suite: Dual Horizon Prediction, TreeSHAP, Cost Drivers, AI Summary, NLP Explanations, Warnings & Recs
+  // Fetch Full AI Engine Suite with progressive resolution to eliminate visual loading delays
   useEffect(() => {
     let isMounted = true;
     setLoadingBriefing(true);
 
-    Promise.all([
-      api.getProjectPrediction(projectId),
+    api.getProjectPrediction(projectId).then(res => isMounted && res && setFullPrediction(res));
+    api.getProjectCostDrivers(projectId).then(res => isMounted && res && setCostDrivers(res));
+    api.getProjectAISummary(projectId).then(res => isMounted && res && setAiSummary(res));
+    api.getProjectModelExplanations(projectId).then(res => isMounted && res?.explanations && setModelExplanations(res.explanations));
+    api.getProjectEarlyWarnings(projectId).then(res => isMounted && res && setEarlyWarnings(res));
+    api.getProjectRecommendations(projectId).then(res => isMounted && res && setRecommendations(res));
+    api.getProjectRisk(projectId, 3).then(res => {
+      if (isMounted && res) {
+        setMlPrediction(res);
+        setPred3m(res);
+      }
+    });
+    api.getProjectRisk(projectId, 6).then(res => isMounted && res && setPred6m(res));
+
+    Promise.allSettled([
       api.getProjectShap(projectId, 'cost_3m'),
       api.getProjectShap(projectId, 'cost_6m'),
       api.getProjectShap(projectId, 'time_3m'),
-      api.getProjectShap(projectId, 'time_6m'),
-      api.getProjectCostDrivers(projectId),
-      api.getProjectAISummary(projectId),
-      api.getProjectModelExplanations(projectId),
-      api.getProjectEarlyWarnings(projectId),
-      api.getProjectRecommendations(projectId),
-      api.getProjectRisk(projectId, 3),
-      api.getProjectRisk(projectId, 6)
-    ]).then(([pred, sCost3m, sCost6m, sTime3m, sTime6m, cDrivers, summary, mExp, eWarn, recs, r3, r6]) => {
+      api.getProjectShap(projectId, 'time_6m')
+    ]).then(([sCost3m, sCost6m, sTime3m, sTime6m]) => {
       if (!isMounted) return;
-      if (pred) setFullPrediction(pred);
       const shapMap: Record<string, ShapExplanationResponse> = {};
-      if (sCost3m) shapMap['cost_3m'] = sCost3m;
-      if (sCost6m) shapMap['cost_6m'] = sCost6m;
-      if (sTime3m) shapMap['time_3m'] = sTime3m;
-      if (sTime6m) shapMap['time_6m'] = sTime6m;
+      if (sCost3m.status === 'fulfilled' && sCost3m.value) shapMap['cost_3m'] = sCost3m.value;
+      if (sCost6m.status === 'fulfilled' && sCost6m.value) shapMap['cost_6m'] = sCost6m.value;
+      if (sTime3m.status === 'fulfilled' && sTime3m.value) shapMap['time_3m'] = sTime3m.value;
+      if (sTime6m.status === 'fulfilled' && sTime6m.value) shapMap['time_6m'] = sTime6m.value;
       setShaps(shapMap);
-      if (cDrivers) setCostDrivers(cDrivers);
-      if (summary) setAiSummary(summary);
-      if (mExp?.explanations) setModelExplanations(mExp.explanations);
-      if (eWarn) setEarlyWarnings(eWarn);
-      if (recs) setRecommendations(recs);
-      if (r3) {
-        setMlPrediction(r3);
-        setPred3m(r3);
-      }
-      if (r6) setPred6m(r6);
       setLoadingBriefing(false);
     }).catch((err) => {
       console.warn('Error loading AI insights, resilient fallback active:', err);
@@ -403,6 +440,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   }
 
 
+  const warningsCount = earlyWarnings?.warnings?.length ?? 2;
+
   return (
     <div className="details-container animation-fade-in">
       {/* Top Filter Buttons bar & Date info */}
@@ -448,6 +487,33 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
           </div>
         </div>
+      </div>
+
+      {/* ─── Main layout: Sidebar + Content ─── */}
+      <div className={`pd-layout-wrapper ${sidebarCollapsed ? 'pd-layout-wrapper--sidebar-collapsed' : ''}`}>
+        {/* Left Sidebar portaled to document.body to remain strictly fixed at extreme left viewport on scroll */}
+        {createPortal(
+          <ProjectNavSidebar
+            activeSection={sidebarSection}
+            onSelectSection={scrollToSection}
+            warningsCount={warningsCount}
+            riskScore={project.riskScore}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onScrollToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onOpenAIChat={() => setAiAssistantOpen(true)}
+          />,
+          document.body
+        )}
+
+        {/* Right scrollable main content */}
+        <div className="pd-main-content" ref={mainContentRef}>
+
+      {/* ─── SECTION: Basic Information ─── */}
+      <div id="pd-section-basic" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--basic">
+        <span className="pd-section-tag">01</span>
+        <span className="pd-section-name">Basic Information</span>
       </div>
 
       {/* Project Title & Status */}
@@ -771,6 +837,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         );
       })()}
+
+      </div>{/* /pd-section-basic */}
+
+      {/* ─── SECTION: Forecasts ─── */}
+      <div id="pd-section-forecasts" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--forecasts">
+        <span className="pd-section-tag">02</span>
+        <span className="pd-section-name">Forecasts</span>
+      </div>
 
       {/* AI ML Multi-Horizon Forecast Engine Section */}
       {(() => {
@@ -1289,6 +1364,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         );
       })()}
+
+      </div>{/* /pd-section-forecasts */}
+
+      {/* ─── SECTION: Escalation Drivers ─── */}
+      <div id="pd-section-escalation" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--escalation">
+        <span className="pd-section-tag">03</span>
+        <span className="pd-section-name">Escalation Drivers</span>
+      </div>
 
       {/* Explainable AI Analysis Section (TreeSHAP Feature Attributions) */}
       {(() => {
@@ -1911,6 +1995,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         );
       })()}
 
+      </div>{/* /pd-section-escalation */}
+
+      {/* ─── SECTION: Early Warnings ─── */}
+      <div id="pd-section-warnings" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--warnings">
+        <span className="pd-section-tag">04</span>
+        <span className="pd-section-name">Early Warnings</span>
+      </div>
+
       {/* Early Warnings & Recommendations Section */}
       {(() => {
         const getEarlyWarningsAndRecommendations = (proj: Project) => {
@@ -2164,6 +2257,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         );
       })()}
+
+      </div>{/* /pd-section-warnings */}
+
+        </div>{/* /pd-main-content */}
+      </div>{/* /pd-layout-wrapper */}
 
 
 

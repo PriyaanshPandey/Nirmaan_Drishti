@@ -184,6 +184,62 @@ h3 {
   opacity: 1;
 }
 
+/* Dashboard Header Block */
+.dashboard-header-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2px;
+  padding: 0 2px;
+}
+
+.dashboard-main-title {
+  font-size: 26px;
+  font-weight: 850;
+  color: #0F172A;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.025em;
+}
+
+.dashboard-main-subtitle {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #64748B;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-period-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #2563EB;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+}
+
+.period-badge-dot {
+  width: 7px;
+  height: 7px;
+  background-color: #2563EB;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header-block {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
 /* Dashboard Layout Grid */
 .dashboard-grid {
   display: grid;
