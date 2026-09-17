@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'insights', label: 'AI Insights', icon: <Sparkles size={15} /> },
     { id: 'distribution', label: 'Distribution', icon: <Layers size={15} /> },
     { id: 'action-centre', label: 'Action centre', icon: <ShieldAlert size={15} /> },
-    { id: 'extractor', label: 'Extractor', icon: <FileSpreadsheet size={15} /> },
+    { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} /> },
   ];
 
   // Dynamically compute exact counts from 3,361 master dataset so buttons match results 100%
