@@ -166,115 +166,87 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
 
               const cleanedTitle = cleanProjectName(p.project);
               const cleanedId = cleanProjectId(p.projectId || p.id);
-              const isTopThree = index < 3;
               const isCritical = (p.riskLevel || '').toUpperCase() === 'CRITICAL' || p.riskScore >= 80;
 
               return (
                 <div
                   key={p.id || index}
-                  className="critical-project-row"
+                  className="img3-intervention-row"
                   onClick={handleRowClick}
                   role="button"
                   tabIndex={0}
                   aria-label={`Open ${cleanedTitle}, risk score ${p.riskScore}/100`}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      handleRowClick();
-                    }
-                  }}
                 >
-                  {/* Left Column: Rank + Project Title + Metadata */}
-                  <div className="row-left">
-                    <span className={`rank-badge ${isTopThree ? 'rank-top' : 'rank-normal'}`}>
-                      #{String(index + 1).padStart(2, '0')}
-                    </span>
+                  <span className={`img3-rank-badge ${index % 2 === 1 ? 'rank-blue' : 'rank-dark'}`}>
+                    #{String(index + 1).padStart(2, '0')}
+                  </span>
 
-                    <div className="project-info">
-                      <div className="project-title-line">
-                        <span className="project-name" title={cleanedTitle}>
-                          {cleanedTitle}
-                        </span>
-                      </div>
-
-                      <div className="project-meta-line">
-                        <span className="project-id-pill">ID: {cleanedId}</span>
-                        <span className="meta-sep">•</span>
-                        <span className="meta-sector">
-                          <Building2 size={12} />
-                          {p.sector || 'Infrastructure'}
-                        </span>
-                        <span className="meta-sep">•</span>
-                        <span className="meta-ministry" title={p.ministry}>
-                          {p.ministry}
-                        </span>
-                      </div>
+                  <div className="img3-info-col">
+                    <div className="img3-meta-top">
+                      <span className="img3-id-tag">ID: {cleanedId}</span>
+                      <span className="img3-meta-dot">•</span>
+                      <span className="img3-sector-tag"><Building2 size={12} /> {p.sector || 'Infrastructure'}</span>
+                      <span className="img3-meta-dot">•</span>
+                      <span className="img3-ministry-tag">{p.ministry}</span>
                     </div>
+                    <h3 className="img3-project-title">{cleanedTitle}</h3>
                   </div>
 
-                  {/* Middle Column: Cost Overrun & Time Slippage */}
-                  <div className="row-center">
-                    <div className="stat-box stat-cost">
-                      <span className="stat-label">COST OVERRUN</span>
-                      <div className="stat-value-group">
-                        <TrendingUp size={13} className="text-red" />
-                        <span className="stat-value text-red">+{p.costOverrunPct}%</span>
+                  <div className="img3-metrics-group">
+                    <div className="img3-metric-item">
+                      <span className="img3-metric-lbl">COST OVERRUN</span>
+                      <div className="img3-metric-val-row text-red">
+                        <TrendingUp size={13} />
+                        <span className="img3-val-bold">+{p.costOverrunPct}%</span>
                         {p.costEscalationCrore > 0 && (
-                          <span className="stat-sub">(+₹{p.costEscalationCrore.toLocaleString()} Cr)</span>
+                          <span className="img3-val-sub">(+₹{p.costEscalationCrore.toLocaleString()} Cr)</span>
                         )}
                       </div>
                     </div>
 
-                    <div className="stat-box stat-time">
-                      <span className="stat-label">SCHEDULE SLIPPAGE</span>
-                      <div className="stat-value-group">
-                        <Clock size={13} className="text-amber" />
-                        <span className="stat-value text-amber">+{p.delayMonths} mo delay</span>
+                    <div className="img3-metric-item">
+                      <span className="img3-metric-lbl">SCHEDULE SLIPPAGE</span>
+                      <div className="img3-metric-val-row text-amber">
+                        <Clock size={13} />
+                        <span className="img3-val-bold">+{p.delayMonths} mo delay</span>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Right Column: Composite Risk Score & Inspect Action */}
-                  <div className="row-right">
-                    <div className="risk-score-box">
-                      <span className="risk-label">RISK INDEX</span>
-                      <div className="risk-score-group">
-                        <span className={`risk-score-value ${isCritical ? 'score-critical' : 'score-high'}`}>
-                          {p.riskScore}
-                        </span>
-                        <span className="risk-score-denom">/100</span>
-                        <span className={`risk-tier-badge ${isCritical ? 'tier-critical' : 'tier-high'}`}>
+                    <div className="img3-metric-item">
+                      <span className="img3-metric-lbl">RISK INDEX</span>
+                      <div className="img3-risk-val-row">
+                        <span className="img3-risk-num">{p.riskScore} <span className="img3-risk-denom">/100</span></span>
+                        <span className={`img3-critical-badge ${isCritical ? 'badge-crit' : 'badge-high'}`}>
                           {isCritical ? 'CRITICAL' : 'HIGH RISK'}
                         </span>
                       </div>
                     </div>
+                  </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <button
-                        className="open-inspect-btn"
-                        title="Inspect Project Details"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (onSelectProject) onSelectProject(p.projectId || p.id);
-                        }}
-                      >
-                        <span>Inspect</span>
-                        <ExternalLink size={12} />
-                      </button>
+                  <div className="img3-actions-group">
+                    <button
+                      type="button"
+                      className="img3-inspect-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onSelectProject) onSelectProject(p.projectId || p.id);
+                      }}
+                    >
+                      <span>Inspect</span>
+                      <ExternalLink size={13} />
+                    </button>
 
-                      <button
-                        className="open-inspect-btn"
-                        style={{ background: '#2563EB', borderColor: '#2563EB', color: '#FFFFFF' }}
-                        title="Take Action in Action Center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (onTakeAction) onTakeAction(p.projectId || p.id);
-                        }}
-                      >
-                        <span>Take Action</span>
-                        <ShieldAlert size={12} />
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      className="img3-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onTakeAction) onTakeAction(p.projectId || p.id);
+                      }}
+                    >
+                      <ShieldAlert size={13} />
+                      <span>Take Action</span>
+                    </button>
                   </div>
                 </div>
               );

@@ -687,6 +687,250 @@ textarea {
   }
 }
 
+/* ══════════════════════════════════════════
+   IMAGE 3 HORIZONTAL INTERVENTION ROW & BADGE FIXES
+   ══════════════════════════════════════════ */
+
+.badge-pill.bg-red {
+  background: #FEF2F2 !important;
+  color: #DC2626 !important;
+  border: 1px solid #FECACA !important;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.img3-intervention-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.img3-intervention-row:hover {
+  border-color: #BFDBFE;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.1);
+  transform: translateY(-1px);
+}
+
+.img3-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 850;
+  flex-shrink: 0;
+}
+
+.img3-rank-badge.rank-dark {
+  background: #0F172A;
+  color: #FFFFFF;
+}
+
+.img3-rank-badge.rank-blue {
+  background: #2563EB;
+  color: #FFFFFF;
+}
+
+.img3-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 340px;
+  min-width: 260px;
+}
+
+.img3-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748B;
+  flex-wrap: wrap;
+}
+
+.img3-id-tag {
+  font-weight: 700;
+  color: #475569;
+}
+
+.img3-sector-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.img3-ministry-tag {
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+}
+
+.img3-meta-dot {
+  color: #CBD5E1;
+}
+
+.img3-project-title {
+  font-size: 14px;
+  font-weight: 850;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.img3-metrics-group {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.img3-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.img3-metric-lbl {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #64748B;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.img3-metric-val-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.img3-metric-val-row.text-red {
+  color: #DC2626;
+}
+
+.img3-metric-val-row.text-amber {
+  color: #D97706;
+}
+
+.img3-val-sub {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.img3-risk-val-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.img3-risk-num {
+  font-size: 15px;
+  font-weight: 900;
+  color: #DC2626;
+}
+
+.img3-risk-denom {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94A3B8;
+}
+
+.img3-critical-badge {
+  font-size: 10.5px;
+  font-weight: 850;
+  padding: 2.5px 8px;
+  border-radius: 5px;
+  letter-spacing: 0.04em;
+}
+
+.img3-critical-badge.badge-crit {
+  background: #DC2626;
+  color: #FFFFFF;
+}
+
+.img3-critical-badge.badge-high {
+  background: #D97706;
+  color: #FFFFFF;
+}
+
+.img3-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.img3-inspect-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.img3-inspect-btn:hover {
+  border-color: #94A3B8;
+  background: #F8FAFC;
+}
+
+.img3-action-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #2563EB;
+  border: 1px solid #2563EB;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.img3-action-btn:hover {
+  background: #1D4ED8;
+  border-color: #1D4ED8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
+}
+
+
 @media (max-width: 640px) {
   .app-main-content {
     padding: 16px 14px 24px;

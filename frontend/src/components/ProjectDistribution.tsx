@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ShieldAlert,
-  MapPin,
   ArrowRight,
   ChevronDown,
   Building2,
@@ -12,7 +11,10 @@ import {
   ArrowUp,
   PieChart,
   BarChart3,
-  Filter
+  Filter,
+  TrendingUp,
+  Clock,
+  ExternalLink
 } from 'lucide-react';
 import './ProjectDistribution.css';
 import { projectsData, type Project } from '../data/projectsData';
@@ -392,12 +394,6 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       .sort((a, b) => b.avgRisk - a.avgRisk)
       .slice(0, 6);
   }, [sec3Mode, allMinistries, allSectors, calculateEntityStats]);
-
-  // Helper to clean cost text (remove double 'Cr Cr')
-  const formatCostText = (rawCost: string) => {
-    if (!rawCost) return '0.00';
-    return rawCost.replace(/Cr/gi, '').trim();
-  };
 
   return (
     <div className="dist-page-layout animation-fade-in">
@@ -913,7 +909,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             </div>
           </div>
 
-          {/* Stacked 1-Column Projects List (One below another like Dashboard) */}
+          {/* Stacked 1-Column Projects List (Image 3 Executive Horizontal Row Layout) */}
           <div className="interventions-stacked-list">
             {sec2FilteredProjects.length === 0 ? (
               <div className="dist-empty-state">
@@ -925,74 +921,74 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                 const origCost = parseFloat(proj.costApproved.replace(/[^0-9.]/g, '')) || 0;
                 const revCost = parseFloat(proj.costRevised.replace(/[^0-9.]/g, '')) || 0;
                 const deltaCr = revCost - origCost;
+                const overrunPct = origCost > 0 ? Math.round(((revCost - origCost) / origCost) * 100) : parseInt(proj.costOverrunPct) || 0;
+                const delayMonths = proj.timeOverrunMonths || 0;
                 const riskVal = proj.riskScore ?? 50;
                 const isCrit = riskVal >= 75 || proj.scheduleStatus === 'CRITICAL';
-                const statusColor = isCrit ? '#DC2626' : proj.scheduleStatus === 'DELAYED' ? '#D97706' : '#2563EB';
 
                 return (
-                  <div key={proj.id} className="intervention-stacked-card">
-                    {/* Top Info Bar */}
-                    <div className="stacked-card-top">
-                      <div className="stacked-rank-group">
-                        <span className="rank-num">#{String(idx + 1).padStart(2, '0')}</span>
-                        <span className="item-project-id">#{proj.id}</span>
-                        <span className="item-meta-tag"><Building2 size={12} /> {proj.sector}</span>
-                        <span className="item-meta-tag"><MapPin size={12} /> {proj.location?.split('\r\n')[0]}</span>
+                  <div key={proj.id} className="img3-intervention-row">
+                    <span className={`img3-rank-badge ${idx % 2 === 1 ? 'rank-blue' : 'rank-dark'}`}>
+                      #{String(idx + 1).padStart(2, '0')}
+                    </span>
+
+                    <div className="img3-info-col">
+                      <div className="img3-meta-top">
+                        <span className="img3-id-tag">#{proj.id}</span>
+                        <span className="img3-meta-dot">•</span>
+                        <span className="img3-sector-tag"><Building2 size={12} /> {proj.sector}</span>
+                        <span className="img3-meta-dot">•</span>
+                        <span className="img3-ministry-tag">{proj.ministry}</span>
                       </div>
-                      <div className="item-risk-pill" style={{ color: statusColor, borderColor: `${statusColor}44`, backgroundColor: `${statusColor}10` }}>
-                        <span>ML Risk Score: {riskVal}/100</span>
+                      <h3 className="img3-project-title">{proj.name}</h3>
+                    </div>
+
+                    <div className="img3-metrics-group">
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">COST OVERRUN</span>
+                        <div className="img3-metric-val-row text-red">
+                          <TrendingUp size={13} />
+                          <span className="img3-val-bold">+{overrunPct}%</span>
+                          {deltaCr > 0 && <span className="img3-val-sub">(+₹{Math.round(deltaCr)} Cr)</span>}
+                        </div>
+                      </div>
+
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">SCHEDULE SLIPPAGE</span>
+                        <div className="img3-metric-val-row text-amber">
+                          <Clock size={13} />
+                          <span className="img3-val-bold">+{delayMonths} mo delay</span>
+                        </div>
+                      </div>
+
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">RISK INDEX</span>
+                        <div className="img3-risk-val-row">
+                          <span className="img3-risk-num">{riskVal} <span className="img3-risk-denom">/100</span></span>
+                          <span className={`img3-critical-badge ${isCrit ? 'badge-crit' : 'badge-high'}`}>
+                            {isCrit ? 'CRITICAL' : 'HIGH RISK'}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="stacked-project-title">{proj.name}</h3>
-
-                    {/* Metrics Grid */}
-                    <div className="item-metrics-grid">
-                      <div className="item-metric-col">
-                        <span className="metric-lbl">Revised Outlay</span>
-                        <span className="metric-val">₹{formatCostText(proj.costRevised)} Cr</span>
-                      </div>
-                      <div className="item-metric-col">
-                        <span className="metric-lbl">Cost Overrun</span>
-                        <span className="metric-val text-red">
-                          {deltaCr > 0 ? `+₹${Math.round(deltaCr)} Cr` : 'On Baseline'}
-                        </span>
-                      </div>
-                      <div className="item-metric-col">
-                        <span className="metric-lbl">Physical Execution</span>
-                        <span className="metric-val">{proj.progressPhysical || 0}%</span>
-                      </div>
-                    </div>
-
-                    {/* Progress Track Bar */}
-                    <div className="item-progress-track">
-                      <div
-                        className="item-progress-fill"
-                        style={{ width: `${proj.progressPhysical || 0}%`, background: statusColor }}
-                      />
-                    </div>
-
-                    {/* Two CTA Buttons Row: Inspect Telemetry & Take Action */}
-                    <div className="stacked-actions-row">
+                    <div className="img3-actions-group">
                       <button
                         type="button"
-                        className="item-inspect-btn"
+                        className="img3-inspect-btn"
                         onClick={() => onSelectProject?.(proj.id)}
                       >
-                        <Activity size={13} />
-                        <span>Inspect Telemetry</span>
-                        <ArrowRight size={13} />
+                        <span>Inspect</span>
+                        <ExternalLink size={13} />
                       </button>
 
                       <button
                         type="button"
-                        className="item-action-btn"
+                        className="img3-action-btn"
                         onClick={() => onNavigateTab?.('action-centre')}
                       >
                         <ShieldAlert size={13} />
                         <span>Take Action</span>
-                        <ArrowRight size={13} />
                       </button>
                     </div>
                   </div>
