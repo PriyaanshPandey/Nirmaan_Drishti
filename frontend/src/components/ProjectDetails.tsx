@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  ArrowLeft, ChevronDown, ShieldAlert, Award,
+  ArrowLeft, ArrowRight, ChevronDown, ShieldAlert, Award,
   AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
 } from 'lucide-react';
 import type { Project } from '../data/projectsData';
@@ -187,7 +187,7 @@ const formatChatMessageText = (text: string) => {
   );
 };
 
-export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBack }) => {
+export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBack, onTakeAction }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [loadingProject, setLoadingProject] = useState(true);
   const [projectError, setProjectError] = useState(false);
@@ -2260,6 +2260,39 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       })()}
 
       </div>{/* /pd-section-warnings */}
+
+        {/* ─── END OF PAGE: TAKE ACTION CTA BANNER ─── */}
+        <div className="pd-take-action-bottom-card">
+          <div className="take-action-content">
+            <div className="take-action-badge-tag">
+              <ShieldAlert size={14} color="#DC2626" />
+              <span>EXECUTIVE INTERVENTION WORKSPACE</span>
+            </div>
+            <h2 className="take-action-title">Ready to Take Executive Action on {project.name}?</h2>
+            <p className="take-action-desc">
+              Open the Action Center to launch AI-recommended fast-track directives, execute What-If policy simulations, and route official administrative memos to designated governing authorities ({project.ministry}).
+            </p>
+            <div className="take-action-metrics-summary">
+              <span className="summary-chip chip-red">ML Risk Index: {project.riskScore}/100</span>
+              <span className="summary-chip chip-amber">Schedule Slippage: +{project.timeOverrunMonths || 0} Months</span>
+              <span className="summary-chip chip-blue">Revised Outlay: ₹{project.costRevised}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="take-action-cta-btn"
+            onClick={() => {
+              if (onTakeAction) {
+                onTakeAction(project.id);
+              }
+            }}
+          >
+            <ShieldAlert size={18} />
+            <span>Take Action in Action Center</span>
+            <ArrowRight size={18} />
+          </button>
+        </div>
 
         </div>{/* /pd-main-content */}
       </div>{/* /pd-layout-wrapper */}

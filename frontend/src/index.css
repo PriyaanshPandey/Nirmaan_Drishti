@@ -930,6 +930,137 @@ textarea {
   transform: translateY(-1px);
 }
 
+/* ─────────────────────────────────────────────
+   PROJECT DETAILS BOTTOM TAKE ACTION CTA CARD
+   ───────────────────────────────────────────── */
+.pd-take-action-bottom-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1.5px solid #BFDBFE;
+  border-radius: 18px;
+  padding: 28px 32px;
+  margin-top: 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 10px 30px -4px rgba(37, 99, 235, 0.12), 0 2px 8px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.pd-take-action-bottom-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: #2563EB;
+}
+
+.take-action-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 720px;
+}
+
+.take-action-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+  font-size: 11px;
+  font-weight: 850;
+  padding: 3px 10px;
+  border-radius: 99px;
+  width: fit-content;
+  letter-spacing: 0.04em;
+}
+
+.take-action-title {
+  font-size: 20px;
+  font-weight: 850;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.take-action-desc {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.take-action-metrics-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.summary-chip {
+  font-size: 11.5px;
+  font-weight: 750;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.summary-chip.chip-red {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.summary-chip.chip-amber {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.summary-chip.chip-blue {
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
+}
+
+.take-action-cta-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  background: #2563EB;
+  border: 1px solid #2563EB;
+  color: #FFFFFF;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.take-action-cta-btn:hover {
+  background: #1D4ED8;
+  border-color: #1D4ED8;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4);
+  transform: translateY(-2px);
+}
+
+.take-action-cta-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
 
 @media (max-width: 640px) {
   .app-main-content {
@@ -938,5 +1069,10 @@ textarea {
 
   .card {
     padding: 20px;
+  }
+
+  .pd-take-action-bottom-card {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
