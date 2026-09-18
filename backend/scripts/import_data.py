@@ -28,6 +28,7 @@ from app.models.sector import Sector
 from app.models.project import Project
 from app.models.progress import ProjectProgress
 from app.models.milestone import Milestone
+from app.services.risk_engine import calculate_risk_score
 from app.audit import log_audit_event
 
 INPUT_DIRS = [
@@ -96,35 +97,19 @@ def clean_str(val, max_len=255) -> str | None:
 
 
 def calculate_project_risk(row: dict) -> tuple[int, str, int, int, int, int]:
-    """Compute structured risk scores (0-100), risk tier, and sub-risk factors."""
+    """Compute centralized statistical risk scores (0-100), risk tier, and components."""
     overrun_pct = clean_num(row.get("cost_overrun_pct"), 0.0)
     delay_months = clean_num(row.get("schedule_extension_months"), 0.0)
-    signal_count = clean_num(row.get("risk_signal_count"), 0.0)
-    mismatch = clean_num(row.get("progress_expenditure_mismatch_flag"), 0.0)
-    sched_status = str(row.get("schedule_status", "")).upper()
 
-    # Cost Risk (0-100)
-    cost_risk = int(min(100, max(10, overrun_pct * 1.5 + (20 if mismatch else 0))))
+    res = calculate_risk_score(
+        predicted_cost_overrun=overrun_pct,
+        predicted_schedule_delay=delay_months,
+    )
+    score_int = int(round(res.risk_score))
+    cost_int = int(round(res.cost_risk_component))
+    time_int = int(round(res.schedule_risk_component))
 
-    # Time Risk (0-100)
-    time_risk = int(min(100, max(10, delay_months * 2.0 + (30 if "DELAY" in sched_status or "CRIT" in sched_status else 0))))
-
-    # Implementation Risk (0-100)
-    impl_risk = int(min(100, max(10, signal_count * 18.0 + (25 if mismatch else 0))))
-
-    # Overall Combined Risk Score (0-100)
-    overall_score = int(min(98, max(15, (cost_risk * 0.35 + time_risk * 0.40 + impl_risk * 0.25))))
-
-    if overall_score >= 80 or "CRIT" in sched_status:
-        risk_level = "Critical"
-    elif overall_score >= 65 or "DELAY" in sched_status:
-        risk_level = "High"
-    elif overall_score >= 45 or "EXTEND" in sched_status:
-        risk_level = "Medium"
-    else:
-        risk_level = "Low"
-
-    return overall_score, risk_level, cost_risk, time_risk, impl_risk, overall_score
+    return score_int, res.risk_level, cost_int, time_int, cost_int, score_int
 
 
 def run_import():

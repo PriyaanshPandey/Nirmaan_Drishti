@@ -18,8 +18,12 @@ class RiskPredictionResponse(BaseModel):
     project_id: str
     prediction_date: datetime
     horizon_months: int
-    risk_score: Optional[int] = None
+    risk_score: Optional[float] = None
     risk_level: Optional[str] = None
+    cost_risk_component: Optional[float] = None
+    schedule_risk_component: Optional[float] = None
+    predicted_cost_overrun: Optional[float] = None
+    predicted_schedule_delay: Optional[float] = None
     cost_overrun_probability: Optional[float] = None
     time_overrun_probability: Optional[float] = None
     predicted_additional_overrun_pct: Optional[float] = None

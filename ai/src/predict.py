@@ -73,28 +73,51 @@ def load_all_models(models_dir: str = None) -> Dict[str, Any]:
         "cold_time_cls_6m_preprocessor": "cold_start/preprocessing/time_cls_6m_preprocessor.pkl",
     }
 
-    def _patch_transformer(obj):
-        if hasattr(obj, "transformers_"):
-            for _, trans, _ in obj.transformers_:
-                _patch_transformer(trans)
-        elif hasattr(obj, "steps"):
-            for _, step in obj.steps:
-                _patch_transformer(step)
-        elif hasattr(obj, "_fit_dtype") and not hasattr(obj, "_fill_dtype"):
-            obj._fill_dtype = obj._fit_dtype
-
     all_files = {**mature_model_files, **cold_model_files}
     for name, fname in all_files.items():
         path = models_dir / fname
         if path.exists():
             try:
-                obj = joblib.load(path)
-                _patch_transformer(obj)
-                models[name] = obj
+                models[name] = joblib.load(path)
             except Exception as e:
                 print(f"[WARNING] Error loading {name}: {e}")
         else:
             pass
+
+    # Load synchronized canonical XGBoost models and full preprocessor from train_models.py
+    json_model_files = {
+        "best_model_schedule_delay": "best_model_schedule_delay.json",
+        "xgb_schedule_model": "best_model_schedule_delay.json",
+        "best_model_anticipated_cost": "best_model_anticipated_cost.json",
+        "best_model_delay_risk": "best_model_delay_risk.json",
+    }
+    for name, fname in json_model_files.items():
+        path = models_dir / fname
+        if not path.exists():
+            fallback = Path(models_dir).parent.parent / "results" / "best_model" / fname
+            if fallback.exists():
+                path = fallback
+        if path.exists():
+            try:
+                import xgboost as xgb
+                if "risk" in name or "classifier" in name:
+                    m = xgb.XGBClassifier()
+                else:
+                    m = xgb.XGBRegressor()
+                m.load_model(str(path))
+                models[name] = m
+            except Exception as e:
+                print(f"[WARNING] Error loading {name} from {path}: {e}")
+
+    # Canonical full preprocessor
+    prep_path = models_dir / "preprocessor.joblib"
+    if not prep_path.exists():
+        prep_path = Path(models_dir).parent.parent / "results" / "best_model" / "preprocessor.joblib"
+    if prep_path.exists() and "preprocessor" not in models:
+        try:
+            models["preprocessor"] = joblib.load(prep_path)
+        except Exception as e:
+            print(f"[WARNING] Error loading preprocessor.joblib: {e}")
 
     print(f"Loaded {len(models)} model/preprocessor files from {models_dir}.")
     return models

@@ -117,91 +117,99 @@ class AIEngine:
         if not mask.any() and "legacy_ocms_code" in self.df_cache.columns:
             mask = (self.df_cache["legacy_ocms_code"].astype(str) == clean_pid)
 
-        from app.database import SessionLocal
-        from app.models.project import Project
-        db = SessionLocal()
         try:
-            proj = db.query(Project).filter(
-                (Project.id == clean_pid) | (Project.project_code == clean_pid) | (Project.legacy_ocms_code == clean_pid)
-            ).first()
-            if proj:
-                if mask.any():
-                    sorted_sub = self.df_cache[mask].sort_values("report_month")
-                    last_idx = sorted_sub.index[-1]
-                    cur_p = float(self.df_cache.loc[last_idx, "physical_progress_pct"] or 0)
-                    if proj.physical_progress is not None and float(proj.physical_progress) > cur_p:
-                        self.df_cache.loc[last_idx, "physical_progress_pct"] = float(proj.physical_progress)
-                    cur_e = float(self.df_cache.loc[last_idx, "cumulative_expenditure_crore"] or 0)
-                    if proj.cumulative_expenditure is not None and float(proj.cumulative_expenditure) > cur_e:
-                        self.df_cache.loc[last_idx, "cumulative_expenditure_crore"] = float(proj.cumulative_expenditure)
-                    if proj.schedule_extension_months is not None and float(proj.schedule_extension_months) > 0:
-                        self.df_cache.loc[last_idx, "schedule_extension_months"] = float(proj.schedule_extension_months)
-                    if proj.name:
-                        self.df_cache.loc[mask, "project_name"] = proj.name
-                else:
-                    logger.info("Project %s not in master CSV; looking up in PostgreSQL to construct real feature snapshot", clean_pid)
-                    orig_c = float(proj.original_cost or 0.0)
-                    rev_c = float(proj.revised_cost or orig_c)
-                    cum_e = float(proj.cumulative_expenditure or 0.0)
-                    phys_p = float(proj.physical_progress or 0.0)
-                    sched_ext = float(proj.schedule_extension_months or 0.0)
-                    eff_doc = proj.actual_completion_date or proj.expected_completion_date or proj.original_completion_date
+            from app.database import SessionLocal
+            from app.models.project import Project
+            db = SessionLocal()
+            try:
+                proj = db.query(Project).filter(
+                    (Project.id == clean_pid) | (Project.project_code == clean_pid) | (Project.legacy_ocms_code == clean_pid)
+                ).first()
+                if proj:
+                    if mask.any():
+                        sorted_sub = self.df_cache[mask].sort_values("report_month")
+                        last_idx = sorted_sub.index[-1]
+                        cur_p = float(self.df_cache.loc[last_idx, "physical_progress_pct"] or 0)
+                        if proj.physical_progress is not None and float(proj.physical_progress) > cur_p:
+                            self.df_cache.loc[last_idx, "physical_progress_pct"] = float(proj.physical_progress)
+                        cur_e = float(self.df_cache.loc[last_idx, "cumulative_expenditure_crore"] or 0)
+                        if proj.cumulative_expenditure is not None and float(proj.cumulative_expenditure) > cur_e:
+                            self.df_cache.loc[last_idx, "cumulative_expenditure_crore"] = float(proj.cumulative_expenditure)
+                        if proj.schedule_extension_months is not None and float(proj.schedule_extension_months) > 0:
+                            self.df_cache.loc[last_idx, "schedule_extension_months"] = float(proj.schedule_extension_months)
+                        if proj.name:
+                            self.df_cache.loc[mask, "project_name"] = proj.name
+                    else:
+                        logger.info("Project %s not in master CSV; looking up in PostgreSQL to construct real feature snapshot", clean_pid)
+                        orig_c = float(proj.original_cost or 0.0)
+                        rev_c = float(proj.revised_cost or orig_c)
+                        cum_e = float(proj.cumulative_expenditure or 0.0)
+                        phys_p = float(proj.physical_progress or 0.0)
+                        sched_ext = float(proj.schedule_extension_months or 0.0)
+                        eff_doc = proj.actual_completion_date or proj.expected_completion_date or proj.original_completion_date
 
-                    real_row = {
-                        "project_id": str(proj.id),
-                        "project_name": proj.name,
-                        "agency": proj.implementing_agency or "Government of India",
-                        "ministry_department": proj.ministry.name if proj.ministry else "Infrastructure",
-                        "sector": proj.sector.name if proj.sector else "Infrastructure",
-                        "state": proj.state or "India",
-                        "report_month": pd.to_datetime("today"),
-                        "approval_start": pd.to_datetime(proj.start_date) if proj.start_date else None,
-                        "original_target_doc": pd.to_datetime(proj.original_completion_date) if proj.original_completion_date else None,
-                        "revised_doc": pd.to_datetime(eff_doc) if eff_doc else None,
-                        "project_age_months": float(proj.project_age_months or 12.0),
-                        "original_duration_months": 36.0,
-                        "planned_remaining_months": 0.0,
-                        "revised_remaining_months": 0.0,
-                        "schedule_extension_months": sched_ext,
-                        "extension_rate_pct": (sched_ext / 36.0 * 100.0) if sched_ext > 0 else 0.0,
-                        "original_cost_crore": orig_c,
-                        "revised_cost_crore": rev_c,
-                        "cumulative_expenditure_crore": cum_e,
-                        "cost_overrun_pct": float(proj.cost_overrun_pct or 0.0),
-                        "expenditure_ratio_pct": float(proj.expenditure_ratio_pct or ((cum_e / rev_c * 100.0) if rev_c > 0 else 0.0)),
-                        "cost_escalation_crore": float(proj.cost_escalation_crore or max(0.0, rev_c - orig_c)),
-                        "cost_escalation_ratio": (rev_c / orig_c) if orig_c > 0 else 1.0,
-                        "remaining_budget_crore": max(0.0, rev_c - cum_e),
-                        "expenditure_velocity_crore_month": 0.0,
-                        "physical_progress_pct": phys_p,
-                        "remaining_work_pct": max(0.0, 100.0 - phys_p),
-                        "physical_progress_delta_1m": 0.0,
-                        "physical_progress_delta_3m": 0.0,
-                        "physical_progress_delta_6m": 0.0,
-                        "progress_velocity_3m": 0.0,
-                        "progress_velocity_6m": 0.0,
-                        "progress_trend_slope": 0.0,
-                        "physical_financial_gap_pct": abs(phys_p - ((cum_e / rev_c * 100.0) if rev_c > 0 else 0.0)),
-                        "physical_to_expenditure_ratio": (phys_p / (cum_e / rev_c * 100.0)) if (cum_e > 0 and rev_c > 0) else 1.0,
-                        "progress_expenditure_mismatch_flag": 0,
-                        "high_expenditure_low_progress_flag": 0,
-                        "days_to_original_target": 0.0,
-                        "days_to_revised_target": 0.0,
-                        "schedule_status": proj.schedule_status,
-                        "overdue_days": float(proj.delay_days or 0),
-                        "extension_count": 1 if sched_ext > 0 else 0,
-                        "cost_overrun_delta_1m": 0.0,
-                        "cost_overrun_delta_3m": 0.0,
-                        "cost_overrun_trend_slope": 0.0,
-                        "expenditure_ratio_delta_1m": 0.0,
-                        "expenditure_ratio_delta_3m": 0.0,
-                        "schedule_extension_delta_1m": 0.0,
-                        "risk_signal_count": 0,
-                        "legacy_ocms_code": proj.legacy_ocms_code
-                    }
-                    self.df_cache = pd.concat([self.df_cache, pd.DataFrame([real_row])], ignore_index=True)
-        finally:
-            db.close()
+                        real_row = {
+                            "project_id": str(proj.id),
+                            "project_name": proj.name or "Unknown Project",
+                            "agency": proj.agency or "Other",
+                            "sector": proj.sector or "Other",
+                            "state": proj.state or "Multi-State",
+                            "ministry_department": proj.ministry or "Other",
+                            "report_month": pd.Timestamp.now().strftime("%Y-%m-01"),
+                            "original_cost_crore": orig_c,
+                            "revised_cost_crore": rev_c,
+                            "cost_escalation_crore": max(0.0, rev_c - orig_c),
+                            "cost_overrun_pct": ((rev_c - orig_c) / orig_c * 100.0) if orig_c > 0 else 0.0,
+                            "cumulative_expenditure_crore": cum_e,
+                            "expenditure_ratio_pct": (cum_e / rev_c * 100.0) if rev_c > 0 else 0.0,
+                            "physical_progress_pct": phys_p,
+                            "schedule_extension_months": sched_ext,
+                            "original_duration_months": 36.0,
+                            "revised_remaining_months": 12.0,
+                            "planned_remaining_months": 12.0,
+                            "project_age_months": 24.0,
+                            "remaining_budget_crore": max(0.0, rev_c - cum_e),
+                            "expenditure_velocity_crore_month": (cum_e / 24.0) if cum_e > 0 else 5.0,
+                            "physical_financial_gap": ((cum_e / rev_c * 100.0) if rev_c > 0 else 0.0) - phys_p,
+                            "progress_minus_expenditure_gap": phys_p - ((cum_e / rev_c * 100.0) if rev_c > 0 else 0.0),
+                            "expenditure_vs_progress_ratio": ((cum_e / rev_c * 100.0) if rev_c > 0 else 0.0) / max(phys_p, 0.1),
+                            "cost_overrun_negative_flag": 1.0 if rev_c < orig_c else 0.0,
+                            "is_extended_flag": 1.0 if sched_ext > 0 else 0.0,
+                            "is_overdue_flag": 1.0 if sched_ext > 0 else 0.0,
+                            "extension_rate_pct": (sched_ext / 36.0 * 100.0),
+                            "original_target_doc": pd.Timestamp(eff_doc) if eff_doc else None,
+                            "revised_doc": pd.Timestamp(eff_doc) if eff_doc else None,
+                            "snapshot_history_count": 1,
+                            "consecutive_stagnant_months": 0,
+                            "physical_progress_delta_1m": 0.0,
+                            "physical_progress_delta_3m": 0.0,
+                            "physical_progress_delta_6m": 0.0,
+                            "progress_velocity_3m": 0.0,
+                            "progress_velocity_6m": 0.0,
+                            "progress_trend_slope": 0.0,
+                            "physical_financial_gap_pct": abs(phys_p - ((cum_e / rev_c * 100.0) if rev_c > 0 else 0.0)),
+                            "physical_to_expenditure_ratio": (phys_p / (cum_e / rev_c * 100.0)) if (cum_e > 0 and rev_c > 0) else 1.0,
+                            "progress_expenditure_mismatch_flag": 0,
+                            "high_expenditure_low_progress_flag": 0,
+                            "days_to_original_target": 0.0,
+                            "days_to_revised_target": 0.0,
+                            "schedule_status": proj.schedule_status,
+                            "overdue_days": float(proj.delay_days or 0),
+                            "extension_count": 1 if sched_ext > 0 else 0,
+                            "cost_overrun_delta_1m": 0.0,
+                            "cost_overrun_delta_3m": 0.0,
+                            "cost_overrun_trend_slope": 0.0,
+                            "expenditure_ratio_delta_1m": 0.0,
+                            "expenditure_ratio_delta_3m": 0.0,
+                            "schedule_extension_delta_1m": 0.0,
+                            "risk_signal_count": 0,
+                            "legacy_ocms_code": proj.legacy_ocms_code
+                        }
+                        self.df_cache = pd.concat([self.df_cache, pd.DataFrame([real_row])], ignore_index=True)
+            finally:
+                db.close()
+        except Exception as e:
+            logger.warning("Could not sync project status with DB (offline/db error): %s", e)
 
         return self.df_cache
 

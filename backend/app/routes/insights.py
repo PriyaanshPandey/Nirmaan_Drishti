@@ -27,10 +27,10 @@ def get_insights_summary(db: Session = Depends(get_db)) -> Dict[str, Any]:
     total = db.query(func.count(Project.id)).scalar() or 0
 
     # ─── Core Risk Aggregates ─────────────────────────────────────────────────
-    high_risk = db.query(func.count(Project.id)).filter(Project.risk_score >= 70).scalar() or 0
-    critical = db.query(func.count(Project.id)).filter(Project.risk_score >= 85).scalar() or 0
+    critical = db.query(func.count(Project.id)).filter(Project.risk_score >= 80).scalar() or 0
+    high_risk = db.query(func.count(Project.id)).filter(Project.risk_score >= 60).scalar() or 0
     early_warning = db.query(func.count(Project.id)).filter(
-        Project.risk_score.between(50, 69)
+        Project.risk_score.between(35, 59.99)
     ).scalar() or 0
     cost_overrun_count = db.query(func.count(Project.id)).filter(
         Project.cost_overrun_pct > 5

@@ -105,9 +105,9 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         func.sum(Project.original_cost).label("tot_orig"),
         func.sum(Project.revised_cost).label("tot_rev"),
         func.sum(Project.cumulative_expenditure).label("tot_exp"),
-        func.count(case((Project.risk_score >= 70, 1))).label("high_risk"),
-        func.count(case((Project.risk_score.between(50, 69), 1))).label("med_risk"),
-        func.count(case((Project.risk_score < 50, 1))).label("low_risk"),
+        func.count(case((Project.risk_score >= 60, 1))).label("high_risk"),
+        func.count(case((Project.risk_score.between(35, 59.99), 1))).label("med_risk"),
+        func.count(case((or_(Project.risk_score < 35, Project.risk_score == None), 1))).label("low_risk"),
         func.count(case((on_track_condition, 1))).label("on_track"),
         func.count(case((monitoring_condition, 1))).label("monitoring"),
         func.count(case((high_risk_condition, 1))).label("delayed"),
@@ -145,9 +145,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     c_low_risk = stats.low_risk or 0
 
     if total_projects > 0 and (c_high_risk + c_med_risk + c_low_risk) != total_projects:
-        c_high_risk = c_critical + c_delayed if (c_critical + c_delayed) > 0 else int(total_projects * 0.135)
-        c_med_risk = c_monitoring if c_monitoring > 0 else int(total_projects * 0.315)
-        c_low_risk = total_projects - (c_high_risk + c_med_risk)
+        c_low_risk = max(0, total_projects - (c_high_risk + c_med_risk))
 
     national_risk_dist = [
         RiskSegment(id="high_risk", name="High Risk / Critical", count=c_high_risk, color="#EF4444", percentage=round(c_high_risk / denom * 100, 1)),

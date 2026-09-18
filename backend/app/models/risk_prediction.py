@@ -19,9 +19,13 @@ class RiskPrediction(Base):
     as_of_month = Column(Date, nullable=True)
     horizon_months = Column(Integer, default=3, nullable=False)
 
-    # Risk Probabilities (0.0 to 1.0) and Levels
-    risk_score = Column(Integer, nullable=True)
+    # Centralized Risk Engine Dynamic Scores and Components
+    risk_score = Column(Numeric(10, 2), nullable=True)
     risk_level = Column(String(50), nullable=True)
+    cost_risk_component = Column(Numeric(10, 2), nullable=True)
+    schedule_risk_component = Column(Numeric(10, 2), nullable=True)
+    predicted_cost_overrun = Column(Numeric(16, 2), nullable=True)
+    predicted_schedule_delay = Column(Numeric(14, 2), nullable=True)
     cost_overrun_probability = Column(Numeric(8, 4), nullable=True)
     time_overrun_probability = Column(Numeric(8, 4), nullable=True)
 

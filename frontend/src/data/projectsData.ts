@@ -37,11 +37,15 @@ asOfDate?: string;
   costSubtext: string;
   riskScore: number; // 0 to 100
   riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
-  description: string;
+  description?: string;
   costRisk: number;
   timeRisk: number;
   implRisk: number;
   overallRisk: number;
+  costRiskComponent?: number;
+  scheduleRiskComponent?: number;
+  predictedCostOverrun?: number;
+  predictedScheduleDelay?: number;
 }
 
 export interface ProjectMilestone {

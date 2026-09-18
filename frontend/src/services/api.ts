@@ -191,6 +191,10 @@ export interface RiskPredictionData {
   horizon_months: number;
   risk_score: number;
   risk_level: string;
+  cost_risk_component?: number;
+  schedule_risk_component?: number;
+  predicted_cost_overrun?: number;
+  predicted_schedule_delay?: number;
   cost_overrun_probability: number;
   time_overrun_probability: number;
   predicted_additional_overrun_pct: number;
@@ -395,6 +399,68 @@ export interface ChatResponse {
   question: string;
   answer: string;
 }
+
+export interface WhatIfRequest {
+  additional_cost: number;
+  additional_delay_months: number;
+  monthly_expenditure?: number | null;
+}
+
+export interface WhatIfMetricItem {
+  cost: number;
+  project_cost?: number;
+  remaining_months: number;
+  monthly_expenditure: number;
+  predicted_cost_overrun: number;
+  predicted_schedule_delay: number;
+  risk_score: number;
+  risk_level: string;
+  cost_risk_component: number;
+  schedule_risk_component: number;
+  estimated_months_to_complete?: number | null;
+}
+
+export interface WhatIfImpactItem {
+  cost_change: number;
+  cost?: number;
+  remaining_months_change: number;
+  remaining_months?: number;
+  expenditure_change: number;
+  monthly_expenditure?: number;
+  cost_overrun_change: number;
+  cost_overrun?: number;
+  schedule_delay_change: number;
+  schedule_delay?: number;
+  risk_score_change: number;
+  risk_score?: number;
+}
+
+export interface PDPPoint {
+  x: number;
+  y: number;
+}
+
+export interface PDPCurve {
+  feature_name: string;
+  x_label: string;
+  y_label: string;
+  points: PDPPoint[];
+  baseline_point: PDPPoint;
+  scenario_point: PDPPoint;
+}
+
+export interface WhatIfResponse {
+  project_id: string;
+  project_name: string;
+  baseline: WhatIfMetricItem;
+  scenario: WhatIfMetricItem;
+  impact: WhatIfImpactItem;
+  change?: WhatIfImpactItem;
+  pdp_cost: PDPCurve;
+  pdp_schedule: PDPCurve;
+  narrative_insight: string;
+}
+
 
 // Resilient fallback dataset for zero-downtime offline state
 // Dynamic resilient fallback generators based on live projectsData
@@ -690,6 +756,22 @@ export function clearApiCache(): void {
 }
 
 export const api = {
+  /**
+   * Run Real Backend ML Counterfactual What-If Simulation
+   */
+  async simulateWhatIf(projectId: string, payload: WhatIfRequest): Promise<WhatIfResponse> {
+    const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/what-if`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || `Simulation failed with status ${res.status}`);
+    }
+    return await res.json();
+  },
+
   /**
    * System & Database Health Check
    */

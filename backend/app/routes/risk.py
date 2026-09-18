@@ -2,6 +2,7 @@
 Risk and Prediction API Router.
 Connects FastAPI to the ML Risk Client and database prediction logs.
 """
+import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -15,7 +16,10 @@ from app.schemas.risk import RiskPredictionResponse, RiskSummaryResponse
 from app.schemas.project import ProjectResponse
 from app.routes.projects import format_project_response
 from app.ml_integration.risk_client import get_ml_client
+from app.services.risk_engine import calculate_risk_score, get_risk_level
 from app.audit import log_audit_event
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/risk", tags=["Risk"])
 
@@ -43,18 +47,20 @@ def get_risk_summary(db: Session = Depends(get_db)):
             distribution_categories=[]
         )
 
-    high_risk = db.query(func.count(Project.id)).filter(Project.risk_score >= 70).scalar() or 0
+    critical_count = db.query(func.count(Project.id)).filter(Project.risk_score >= 80).scalar() or 0
+    high_count = db.query(func.count(Project.id)).filter(Project.risk_score.between(60, 79.99)).scalar() or 0
+    high_risk = critical_count + high_count
     time_overrun = db.query(func.count(Project.id)).filter(Project.schedule_extension_months > 0).scalar() or 0
     cost_overrun = db.query(func.count(Project.id)).filter(Project.cost_overrun_pct > 0).scalar() or 0
-    early_warning = db.query(func.count(Project.id)).filter(Project.risk_score.between(50, 69)).scalar() or 0
-    low_risk = db.query(func.count(Project.id)).filter(Project.risk_score < 50).scalar() or 0
+    early_warning = db.query(func.count(Project.id)).filter(Project.risk_score.between(35, 59.99)).scalar() or 0
+    low_risk = db.query(func.count(Project.id)).filter(Project.risk_score < 35).scalar() or 0
     avg_score = db.query(func.avg(Project.risk_score)).scalar() or 35.0
 
     categories = [
-        {"category": "Critical Risk (>80)", "count": db.query(func.count(Project.id)).filter(Project.risk_score >= 80).scalar() or 0, "color": "#EF4444"},
-        {"category": "High Risk (70-79)", "count": db.query(func.count(Project.id)).filter(Project.risk_score.between(70, 79)).scalar() or 0, "color": "#F97316"},
-        {"category": "Moderate Risk (50-69)", "count": early_warning, "color": "#EAB308"},
-        {"category": "Low Risk (<50)", "count": low_risk, "color": "#22C55E"}
+        {"category": "Critical Risk (≥80)", "count": critical_count, "color": "#EF4444"},
+        {"category": "High Risk (60-79)", "count": high_count, "color": "#F97316"},
+        {"category": "Moderate Risk (35-59)", "count": early_warning, "color": "#EAB308"},
+        {"category": "Low Risk (<35)", "count": low_risk, "color": "#22C55E"}
     ]
 
     return RiskSummaryResponse(
@@ -90,6 +96,17 @@ def get_project_risk(project_id: str, horizon: int = Query(3, description="Forec
     ).order_by(desc(RiskPrediction.prediction_date)).first()
 
     if pred:
+        # Dynamic risk components calculation if not present on stored record
+        if pred.cost_risk_component is None or pred.schedule_risk_component is None:
+            c_val = float(pred.predicted_final_cost_overrun_pct if pred.predicted_final_cost_overrun_pct is not None else (pred.predicted_additional_overrun_pct or 0.0))
+            t_val = float(pred.predicted_total_schedule_extension_months if pred.predicted_total_schedule_extension_months is not None else (pred.predicted_additional_delay_months or 0.0))
+            res = calculate_risk_score(c_val, t_val)
+            pred.cost_risk_component = res.cost_risk_component
+            pred.schedule_risk_component = res.schedule_risk_component
+            pred.predicted_cost_overrun = c_val
+            pred.predicted_schedule_delay = t_val
+            pred.risk_score = res.risk_score
+            pred.risk_level = res.risk_level
         return pred
 
     # If not stored yet, trigger on-the-fly prediction
@@ -99,7 +116,7 @@ def get_project_risk(project_id: str, horizon: int = Query(3, description="Forec
 @router.post("/projects/{project_id}/predict", response_model=RiskPredictionResponse, summary="Execute ML Prediction for Project")
 def predict_project_risk(project_id: str, horizon: int = Query(3, description="Forecast horizon (3 or 6)"), db: Session = Depends(get_db)):
     """
-    Trigger real XGBoost ML model prediction for a project, store in database, and return results.
+    Trigger real XGBoost ML model prediction for a project, compute dynamic risk score via centralized engine, store in database, and return results.
     """
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
@@ -141,13 +158,43 @@ def predict_project_risk(project_id: str, horizon: int = Query(3, description="F
                 "shap_value": p.get("shap_value", 0.0)
             })
 
+        # Dynamically calculate Risk Score from model predictions via centralized engine
+        pred_cost_overrun = cost_p.get("predicted_final_cost_overrun_pct")
+        if pred_cost_overrun is None:
+            pred_cost_overrun = cost_p.get("predicted_additional_overrun_pct")
+        if pred_cost_overrun is None and project.cost_overrun_pct is not None:
+            pred_cost_overrun = float(project.cost_overrun_pct)
+        pred_cost_overrun = float(pred_cost_overrun) if pred_cost_overrun is not None else 0.0
+
+        pred_schedule_delay = time_p.get("predicted_total_schedule_extension_months")
+        if pred_schedule_delay is None:
+            pred_schedule_delay = time_p.get("predicted_additional_delay_months")
+        if pred_schedule_delay is None and project.schedule_extension_months is not None:
+            pred_schedule_delay = float(project.schedule_extension_months)
+        pred_schedule_delay = float(pred_schedule_delay) if pred_schedule_delay is not None else 0.0
+
+        risk_result = calculate_risk_score(
+            predicted_cost_overrun=pred_cost_overrun,
+            predicted_schedule_delay=pred_schedule_delay
+        )
+
+        # Update Project record with dynamic risk outputs
+        project.risk_score = int(round(risk_result.risk_score))
+        project.risk_level = risk_result.risk_level
+        project.cost_risk = int(round(risk_result.cost_risk_component))
+        project.time_risk = int(round(risk_result.schedule_risk_component))
+
         # Create or update prediction record in DB
         pred_record = RiskPrediction(
             project_id=project_id,
             prediction_date=datetime.utcnow(),
             horizon_months=horizon,
-            risk_score=project.risk_score,
-            risk_level=project.risk_level,
+            risk_score=risk_result.risk_score,
+            risk_level=risk_result.risk_level,
+            cost_risk_component=risk_result.cost_risk_component,
+            schedule_risk_component=risk_result.schedule_risk_component,
+            predicted_cost_overrun=pred_cost_overrun,
+            predicted_schedule_delay=pred_schedule_delay,
             cost_overrun_probability=cost_p.get("additional_escalation_probability"),
             time_overrun_probability=time_p.get("additional_delay_probability"),
             predicted_additional_overrun_pct=cost_p.get("predicted_additional_overrun_pct"),

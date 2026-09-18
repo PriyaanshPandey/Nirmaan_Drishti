@@ -703,10 +703,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
           const currProg = proj.progressPhysical || 0;
           const progFin = proj.progressFinancial || 0;
-          const rScore = proj.riskScore || 50;
-          const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : rScore;
-          const delayProb = (tRisk * 0.88).toFixed(1);
-          const delayMonths = (tRisk * 0.048 + 1.8).toFixed(1);
+          const rScore = proj.riskScore ?? 0;
+          const tRisk = proj.timeRisk ?? rScore;
+          const delayProb = mlPrediction?.time_overrun_probability ? (mlPrediction.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
+          const delayMonths = mlPrediction?.predicted_additional_delay_months ? Number(mlPrediction.predicted_additional_delay_months).toFixed(1) : Number(proj.scheduleExtensionMonths || 0).toFixed(1);
           const costDiff = costRev - costApp;
           const costDiffPct = costApp > 0 ? ((costDiff / costApp) * 100).toFixed(1) : '0.0';
           const remBudget = Math.max(0, costRev - currExp).toFixed(2);
@@ -2014,18 +2014,19 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const deltaPct = costApp > 0 ? (((costRev - costApp) / costApp) * 100).toFixed(1) : '0.0';
           const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
           const isComp = proj.isCompleted || proj.projectStatus === 'COMPLETED' || (proj.progressPhysical || 0) >= 100;
-          const rScore = proj.riskScore || 50;
-          const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : rScore;
-          const addDelayMo = isComp ? '0.0' : (tRisk * 0.03).toFixed(1);
-          const delayProb = isComp ? '0.0' : (tRisk * 0.88).toFixed(1);
+          const rScore = proj.riskScore ?? 0;
+          const tRisk = proj.timeRisk ?? rScore;
+          const cRisk = proj.costRisk ?? rScore;
+          const addDelayMo = isComp ? '0.0' : (mlPrediction?.predicted_additional_delay_months ? Number(mlPrediction.predicted_additional_delay_months).toFixed(1) : (extMo > 0 ? extMo.toFixed(1) : '0.0'));
+          const delayProb = isComp ? '0.0' : (mlPrediction?.time_overrun_probability ? (mlPrediction.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1));
 
           // Target / Completion Date
           const formattedTargetDate = isComp
             ? (proj.actualCompletion || proj.expectedCompletion || 'Completed')
             : (proj.expectedCompletion || 'December 2026');
 
-          const schedRiskBadge = isComp ? 'LOW' : tRisk >= 70 ? 'HIGH' : tRisk >= 40 ? 'MEDIUM' : 'LOW';
-          const costRiskBadge = isComp ? 'LOW' : deltaCostVal > costApp * 0.2 ? 'HIGH' : deltaCostVal > 0 ? 'MEDIUM' : 'LOW';
+          const schedRiskBadge = isComp ? 'LOW' : tRisk >= 60 ? 'HIGH' : tRisk >= 35 ? 'MEDIUM' : 'LOW';
+          const costRiskBadge = isComp ? 'LOW' : cRisk >= 60 ? 'HIGH' : cRisk >= 35 ? 'MEDIUM' : 'LOW';
 
           // Dynamic Recommendations Generator
           const recommendations = [];

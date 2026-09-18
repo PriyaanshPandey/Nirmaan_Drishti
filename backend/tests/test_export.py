@@ -2,16 +2,34 @@
 Test script to verify CSV export endpoint and validate content.
 """
 import sys
+import pytest
 from pathlib import Path
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
+# Ensure backend and ai are at the head of sys.path, and purge any conflicting root 'app'
+backend_dir = Path(__file__).resolve().parent.parent
+ai_dir = backend_dir.parent / "ai"
+if str(backend_dir) in sys.path:
+    sys.path.remove(str(backend_dir))
+sys.path.insert(0, str(backend_dir))
+
+if str(ai_dir) in sys.path:
+    sys.path.remove(str(ai_dir))
+sys.path.insert(1, str(ai_dir))
+
+if "app" in sys.modules:
+    mod = sys.modules["app"]
+    if getattr(mod, "__file__", None) is None or "backend" not in str(getattr(mod, "__file__", "")):
+        to_del = [k for k in sys.modules if k == "app" or k.startswith("app.")]
+        for k in to_del:
+            del sys.modules[k]
 
 from fastapi.testclient import TestClient
 from app.main import app
+from app.database import check_db_connection
 
 client = TestClient(app)
+
+pytestmark = pytest.mark.skipif(not check_db_connection(), reason="Live PostgreSQL database is offline")
 
 def test_export_endpoints():
     print("=" * 65)
