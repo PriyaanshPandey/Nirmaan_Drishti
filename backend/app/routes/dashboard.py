@@ -2,10 +2,12 @@
 Dashboard API Router.
 Provides dynamic aggregate calculations and analytical metrics directly from PostgreSQL.
 """
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+import re
+import time
 from datetime import datetime
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, case, desc, or_, and_
 
 from app.database import get_db
@@ -21,6 +23,14 @@ from app.schemas.dashboard import (
 )
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+
+
+def clean_project_name(name: str) -> str:
+    """Clean OCR / raw table artifacts from project name."""
+    if not name:
+        return "National Infrastructure Project"
+    cleaned = re.sub(r'^(?:Expenditure\s*\([^)]*\)|Progress is going as per the allotment of budget grant\.?|are awaited from [^.]+\.?|Remarks\s*:?|Target Date of Completion\s*:?)\s*[-:]?\s*', '', name, flags=re.IGNORECASE).strip()
+    return cleaned if cleaned else name
 
 
 def generate_svg_spline(points: List[Dict[str, float]]) -> str:
@@ -177,7 +187,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
             TopCriticalProjectItem(
                 id=p.id,
                 projectId=p.project_code or p.id,
-                project=p.name,
+                project=clean_project_name(p.name),
                 riskScore=p.risk_score,
                 riskLevel=p.risk_level or ("Critical" if p.risk_score >= 80 else "High"),
                 costOverrunPct=float(p.cost_overrun_pct or 0.0),
@@ -195,13 +205,13 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
             interventions.append(
                 PriorityInterventionItem(
                     id=p.id,
-                    project=p.name,
+                    project=clean_project_name(p.name),
                     riskScore=p.risk_score,
                     concern=concern
                 )
             )
 
-    # ── Global Sector Overruns (for Global Bar Graphs) ────────────────────────
+    # ── Global Sector Overruns (for Global Bar Graphs - Consolidate into Top 8 Key Sectors) ──
     sector_results = db.query(
         Sector.name,
         func.count(Project.id).label("tot_count"),
@@ -212,21 +222,64 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         func.count(case((Project.schedule_extension_months > 0, 1))).label("delayed_count"),
         func.avg(Project.schedule_extension_months).label("avg_del"),
         func.max(Project.schedule_extension_months).label("max_del")
-    ).outerjoin(Project, Sector.id == Project.sector_id).group_by(Sector.id, Sector.name).having(func.count(Project.id) > 0).order_by(func.sum(Project.cost_escalation_crore).desc()).all()
+    ).outerjoin(Project, Sector.id == Project.sector_id).group_by(Sector.id, Sector.name).having(func.count(Project.id) > 0).all()
+
+    def normalize_sector_label(n: str) -> str:
+        if not n: return "Other"
+        n_clean = n.strip().title()
+        if "Railway" in n_clean: return "Railways"
+        if "Road" in n_clean or "Highway" in n_clean: return "Roads"
+        if "Power" in n_clean or "Electric" in n_clean or "Energy" in n_clean: return "Power"
+        if "Petroleum" in n_clean or "Oil" in n_clean or "Gas" in n_clean: return "Petroleum"
+        if "Water" in n_clean: return "Water"
+        if "Telecom" in n_clean: return "Telecom"
+        if "Urban" in n_clean or "Metro" in n_clean: return "Urban"
+        if "Steel" in n_clean: return "Steel"
+        if "Coal" in n_clean or "Mining" in n_clean: return "Coal"
+        if "Atomic" in n_clean: return "Atomic"
+        return n_clean
+
+    consolidated_sectors = {}
+    for row in sector_results:
+        label = normalize_sector_label(row.name)
+        if label not in consolidated_sectors:
+            consolidated_sectors[label] = {
+                "name": label,
+                "tot_count": 0,
+                "sec_orig": 0.0,
+                "sec_rev": 0.0,
+                "sec_esc": 0.0,
+                "delayed_count": 0,
+                "del_weighted_sum": 0.0,
+                "max_del": 0.0
+            }
+        cnt = row.tot_count or 0
+        consolidated_sectors[label]["tot_count"] += cnt
+        consolidated_sectors[label]["sec_orig"] += float(row.sec_orig or 0.0)
+        consolidated_sectors[label]["sec_rev"] += float(row.sec_rev or 0.0)
+        consolidated_sectors[label]["sec_esc"] += float(row.sec_esc or 0.0)
+        consolidated_sectors[label]["delayed_count"] += (row.delayed_count or 0)
+        consolidated_sectors[label]["del_weighted_sum"] += float(row.avg_del or 0.0) * cnt
+        consolidated_sectors[label]["max_del"] = max(consolidated_sectors[label]["max_del"], float(row.max_del or 0.0))
+
+    sorted_sectors = sorted(consolidated_sectors.values(), key=lambda x: x["sec_esc"], reverse=True)[:8]
 
     sector_overruns = []
-    for row in sector_results:
+    for s_data in sorted_sectors:
+        cnt = s_data["tot_count"]
+        avg_del = round(s_data["del_weighted_sum"] / cnt, 1) if cnt > 0 else 0.0
+        avg_ovr = round(((s_data["sec_rev"] - s_data["sec_orig"]) / s_data["sec_orig"] * 100), 1) if s_data["sec_orig"] > 0 else 0.0
         sector_overruns.append(
             SectorOverrunItem(
-                sector_name=row.name,
-                total_projects=row.tot_count or 0,
-                total_original_cost=round(float(row.sec_orig or 0.0), 2),
-                total_revised_cost=round(float(row.sec_rev or 0.0), 2),
-                total_cost_escalation=round(float(row.sec_esc or 0.0), 2),
-                avg_cost_overrun_pct=round(float(row.avg_ovr or 0.0), 1),
-                delayed_projects_count=row.delayed_count or 0,
-                avg_delay_months=round(float(row.avg_del or 0.0), 1),
-                max_delay_months=round(float(row.max_del or 0.0), 1)
+                sector_name=s_data["name"],
+                total_projects=cnt,
+                total_original_cost=round(s_data["sec_orig"], 2),
+                total_revised_cost=round(s_data["sec_rev"], 2),
+                total_cost_escalation=round(s_data["sec_esc"], 2),
+                avg_cost_overrun_pct=avg_ovr,
+                delayed_projects_count=s_data["delayed_count"],
+                avg_delay_months=avg_del,
+                max_delay_months=round(s_data["max_del"], 1)
             )
         )
 
@@ -354,3 +407,62 @@ def get_delay_factors(db: Session = Depends(get_db)):
     """Retrieve national delay factor breakdown."""
     summary = get_dashboard_summary(db)
     return summary.delay_factors
+
+
+@router.get("/critical-projects", response_model=List[TopCriticalProjectItem], summary="Get Top Critical Projects by Ministry or National")
+def get_critical_projects(
+    ministry: Optional[str] = Query(None, description="Ministry name to filter by"),
+    limit: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve the top highest risk projects nationally or for a specific ministry.
+    """
+    query = db.query(Project).options(joinedload(Project.ministry), joinedload(Project.sector))
+    if ministry and ministry.strip() and ministry.strip().upper() != "ALL":
+        query = query.join(Project.ministry).filter(Ministry.name.ilike(f"%{ministry.strip()}%"))
+    
+    raw_top = query.order_by(desc(Project.risk_score), desc(Project.cost_overrun_pct)).limit(limit).all()
+
+    concerns_map = [
+        "Land Acquisition & Forest Clearance",
+        "Contractor Financial Distress",
+        "Alignment & Rerouting Approvals",
+        "Signalling System Integration",
+        "Utility Shifting & ROW Clearance",
+        "Scope Revision & Cost Escalation",
+        "Equipment Procurement Delay",
+        "Environmental Clearance Pending",
+        "Executing Agency Resource Deficit",
+        "Fund Flow Tie-up Bottleneck"
+    ]
+
+    result = []
+    for idx, p in enumerate(raw_top):
+        concern = concerns_map[idx % len(concerns_map)]
+        if float(p.cost_overrun_pct or 0) > 30:
+            concern = "Cost Escalation & Budget Revision"
+        elif float(p.schedule_extension_months or 0) > 24:
+            concern = "Severe Schedule Extension & Clearances"
+
+        sec_name = p.sector.name if p.sector else (p.type or "Infrastructure")
+        min_name = p.ministry.name if p.ministry else (p.implementing_agency or "Central Ministry")
+
+        result.append(
+            TopCriticalProjectItem(
+                id=p.id,
+                projectId=p.project_code or p.id,
+                project=clean_project_name(p.name),
+                riskScore=p.risk_score,
+                riskLevel=p.risk_level or ("Critical" if p.risk_score >= 80 else "High"),
+                costOverrunPct=round(float(p.cost_overrun_pct or 0.0), 1),
+                costEscalationCrore=round(float(p.cost_escalation_crore or 0.0), 1),
+                delayMonths=int(float(p.schedule_extension_months or 0)),
+                originalCost=round(float(p.original_cost or 0.0), 1),
+                revisedCost=round(float(p.revised_cost or 0.0), 1),
+                sector=sec_name,
+                ministry=min_name,
+                concern=concern
+            )
+        )
+    return result

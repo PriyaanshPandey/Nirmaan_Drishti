@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  ArrowLeft, ChevronDown, ShieldAlert, Award,
+  ArrowLeft, ArrowRight, ChevronDown, ShieldAlert, Award,
   AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
 } from 'lucide-react';
-import { type Project } from '../data/projectsData';
+import type { Project } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 import {
   api,
   type RiskPredictionData,
@@ -17,11 +18,14 @@ import {
   type ModelExplanationItem
 } from '../services/api';
 import './ProjectDetails.css';
+import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
+import { ProjectNavSidebar, type SidebarSection } from './ProjectNavSidebar';
 
 interface ProjectDetailsProps {
   projectId: string;
   onBack: () => void;
+  onTakeAction?: (projectId: string) => void;
 }
 
 interface AnimatedCounterProps {
@@ -183,7 +187,7 @@ const formatChatMessageText = (text: string) => {
   );
 };
 
-export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBack }) => {
+export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBack, onTakeAction }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [loadingProject, setLoadingProject] = useState(true);
   const [projectError, setProjectError] = useState(false);
@@ -212,6 +216,56 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [aiQuerying, setAiQuerying] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
+
+  // Sidebar navigation state — closed by default on page load
+  const [sidebarSection, setSidebarSection] = useState<SidebarSection>('basic');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = useCallback((sectionId: SidebarSection) => {
+    setSidebarSection(sectionId);
+    const el = document.getElementById(`pd-section-${sectionId}`);
+    if (el) {
+      const headerOffset = 88; // sticky header height
+      const elementTop = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementTop - headerOffset,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Track active section on scroll
+  useEffect(() => {
+    const sections: SidebarSection[] = ['basic', 'forecasts', 'escalation', 'warnings'];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace('pd-section-', '') as SidebarSection;
+            if (sections.includes(id)) {
+              setSidebarSection(id);
+            }
+          }
+        }
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+    sections.forEach((sec) => {
+      const el = document.getElementById(`pd-section-${sec}`);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [project]);
+
+  useEffect(() => {
+    if (!aiAssistantOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAiAssistantOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [aiAssistantOpen]);
 
   // Tab selections & Horizon Filters
   const [forecastHorizonFilter, setForecastHorizonFilter] = useState<'all' | '3m' | '6m'>('all');
@@ -263,43 +317,38 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     };
   }, [projectId]);
 
-  // Fetch Full AI Engine Suite: Dual Horizon Prediction, TreeSHAP, Cost Drivers, AI Summary, NLP Explanations, Warnings & Recs
+  // Fetch Full AI Engine Suite with progressive resolution to eliminate visual loading delays
   useEffect(() => {
     let isMounted = true;
     setLoadingBriefing(true);
 
-    Promise.all([
-      api.getProjectPrediction(projectId),
+    api.getProjectPrediction(projectId).then(res => isMounted && res && setFullPrediction(res));
+    api.getProjectCostDrivers(projectId).then(res => isMounted && res && setCostDrivers(res));
+    api.getProjectAISummary(projectId).then(res => isMounted && res && setAiSummary(res));
+    api.getProjectModelExplanations(projectId).then(res => isMounted && res?.explanations && setModelExplanations(res.explanations));
+    api.getProjectEarlyWarnings(projectId).then(res => isMounted && res && setEarlyWarnings(res));
+    api.getProjectRecommendations(projectId).then(res => isMounted && res && setRecommendations(res));
+    api.getProjectRisk(projectId, 3).then(res => {
+      if (isMounted && res) {
+        setMlPrediction(res);
+        setPred3m(res);
+      }
+    });
+    api.getProjectRisk(projectId, 6).then(res => isMounted && res && setPred6m(res));
+
+    Promise.allSettled([
       api.getProjectShap(projectId, 'cost_3m'),
       api.getProjectShap(projectId, 'cost_6m'),
       api.getProjectShap(projectId, 'time_3m'),
-      api.getProjectShap(projectId, 'time_6m'),
-      api.getProjectCostDrivers(projectId),
-      api.getProjectAISummary(projectId),
-      api.getProjectModelExplanations(projectId),
-      api.getProjectEarlyWarnings(projectId),
-      api.getProjectRecommendations(projectId),
-      api.getProjectRisk(projectId, 3),
-      api.getProjectRisk(projectId, 6)
-    ]).then(([pred, sCost3m, sCost6m, sTime3m, sTime6m, cDrivers, summary, mExp, eWarn, recs, r3, r6]) => {
+      api.getProjectShap(projectId, 'time_6m')
+    ]).then(([sCost3m, sCost6m, sTime3m, sTime6m]) => {
       if (!isMounted) return;
-      if (pred) setFullPrediction(pred);
       const shapMap: Record<string, ShapExplanationResponse> = {};
-      if (sCost3m) shapMap['cost_3m'] = sCost3m;
-      if (sCost6m) shapMap['cost_6m'] = sCost6m;
-      if (sTime3m) shapMap['time_3m'] = sTime3m;
-      if (sTime6m) shapMap['time_6m'] = sTime6m;
+      if (sCost3m.status === 'fulfilled' && sCost3m.value) shapMap['cost_3m'] = sCost3m.value;
+      if (sCost6m.status === 'fulfilled' && sCost6m.value) shapMap['cost_6m'] = sCost6m.value;
+      if (sTime3m.status === 'fulfilled' && sTime3m.value) shapMap['time_3m'] = sTime3m.value;
+      if (sTime6m.status === 'fulfilled' && sTime6m.value) shapMap['time_6m'] = sTime6m.value;
       setShaps(shapMap);
-      if (cDrivers) setCostDrivers(cDrivers);
-      if (summary) setAiSummary(summary);
-      if (mExp?.explanations) setModelExplanations(mExp.explanations);
-      if (eWarn) setEarlyWarnings(eWarn);
-      if (recs) setRecommendations(recs);
-      if (r3) {
-        setMlPrediction(r3);
-        setPred3m(r3);
-      }
-      if (r6) setPred6m(r6);
       setLoadingBriefing(false);
     }).catch((err) => {
       console.warn('Error loading AI insights, resilient fallback active:', err);
@@ -391,13 +440,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     );
   }
 
-  const isCompleted = Boolean(
-    fullPrediction?.is_completed ||
-    (project?.phase || '').toLowerCase().includes('completed') ||
-    (project?.scheduleStatus || '').toLowerCase().includes('completed') ||
-    (typeof project?.progressPhysical === 'number' && project.progressPhysical >= 100) ||
-    (parseFloat(String(project?.progressPhysical || '0')) >= 100)
-  );
+
+  const warningsCount = earlyWarnings?.warnings?.length ?? 2;
 
   return (
     <div className="details-container animation-fade-in">
@@ -435,22 +479,83 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
 
         <div className="filters-right">
-          <span className="as-of-date">{isCompleted ? 'Actual Completion: ' : 'Target Completion: '}<span className="date-strong">{project.expectedCompletion || (isCompleted ? 'Completed' : 'Ongoing')}</span></span>
-          <div className="insight-badge active-pulsing" style={{ backgroundColor: isCompleted ? '#F0FDF4' : undefined, borderColor: isCompleted ? '#BBF7D0' : undefined }}>
-            <span className="badge-dot-glowing" style={{ backgroundColor: isCompleted ? '#166534' : undefined, boxShadow: isCompleted ? '0 0 8px #166534' : undefined }}></span>
-            <span className="badge-txt" style={{ color: isCompleted ? '#166534' : undefined }}>
-              {isCompleted ? 'Execution Finalized — 100% physically completed & commissioned.' : 'AI Intelligence Active — Real-time telemetry monitoring.'}
-            </span>
+          <span className="as-of-date">
+            {project.isCompleted || project.projectStatus === 'COMPLETED' ? 'Completed: ' : 'Target Completion: '}
+            <span className="date-strong">{project.actualCompletion || project.expectedCompletion || 'Ongoing'}</span>
+          </span>
+          <div className="insight-badge active-pulsing">
+            <span className="badge-dot-glowing"></span>
+            <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
           </div>
         </div>
+      </div>
+
+      {/* ─── Main layout: Sidebar + Content ─── */}
+      <div className={`pd-layout-wrapper ${sidebarCollapsed ? 'pd-layout-wrapper--sidebar-collapsed' : ''}`}>
+        {/* Left Sidebar portaled to document.body to remain strictly fixed at extreme left viewport on scroll */}
+        {createPortal(
+          <ProjectNavSidebar
+            activeSection={sidebarSection}
+            onSelectSection={scrollToSection}
+            warningsCount={warningsCount}
+            riskScore={project.riskScore}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onScrollToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onOpenAIChat={() => setAiAssistantOpen(true)}
+          />,
+          document.body
+        )}
+
+        {/* Right scrollable main content */}
+        <div className="pd-main-content" ref={mainContentRef}>
+
+      {/* ─── SECTION: Basic Information ─── */}
+      <div id="pd-section-basic" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--basic">
+        <span className="pd-section-tag">01</span>
+        <span className="pd-section-name">Basic Information</span>
       </div>
 
       {/* Project Title & Status */}
       <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
-        <span className={`status-tag-badge ${isCompleted ? 'status-completed' : `status-${project.scheduleStatus.toLowerCase().replace(/\s+/g, '')}`}`}>
-          {isCompleted ? 'COMPLETED' : project.scheduleStatus}
-        </span>
+        {(() => {
+          const displayStatus = getProjectDisplayStatus(project);
+          const kind = displayStatus === 'CRITICAL' ? 'critical' : displayStatus === 'DELAYED' ? 'delayed' : displayStatus === 'IN REVIEW' ? 'medium' : 'on-track';
+          return (
+            <StatusIndicator
+              kind={kind}
+              label={displayStatus === 'CRITICAL' ? 'CRITICAL PROJECT' : displayStatus}
+              className={`status-tag-badge status-${displayStatus.toLowerCase().replace(/\s+/g, '-')}`}
+            />
+          );
+        })()}
+      </div>
+
+      {/* Identifier Subheader: Official Project ID & Legacy OCMS Code */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '-6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+          <span style={{ color: '#64748B', fontWeight: 500 }}>Project ID:</span>
+          <span style={{ fontFamily: 'monospace', background: '#F1F5F9', padding: '2px 8px', borderRadius: '4px', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700 }}>
+            {project.id}
+          </span>
+        </div>
+        {(project.legacyOcmsCode || (project as any).legacy_ocms_code) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+            <span style={{ color: '#94A3B8' }}>|</span>
+            <span style={{ color: '#64748B', fontWeight: 500 }}>Legacy OCMS:</span>
+            <span style={{ fontFamily: 'monospace', background: '#FEF3C7', padding: '2px 8px', borderRadius: '4px', border: '1px solid #FDE68A', color: '#92400E', fontWeight: 700 }}>
+              {project.legacyOcmsCode || (project as any).legacy_ocms_code}
+            </span>
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#64748B' }}>
+          <span>•</span>
+          <span>{project.sector}</span>
+          <span>•</span>
+          <span>{project.ministry}</span>
+        </div>
       </div>
 
       {/* Row 1: Dashboard Metrics (Moved Above) */}
@@ -514,24 +619,53 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         </div>
 
-        <div className="metric-box light-box">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <h3 className="metric-box-title" style={{ margin: 0 }}>{isCompleted ? 'ACTUAL COMPLETION' : 'EXPECTED COMPLETION'}</h3>
-            <InfoButton
-              title="Finish Date"
-              summary={isCompleted ? "The date when this project successfully concluded all physical construction and achieved commissioning." : "When this project is now expected to finish, compared to its original promise date."}
-              size="sm"
-            />
+        {project.isCompleted || project.projectStatus === 'COMPLETED' || project.actualCompletion ? (
+          <div className="metric-box light-box">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <h3 className="metric-box-title" style={{ margin: 0, color: '#15803D' }}>ACTUAL COMPLETION</h3>
+              <InfoButton
+                title="Commissioning Date"
+                summary="The official commissioning date when this infrastructure project achieved completion."
+                size="sm"
+              />
+            </div>
+            <div className="metric-box-val" style={{ color: '#0F172A' }}>
+              {project.actualCompletion || project.expectedCompletion || 'N/A'}
+            </div>
+            <div className="metric-box-sub text-muted">
+              Original Target: {project.originalCompletion || 'N/A'}
+              {project.timeOverrunFormatted && (
+                <span style={{ marginLeft: '6px', fontWeight: 700, color: (project.timeOverrunMonths ?? 0) > 0 ? '#B45309' : '#15803D' }}>
+                  • {project.timeOverrunFormatted}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="metric-box-val">{project.expectedCompletion}</div>
-          <div className="metric-box-sub text-muted">
-            Original: {project.originalCompletion}
+        ) : (
+          <div className="metric-box light-box">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <h3 className="metric-box-title" style={{ margin: 0 }}>EXPECTED COMPLETION</h3>
+              <InfoButton
+                title="Finish Date"
+                summary="When this project is now expected to finish, compared to its original target date."
+                size="sm"
+              />
+            </div>
+            <div className="metric-box-val">{project.expectedCompletion || 'N/A'}</div>
+            <div className="metric-box-sub text-muted">
+              Original: {project.originalCompletion || 'N/A'}
+              {project.timeOverrunFormatted && (
+                <span style={{ marginLeft: '6px', fontWeight: 700, color: (project.timeOverrunMonths ?? 0) > 0 ? '#B45309' : '#15803D' }}>
+                  • {project.timeOverrunFormatted}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Row 2: Project Metadata Table (Enlarged for High Visibility) */}
-      <div style={{ padding: '18px 24px', backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1.5px solid #E2E8F0', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '16px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
+      <div className="card" style={{ padding: '18px 24px', borderRadius: '14px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '16px' }}>
         <div style={{ borderRight: '1px solid #F1F5F9', paddingRight: '12px' }}>
           <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Project Type</div>
           <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.type}</div>
@@ -549,8 +683,14 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.originalCompletion}</div>
         </div>
         <div>
-          <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>{isCompleted ? 'Actual Completion' : 'Revised Completion'}</div>
-          <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.expectedCompletion}</div>
+          <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+            {project.isCompleted || project.projectStatus === 'COMPLETED' ? 'Actual Completion' : 'Revised Completion'}
+          </div>
+          <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>
+            {project.isCompleted || project.projectStatus === 'COMPLETED'
+              ? (project.actualCompletion || project.expectedCompletion || 'N/A')
+              : (project.revisedCompletion || project.expectedCompletion || 'N/A')}
+          </div>
         </div>
       </div>
 
@@ -560,9 +700,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
           const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
           const currExp = parseFloat(String((proj as any).expenditure || '').replace(/[^0-9.]/g, '')) || +(costRev * (proj.progressFinancial / 100)).toFixed(2);
-          const extMo = parseFloat(String(proj.scheduleExtensionMonths || 12));
-          const currProg = proj.progressPhysical || 50;
-          const progFin = proj.progressFinancial || 50;
+          const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
+          const currProg = proj.progressPhysical || 0;
+          const progFin = proj.progressFinancial || 0;
           const rScore = proj.riskScore || 50;
           const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : rScore;
           const delayProb = (tRisk * 0.88).toFixed(1);
@@ -571,23 +711,12 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const costDiffPct = costApp > 0 ? ((costDiff / costApp) * 100).toFixed(1) : '0.0';
           const remBudget = Math.max(0, costRev - currExp).toFixed(2);
 
-          if (isCompleted) {
-            const finalL1 = `The ${proj.name} under ${proj.ministry || 'designated ministry'} (${proj.sector || proj.type || 'Infrastructure'}) has achieved 100% physical completion, fully concluding civil construction packages and achieving commercial commissioning.`;
-            const finalL2 = costDiff > 0
-              ? `Initially approved with a baseline sanction of ${formatCurrencyClean(costApp)}, the project closed with an audited revised cost of ${formatCurrencyClean(costRev)} (+${costDiffPct}% cost overrun), absorbing ${formatCurrencyClean(costDiff)} in approved escalations.`
-              : `Initially approved with a baseline sanction of ${formatCurrencyClean(costApp)}, the project successfully concluded within its baseline budgetary envelope without cost escalation.`;
-            const finalL3 = `Final cumulative expenditure reached ${formatCurrencyClean(currExp)}, representing complete financial capitalization against authorized capital expenditure allocations.`;
-            const finalL4 = extMo > 0
-              ? `Historical construction records indicate an accumulated schedule extension of ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months across its execution timeline prior to successful completion.`
-              : `The asset was successfully delivered and commissioned in accordance with its scheduled baseline.`;
-            const finalL5 = `Forward-looking predictive telemetry has been retired for this completed asset. Infrastructure is now in active service under operational maintenance protocols.`;
-            return `${finalL1} ${finalL2} ${finalL3} ${finalL4} ${finalL5}`;
-          }
-
-          const statusClause = extMo > 0
+          const statusClause = (proj.isCompleted || proj.projectStatus === 'COMPLETED' || currProg >= 100)
+            ? `has been completed and commissioned`
+            : extMo > 0
             ? `remains behind its planned trajectory with ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months of accumulated schedule extension`
             : `is currently tracking on its planned timeline`;
-          const l1 = `The ${proj.name} under ${proj.ministry || 'Ministry of Railways'} (${proj.sector || proj.type || 'Infrastructure'}) stands at ${formatPercentClean(currProg)} physical completion and ${statusClause}, with cumulative expenditure reaching ${formatCurrencyClean(currExp)} after ${(currProg * 0.8).toFixed(0)} months of execution.`;
+          const l1 = `The ${proj.name} under ${proj.ministry || 'Ministry of Railways'} (${proj.sector || proj.type || 'Infrastructure'}) stands at ${formatPercentClean(currProg)} physical completion and ${statusClause}, with cumulative expenditure reaching ${formatCurrencyClean(currExp)}.`;
 
           let l2 = "";
           if (costDiff > 0) {
@@ -603,36 +732,34 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             ? `Trajectory analysis indicates an operational divergence where financial outlay (${formatPercentClean(progFin)}) has outpaced certified physical execution (${formatPercentClean(currProg)}) by ${gap % 1 === 0 ? Math.round(gap) : gap.toFixed(1)} percentage points, reflecting material advance disbursements and critical-path milestone pacing bottlenecks.`
             : `Trajectory analysis reveals consistent physical execution pacing advancing in steady alignment with capital disbursements across the reporting period despite recorded historical schedule extensions.`;
 
-          const l5 = `Dual-horizon predictive ML models project a ${delayProb}% probability of additional schedule slippage (+${delayMonths} months), shifting effective completion toward ${proj.expectedCompletion || 'March 2027'}, requiring senior monitoring focus on Right of Way (RoW) clearances, utility shifting, and contractor site equipment mobilization.`;
+          const l5 = (proj.isCompleted || proj.projectStatus === 'COMPLETED' || currProg >= 100)
+            ? `Having completed physical construction, operational focus transitions to commercial asset handover, financial audit finalization, and post-commissioning defect liability monitoring.`
+            : `Dual-horizon predictive ML models project a ${delayProb}% probability of additional schedule slippage (+${delayMonths} months), shifting effective completion toward ${proj.expectedCompletion || 'March 2027'}, requiring senior monitoring focus on Right of Way (RoW) clearances, utility shifting, and contractor site equipment mobilization.`;
 
           return `${l1} ${l2} ${l3} ${l4} ${l5}`;
         };
 
         const activeSummaryText = aiSummary?.summary || getDefaultAISummary(project);
-        const stageBadge = isCompleted 
-          ? 'CASE 1 – COMPLETED INFRASTRUCTURE ASSET'
-          : (aiSummary?.stage_case || (
-            (project.progressPhysical || 0) >= 99 ? 'CASE 2 – ALMOST COMPLETED PROJECT' :
-            parseFloat(String(project.scheduleExtensionMonths || 0)) >= 24 ? 'CASE 5 – CRITICAL DELAY INTERVENTION' :
-            parseFloat(String(project.scheduleExtensionMonths || 0)) > 0 ? 'CASE 5 – DELAYED ACTIVE PROJECT' :
-            'CASE 5 – NORMAL ACTIVE PROJECT'
-          ));
+        const stageBadge = aiSummary?.stage_case || (
+          (project.isCompleted || project.projectStatus === 'COMPLETED' || (project.progressPhysical || 0) >= 100) ? 'CASE 1 – COMPLETED PROJECT' :
+          (project.progressPhysical || 0) >= 99 ? 'CASE 2 – ALMOST COMPLETED PROJECT' :
+          parseFloat(String(project.timeOverrunMonths ?? project.scheduleExtensionMonths ?? 0)) >= 24 ? 'CASE 5 – CRITICAL DELAY INTERVENTION' :
+          parseFloat(String(project.timeOverrunMonths ?? project.scheduleExtensionMonths ?? 0)) > 0 ? 'CASE 5 – DELAYED ACTIVE PROJECT' :
+          'CASE 5 – NORMAL ACTIVE PROJECT'
+        );
 
         return (
           <div className="card" style={{
-            backgroundColor: '#FFFFFF',
             padding: '20px 24px',
             borderRadius: '16px',
             border: '1px solid #C7D2FE',
-            background: 'linear-gradient(90deg, rgba(238, 242, 255, 0.45) 0%, #FFFFFF 50%, rgba(239, 246, 255, 0.35) 100%)',
-            boxShadow: '0 2px 6px rgba(15, 23, 42, 0.04)',
             marginTop: '6px',
             marginBottom: '6px',
             position: 'relative',
             overflow: 'hidden'
           }}>
             {/* Glowing side accent bar */}
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '5px', background: 'linear-gradient(180deg, #6366F1 0%, #03045E 100%)' }} />
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '5px', background: '#4F46E5' }} />
 
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
               <div style={{ padding: '8px', backgroundColor: '#EEF2FF', color: '#4338CA', borderRadius: '10px', flexShrink: 0, marginTop: '2px' }}>
@@ -678,15 +805,48 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                     <span>Generating executive analytical briefing from trained XGBoost & TreeSHAP models...</span>
                   </div>
                 ) : (
-                  <p style={{ fontSize: '13.5px', lineHeight: '1.75', color: '#1E293B', margin: 0, textAlign: 'justify' }}>
-                    {activeSummaryText}
-                  </p>
+                  <>
+                    <p style={{ fontSize: '13.5px', lineHeight: '1.75', color: '#1E293B', margin: 0, textAlign: 'justify' }}>
+                      {activeSummaryText}
+                    </p>
+                    {aiSummary?.key_alerts && aiSummary.key_alerts.length > 0 && (
+                      <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #E0E7FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#3730A3', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          {aiSummary.alerts_title || 'Key Telemetry Anomaly Signals'}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px' }}>
+                          {aiSummary.key_alerts.map((alert, idx) => (
+                            <div key={idx} style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                              <div style={{ fontSize: '12.5px', fontWeight: 750, color: '#0F172A', marginBottom: '4px' }}>
+                                {alert.issue}
+                              </div>
+                              <div style={{ fontSize: '11.5px', color: '#475569', marginBottom: '4px' }}>
+                                <strong>Evidence:</strong> {alert.evidence}
+                              </div>
+                              <div style={{ fontSize: '11.5px', color: '#64748B' }}>
+                                <strong>Why it matters:</strong> {alert.why_it_matters}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           </div>
         );
       })()}
+
+      </div>{/* /pd-section-basic */}
+
+      {/* ─── SECTION: Forecasts ─── */}
+      <div id="pd-section-forecasts" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--forecasts">
+        <span className="pd-section-tag">02</span>
+        <span className="pd-section-name">Forecasts</span>
+      </div>
 
       {/* AI ML Multi-Horizon Forecast Engine Section */}
       {(() => {
@@ -696,183 +856,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const currentOverrunPct = parseFloat(project.costOverrunPct?.replace(/[^0-9.-]/g, '') || '0');
         const currentExtMonths = parseFloat(String(project.scheduleExtensionMonths || '0'));
 
-        // If the project is completed, display the dedicated Post-Completion Execution & Capitalization Audit
-        if (isCompleted) {
-          const expenditureVal = parseFloat(String((project as any).costExpenditure || (project as any).expenditure || '').replace(/[^0-9.]/g, '')) || numericRevisedCost;
-          const costEscalationVal = Math.max(0, numericRevisedCost - numericApprovedCost);
-          const costEscalationPct = numericApprovedCost > 0 ? ((costEscalationVal / numericApprovedCost) * 100).toFixed(1) : '0.0';
-          const totalPastDelayMonths = currentExtMonths > 0 ? currentExtMonths : 0;
-
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px', marginBottom: '12px' }}>
-              {/* Completed Project Audit Header Bar */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '12px',
-                padding: '14px 20px',
-                backgroundColor: '#F0FDF4',
-                borderRadius: '14px',
-                border: '1.5px solid #86EFAC',
-                boxShadow: '0 2px 8px rgba(22, 101, 52, 0.04)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ backgroundColor: '#DCFCE7', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <CheckCircle2 size={20} color="#15803D" />
-                  </div>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <h2 style={{ fontSize: '17px', fontWeight: 850, color: '#14532D', margin: 0, letterSpacing: '-0.01em' }}>
-                        Project Execution & Commissioning Audit
-                      </h2>
-                      <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#166534', backgroundColor: '#DCFCE7', padding: '2px 10px', borderRadius: '12px', border: '1px solid #86EFAC', textTransform: 'uppercase' }}>
-                        100% Commissioned
-                      </span>
-                    </div>
-                    <span style={{ fontSize: '12px', color: '#166534', fontWeight: 500, marginTop: '2px', display: 'block' }}>
-                      Forward predictive delay forecasting retired • Final audited capitalization & lifecycle metrics
-                    </span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#166534', fontWeight: 700, backgroundColor: '#FFFFFF', padding: '4px 10px', borderRadius: '8px', border: '1px solid #BBF7D0' }}>
-                    Commercial Operation Achieved
-                  </span>
-                  <InfoButton
-                    title="Completed Project Audit"
-                    summary="This project has achieved 100% physical execution and commissioning. Forward-looking 3-month and 6-month delay projections are retired in favor of final financial and schedule reconciliation."
-                    size="sm"
-                  />
-                </div>
-              </div>
-
-              {/* 2-Column Audited Realization Grid */}
-              <div className="forecast-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                
-                {/* Left Card: Financial Realization & Outlay Audit */}
-                <div className="forecast-horizon-card" style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '20px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#0F172A', textTransform: 'uppercase' }}>
-                      <DollarSign size={16} color="#03045E" />
-                      Financial Realization & Capitalization Audit
-                    </div>
-                    <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#03045E', backgroundColor: '#EFF6FF', padding: '2px 8px', borderRadius: '4px', border: '1px solid #BFDBFE' }}>
-                      FINAL ACCOUNTS
-                    </span>
-                  </div>
-
-                  {/* 2x2 Metrics Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Original Sanctioned Cost</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#0F172A' }}>
-                        {formatCurrencyClean(numericApprovedCost)}
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '2px' }}>Approved Baseline</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Audited Final Revised Cost</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#0F172A' }}>
-                        {formatCurrencyClean(numericRevisedCost)}
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: costEscalationVal > 0 ? '#DC2626' : '#166534', marginTop: '2px', fontWeight: 700 }}>
-                        {costEscalationVal > 0 ? `+${costEscalationPct}% (+${formatCurrencyClean(costEscalationVal)})` : 'Within Sanction Envelope'}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Cumulative Final Expenditure</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#03045E' }}>
-                        {formatCurrencyClean(expenditureVal)}
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#166534', marginTop: '2px', fontWeight: 700 }}>
-                        100% Allocation Disbursed
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Financial Capitalization Rate</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#166534' }}>
-                        100.0%
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>Audit Status: Closed</div>
-                    </div>
-                  </div>
-
-                  {/* Financial Status Banner */}
-                  <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', padding: '12px 14px', borderRadius: '8px', fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
-                    <div style={{ fontWeight: 750, color: '#0F172A', marginBottom: '3px' }}>Asset Financial Summary:</div>
-                    Full capital outlay of {formatCurrencyClean(expenditureVal)} has been reconciled and capitalized into the National Central Sector Infrastructure asset register.
-                  </div>
-                </div>
-
-                {/* Right Card: Schedule Delivery & Commissioning Audit */}
-                <div className="forecast-horizon-card" style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '20px', boxShadow: '0 4px 14px rgba(15, 23, 42, 0.04)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#0F172A', textTransform: 'uppercase' }}>
-                      <Clock size={16} color="#03045E" />
-                      Schedule Delivery & Lifecycle Audit
-                    </div>
-                    <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#166534', backgroundColor: '#DCFCE7', padding: '2px 8px', borderRadius: '4px', border: '1px solid #86EFAC' }}>
-                      COMMISSIONED
-                    </span>
-                  </div>
-
-                  {/* 2x2 Metrics Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Original Sanctioned DOC</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#0F172A' }}>
-                        {project.originalCompletion || 'N/A'}
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#94A3B8', marginTop: '2px' }}>Approved Baseline Target</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Actual Commissioning COD</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#166534' }}>
-                        {project.expectedCompletion || 'Completed'}
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#166534', marginTop: '2px', fontWeight: 700 }}>
-                        Commercial In-Service Date
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Total Lifecycle Extension</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: totalPastDelayMonths > 0 ? '#03045E' : '#166534' }}>
-                        {totalPastDelayMonths > 0 ? `+${totalPastDelayMonths % 1 === 0 ? Math.round(totalPastDelayMonths) : totalPastDelayMonths.toFixed(1)} months` : 'Zero Delay'}
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>Historical Execution Delay</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Certified Physical Progress</div>
-                      <div style={{ fontSize: '15px', fontWeight: 850, color: '#166534' }}>
-                        100.0%
-                      </div>
-                      <div style={{ fontSize: '10.5px', color: '#166534', marginTop: '2px', fontWeight: 700 }}>Civil Packages Complete</div>
-                    </div>
-                  </div>
-
-                  {/* Schedule Status Banner */}
-                  <div style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', padding: '12px 14px', borderRadius: '8px', fontSize: '12px', color: '#166534', lineHeight: '1.5' }}>
-                    <div style={{ fontWeight: 750, color: '#14532D', marginBottom: '3px' }}>Commissioning Status:</div>
-                    Asset fully commissioned and operational. No active critical path activities remain; transitioned to regular Operations & Maintenance.
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          );
-        }
-
-        // Active / Ongoing Project Forecast Calculations
         const cRisk = mlPrediction?.cost_overrun_probability !== undefined ? mlPrediction.cost_overrun_probability * 100 : project.costRisk;
         const tRisk = mlPrediction?.time_overrun_probability !== undefined ? mlPrediction.time_overrun_probability * 100 : project.timeRisk;
-        const tRiskFraction = (tRisk > 1 ? tRisk / 100 : tRisk) || 0.45;
-        const cRiskFraction = (cRisk > 1 ? cRisk / 100 : cRisk) || 0.45;
-
-        const dynDelay3m = Math.max(0.4, parseFloat((tRiskFraction * 3.4).toFixed(1)));
-        const dynDelay6m = Math.max(0.8, parseFloat((tRiskFraction * 7.2).toFixed(1)));
 
         const predC3 = fullPrediction?.cost_prediction?.['3_month'];
         const predC6 = fullPrediction?.cost_prediction?.['6_month'];
@@ -882,11 +867,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         // 3M Cost Metrics
         const c3mProb = predC3?.additional_escalation_probability !== undefined && predC3?.additional_escalation_probability !== null
           ? (predC3.additional_escalation_probability * 100).toFixed(1)
-          : pred3m?.cost_overrun_probability !== undefined ? (pred3m.cost_overrun_probability * 100).toFixed(1) : (cRiskFraction * 85).toFixed(1);
+          : pred3m?.cost_overrun_probability !== undefined ? (pred3m.cost_overrun_probability * 100).toFixed(1) : (cRisk * 0.85).toFixed(1);
 
         const c3mDeltaPct = predC3?.predicted_additional_overrun_pct !== undefined && predC3?.predicted_additional_overrun_pct !== null
           ? predC3.predicted_additional_overrun_pct.toFixed(2)
-          : pred3m?.predicted_additional_overrun_pct !== undefined ? pred3m.predicted_additional_overrun_pct.toFixed(2) : (cRiskFraction * 2.6).toFixed(2);
+          : pred3m?.predicted_additional_overrun_pct !== undefined ? pred3m.predicted_additional_overrun_pct.toFixed(2) : ((cRisk / 100) * 2.6).toFixed(2);
 
         const c3mDeltaCr = predC3?.predicted_additional_cost_crore !== undefined && predC3?.predicted_additional_cost_crore !== null
           ? predC3.predicted_additional_cost_crore.toFixed(2)
@@ -901,17 +886,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : pred3m?.predicted_final_revised_cost_crore !== undefined ? pred3m.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : (numericRevisedCost + parseFloat(c3mDeltaCr)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
         const c3mBadge = predC3?.risk_tier ? `${predC3.risk_tier} RISK` : parseFloat(c3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(c3mProb) >= 50 ? 'HIGH RISK' : parseFloat(c3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const c3mColor = parseFloat(c3mProb) >= 70 ? '#D62F39' : parseFloat(c3mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const c3mBg = parseFloat(c3mProb) >= 70 ? '#FEE2E2' : parseFloat(c3mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         // 6M Cost Metrics
         const c6mProb = predC6?.additional_escalation_probability !== undefined && predC6?.additional_escalation_probability !== null
           ? (predC6.additional_escalation_probability * 100).toFixed(1)
-          : pred6m?.cost_overrun_probability !== undefined ? (pred6m.cost_overrun_probability * 100).toFixed(1) : Math.min(99, cRiskFraction * 115).toFixed(1);
+          : pred6m?.cost_overrun_probability !== undefined ? (pred6m.cost_overrun_probability * 100).toFixed(1) : Math.min(99, cRisk * 1.15).toFixed(1);
 
         const c6mDeltaPct = predC6?.predicted_additional_overrun_pct !== undefined && predC6?.predicted_additional_overrun_pct !== null
           ? predC6.predicted_additional_overrun_pct.toFixed(2)
-          : pred6m?.predicted_additional_overrun_pct !== undefined ? pred6m.predicted_additional_overrun_pct.toFixed(2) : (cRiskFraction * 5.8).toFixed(2);
+          : pred6m?.predicted_additional_overrun_pct !== undefined ? pred6m.predicted_additional_overrun_pct.toFixed(2) : ((cRisk / 100) * 5.8).toFixed(2);
 
         const c6mDeltaCr = predC6?.predicted_additional_cost_crore !== undefined && predC6?.predicted_additional_cost_crore !== null
           ? predC6.predicted_additional_cost_crore.toFixed(2)
@@ -926,27 +909,21 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : pred6m?.predicted_final_revised_cost_crore !== undefined ? pred6m.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : (numericRevisedCost + parseFloat(c6mDeltaCr)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
         const c6mBadge = predC6?.risk_tier ? `${predC6.risk_tier} RISK` : parseFloat(c6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(c6mProb) >= 50 ? 'HIGH RISK' : parseFloat(c6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const c6mColor = parseFloat(c6mProb) >= 70 ? '#D62F39' : parseFloat(c6mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const c6mBg = parseFloat(c6mProb) >= 70 ? '#FEE2E2' : parseFloat(c6mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         // 3M Schedule Metrics
         const t3mProb = predT3?.additional_delay_probability !== undefined && predT3?.additional_delay_probability !== null
           ? (predT3.additional_delay_probability * 100).toFixed(1)
-          : pred3m?.time_overrun_probability !== undefined ? (pred3m.time_overrun_probability * 100).toFixed(1) : (tRiskFraction * 88).toFixed(1);
+          : pred3m?.time_overrun_probability !== undefined ? (pred3m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
 
-        const t3mDelayMo = (predT3?.predicted_additional_delay_months !== undefined && predT3?.predicted_additional_delay_months !== null && predT3.predicted_additional_delay_months > 0)
+        const t3mDelayMo = predT3?.predicted_additional_delay_months !== undefined && predT3?.predicted_additional_delay_months !== null
           ? predT3.predicted_additional_delay_months.toFixed(1)
-          : (pred3m?.predicted_additional_delay_months !== undefined && pred3m?.predicted_additional_delay_months !== null && pred3m.predicted_additional_delay_months > 0)
-          ? pred3m.predicted_additional_delay_months.toFixed(1)
-          : dynDelay3m.toFixed(1);
+          : pred3m?.predicted_additional_delay_months !== undefined ? pred3m.predicted_additional_delay_months.toFixed(1) : '0.0';
 
-        const t3mNeeded = predT3?.estimated_time_needed_completion || pred3m?.estimated_time_needed || (
-          tRiskFraction >= 0.7 ? '1 year 10 months' : tRiskFraction >= 0.4 ? '1 year 2 months' : '8 months'
-        );
+        const t3mNeeded = predT3?.estimated_time_needed_completion || pred3m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
 
-        const t3mTotalExt = (predT3?.predicted_total_schedule_extension_months !== undefined && predT3?.predicted_total_schedule_extension_months !== null && predT3.predicted_total_schedule_extension_months > currentExtMonths)
+        const t3mTotalExt = predT3?.predicted_total_schedule_extension_months !== undefined && predT3?.predicted_total_schedule_extension_months !== null
           ? predT3.predicted_total_schedule_extension_months.toFixed(1)
-          : (currentExtMonths + parseFloat(t3mDelayMo)).toFixed(1);
+          : pred3m?.predicted_total_schedule_extension_months !== undefined ? pred3m.predicted_total_schedule_extension_months.toFixed(1) : (currentExtMonths + parseFloat(t3mDelayMo)).toFixed(1);
 
         const shiftDateByMonths = (baseDateStr: string | undefined, addMonths: number): string => {
           if (!baseDateStr || baseDateStr === 'N/A') return 'N/A';
@@ -974,27 +951,21 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t3mDelayMo)) ? parseFloat(t3mDelayMo) : 0);
 
         const t3mBadge = predT3?.risk_tier ? `${predT3.risk_tier} RISK` : parseFloat(t3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t3mProb) >= 50 ? 'HIGH RISK' : parseFloat(t3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const t3mColor = parseFloat(t3mProb) >= 70 ? '#D62F39' : parseFloat(t3mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const t3mBg = parseFloat(t3mProb) >= 70 ? '#FEE2E2' : parseFloat(t3mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         // 6M Schedule Metrics
         const t6mProb = predT6?.additional_delay_probability !== undefined && predT6?.additional_delay_probability !== null
           ? (predT6.additional_delay_probability * 100).toFixed(1)
-          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : Math.min(99, tRiskFraction * 120).toFixed(1);
+          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
 
-        const t6mDelayMo = (predT6?.predicted_additional_delay_months !== undefined && predT6?.predicted_additional_delay_months !== null && predT6.predicted_additional_delay_months > 0)
+        const t6mDelayMo = predT6?.predicted_additional_delay_months !== undefined && predT6?.predicted_additional_delay_months !== null
           ? predT6.predicted_additional_delay_months.toFixed(1)
-          : (pred6m?.predicted_additional_delay_months !== undefined && pred6m?.predicted_additional_delay_months !== null && pred6m.predicted_additional_delay_months > 0)
-          ? pred6m.predicted_additional_delay_months.toFixed(1)
-          : dynDelay6m.toFixed(1);
+          : pred6m?.predicted_additional_delay_months !== undefined ? pred6m.predicted_additional_delay_months.toFixed(1) : '0.0';
 
-        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (
-          tRiskFraction >= 0.7 ? '2 years 4 months' : tRiskFraction >= 0.4 ? '1 year 8 months' : '1 year 1 month'
-        );
+        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
 
-        const t6mTotalExt = (predT6?.predicted_total_schedule_extension_months !== undefined && predT6?.predicted_total_schedule_extension_months !== null && predT6.predicted_total_schedule_extension_months > currentExtMonths)
+        const t6mTotalExt = predT6?.predicted_total_schedule_extension_months !== undefined && predT6?.predicted_total_schedule_extension_months !== null
           ? predT6.predicted_total_schedule_extension_months.toFixed(1)
-          : (currentExtMonths + parseFloat(t6mDelayMo)).toFixed(1);
+          : pred6m?.predicted_total_schedule_extension_months !== undefined ? pred6m.predicted_total_schedule_extension_months.toFixed(1) : (currentExtMonths + parseFloat(t6mDelayMo)).toFixed(1);
 
         const t6mTentative = (predT6?.tentative_completion_date && predT6.tentative_completion_date !== 'N/A')
           ? predT6.tentative_completion_date
@@ -1003,8 +974,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t6mDelayMo)) ? parseFloat(t6mDelayMo) : 0);
 
         const t6mBadge = predT6?.risk_tier ? `${predT6.risk_tier} RISK` : parseFloat(t6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t6mProb) >= 50 ? 'HIGH RISK' : parseFloat(t6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-        const t6mColor = parseFloat(t6mProb) >= 70 ? '#D62F39' : parseFloat(t6mProb) >= 50 ? '#F59E0B' : '#03045E';
-        const t6mBg = parseFloat(t6mProb) >= 70 ? '#FEE2E2' : parseFloat(t6mProb) >= 50 ? '#FEF3C7' : '#EBF3FF';
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px', marginBottom: '12px' }}>
@@ -1019,6 +988,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <InfoButton
                   title="Forecast Engine"
                   summary="Predicts if this project will face extra costs or extra months of delay in the next 3 to 6 months."
+                  dataSummary={{
+                    items: [
+                      { label: '3-month cost', value: `${c3mBadge}, ${c3mProb}% probability, +${c3mDeltaPct}% overrun` },
+                      { label: '6-month cost', value: `${c6mBadge}, ${c6mProb}% probability, +${c6mDeltaPct}% overrun` },
+                      { label: '3-month schedule', value: `${t3mProb}% additional-delay probability` },
+                      { label: '6-month schedule', value: `${t6mProb}% additional-delay probability` }
+                    ],
+                    insight: `The forecast indicates ${c6mBadge.toLowerCase()} cost risk over six months and ${t6mProb}% additional-delay probability over three months.`
+                  }}
                   size="sm"
                 />
                 <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, backgroundColor: '#F1F5F9', padding: '3px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
@@ -1031,18 +1009,24 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <button 
                   className={`horizon-toggle-btn ${forecastHorizonFilter === 'all' ? 'active' : ''}`}
                   onClick={() => setForecastHorizonFilter('all')}
+                  aria-selected={forecastHorizonFilter === 'all'}
+                  role="tab"
                 >
                   All Horizons (Combined)
                 </button>
                 <button 
                   className={`horizon-toggle-btn ${forecastHorizonFilter === '3m' ? 'active' : ''}`}
                   onClick={() => setForecastHorizonFilter('3m')}
+                  aria-selected={forecastHorizonFilter === '3m'}
+                  role="tab"
                 >
                   3-Month Horizon
                 </button>
                 <button 
                   className={`horizon-toggle-btn ${forecastHorizonFilter === '6m' ? 'active' : ''}`}
                   onClick={() => setForecastHorizonFilter('6m')}
+                  aria-selected={forecastHorizonFilter === '6m'}
+                  role="tab"
                 >
                   6-Month Horizon
                 </button>
@@ -1077,9 +1061,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           3-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: c3mColor, backgroundColor: c3mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${c3mColor}40` }}>
-                          {c3mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={c3mBadge.includes('CRITICAL') ? 'critical' : c3mBadge.includes('HIGH') ? 'high' : c3mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={c3mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -1118,7 +1104,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(c3mProb)} suffix="%" decimals={1} /> Escalation Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="cost3mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1149,9 +1135,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           6-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: c6mColor, backgroundColor: c6mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${c6mColor}40` }}>
-                          {c6mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={c6mBadge.includes('CRITICAL') ? 'critical' : c6mBadge.includes('HIGH') ? 'high' : c6mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={c6mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -1190,7 +1178,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(c6mProb)} suffix="%" decimals={1} /> Escalation Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="cost6mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1240,9 +1228,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           3-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: t3mColor, backgroundColor: t3mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${t3mColor}40` }}>
-                          {t3mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={t3mBadge.includes('CRITICAL') ? 'critical' : t3mBadge.includes('HIGH') ? 'high' : t3mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={t3mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -1279,7 +1269,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(t3mProb)} suffix="%" decimals={1} /> Delay Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="sched3mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1308,9 +1298,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                           6-MONTH HORIZON
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: t6mColor, backgroundColor: t6mBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${t6mColor}40` }}>
-                          {t6mBadge}
-                        </span>
+                        <StatusIndicator
+                          kind={t6mBadge.includes('CRITICAL') ? 'critical' : t6mBadge.includes('HIGH') ? 'high' : t6mBadge.includes('LOW') ? 'low' : 'medium'}
+                          label={t6mBadge}
+                          className="forecast-status-indicator"
+                        />
                       </div>
 
                       {/* 2x2 Metrics Grid */}
@@ -1347,7 +1339,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                             <AnimatedCounter value={parseFloat(t6mProb)} suffix="%" decimals={1} /> Delay Probability
                           </span>
                         </div>
-                        <svg viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
                           <defs>
                             <linearGradient id="sched6mGrad" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
@@ -1373,6 +1365,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         );
       })()}
+
+      </div>{/* /pd-section-forecasts */}
+
+      {/* ─── SECTION: Escalation Drivers ─── */}
+      <div id="pd-section-escalation" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--escalation">
+        <span className="pd-section-tag">03</span>
+        <span className="pd-section-name">Escalation Drivers</span>
+      </div>
 
       {/* Explainable AI Analysis Section (TreeSHAP Feature Attributions) */}
       {(() => {
@@ -1439,11 +1440,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           upwardDrivers = shapData.top_risk_drivers.map((d: any) => ({
             label: d.display_name || d.feature.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
             value: Math.abs(d.shap_value)
-          })).sort((a: any, b: any) => b.value - a.value);
+          }));
           protectiveFactors = shapData.top_protective_factors.map((d: any) => ({
             label: d.display_name || d.feature.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
             value: -Math.abs(d.shap_value)
-          })).sort((a: any, b: any) => a.value - b.value);
+          }));
         } else {
           const fb = getShapAttributions(project, shapTab);
           upwardDrivers = fb.upwardDrivers;
@@ -1451,7 +1452,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         }
 
         return (
-          <div className="card explainable-ai-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="card explainable-ai-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
@@ -1464,6 +1465,13 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                   <InfoButton
                     title="Why It Is Delayed"
                     summary="Shows what is causing delays (in red) and what factors are helping this project stay on track (in green)."
+                    dataSummary={{
+                      items: [
+                        ...upwardDrivers.slice(0, 5).map((driver) => ({ label: driver.label, value: `+${driver.value.toFixed(4)} risk impact` })),
+                        ...protectiveFactors.slice(0, 5).map((driver) => ({ label: driver.label, value: driver.value.toFixed(4) + ' protective impact' }))
+                      ],
+                      insight: `${upwardDrivers.length} factors increase predicted risk and ${protectiveFactors.length} factors mitigate risk in the active ${shapTab} analysis.`
+                    }}
                     size="sm"
                   />
                 </div>
@@ -1734,57 +1742,90 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const getNaturalLanguageExplanation = (proj: Project, tab: 'sched3m' | 'sched6m' | 'cost3m' | 'cost6m') => {
           const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
           const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
-          const progPhys = proj.progressPhysical || 50;
-          const progFin = proj.progressFinancial || 50;
-          const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
+          const progPhys = proj.progressPhysical || 0;
+          const progFin = proj.progressFinancial || 0;
+          const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
           const rScore = proj.riskScore || 50;
           const cRisk = proj.costRisk !== undefined ? proj.costRisk : rScore;
           const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : rScore;
           const sector = proj.type || 'Infrastructure';
+          const isComp = proj.isCompleted || proj.projectStatus === 'COMPLETED' || progPhys >= 100;
 
           if (tab === 'sched3m') {
-            const prob = (tRisk * 0.88).toFixed(1);
-            const badge = tRisk >= 70 ? 'HIGH RISK' : tRisk >= 40 ? 'MODERATE RISK' : 'LOW RISK';
-            const badgeColor = tRisk >= 70 ? '#D62F39' : tRisk >= 40 ? '#D97706' : '#03045E';
-            const badgeBg = tRisk >= 70 ? '#FEE2E2' : tRisk >= 40 ? '#FEF3C7' : '#EBF3FF';
+            const prob = isComp ? '0.0' : (tRisk * 0.88).toFixed(1);
+            const badge = isComp ? 'COMPLETED' : tRisk >= 70 ? 'HIGH RISK' : tRisk >= 40 ? 'MODERATE RISK' : 'LOW RISK';
+            const badgeColor = isComp ? '#15803D' : tRisk >= 70 ? '#D62F39' : tRisk >= 40 ? '#D97706' : '#03045E';
+            const badgeBg = isComp ? '#DCFCE7' : tRisk >= 70 ? '#FEE2E2' : tRisk >= 40 ? '#FEF3C7' : '#EBF3FF';
+
+            if (isComp) {
+              return {
+                tabTitle: '3M SCHEDULE',
+                badge, badgeColor, badgeBg, prob,
+                summary: `${proj.name} has concluded construction and was commissioned on ${proj.actualCompletion || proj.expectedCompletion}. Historical schedule extension stands at ${proj.timeOverrunFormatted || (extMo > 0 ? extMo + ' months' : '0 months')}.`,
+                upward: [
+                  `Total accumulated schedule extension of ${proj.timeOverrunFormatted || (extMo + ' months')} recorded during active execution phase.`,
+                  `Final administrative and operational handover reviews underway.`
+                ],
+                protective: [
+                  `Project has achieved 100% physical completion, eliminating forward delay risks.`,
+                  `Infrastructure commissioned for public/commercial operations.`
+                ]
+              };
+            }
 
             return {
               tabTitle: '3M SCHEDULE',
               badge, badgeColor, badgeBg, prob,
               summary: `${proj.name} exhibits a ${badge} (${prob}% probability) of additional schedule delay in the next 3 months, supported by PAIMANA milestone trajectory.`,
               upward: [
-                `With the revised target date passed ${Math.max(45, Math.round(extMo * 30))} days ago, the overdue schedule significantly increases the predicted delay risk.`,
-                `Being ${Math.round(extMo)} months past the original target duration contributes toward higher predicted delay risk.`,
-                `The current revised cost of ${formatCurrencyClean(costRev)} contributes to higher predicted delay risk.`,
-                `A schedule extension rate of ${((extMo / 36) * 100).toFixed(2)}% relative to duration increases the predicted delay risk.`,
-                `The original approved cost of ${formatCurrencyClean(costApp)} contributes to higher predicted delay risk.`,
-                `The project has achieved ${progPhys}% physical progress relative to its reported timeline.`
+                extMo > 0
+                  ? `Accumulated schedule extension of ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months significantly elevates near-term timeline vulnerability.`
+                  : `Project is currently tracking against its approved schedule target without accumulated extension.`,
+                `Current revised cost envelope of ${formatCurrencyClean(costRev)} reflects substantial multi-contractor coordination demands.`,
+                `Physical progress stands at ${progPhys}% relative to target completion.`
               ],
               protective: [
-                `Projects under ${sector} sector show lower predicted baseline delay volatility.`,
-                `A low cost overrun level (${formatCurrencyClean(costRev - costApp)}) contributes to a lower predicted cost escalation risk.`,
-                `A project age of ${Math.round(progPhys * 2.2)} months reflects execution phase stability, helping reduce delay risk.`
+                `Projects under ${sector} sector exhibit standardized statutory clearance protocols.`,
+                costRev > costApp
+                  ? `Sanctioned cost envelope expansion of ${formatCurrencyClean(costRev - costApp)} provides operational liquidity.`
+                  : `Operation within original budget ceiling mitigates secondary cost-driven work stoppages.`,
+                `Active execution velocity supports milestone stabilization.`
               ]
             };
           } else if (tab === 'sched6m') {
-            const prob = Math.min(99, tRisk * 1.20).toFixed(1);
-            const badge = tRisk >= 60 ? 'HIGH RISK' : 'MODERATE RISK';
-            const badgeColor = tRisk >= 60 ? '#D62F39' : '#D97706';
-            const badgeBg = tRisk >= 60 ? '#FEE2E2' : '#FEF3C7';
+            const prob = isComp ? '0.0' : Math.min(99, tRisk * 1.20).toFixed(1);
+            const badge = isComp ? 'COMPLETED' : tRisk >= 60 ? 'HIGH RISK' : 'MODERATE RISK';
+            const badgeColor = isComp ? '#15803D' : tRisk >= 60 ? '#D62F39' : '#D97706';
+            const badgeBg = isComp ? '#DCFCE7' : tRisk >= 60 ? '#FEE2E2' : '#FEF3C7';
+
+            if (isComp) {
+              return {
+                tabTitle: '6M SCHEDULE',
+                badge, badgeColor, badgeBg, prob,
+                summary: `${proj.name} is fully commissioned; long-term timeline risk is completely resolved.`,
+                upward: [
+                  `Historical completion achieved on ${proj.actualCompletion || proj.expectedCompletion}.`
+                ],
+                protective: [
+                  `All major civil and structural milestone handovers are complete.`
+                ]
+              };
+            }
 
             return {
               tabTitle: '6M SCHEDULE',
               badge, badgeColor, badgeBg, prob,
               summary: `${proj.name} exhibits a ${badge} (${prob}% probability) of compounding schedule delay over the 6-month forecast horizon.`,
               upward: [
-                `Cumulative schedule extension reaching ${extMo} months exacerbates long-term timeline risk.`,
-                `Physical progress gap (${(proj.progressPhysicalTarget || 85) - progPhys}% behind target) compounds delay probability.`,
-                `High revised budget scale (${formatCurrencyClean(costRev)}) creates extended procurement lead times.`,
-                `Land acquisition and Right of Way (RoW) clearances lag behind civil works execution.`
+                extMo > 0
+                  ? `Cumulative schedule extension reaching ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months elevates long-term timeline risk.`
+                  : `Sustained milestone pace required to maintain on-time commissioning.`,
+                `Physical progress gap (${Math.max(0, (proj.progressPhysicalTarget || 85) - progPhys)}% behind target) compounds delay probability.`,
+                `High revised budget scale (${formatCurrencyClean(costRev)}) requires rigorous supply-chain pacing.`
               ],
               protective: [
                 `Active site deployment velocity mitigates catastrophic schedule overrun.`,
-                `State government nodal agency coordination supports active clearance resolution.`,
+                `Inter-agency coordination supports active clearance resolution.`,
                 `EPC contractor mobilization capability helps stabilize long-term target completion.`
               ]
             };
@@ -1846,7 +1887,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const activeProvider = liveModelExp?.provider || 'Qwen3-8B / Grounded AI Engine';
 
         return (
-          <div className="card nlp-explanation-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="card nlp-explanation-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
@@ -1955,6 +1996,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         );
       })()}
 
+      </div>{/* /pd-section-escalation */}
+
+      {/* ─── SECTION: Early Warnings ─── */}
+      <div id="pd-section-warnings" className="pd-section-anchor">
+      <div className="pd-section-header pd-section-header--warnings">
+        <span className="pd-section-tag">04</span>
+        <span className="pd-section-name">Early Warnings</span>
+      </div>
+
       {/* Early Warnings & Recommendations Section */}
       {(() => {
         const getEarlyWarningsAndRecommendations = (proj: Project) => {
@@ -1962,64 +2012,59 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
           const deltaCostVal = costRev - costApp;
           const deltaPct = costApp > 0 ? (((costRev - costApp) / costApp) * 100).toFixed(1) : '0.0';
-          const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
+          const extMo = proj.timeOverrunMonths !== null && proj.timeOverrunMonths !== undefined ? proj.timeOverrunMonths : parseFloat(String(proj.scheduleExtensionMonths || 0));
+          const isComp = proj.isCompleted || proj.projectStatus === 'COMPLETED' || (proj.progressPhysical || 0) >= 100;
           const rScore = proj.riskScore || 50;
           const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : rScore;
-          const addDelayMo = (tRisk * 0.058 + 2.1).toFixed(2);
-          const delayProb = (tRisk * 0.88).toFixed(1);
+          const addDelayMo = isComp ? '0.0' : (tRisk * 0.03).toFixed(1);
+          const delayProb = isComp ? '0.0' : (tRisk * 0.88).toFixed(1);
 
-          // Dynamic Target Date Calculation
-          let formattedTargetDate = 'December 2027';
-          try {
-            let dateStr = proj.expectedCompletion;
-            if (!dateStr || dateStr === 'N/A') dateStr = '2027-12-31';
-            const targetDateObj = new Date(dateStr);
-            if (!isNaN(targetDateObj.getTime())) {
-              targetDateObj.setMonth(targetDateObj.getMonth() + Math.round(parseFloat(addDelayMo)));
-              formattedTargetDate = targetDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-            }
-          } catch (e) {
-            formattedTargetDate = 'December 2027';
-          }
+          // Target / Completion Date
+          const formattedTargetDate = isComp
+            ? (proj.actualCompletion || proj.expectedCompletion || 'Completed')
+            : (proj.expectedCompletion || 'December 2026');
 
-          const schedRiskBadge = tRisk >= 70 ? 'HIGH' : tRisk >= 40 ? 'MEDIUM' : 'LOW';
-          const costRiskBadge = deltaCostVal > costApp * 0.2 ? 'HIGH' : deltaCostVal > 0 ? 'MEDIUM' : 'LOW';
-
-          // Dynamic Active Warnings Counter
-          let activeWarningsCount = 0;
-          if (tRisk >= 40) activeWarningsCount++;
-          if (deltaCostVal > 0) activeWarningsCount++;
-          if (proj.progressPhysical < (proj.progressPhysicalTarget || 80)) activeWarningsCount++;
-          activeWarningsCount = Math.max(1, activeWarningsCount);
+          const schedRiskBadge = isComp ? 'LOW' : tRisk >= 70 ? 'HIGH' : tRisk >= 40 ? 'MEDIUM' : 'LOW';
+          const costRiskBadge = isComp ? 'LOW' : deltaCostVal > costApp * 0.2 ? 'HIGH' : deltaCostVal > 0 ? 'MEDIUM' : 'LOW';
 
           // Dynamic Recommendations Generator
           const recommendations = [];
-          if (tRisk >= 50) {
+          if (isComp) {
             recommendations.push({
-              title: 'Establish Milestone Recovery & Fast-Tracking Taskforce',
-              priority: 'HIGH',
-              action: `Initiate joint review with ${proj.agency || 'executing agency'} to compress critical-path work packages and clear right-of-way/vendor bottlenecks.`,
-              trigger: `High 3-month schedule delay probability (${delayProb}%)...`,
-              impact: 'Prevents further cascading delay on subsequent work packages...'
+              title: 'Asset Capitalization & Defect Liability Oversight',
+              priority: 'MEDIUM',
+              action: `Complete commercial capitalization of ₹${formatCurrencyClean(costRev)} asset and establish warranty monitoring with ${proj.agency || 'executing agency'}.`,
+              trigger: `Project reached 100% completion on ${proj.actualCompletion || proj.expectedCompletion}.`,
+              impact: 'Ensures asset lifespan protection and formal financial closure.'
             });
-          }
-          if (deltaCostVal > 0) {
-            recommendations.push({
-              title: 'Establish Fiscal Ceiling Oversight & Variation Audit',
-              priority: deltaCostVal > costApp * 0.3 ? 'HIGH' : 'MEDIUM',
-              action: `Audit price escalation variations for ${proj.name} to ensure expenditure remains within revised sanction ceiling of ${formatCurrencyClean(costRev)}.`,
-              trigger: `Cumulative cost revision of +${deltaPct}% (+${formatCurrencyClean(deltaCostVal)})...`,
-              impact: 'Protects against secondary budget revisions and financial freeze...'
-            });
-          }
-          if (recommendations.length === 0) {
-            recommendations.push({
-              title: 'Maintain Baseline Execution Monitoring & Milestone Alignment',
-              priority: 'LOW',
-              action: `Continue monthly physical-financial drawdown tracking to preserve stable target completion timeline.`,
-              trigger: `Low risk score (${rScore}/100) with stable drawdown velocity...`,
-              impact: 'Sustains on-track delivery schedule.'
-            });
+          } else {
+            if (tRisk >= 50) {
+              recommendations.push({
+                title: 'Establish Milestone Recovery & Fast-Tracking Taskforce',
+                priority: 'HIGH',
+                action: `Initiate joint review with ${proj.agency || 'executing agency'} to compress critical-path work packages and clear right-of-way/vendor bottlenecks.`,
+                trigger: `High schedule delay probability (${delayProb}%)...`,
+                impact: 'Prevents further cascading delay on subsequent work packages.'
+              });
+            }
+            if (deltaCostVal > 0) {
+              recommendations.push({
+                title: 'Establish Fiscal Ceiling Oversight & Variation Audit',
+                priority: deltaCostVal > costApp * 0.3 ? 'HIGH' : 'MEDIUM',
+                action: `Audit price escalation variations for ${proj.name} to ensure expenditure remains within revised sanction ceiling of ${formatCurrencyClean(costRev)}.`,
+                trigger: `Cumulative cost revision of +${deltaPct}% (+${formatCurrencyClean(deltaCostVal)})...`,
+                impact: 'Protects against secondary budget revisions and financial freeze.'
+              });
+            }
+            if (recommendations.length === 0) {
+              recommendations.push({
+                title: 'Maintain Baseline Execution Monitoring & Milestone Alignment',
+                priority: 'LOW',
+                action: `Continue monthly physical-financial drawdown tracking to preserve stable target completion timeline.`,
+                trigger: `Low risk score (${rScore}/100) with stable drawdown velocity...`,
+                impact: 'Sustains on-track delivery schedule.'
+              });
+            }
           }
 
           return {
@@ -2038,24 +2083,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         };
 
         const ewr = getEarlyWarningsAndRecommendations(project);
-        const activeWarningsList = isCompleted
-          ? [
-              {
-                id: 'warn_closed_1',
-                title: 'Civil Construction & Testing 100% Finalized',
-                severity: 'VERIFIED',
-                evidence: `Physical execution certified at 100%. Commercial operation achieved and asset handed over to operating authority.`,
-                impact: `Zero forward critical-path construction delay. No active execution risk remaining.`
-              },
-              {
-                id: 'warn_closed_2',
-                title: 'Capital Allocation & Financial Accounts Reconciled',
-                severity: 'RECONCILED',
-                evidence: `Cumulative expenditure stands at ${ewr.costRev}, closing baseline sanctioned envelope and revisions.`,
-                impact: `Fiscal disbursements concluded. No forward capital expenditure escalation exposure.`
-              }
-            ]
-          : ((earlyWarnings && earlyWarnings.warnings && earlyWarnings.warnings.length > 0)
+        const activeWarningsList = (earlyWarnings && earlyWarnings.warnings && earlyWarnings.warnings.length > 0)
           ? earlyWarnings.warnings
           : [
               {
@@ -2072,28 +2100,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 evidence: `Approved: ${ewr.costApp}, Revised: ${ewr.costRev} (${ewr.deltaCost}).`,
                 impact: `Cost escalation of +${ewr.deltaPct}% demands active expenditure ceiling audit.`
               }
-            ]);
+            ];
 
-        const activeRecsList = isCompleted
-          ? [
-              {
-                id: 'rec_comp_1',
-                title: 'Defect Liability Period (DLP) & Asset Health Monitoring',
-                priority: 'MEDIUM',
-                recommendation: `Enforce contractual defect liability covenants with EPC contractors and schedule mandatory bi-quarterly structural inspections.`,
-                reason: `Asset commissioned; ensuring contractor warranty and rectification obligations remain active.`,
-                expected_impact: 'Preserves long-term infrastructure integrity and minimizes premature maintenance outlays.'
-              },
-              {
-                id: 'rec_comp_2',
-                title: 'Formal Asset Capitalization & Registry Enrollment',
-                priority: 'LOW',
-                recommendation: `Submit audited completion report to Ministry of Statistics and Programme Implementation (MoSPI) and enroll into national capital asset database.`,
-                reason: `Formal administrative closure of central sector capital works project.`,
-                expected_impact: 'Completes statutory compliance and releases residual contractor bank guarantees.'
-              }
-            ]
-          : ((recommendations && recommendations.recommendations && recommendations.recommendations.length > 0)
+        const activeRecsList = (recommendations && recommendations.recommendations && recommendations.recommendations.length > 0)
           ? recommendations.recommendations
           : ewr.recommendations.map((r: any, i: number) => ({
               id: `rec_${i}`,
@@ -2102,67 +2111,49 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               recommendation: r.action,
               reason: r.trigger,
               expected_impact: r.impact
-            })));
+            }));
 
         return (
-          <div className="card early-warnings-recommendations-card" style={{ backgroundColor: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.03)', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="card early-warnings-recommendations-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
-                  {isCompleted ? 'Execution Closure Verification & Post-Commissioning Directives' : 'Early Warnings & Recommendations'}
+                  Early Warnings & Recommendations
                 </h2>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, marginTop: '2px', display: 'block' }}>
-                  {isCompleted ? 'Statutory completion verification records and post-commissioning administrative directives' : 'Automated anomaly indicators and grounded administrative mitigation actions'}
+                  Automated anomaly indicators and grounded administrative mitigation actions
                 </span>
               </div>
 
               {/* Active Warnings Pill Badge */}
-              <span style={{
-                fontSize: '12px',
-                fontWeight: 750,
-                color: isCompleted ? '#166534' : '#03045E',
-                backgroundColor: isCompleted ? '#DCFCE7' : '#F0F7FF',
-                padding: '5px 12px',
-                borderRadius: '20px',
-                border: isCompleted ? '1px solid #86EFAC' : '1px solid #BFDBFE'
-              }}>
-                {isCompleted ? 'Asset 100% Commissioned • 0 Active Execution Anomalies' : `${activeWarningsList.length} Active Warning${activeWarningsList.length > 1 ? 's' : ''}`}
+              <span style={{ fontSize: '12px', fontWeight: 750, color: '#03045E', backgroundColor: '#F0F7FF', padding: '5px 12px', borderRadius: '20px', border: '1px solid #BFDBFE' }}>
+                {activeWarningsList.length} Active Warning{activeWarningsList.length > 1 ? 's' : ''}
               </span>
             </div>
 
             {/* Two-Column 50/50 Layout */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
               
-              {/* Left Column: AI EARLY WARNINGS / CLOSURE VERIFICATION */}
+              {/* Left Column: AI EARLY WARNINGS */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 {/* AI Early Warnings Card Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ backgroundColor: isCompleted ? '#DCFCE7' : '#FEE2E2', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {isCompleted ? <CheckCircle2 size={16} color="#15803D" /> : <AlertTriangle size={16} color="#D62F39" />}
+                    <div style={{ backgroundColor: '#FEE2E2', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <AlertTriangle size={16} color="#D62F39" />
                     </div>
                     <div>
                       <h3 style={{ fontSize: '13.5px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                        {isCompleted ? 'CLOSURE & COMMISSIONING VERIFICATION' : 'AI EARLY WARNINGS'}
+                        AI EARLY WARNINGS
                       </h3>
-                      <span style={{ fontSize: '11px', color: '#64748B' }}>
-                        {isCompleted ? 'Audited completion and capitalization checkpoints' : 'Anomaly flags detected by telemetry analysis'}
-                      </span>
+                      <span style={{ fontSize: '11px', color: '#64748B' }}>Anomaly flags detected by telemetry analysis</span>
                     </div>
                   </div>
-                  <span style={{
-                    fontSize: '10.5px',
-                    fontWeight: 800,
-                    color: isCompleted ? '#166534' : '#991B1B',
-                    backgroundColor: isCompleted ? '#DCFCE7' : '#FEE2E2',
-                    padding: '2px 8px',
-                    borderRadius: '10px',
-                    border: isCompleted ? '1px solid #86EFAC' : '1px solid #FCA5A5'
-                  }}>
-                    {isCompleted ? 'VERIFIED' : `${activeWarningsList.length} DETECTED`}
+                  <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#991B1B', backgroundColor: '#FEE2E2', padding: '2px 8px', borderRadius: '10px', border: '1px solid #FCA5A5' }}>
+                    {activeWarningsList.length} DETECTED
                   </span>
                 </div>
 
@@ -2268,6 +2259,44 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         );
       })()}
 
+      </div>{/* /pd-section-warnings */}
+
+        {/* ─── END OF PAGE: TAKE ACTION CTA BANNER ─── */}
+        <div className="pd-take-action-bottom-card">
+          <div className="take-action-content">
+            <div className="take-action-badge-tag">
+              <ShieldAlert size={14} color="#DC2626" />
+              <span>EXECUTIVE INTERVENTION WORKSPACE</span>
+            </div>
+            <h2 className="take-action-title">Ready to Take Executive Action on {project.name}?</h2>
+            <p className="take-action-desc">
+              Open the Action Center to launch AI-recommended fast-track directives, execute What-If policy simulations, and route official administrative memos to designated governing authorities ({project.ministry}).
+            </p>
+            <div className="take-action-metrics-summary">
+              <span className="summary-chip chip-red">ML Risk Index: {project.riskScore}/100</span>
+              <span className="summary-chip chip-amber">Schedule Slippage: +{project.timeOverrunMonths || 0} Months</span>
+              <span className="summary-chip chip-blue">Revised Outlay: ₹{project.costRevised}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="take-action-cta-btn"
+            onClick={() => {
+              if (onTakeAction) {
+                onTakeAction(project.id);
+              }
+            }}
+          >
+            <ShieldAlert size={18} />
+            <span>Take Action in Action Center</span>
+            <ArrowRight size={18} />
+          </button>
+        </div>
+
+        </div>{/* /pd-main-content */}
+      </div>{/* /pd-layout-wrapper */}
+
 
 
       {/* Floating AI Assistant Chatbot Button & Modal rendered via Portal to STAY fixed floating on screen across whole page */}
@@ -2275,7 +2304,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         <div className="ai-floating-widget-container">
           {/* Floating Interactive Project AI Assistant Chatbot Modal */}
           {aiAssistantOpen && (
-            <div className="ai-chatbot-modal">
+            <div className="ai-chatbot-modal" role="dialog" aria-modal="true" aria-labelledby="project-ai-assistant-title">
               {/* Header */}
               <div style={{ backgroundColor: '#03045E', padding: '16px 20px', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -2283,7 +2312,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                     <Bot size={18} color="#FFFFFF" />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '14px', fontWeight: 850, margin: 0, color: '#FFFFFF' }}>
+                    <h3 id="project-ai-assistant-title" style={{ fontSize: '14px', fontWeight: 850, margin: 0, color: '#FFFFFF' }}>
                       Project AI Intelligence Assistant
                     </h3>
                     <span style={{ fontSize: '11px', color: '#93C5FD', display: 'block', marginTop: '1px' }}>
@@ -2434,8 +2463,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               className="ai-floating-chat-btn"
               onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
               title={aiAssistantOpen ? "Close AI Assistant" : "Open Project AI Assistant"}
+              aria-label={aiAssistantOpen ? "Close AI Assistant" : "Open Project AI Assistant"}
             >
-              {aiAssistantOpen ? <X size={24} /> : <Bot size={24} />}
+              {aiAssistantOpen ? <X size={24} aria-hidden="true" /> : <Bot size={24} aria-hidden="true" />}
               {!aiAssistantOpen && (
                 <span className="ai-pulse-ring" />
               )}

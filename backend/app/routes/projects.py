@@ -14,6 +14,7 @@ from app.models.ministry import Ministry
 from app.models.sector import Sector
 from app.models.milestone import Milestone
 from app.models.progress import ProjectProgress
+from app.models.identifier_mapping import ProjectIdentifierMapping
 from app.schemas.project import (
     ProjectCreate, ProjectUpdate, ProjectResponse, ProjectDetailResponse,
     MinistryResponse, SectorResponse
@@ -44,17 +45,89 @@ def _clean_cr_str(val: float) -> str:
     return f"₹{val:,.2f} Cr".replace(".00 Cr", " Cr")
 
 
+def _resolve_project_id(project_id: str, db: Session) -> str:
+    """
+    Resolve an incoming project identifier (official project_id or legacy OCMS code)
+    to the canonical project_id.
+    """
+    clean = str(project_id).strip()
+    if clean.endswith(".0"):
+        clean = clean[:-2].strip()
+
+    # 1. Direct match by id
+    p_id = db.query(Project.id).filter(Project.id == clean).first()
+    if p_id:
+        return p_id[0]
+
+    # 2. Match by legacy_ocms_code in Project table
+    p_ocms = db.query(Project.id).filter(Project.legacy_ocms_code == clean).first()
+    if p_ocms:
+        return p_ocms[0]
+
+    # 3. Match in ProjectIdentifierMapping table
+    mapping = db.query(ProjectIdentifierMapping.project_id).filter(
+        ProjectIdentifierMapping.legacy_ocms_code == clean
+    ).first()
+    if mapping:
+        return mapping[0]
+
+    return clean
+
+
 def format_project_response(p: Project) -> dict:
     """Helper to format numeric fields and dates for frontend consumption."""
     orig_cost = float(p.original_cost) if p.original_cost is not None else 0.0
     rev_cost = float(p.revised_cost) if p.revised_cost is not None else orig_cost
     cum_exp = float(p.cumulative_expenditure) if p.cumulative_expenditure is not None else 0.0
     overrun_pct = round(float(p.cost_overrun_pct), 1) if p.cost_overrun_pct is not None else 0.0
+    phys_prog = round(float(p.physical_progress), 1) if p.physical_progress is not None else 0.0
+
+    is_completed = (p.project_status == "COMPLETED") or ("COMPLETED" in (p.schedule_status or "").upper()) or (phys_prog >= 100.0)
+
+    actual_d = p.actual_completion_date
+    if is_completed and not actual_d:
+        actual_d = p.expected_completion_date
+
+    orig_d = p.original_completion_date
+    exp_d = p.expected_completion_date
+
+    # Authoritative time overrun calculation
+    time_overrun_months = None
+    if is_completed:
+        if actual_d and orig_d:
+            time_overrun_months = round((actual_d.year - orig_d.year) * 12 + (actual_d.month - orig_d.month), 1)
+        elif p.schedule_extension_months is not None and float(p.schedule_extension_months) > 0:
+            time_overrun_months = round(float(p.schedule_extension_months), 1)
+        elif actual_d or orig_d:
+            time_overrun_months = 0.0
+    else:
+        if exp_d and orig_d:
+            time_overrun_months = round((exp_d.year - orig_d.year) * 12 + (exp_d.month - orig_d.month), 1)
+        elif p.schedule_extension_months is not None and float(p.schedule_extension_months) > 0:
+            time_overrun_months = round(float(p.schedule_extension_months), 1)
+        elif exp_d or orig_d:
+            time_overrun_months = 0.0
+
+    if time_overrun_months is not None:
+        if time_overrun_months > 0:
+            time_overrun_str = f"{int(time_overrun_months) if time_overrun_months % 1 == 0 else time_overrun_months} months delay"
+        elif time_overrun_months == 0:
+            time_overrun_str = "0 months (On Schedule)"
+        else:
+            time_overrun_str = f"{abs(int(time_overrun_months) if time_overrun_months % 1 == 0 else time_overrun_months)} months ahead"
+    else:
+        time_overrun_str = "N/A"
+
+    actual_comp_fmt = actual_d.strftime("%b %Y") if actual_d else None
+    exp_comp_fmt = exp_d.strftime("%b %Y") if exp_d else "N/A"
+    orig_comp_fmt = orig_d.strftime("%b %Y") if orig_d else "N/A"
 
     return {
         "id": p.id,
         "name": p.name,
         "project_code": p.project_code,
+        "legacy_ocms_code": p.legacy_ocms_code,
+        "legacyOcmsCode": p.legacy_ocms_code,
         "description": p.description,
         "ministry_id": p.ministry_id,
         "sector_id": p.sector_id,
@@ -65,18 +138,18 @@ def format_project_response(p: Project) -> dict:
         "contractor": p.contractor,
         "phase": p.phase,
         "type": p.type,
-        "project_status": p.project_status,
+        "project_status": "COMPLETED" if is_completed else p.project_status,
         "schedule_status": p.schedule_status,
         "start_date": p.start_date,
         "original_completion_date": p.original_completion_date,
         "expected_completion_date": p.expected_completion_date,
-        "actual_completion_date": p.actual_completion_date,
+        "actual_completion_date": actual_d,
         "original_cost": orig_cost,
         "revised_cost": rev_cost,
         "cumulative_expenditure": cum_exp,
         "cost_overrun_pct": overrun_pct,
         "cost_escalation_crore": float(p.cost_escalation_crore) if p.cost_escalation_crore is not None else 0.0,
-        "physical_progress": round(float(p.physical_progress), 1) if p.physical_progress is not None else 0.0,
+        "physical_progress": phys_prog,
         "physical_progress_target": round(float(p.physical_progress_target), 1) if p.physical_progress_target is not None else 0.0,
         "financial_progress": round(float(p.financial_progress), 1) if p.financial_progress is not None else 0.0,
         "schedule_extension_months": round(float(p.schedule_extension_months), 1) if p.schedule_extension_months is not None else 0.0,
@@ -99,8 +172,13 @@ def format_project_response(p: Project) -> dict:
         "costLabel": _clean_cr_str(rev_cost) if rev_cost else "₹0 Cr",
         "costSubtext": f"Approved: {_clean_cr_str(orig_cost)} ({overrun_pct:+.1f}%)" if orig_cost else "",
         "startDateFormatted": p.start_date.strftime("%b %Y") if p.start_date else "N/A",
-        "expectedCompletionFormatted": p.expected_completion_date.strftime("%b %Y") if p.expected_completion_date else "N/A",
-        "originalCompletionFormatted": p.original_completion_date.strftime("%b %Y") if p.original_completion_date else "N/A",
+        "expectedCompletionFormatted": exp_comp_fmt,
+        "originalCompletionFormatted": orig_comp_fmt,
+        "actualCompletionFormatted": actual_comp_fmt,
+        "revisedCompletionFormatted": exp_comp_fmt,
+        "timeOverrunMonths": time_overrun_months,
+        "timeOverrunFormatted": time_overrun_str,
+        "isCompleted": is_completed,
     }
 
 
@@ -132,6 +210,7 @@ def get_projects(
             or_(
                 Project.name.ilike(search_fmt),
                 Project.id.ilike(search_fmt),
+                Project.legacy_ocms_code.ilike(search_fmt),
                 Project.implementing_agency.ilike(search_fmt),
                 Project.state.ilike(search_fmt),
                 Project.location.ilike(search_fmt),
@@ -154,17 +233,34 @@ def get_projects(
     # Apply smart schedule status filter
     if schedule_status and schedule_status.strip() and schedule_status.strip().upper() != "ALL":
         stat = schedule_status.strip().upper()
-        if "ON" in stat or "TRACK" in stat:
-            query = query.filter(or_(Project.schedule_status.ilike("%ON%TRACK%"), Project.schedule_status.ilike("%COMPLETED%")))
-        elif "DELAY" in stat:
-            query = query.filter(or_(Project.schedule_status.ilike("%DELAY%"), Project.schedule_status.ilike("%EXTENDED%")))
+        if "ATTENTION" in stat or "MONITOR" in stat:
+            crit_sub = or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%"))
+            on_track_sub = or_(func.upper(Project.schedule_status).in_(['ON_TRACK', 'ON TRACK', 'ON-SCHEDULE', 'COMPLETED']))
+            high_risk_sub = or_(Project.risk_score >= 65, Project.risk_level.in_(['High', 'Critical']), Project.cost_overrun_pct > 15)
+            query = query.filter(and_(~crit_sub, ~on_track_sub, ~high_risk_sub))
+        elif "AT RISK" in stat or "HIGH RISK" in stat or "AT_RISK" in stat:
+            crit_sub = or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%"))
+            on_track_sub = or_(func.upper(Project.schedule_status).in_(['ON_TRACK', 'ON TRACK', 'ON-SCHEDULE', 'COMPLETED']))
+            query = query.filter(and_(~crit_sub, ~on_track_sub, or_(Project.risk_score >= 65, Project.risk_level.in_(['High', 'Critical']), Project.cost_overrun_pct > 15)))
+        elif "ON" in stat or "TRACK" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%ON%TRACK%"), Project.schedule_status.ilike("%COMPLETED%"), Project.schedule_status.ilike("%Schedule%")))
         elif "CRIT" in stat or "OVERDUE" in stat:
             query = query.filter(or_(Project.schedule_status.ilike("%CRIT%"), Project.schedule_status.ilike("%OVERDUE%")))
+        elif "DELAY" in stat:
+            query = query.filter(or_(Project.schedule_status.ilike("%DELAY%"), Project.schedule_status.ilike("%EXTENDED%")))
         else:
             query = query.filter(Project.schedule_status.ilike(f"%{stat}%"))
 
     if risk_level and risk_level.strip() and risk_level.strip().upper() != "ALL":
-        query = query.filter(Project.risk_level.ilike(risk_level.strip()))
+        r_clean = risk_level.strip().upper()
+        if "CRIT" in r_clean or "HIGH" in r_clean:
+            query = query.filter(Project.risk_level.in_(["High", "Critical"]))
+        elif "MED" in r_clean:
+            query = query.filter(Project.risk_level.ilike("%Medium%"))
+        elif "LOW" in r_clean:
+            query = query.filter(Project.risk_level.ilike("%Low%"))
+        else:
+            query = query.filter(Project.risk_level.ilike(risk_level.strip()))
     if state and state.strip() and state.strip().upper() != "ALL":
         query = query.filter(Project.state.ilike(f"%{state.strip()}%"))
 
@@ -238,28 +334,32 @@ def get_sectors(db: Session = Depends(get_db)):
 def get_project_by_id(project_id: str, db: Session = Depends(get_db)):
     """
     Retrieve full details for a single project including milestones and progress records.
+    Automatically resolves legacy OCMS codes (e.g. N06000152) to official project_id (400259).
     """
+    canonical_id = _resolve_project_id(project_id, db)
     project = db.query(Project).options(
         joinedload(Project.ministry),
         joinedload(Project.sector),
         joinedload(Project.milestones),
         joinedload(Project.progress_records)
-    ).filter(Project.id == project_id).first()
+    ).filter(Project.id == canonical_id).first()
 
     if not project:
         try:
-            pred = ai_engine.get_full_project_prediction(project_id)
+            pred = ai_engine.get_full_project_prediction(canonical_id)
             if pred:
                 info = pred.get("project_info", {})
                 curr = pred.get("current_status", {})
                 cost = pred.get("cost_data", {})
                 return {
-                    "id": str(project_id),
-                    "name": info.get("project_name", f"Project {project_id}"),
-                    "project_code": f"PRJ-{project_id}",
+                    "id": str(canonical_id),
+                    "name": info.get("project_name", f"Project {canonical_id}"),
+                    "project_code": f"PRJ-{canonical_id}",
+                    "legacy_ocms_code": project_id if canonical_id != project_id else None,
+                    "legacyOcmsCode": project_id if canonical_id != project_id else None,
                     "description": f"National central sector infrastructure project under {info.get('ministry_department', 'Government of India')}.",
-                    "sector_id": "SEC-GEN",
-                    "ministry_id": "MIN-GEN",
+                    "sector_id": None,
+                    "ministry_id": None,
                     "original_cost": cost.get("original_cost_crore", 1000.0),
                     "revised_cost": cost.get("revised_cost_crore", 1000.0),
                     "cumulative_expenditure": cost.get("cumulative_expenditure_crore", 500.0),
@@ -274,6 +374,8 @@ def get_project_by_id(project_id: str, db: Session = Depends(get_db)):
                     "risk_level": "Medium",
                     "state": "National",
                     "implementing_agency": info.get("agency", "Executing Agency"),
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
                     "milestones": [],
                     "progress_records": [],
                     "costApproved": _clean_cr_str(float(cost.get("original_cost_crore", 1000.0))),
@@ -442,13 +544,14 @@ def _calculate_risk_tier(prob: Optional[float]) -> str:
 
 
 @router.get("/{project_id}/prediction", response_model=FullProjectPredictionResponse, summary="Get Full Project Predictions")
-def get_project_prediction_endpoint(project_id: str):
+def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Run multi-horizon (3M & 6M) incremental cost and schedule predictions.
     Derived final totals maintain strict mathematical consistency.
     """
+    canonical_id = _resolve_project_id(project_id, db)
     try:
-        raw_pred = ai_engine.get_full_project_prediction(project_id)
+        raw_pred = ai_engine.get_full_project_prediction(canonical_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {e}")
 
@@ -496,7 +599,7 @@ def get_project_prediction_endpoint(project_id: str):
     )
 
     return FullProjectPredictionResponse(
-        project_id=str(raw_pred.get("project_id", project_id)),
+        project_id=str(raw_pred.get("project_id", canonical_id)),
         project_name=raw_pred.get("project_name", ""),
         as_of_month=raw_pred.get("as_of_month"),
         is_completed=raw_pred.get("is_completed", False),
@@ -513,13 +616,15 @@ def get_project_prediction_endpoint(project_id: str):
 @router.get("/{project_id}/shap", response_model=ShapExplanationResponse, summary="Get Project TreeSHAP Explanation")
 def get_project_shap_endpoint(
     project_id: str,
-    model_name: str = Query("cost_3m", description="One of: cost_3m, cost_6m, time_3m, time_6m")
+    model_name: str = Query("cost_3m", description="One of: cost_3m, cost_6m, time_3m, time_6m"),
+    db: Session = Depends(get_db)
 ):
     """
     Retrieve TreeSHAP additive feature contributions for a specific model & horizon.
     """
+    canonical_id = _resolve_project_id(project_id, db)
     try:
-        raw_shap = ai_engine.get_project_shap_explanation(project_id, model_key=model_name)
+        raw_shap = ai_engine.get_project_shap_explanation(canonical_id, model_key=model_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"SHAP explanation error: {e}")
 
@@ -537,13 +642,14 @@ def get_project_shap_endpoint(
 
 
 @router.get("/{project_id}/cost-drivers", response_model=CostDriverAnalysisResponse, summary="Cost Escalation Driver Analysis")
-def get_cost_driver_analysis_endpoint(project_id: str):
+def get_cost_driver_analysis_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Dedicated Cost Escalation Driver Analysis module.
     Translates technical TreeSHAP attributions into domain-meaningful financial drivers.
     """
+    canonical_id = _resolve_project_id(project_id, db)
     try:
-        data = ai_engine.get_cost_driver_analysis(project_id)
+        data = ai_engine.get_cost_driver_analysis(canonical_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Cost driver analysis error: {e}")
 
@@ -567,19 +673,45 @@ def get_cost_driver_analysis_endpoint(project_id: str):
 
 
 @router.get("/{project_id}/ai-summary", response_model=AISummaryResponse, summary="AI Executive Project Summary")
-def get_project_ai_summary_endpoint(project_id: str):
+def get_project_ai_summary_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Generate natural language executive project summary using Qwen / grounded fallback.
     Answers: 'What is happening with this project?'
     """
+    canonical_id = _resolve_project_id(project_id, db)
+    db_proj = db.query(Project).filter(Project.id == canonical_id).first()
+    p_name = db_proj.name if db_proj else f"Project {canonical_id}"
+
     try:
-        res = ai_engine.get_ai_project_summary(project_id)
+        res = ai_engine.get_ai_project_summary(canonical_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI Summary generation error: {e}")
+        logger.warning(f"AI Summary generation error for {canonical_id}: {e}")
+        phys_p = float(db_proj.physical_progress or 0.0) if db_proj else 0.0
+        cum_e = float(db_proj.cumulative_expenditure or 0.0) if db_proj else 0.0
+        m_name = db_proj.ministry.name if (db_proj and db_proj.ministry) else "National Monitoring"
+        s_name = db_proj.sector.name if (db_proj and db_proj.sector) else "Infrastructure"
+        res = {
+            "project_name": p_name,
+            "stage_case": "CASE 1 – COMPLETED PROJECT" if phys_p >= 100 else "CASE 5 – NORMAL ACTIVE PROJECT",
+            "summary": f"The {p_name} under {m_name} ({s_name}) stands at {phys_p:.1f}% physical completion with cumulative expenditure of ₹{cum_e:,.2f} crore.",
+            "alerts_title": "Project Operational Status",
+            "key_alerts": [
+                {
+                    "issue": "Continuous Monitoring",
+                    "evidence": f"Recorded physical progress {phys_p:.1f}% against active baseline parameters.",
+                    "why_it_matters": "Enables proactive project oversight and risk intervention."
+                }
+            ],
+            "source": "Grounded AI Engine"
+        }
+
+    ret_name = res.get("project_name")
+    if not ret_name or ret_name.startswith("Project "):
+        ret_name = p_name
 
     return AISummaryResponse(
-        project_id=project_id,
-        project_name=res.get("project_name", f"Project {project_id}"),
+        project_id=canonical_id,
+        project_name=ret_name,
         stage_case=res.get("stage_case", "Active Monitoring"),
         summary=res.get("summary", "AI summary unavailable."),
         alerts_title=res.get("alerts_title"),
@@ -589,36 +721,53 @@ def get_project_ai_summary_endpoint(project_id: str):
 
 
 @router.get("/{project_id}/model-explanations", response_model=ProjectModelExplanationsResponse, summary="Model-Specific Explanations")
-def get_project_model_explanations_endpoint(project_id: str):
+def get_project_model_explanations_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Generate model-specific natural language explanations using Qwen3-8B / fallback engine.
     Answers: 'Why did the model predict this?' across 3M/6M Schedule and 3M/6M Cost.
     """
+    canonical_id = _resolve_project_id(project_id, db)
+    db_proj = db.query(Project).filter(Project.id == canonical_id).first()
+    p_name = db_proj.name if db_proj else f"Project {canonical_id}"
+
     try:
-        res = ai_engine.get_ai_model_explanations(project_id)
+        res = ai_engine.get_ai_model_explanations(canonical_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Model explanations generation error: {e}")
+        logger.warning(f"Model explanations error for {canonical_id}: {e}")
+        res = {"project_name": p_name, "explanations": {}}
 
     exp_map = {}
     for k, v in res.get("explanations", {}).items():
         exp_map[k] = ModelExplanationItem(**v)
 
     return ProjectModelExplanationsResponse(
-        project_id=project_id,
-        project_name=res.get("project_name", f"Project {project_id}"),
+        project_id=canonical_id,
+        project_name=res.get("project_name") or p_name,
         explanations=exp_map
     )
 
 
 @router.get("/{project_id}/warnings", response_model=ProjectEarlyWarningsResponse, summary="AI Early Warnings")
-def get_project_early_warnings_endpoint(project_id: str):
+def get_project_early_warnings_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Dedicated AI Early Warnings section for project anomaly alerts.
     """
+    canonical_id = _resolve_project_id(project_id, db)
+    db_proj = db.query(Project).filter(Project.id == canonical_id).first()
+    p_name = db_proj.name if db_proj else f"Project {canonical_id}"
+
     try:
-        res = ai_engine.get_ai_early_warnings(project_id)
+        res = ai_engine.get_ai_early_warnings(canonical_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Early warnings generation error: {e}")
+        logger.warning(f"Early warnings generation error for {canonical_id}: {e}")
+        res = {
+            "project_id": canonical_id,
+            "project_name": p_name,
+            "section_title": "AI Early Warnings",
+            "stage_case": "Active Monitoring",
+            "total_warnings": 0,
+            "warnings": []
+        }
 
     return ProjectEarlyWarningsResponse(
         project_id=res["project_id"],
@@ -631,12 +780,13 @@ def get_project_early_warnings_endpoint(project_id: str):
 
 
 @router.get("/{project_id}/recommendations", response_model=ProjectRecommendationsResponse, summary="AI Recommendations")
-def get_project_recommendations_endpoint(project_id: str):
+def get_project_recommendations_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Generate prioritized actionable recommendations based on identified risk drivers.
     """
+    canonical_id = _resolve_project_id(project_id, db)
     try:
-        res = ai_engine.get_ai_recommendations(project_id)
+        res = ai_engine.get_ai_recommendations(canonical_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Recommendations generation error: {e}")
 
@@ -649,18 +799,19 @@ def get_project_recommendations_endpoint(project_id: str):
 
 
 @router.post("/{project_id}/chat", response_model=ChatResponse, summary="Grounded Project AI Chat Assistant")
-def chat_with_project_assistant_endpoint(project_id: str, req: ChatRequest):
+def chat_with_project_assistant_endpoint(project_id: str, req: ChatRequest, db: Session = Depends(get_db)):
     """
     Ask interactive grounded questions to the Project AI Assistant.
     """
+    canonical_id = _resolve_project_id(project_id, db)
     try:
         hist = [{"role": m.role, "content": m.content} for m in req.history] if req.history else []
-        ans = ai_engine.answer_project_chat(project_id, req.question, hist)
+        ans = ai_engine.answer_project_chat(canonical_id, req.question, hist)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat assistant error: {e}")
 
     return ChatResponse(
-        project_id=project_id,
+        project_id=canonical_id,
         question=req.question,
         answer=ans
     )

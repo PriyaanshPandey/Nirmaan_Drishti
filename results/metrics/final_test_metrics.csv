@@ -1,0 +1,6 @@
+Task,Metric_Type,R2,MAE,RMSE,MedAE,ROC_AUC,F1
+"Future Anticipated Cost (₹ Cr, 3M)",Regression,0.8862,424.55,1891.13,38.33,,
+"Derived Cost Overrun (% pp, 3M)",Regression,0.4682,20.66,48.09,5.09,,
+"Schedule Delay - Full Holdout (Months, 3M)",Regression,0.6989,9.37,26.11,0.84,,
+"Schedule Delay - Physical Execution (Months, 3M)",Regression,0.9331,3.97,11.6,0.66,,
+Schedule Delay Risk (3M),Binary Class,,,,,0.7089,0.5407

@@ -146,6 +146,14 @@
   letter-spacing: -0.01em;
 }
 
+@media (max-width: 900px) {
+  .legend-name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
 .legend-stats-right {
   display: flex;
   align-items: center;
@@ -176,36 +184,4 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@media (max-width: 768px) {
-  .donut-card .card-title {
-    font-size: 16px;
-  }
-
-  .donut-svg-wrapper {
-    width: 140px;
-    height: 140px;
-  }
-
-  .donut-center-value {
-    font-size: 20px;
-  }
-
-  .donut-legend {
-    gap: 8px;
-    padding-top: 10px;
-  }
-
-  .legend-item {
-    padding: 4px 6px;
-  }
-
-  .legend-name {
-    font-size: 12.5px;
-  }
-
-  .legend-count {
-    font-size: 13.5px;
-  }
 }

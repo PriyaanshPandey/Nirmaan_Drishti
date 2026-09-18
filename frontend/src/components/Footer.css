@@ -1,152 +1,234 @@
-.simple-govt-footer {
+/* ═══════════════════════════════════════════════════════════════════════════
+   NIRMAAN DRISHTI — PROFESSIONAL UNIFIED NAVY FOOTER
+   Single Distinguished Navy Color (#05083a)
+   - Logos on Left (MoSPI, NavDrishti, PAIMANA) in clean white cards
+   - Quick Links on Right with clean underline on active
+   - Clean professional text links (zero neon boxes)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nirmaan-unified-navy-footer {
   width: 100%;
-  background: #090B2E;
-  color: #F8FAFC;
-  font-family: inherit;
+  background-color: #05083a;
+  color: #CBD5E1;
   margin-top: auto;
-  border-top: 1px solid rgba(226, 232, 240, 0.15);
   box-sizing: border-box;
+  font-family: inherit;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.footer-simple-container {
+/* ── Clean 1px distinction border ── */
+.footer-accent-stripe {
   width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.footer-main-wrapper {
   max-width: 1360px;
   margin: 0 auto;
-  padding: 32px 48px;
+  padding: 22px 48px 18px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Top Row: Logos on Left, Quick Links on Right ── */
+.footer-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 32px;
   flex-wrap: wrap;
+}
+
+/* ── LEFT: 3 Cleaned Logos in Crisp White Cards ── */
+.footer-logos-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-logo-card {
+  background: #FFFFFF;
+  border-radius: 6px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
   box-sizing: border-box;
-}
-
-.footer-brand-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.brand-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.govt-icon {
-  color: #F59E0B;
-}
-
-.brand-title {
-  font-size: 16px;
-  font-weight: 900;
-  color: #F8FAFC;
-  letter-spacing: 0.06em;
-  display: block;
-}
-
-.brand-sub {
-  font-size: 12px;
-  color: #94A3B8;
-  font-weight: 500;
-  display: block;
-}
-
-.official-link-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.simple-link-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #60A5FA;
-  font-size: 12px;
-  font-weight: 650;
-  text-decoration: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
-.simple-link-pill:hover {
-  background: rgba(37, 99, 235, 0.2);
-  border-color: #3B82F6;
-  color: #93C5FD;
+.footer-logo-card.clickable {
+  cursor: pointer;
 }
 
-.pill-paimana {
-  color: #F59E0B;
-  border-color: rgba(245, 158, 11, 0.25);
-  background: rgba(245, 158, 11, 0.08);
+.footer-logo-card.clickable:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
-.pill-paimana:hover {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: #F59E0B;
-  color: #FCD34D;
+.footer-logo-card.brand-card {
+  cursor: default;
+  user-select: none;
 }
 
-.footer-nav-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* Clean Logo Dimensions */
+.logo-img {
+  width: auto;
+  object-fit: contain;
 }
 
-.nav-section-title {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #64748B;
+.logo-img.mospi-logo-img {
+  height: 36px;
+  max-width: 90px;
 }
 
-.nav-links-grid {
+.logo-img.navdrishti-logo-img {
+  height: 28px;
+  max-width: 135px;
+}
+
+.logo-img.paimana-logo-img {
+  height: 32px;
+  max-width: 145px;
+}
+
+/* ── RIGHT: Quick Links (Only Underline on Active / Click) ── */
+.footer-links-right {
   display: flex;
   align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-links-label {
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  color: #64748B;
+  letter-spacing: 0.06em;
+}
+
+.footer-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+/* Clean text button with ONLY an underline on active/click */
+.footer-underline-nav-btn {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 4px 1px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94A3B8;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: color 0.18s ease;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.footer-underline-nav-btn:hover {
+  color: #FFFFFF;
+}
+
+/* ACTIVE STATE: Only a clean underline */
+.footer-underline-nav-btn.active {
+  color: #FFFFFF;
+  font-weight: 650;
+  border-bottom-color: #38BDF8;
+}
+
+/* ── Divider ── */
+.footer-inner-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 2px 0;
+}
+
+/* ── Bottom Row: Copyright & Email ── */
+.footer-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
 }
 
-.nav-links-grid button {
-  background: none;
-  border: none;
-  color: #CBD5E1;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 4px 0;
-  transition: color 0.2s ease;
+.footer-copyright-text {
+  margin: 0;
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 450;
+  letter-spacing: -0.005em;
 }
 
-.nav-links-grid button:hover {
-  color: #3B82F6;
+/* Clean, Professional Email Link (No Neon Pill Border) */
+.footer-email-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.footer-email-text-link:hover {
+  color: #FFFFFF;
   text-decoration: underline;
 }
 
-.footer-bottom-simple {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background: #030712;
-  padding: 16px 48px;
-  text-align: center;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.footer-bottom-simple p {
-  margin: 0;
-  font-size: 12px;
+.footer-mail-icon {
   color: #64748B;
+  transition: color 0.18s ease;
 }
 
-@media (max-width: 768px) {
-  .footer-simple-container {
+.footer-email-text-link:hover .footer-mail-icon {
+  color: #38BDF8;
+}
+
+/* ── Responsive Design ── */
+@media (max-width: 1024px) {
+  .footer-top-row {
     flex-direction: column;
     align-items: flex-start;
-    padding: 24px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 680px) {
+  .footer-main-wrapper {
+    padding: 18px 20px 14px;
+  }
+  .footer-logos-left {
+    gap: 10px;
+  }
+  .footer-nav-group {
+    gap: 12px;
+  }
+  .footer-bottom-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }

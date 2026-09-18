@@ -1,115 +1,728 @@
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-top: 6px;
-  margin-bottom: 20px;
-  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* ═══════════════════════════════════════════════════════════════════════════
+   NIRMAAN DRISHTI — OFFICIAL NATIONAL PORTAL HEADER & NAVBAR
+   Design: Top Pristine White Bar + Deep Navy Bar with Centralized Nav Links
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nirmaan-header-wrapper {
+  width: 100%;
+  position: relative;
+  z-index: 100;
+  background-color: #ffffff;
+  box-shadow: 0 2px 14px rgba(5, 8, 58, 0.06);
 }
 
-.header-left {
-  display: flex;
-  flex-direction: column;
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. TOP WHITE BRAND & STATUS BANNER
+   ═══════════════════════════════════════════════════════════════════════════ */
+.nirmaan-header-bar {
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
 }
 
-.header-title {
-  font-size: 28px;
-  font-weight: 850;
-  color: var(--navy-dark);
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-}
-
-.header-subtitle {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-top: 6px;
-}
-
-.header-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.date-indicator {
-  font-size: 12px;
-  font-weight: 750;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
-
-.date-highlight {
-  font-weight: 850;
-  color: var(--navy-dark);
-}
-
-.insight-badge {
+.nirmaan-header-inner {
+  max-width: 100%;
+  min-height: 84px;
+  padding: 14px 48px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: #EBF3FF;
-  border: 1px solid #B9D5FF;
-  border-radius: 100px;
-  padding: 7px 16px;
-  box-shadow: 0 3px 10px rgba(47, 107, 244, 0.08);
-  transition: all 0.25s ease;
+  justify-content: space-between;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+/* ── Brand Cluster (Emblem + Titles) ── */
+.header-brand-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
   cursor: pointer;
+  user-select: none;
+  border-radius: 8px;
+  padding: 4px 0;
+  transition: opacity 0.2s ease;
 }
 
-.insight-badge:hover {
-  background-color: #DDEBFF;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(47, 107, 244, 0.15);
+.header-brand-group:hover {
+  opacity: 0.94;
 }
 
-.badge-dot {
+.header-brand-group:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 4px;
+}
+
+.header-emblem-container {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-emblem-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-brand-group:hover .header-emblem-img {
+  transform: scale(1.04);
+}
+
+.header-text-cluster {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Bold Deep Royal Navy Title */
+.header-brand-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0a1154;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+/* Soft Cerulean / Sky Blue Subtitle */
+.header-brand-subtitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #5097de;
+  letter-spacing: -0.01em;
+  margin: 3px 0 0 0;
+  line-height: 1.2;
+}
+
+/* ── Right Cluster: Status Indicators & Frameless Search ── */
+.header-right-cluster {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.header-status-indicators {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Clean Frameless Status Button */
+.status-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.status-pill-btn:hover {
+  background-color: #F8FAFC;
+}
+
+.status-pill-btn.active {
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+  padding: 4px 8px;
+}
+
+.status-dot-bullet {
   width: 7.5px;
   height: 7.5px;
   border-radius: 50%;
-  background-color: var(--color-accent-blue);
-  box-shadow: 0 0 6px var(--color-accent-blue);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
-.badge-text {
+.status-pill-btn:hover .status-dot-bullet,
+.status-pill-btn.active .status-dot-bullet {
+  transform: scale(1.3);
+}
+
+.status-pill-label {
   font-size: 13px;
-  font-weight: 750;
-  color: var(--color-accent-blue);
+  font-weight: 550;
+  color: #64748B;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.status-pill-btn:hover .status-pill-label,
+.status-pill-btn.active .status-pill-label {
+  color: #0F172A;
+}
+
+/* Standalone Minimalist Search Action Button */
+.header-search-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #334155;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 4px;
+}
+
+.header-search-icon-btn:hover {
+  background-color: #F1F5F9;
+  color: #0A1154;
+  transform: scale(1.1);
+}
+
+.header-search-icon-btn:active {
+  transform: scale(0.96);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. FULL-WIDTH DEEP NAVY BAR WITH CENTRALIZED NAV LINKS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.nirmaan-navy-nav {
+  width: 100%;
+  background-color: #05083a;
+  border: none;
+  position: relative;
+  z-index: 90;
+}
+
+.navy-nav-inner {
+  max-width: 100%;
+  height: 48px;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* ── Centralized Nav Items Container ── */
+.navy-nav-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0;
+  width: 100%;
+}
+
+/* Nav Item Buttons (Pristine Dark Navy Tabs) */
+.navy-nav-item,
+.header-nav-rectangular-tab {
+  all: unset;
+  box-sizing: border-box;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px;
+  background: transparent;
+  border: none;
+  color: #CBD5E1;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  position: relative;
+}
+
+.navy-nav-item:hover,
+.header-nav-rectangular-tab:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navy-nav-item:active,
+.header-nav-rectangular-tab:active {
+  transform: scale(0.97);
+}
+
+/* Active Nav Tab: Elevated lighter navy rectangular block with cyan accent bar */
+.navy-nav-item.active,
+.header-nav-rectangular-tab.active {
+  background-color: #12195F;
+  color: #FFFFFF;
+  font-weight: 650;
+  box-shadow: inset 0 -3px 0 0 #38BDF8;
+}
+
+.navy-nav-icon,
+.nav-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+
+.navy-nav-item.active .navy-nav-icon,
+.header-nav-rectangular-tab.active .nav-tab-icon {
+  color: #38BDF8;
+  opacity: 1;
+}
+
+.navy-nav-label,
+.nav-tab-label {
   letter-spacing: -0.01em;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. SPOTLIGHT QUICK SEARCH MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+.spotlight-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 40, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  z-index: 99999;
+  animation: spotlightFade 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes spotlightFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.spotlight-card {
+  width: 90%;
+  max-width: 680px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(5, 8, 40, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: spotlightSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes spotlightSlide {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.spotlight-input-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.spotlight-input-icon {
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.spotlight-input-field {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 16px;
+  color: #0F172A;
+  background: transparent;
+}
+
+.spotlight-input-field::placeholder {
+  color: #94A3B8;
+}
+
+.spotlight-clear-btn {
+  background: #F1F5F9;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748B;
+  transition: all 0.15s ease;
+}
+
+.spotlight-clear-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.spotlight-close-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748B;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 5px;
+  padding: 3px 7px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
+.spotlight-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  flex-wrap: wrap;
+}
+
+.spotlight-chips-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: #64748B;
+  margin-right: 4px;
+}
+
+.spotlight-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spotlight-chip:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.spotlight-chip.active {
+  background: #0A1154;
+  color: #FFFFFF;
+  border-color: #0A1154;
+}
+
+.spotlight-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.chip-active-x {
+  margin-left: 2px;
+  opacity: 0.8;
+}
+
+.spotlight-results-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.spotlight-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.spotlight-nav-hint {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+  color: #94A3B8;
+}
+
+.spotlight-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 3px;
+}
+
+.spotlight-item:hover,
+.spotlight-item.selected {
+  background: #EFF6FF;
+}
+
+.spotlight-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.spotlight-status-bullet {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.spotlight-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.spotlight-item-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spotlight-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotlight-item-id {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #64748B;
+  background: #F1F5F9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.spotlight-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.spotlight-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 550;
+  color: #64748B;
+}
+
+.spotlight-meta-status {
+  font-size: 10px;
+  font-weight: 750;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  letter-spacing: 0.02em;
+}
+
+.spotlight-item-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.spotlight-cost-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.spotlight-cost-label {
+  font-size: 10px;
+  color: #94A3B8;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.spotlight-item-cost {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #0A1154;
+}
+
+.spotlight-action-icon {
+  color: #94A3B8;
+}
+
+.spotlight-item.selected .spotlight-action-icon {
+  color: #2563EB;
+}
+
+.spotlight-no-results {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.spotlight-no-results-icon {
+  margin-bottom: 12px;
+}
+
+.no-results-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 4px;
+}
+
+.no-results-sub {
+  font-size: 13px;
+  color: #64748B;
+  max-width: 360px;
+  margin: 0 auto 16px;
+}
+
+.spotlight-reset-filter-btn {
+  background: #0A1154;
+  color: #FFFFFF;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.spotlight-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+}
+
+.spotlight-footer-keys {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spotlight-key-badge {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.spotlight-key-label {
+  font-size: 11px;
+  color: #64748B;
+  margin-right: 8px;
+}
+
+.spotlight-view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2563EB;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.spotlight-view-all-btn:hover {
+  background: #EFF6FF;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. RESPONSIVE MEDIA QUERIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .nirmaan-header-inner {
+    padding: 14px 24px;
+  }
+  .navy-nav-inner {
+    padding: 0 24px;
+  }
+  .header-brand-title {
+    font-size: 24px;
+  }
+  .header-status-indicators {
+    gap: 14px;
+  }
+  .navy-nav-item {
+    padding: 0 14px;
+  }
+}
+
+@media (max-width: 860px) {
+  .navy-nav-inner {
+    overflow-x: auto;
+  }
+  .navy-nav-center {
+    position: static;
+    transform: none;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 768px) {
-  .dashboard-header {
+  .nirmaan-header-inner {
+    padding: 12px 16px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 14px;
-    margin-top: 2px;
+    gap: 14px;
   }
-
-  .header-title {
-    font-size: 22px;
-  }
-
-  .header-subtitle {
-    font-size: 12px;
-    margin-top: 4px;
-    line-height: 1.4;
-  }
-
-  .header-right {
-    align-items: flex-start;
+  .header-right-cluster {
     width: 100%;
+    justify-content: space-between;
   }
-
-  .insight-badge {
-    padding: 5px 12px;
+  .navy-nav-inner {
+    padding: 0 16px;
   }
-
-  .badge-text {
-    font-size: 12px;
+  .navy-nav-item {
+    padding: 0 10px;
+    font-size: 12.5px;
   }
 }

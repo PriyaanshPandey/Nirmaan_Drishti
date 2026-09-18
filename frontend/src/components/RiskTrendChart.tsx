@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './RiskTrendChart.css';
 import { api } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
 
 type MetricTab = 'cost' | 'time' | 'impl';
 
@@ -57,7 +58,18 @@ export const RiskTrendChart: React.FC = () => {
     <div className="card risk-trend-card">
       <div className="trend-header">
         <div className="trend-title-col">
-          <h2 className="card-title">National Risk Trend</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 className="card-title">National Risk Trend</h2>
+            <InfoButton
+              title="National Risk Trend"
+              summary="Shows the selected national risk trajectory over the last 12 months for cost, time, or implementation risk."
+              dataSummary={currentData ? {
+                items: currentData.points.map((point) => ({ label: point.label, value: point.value })),
+                insight: `${currentData.points[0]?.value || 'No value'} at the start of the displayed period and ${currentData.points[currentData.points.length - 1]?.value || 'no value'} at the end.`
+              } : { items: [{ label: 'Status', value: 'Trend data is loading' }] }}
+              size="sm"
+            />
+          </div>
           <p className="card-subtitle">Trajectory Analysis (12 Mo)</p>
         </div>
 
@@ -65,6 +77,8 @@ export const RiskTrendChart: React.FC = () => {
         <div className="trend-tabs">
           <button
             className={`trend-tab-btn ${activeTab === 'cost' ? 'active' : ''}`}
+            aria-selected={activeTab === 'cost'}
+            role="tab"
             onClick={() => {
               setActiveTab('cost');
               setHoveredPointIdx(null);
@@ -74,6 +88,8 @@ export const RiskTrendChart: React.FC = () => {
           </button>
           <button
             className={`trend-tab-btn ${activeTab === 'time' ? 'active' : ''}`}
+            aria-selected={activeTab === 'time'}
+            role="tab"
             onClick={() => {
               setActiveTab('time');
               setHoveredPointIdx(null);
@@ -83,6 +99,8 @@ export const RiskTrendChart: React.FC = () => {
           </button>
           <button
             className={`trend-tab-btn ${activeTab === 'impl' ? 'active' : ''}`}
+            aria-selected={activeTab === 'impl'}
+            role="tab"
             onClick={() => {
               setActiveTab('impl');
               setHoveredPointIdx(null);
@@ -104,7 +122,10 @@ export const RiskTrendChart: React.FC = () => {
           </div>
         ) : (
           <>
-            <svg viewBox="0 0 340 160" className="trend-svg">
+            <p className="sr-only" id="risk-trend-summary">
+              {`${activeTab === 'cost' ? 'Cost' : activeTab === 'time' ? 'Time' : 'Implementation'} national risk trend over 12 months. ${currentData.points.map((point) => `${point.label}: ${point.value}`).join('. ')}.`}
+            </p>
+            <svg viewBox="0 0 340 160" className="trend-svg" role="group" aria-labelledby="risk-trend-summary">
               <defs>
                 <linearGradient id="trendGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor="#2563EB" stopOpacity="0.25" />
@@ -144,7 +165,7 @@ export const RiskTrendChart: React.FC = () => {
                         y1={pt.y}
                         x2={pt.x}
                         y2="130"
-                        stroke="#94A3B8"
+                        stroke="#64748B"
                         strokeWidth="1"
                         strokeDasharray="2 2"
                       />
@@ -184,6 +205,11 @@ export const RiskTrendChart: React.FC = () => {
                       onMouseEnter={() => setHoveredPointIdx(idx)}
                       onMouseLeave={() => setHoveredPointIdx(null)}
                       style={{ cursor: 'pointer' }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${pt.label}: ${pt.value}`}
+                      onFocus={() => setHoveredPointIdx(idx)}
+                      onBlur={() => setHoveredPointIdx(null)}
                     />
 
                     {/* X-axis labels neatly below baseline */}

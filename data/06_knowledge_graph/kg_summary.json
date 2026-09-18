@@ -1,0 +1,25 @@
+{
+  "total_nodes": 150332,
+  "total_edges": 455792,
+  "node_types": {
+    "ProjectSnapshot": 144193,
+    "Project": 5164,
+    "Location": 403,
+    "Ministry": 318,
+    "Agency": 219,
+    "Sector": 24,
+    "RiskConcept": 11
+  },
+  "edge_types": {
+    "EXHIBITS": 152464,
+    "HAS_SNAPSHOT": 144193,
+    "PRECEDES": 139029,
+    "BELONGS_TO_MINISTRY": 5163,
+    "BELONGS_TO_SECTOR": 5163,
+    "IMPLEMENTED_BY": 5163,
+    "LOCATED_IN": 4608,
+    "INDICATES": 4,
+    "MAY_CONTRIBUTE_TO": 3,
+    "ASSOCIATED_WITH": 2
+  }
+}

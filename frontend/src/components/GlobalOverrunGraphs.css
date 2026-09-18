@@ -113,17 +113,18 @@
 }
 
 .v-bars-flex-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
   align-items: flex-end;
-  justify-content: space-around;
   height: 220px;
-  gap: 8px;
+  gap: 12px;
   border-bottom: 2px solid #E2E8F0;
   padding-bottom: 2px;
+  width: 100%;
 }
 
 .svg-bar-column {
-  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,6 +145,8 @@
 .iso-3d-svg {
   overflow: visible;
   display: block;
+  width: 44px;
+  height: 175px;
 }
 
 /* X-Axis Sector Label */
@@ -158,6 +161,13 @@
   text-overflow: ellipsis;
   max-width: 100%;
   transition: color 0.2s ease;
+}
+
+@media (max-width: 900px) {
+  .v-bar-sector-lbl {
+    font-size: 10px;
+    letter-spacing: -0.02em;
+  }
 }
 
 .svg-bar-column:hover .v-bar-sector-lbl {
@@ -225,27 +235,17 @@
   }
 }
 
-@media (max-width: 768px) {
-  .overrun-card-header {
-    padding: 12px 14px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+@media (max-width: 900px) {
+  .global-overruns-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .metric-chip-pill {
-    align-items: flex-start;
-    padding: 4px 10px;
-  }
-
-  .vertical-chart-area {
-    min-height: 200px;
+  .v-bars-flex-container {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
   }
 
-  .overrun-card-footer {
-    padding: 10px 14px;
-    font-size: 11.5px;
+  .svg-bar-column {
+    flex: 0 0 64px;
   }
 }

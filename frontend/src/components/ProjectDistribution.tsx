@@ -1,555 +1,1162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
-  Folder,
   ShieldAlert,
-  AlertTriangle,
-  CheckCircle2,
-  Layers,
+  ArrowRight,
+  ChevronDown,
+  Building2,
+  Activity,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUp,
+  PieChart,
+  BarChart3,
+  Filter,
   TrendingUp,
-  MapPin,
-  Sparkles,
-  ArrowRight
+  Clock,
+  ExternalLink
 } from 'lucide-react';
 import './ProjectDistribution.css';
-import { AnimatedCounter } from './AnimatedCounter';
-import { api } from '../services/api';
-import type { DistributionSummaryData } from '../services/api';
-import { projectsData } from '../data/projectsData';
+import { projectsData, type Project } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
 
-export const ProjectDistribution: React.FC = () => {
-  const [data, setData] = useState<DistributionSummaryData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+export interface ProjectDistributionProps {
+  activeTab?: string;
+  onSelectProject?: (projectId: string) => void;
+  onNavigateTab?: (tab: string) => void;
+  onFilterStatus?: (status: string) => void;
+  onFilterRisk?: (risk: string) => void;
+}
 
-  // Derive dynamic portfolio and regional metrics
-  const delayedCount = projectsData.filter(p => (p.scheduleStatus || '').toUpperCase().includes('DELAY') || (p.scheduleStatus || '').toUpperCase().includes('EXTEND') || (p.riskScore || 0) >= 70).length;
-  const totalEscalationCr = projectsData.reduce((acc, p) => {
-    const orig = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
-    const rev = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
-    return acc + Math.max(0, rev - orig);
-  }, 0);
-  const totalEscalationFormatted = totalEscalationCr >= 100000 
-    ? `₹${(totalEscalationCr / 100000).toFixed(1)}L Cr` 
-    : `₹${Math.round(totalEscalationCr).toLocaleString('en-IN')} Cr`;
+type SidebarSection = 'breakdown' | 'interventions' | 'comparison';
 
-  // Top Sector from data or projectsData
-  const topSector = data && data.sectors && data.sectors.length > 0 ? data.sectors[0] : null;
-  const topSectorName = topSector ? topSector.name : (projectsData[0]?.sector || 'Road Transport & Highways');
-  const topSectorTotal = topSector ? topSector.total : projectsData.filter(p => p.sector === topSectorName).length;
-  const topSectorHighPct = topSector ? topSector.highPct : 18.4;
-  const topSectorAvgRisk = topSector ? topSector.avgRisk : 50;
+const SIDEBAR_SECTIONS = [
+  {
+    id: 'breakdown' as SidebarSection,
+    icon: PieChart,
+    label: 'Health & Risk Breakdown',
+    desc: 'Interactive Donut analytics',
+    num: '01',
+  },
+  {
+    id: 'interventions' as SidebarSection,
+    icon: ShieldAlert,
+    label: 'Priority Interventions',
+    desc: 'Top 5 & 10 critical assets',
+    num: '02',
+  },
+  {
+    id: 'comparison' as SidebarSection,
+    icon: BarChart3,
+    label: 'Comparative Analytics',
+    desc: 'Head-to-head entity metrics',
+    num: '03',
+  },
+];
 
-  // Regional state breakdown
-  const stateCounts: Record<string, { count: number; cost: number }> = {};
-  for (const p of projectsData) {
-    let st = p.location ? p.location.replace(/[\r\n]+/g, ' ').trim() : 'National';
-    if (st.startsWith('Multi-States')) {
-      const match = st.match(/\(([^,)]+)/);
-      st = match ? match[1].trim() : 'Multi-State';
-    } else {
-      st = st.split(',')[0].trim();
-    }
-    if (!stateCounts[st]) stateCounts[st] = { count: 0, cost: 0 };
-    stateCounts[st].count += 1;
-    stateCounts[st].cost += parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
-  }
-  const sortedStates = Object.entries(stateCounts).sort((a, b) => b[1].count - a[1].count);
-  const topStateName = sortedStates[0] ? sortedStates[0][0] : 'Western';
-  const topStateCount = sortedStates[0] ? sortedStates[0][1].count : 298;
-  const topStateCost = sortedStates[0] ? sortedStates[0][1].cost : 48600;
-  const topStateCostFormatted = topStateCost >= 100000 
-    ? `₹${(topStateCost / 100000).toFixed(1)}L Cr` 
-    : `₹${Math.round(topStateCost).toLocaleString('en-IN')} Cr`;
+export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
+  activeTab,
+  onSelectProject,
+  onNavigateTab,
+  onFilterStatus,
+  onFilterRisk
+}) => {
+  // Navigation Sidebar State — closed by default on page load
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
+  const [activeSection, setActiveSection] = useState<SidebarSection>('breakdown');
 
+  // Datasets
+  const [projects, setProjects] = useState<Project[]>([]);
   useEffect(() => {
-    setLoading(true);
-    api.getDistributionSummary()
-      .then((res) => {
-        if (res) {
-          setData(res);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    setProjects(projectsData);
   }, []);
 
-  // Summary Metrics Data - mapped strictly from the existing API response
-  const summaryCards = data
-    ? [
-        {
-          id: 'total',
-          title: 'Total Projects',
-          value: data.total,
-          badge: '100%',
-          desc: 'Across all ministries & sectors',
-          icon: <Folder size={18} className="stat-icon-blue" />,
-          chipClass: 'chip-blue',
-          accentColor: '#2563EB',
-          progressWidth: '100%',
-          progressClass: 'bar-blue',
-          infoTitle: 'Total Monitored Projects',
-          infoSummary: 'Total active central sector infrastructure projects currently monitored across all national ministries and departments.'
-        },
-        {
-          id: 'high',
-          title: 'High Priority',
-          value: data.high,
-          badge: data.highPct,
-          desc: `${data.highPct} of total projects`,
-          icon: <ShieldAlert size={18} className="stat-icon-red" />,
-          chipClass: 'chip-red',
-          accentColor: '#DC2626',
-          progressWidth: data.highPct,
-          progressClass: 'bar-red',
-          infoTitle: 'High Priority Tier',
-          infoSummary: 'Projects facing severe schedule delays (>6 months), heavy budget escalation, or critical risk indices (≥70).'
-        },
-        {
-          id: 'medium',
-          title: 'Medium Priority',
-          value: data.medium,
-          badge: data.mediumPct,
-          desc: `${data.mediumPct} of total projects`,
-          icon: <AlertTriangle size={18} className="stat-icon-amber" />,
-          chipClass: 'chip-amber',
-          accentColor: '#D97706',
-          progressWidth: data.mediumPct,
-          progressClass: 'bar-amber',
-          infoTitle: 'Medium Priority Tier',
-          infoSummary: 'Projects with moderate milestone slippages or emerging cost deviations requiring heightened departmental supervision.'
-        },
-        {
-          id: 'low',
-          title: 'Low Priority',
-          value: data.low,
-          badge: data.lowPct,
-          desc: `${data.lowPct} of total projects`,
-          icon: <CheckCircle2 size={18} className="stat-icon-green" />,
-          chipClass: 'chip-green',
-          accentColor: '#16A34A',
-          progressWidth: data.lowPct,
-          progressClass: 'bar-green',
-          infoTitle: 'Low Priority Tier',
-          infoSummary: 'Projects executing stably on schedule within sanctioned budgets with healthy milestone progress.'
-        }
-      ]
-    : [];
+  // Section 1 State: Breakdown Toggles & Selection
+  const [sec1Mode, setSec1Mode] = useState<'ministry' | 'sector'>('ministry');
+  const [sec1SelectedEntity, setSec1SelectedEntity] = useState<string>('All');
+  const [hoveredHealthId, setHoveredHealthId] = useState<string | null>(null);
+  const [hoveredRiskId, setHoveredRiskId] = useState<string | null>(null);
+
+  // Section 2 State: Interventions Toggles & Selection
+  const [sec2Mode, setSec2Mode] = useState<'ministry' | 'sector'>('sector');
+  const [sec2SelectedEntity, setSec2SelectedEntity] = useState<string>('All');
+  const [sec2Count, setSec2Count] = useState<5 | 10>(5);
+
+  // Section 3 State: Comparison Toggles & Selection
+  const [sec3Mode, setSec3Mode] = useState<'ministry' | 'sector'>('ministry');
+  const [sec3EntityA, setSec3EntityA] = useState<string>('');
+  const [sec3EntityB, setSec3EntityB] = useState<string>('');
+
+  // Extract unique Ministries & Sectors
+  const allMinistries = useMemo(() => {
+    const set = new Set<string>();
+    projects.forEach(p => {
+      if (p.ministry) set.add(p.ministry.trim());
+    });
+    return Array.from(set).sort();
+  }, [projects]);
+
+  const allSectors = useMemo(() => {
+    const set = new Set<string>();
+    projects.forEach(p => {
+      if (p.sector) set.add(p.sector.trim());
+    });
+    return Array.from(set).sort();
+  }, [projects]);
+
+  // Set default comparison entities
+  useEffect(() => {
+    if (sec3Mode === 'ministry') {
+      setSec3EntityA(allMinistries[0] || 'Ministry of Railways');
+      setSec3EntityB(allMinistries[1] || 'Ministry of Road Transport and Highways');
+    } else {
+      setSec3EntityA(allSectors[0] || 'RAILWAYS');
+      setSec3EntityB(allSectors[1] || 'ROADS AND HIGHWAYS');
+    }
+  }, [sec3Mode, allMinistries, allSectors]);
+
+  // Smooth scroll handler
+  const scrollToSection = useCallback((sectionId: SidebarSection) => {
+    setActiveSection(sectionId);
+    const el = document.getElementById(`dist-section-${sectionId}`);
+    if (el) {
+      const headerOffset = 88;
+      const elementTop = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementTop - headerOffset,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Track active section on scroll
+  useEffect(() => {
+    const sections: SidebarSection[] = ['breakdown', 'interventions', 'comparison'];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id.replace('dist-section-', '') as SidebarSection;
+            setActiveSection(id);
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+
+    sections.forEach((id) => {
+      const el = document.getElementById(`dist-section-${id}`);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  /* ─────────────────────────────────────────────────────────────
+     SECTION 1: HEALTH & RISK BREAKDOWN DATA CALCULATIONS
+     ───────────────────────────────────────────────────────────── */
+  const sec1FilteredProjects = useMemo(() => {
+    if (sec1SelectedEntity === 'All') return projects;
+    if (sec1Mode === 'ministry') {
+      return projects.filter(p => p.ministry?.trim() === sec1SelectedEntity);
+    }
+    return projects.filter(p => p.sector?.trim() === sec1SelectedEntity);
+  }, [projects, sec1Mode, sec1SelectedEntity]);
+
+  const sec1Metrics = useMemo(() => {
+    const total = sec1FilteredProjects.length;
+    if (total === 0) {
+      return {
+        total: 0,
+        health: { healthy: 0, moderate: 0, vulnerable: 0, critical: 0 },
+        healthPcts: { healthy: 0, moderate: 0, vulnerable: 0, critical: 0 },
+        risk: { low: 0, moderate: 0, high: 0, critical: 0 },
+        riskPcts: { low: 0, moderate: 0, high: 0, critical: 0 },
+        avgRisk: 0,
+        avgHealth: 0
+      };
+    }
+
+    let healthy = 0, hMod = 0, hVul = 0, hCrit = 0;
+    let rLow = 0, rMod = 0, rHigh = 0, rCrit = 0;
+    let sumRisk = 0;
+
+    sec1FilteredProjects.forEach(p => {
+      const risk = p.riskScore ?? 50;
+      sumRisk += risk;
+
+      // Risk tiers
+      if (risk >= 80) rCrit++;
+      else if (risk >= 65) rHigh++;
+      else if (risk >= 40) rMod++;
+      else rLow++;
+
+      // Health Index tiers
+      const healthScore = Math.max(0, Math.min(100, Math.round(100 - risk * 0.7 + (p.progressPhysical || 0) * 0.3)));
+      if (healthScore >= 75) healthy++;
+      else if (healthScore >= 55) hMod++;
+      else if (healthScore >= 35) hVul++;
+      else hCrit++;
+    });
+
+    const avgRisk = Math.round(sumRisk / total);
+    const avgHealth = Math.round(100 - avgRisk * 0.7);
+
+    return {
+      total,
+      health: { healthy, moderate: hMod, vulnerable: hVul, critical: hCrit },
+      healthPcts: {
+        healthy: Math.round((healthy / total) * 100),
+        moderate: Math.round((hMod / total) * 100),
+        vulnerable: Math.round((hVul / total) * 100),
+        critical: Math.round((hCrit / total) * 100)
+      },
+      risk: { low: rLow, moderate: rMod, high: rHigh, critical: rCrit },
+      riskPcts: {
+        low: Math.round((rLow / total) * 100),
+        moderate: Math.round((rMod / total) * 100),
+        high: Math.round((rHigh / total) * 100),
+        critical: Math.round((rCrit / total) * 100)
+      },
+      avgRisk,
+      avgHealth
+    };
+  }, [sec1FilteredProjects]);
+
+  // Computed Interactive SVG Donut Segments with Trigonometric Pop-Out Vector Offsets
+  const healthSegments = useMemo(() => {
+    const list = [
+      { id: 'healthy', name: 'Healthy', label: 'HEALTHY', fullName: 'Healthy (Score 75–100)', count: sec1Metrics.health.healthy, pct: sec1Metrics.healthPcts.healthy, color: '#2563EB', statusFilter: 'ON TRACK' },
+      { id: 'moderate', name: 'Moderate', label: 'MODERATE', fullName: 'Moderate (Score 55–74)', count: sec1Metrics.health.moderate, pct: sec1Metrics.healthPcts.moderate, color: '#38BDF8', statusFilter: 'IN REVIEW' },
+      { id: 'vulnerable', name: 'Vulnerable', label: 'VULNERABLE', fullName: 'Vulnerable (Score 35–54)', count: sec1Metrics.health.vulnerable, pct: sec1Metrics.healthPcts.vulnerable, color: '#64748B', statusFilter: 'DELAYED' },
+      { id: 'critical', name: 'Critical Delay', label: 'CRITICAL DELAY', fullName: 'Critical (Score <35)', count: sec1Metrics.health.critical, pct: sec1Metrics.healthPcts.critical, color: '#DC2626', statusFilter: 'CRITICAL' }
+    ];
+
+    const totalCount = sec1Metrics.total;
+    let acc = 0;
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+    const popDistance = 4.5;
+
+    return list.map(seg => {
+      const startPercent = acc;
+      const segPercent = totalCount > 0 ? (seg.count / totalCount) * 100 : seg.pct;
+      const endPercent = startPercent + segPercent;
+      const midPercent = (startPercent + endPercent) / 2;
+      acc = endPercent;
+
+      const startDeg = (startPercent / 100) * 360 - 90;
+      const angleRad = (midPercent / 100) * 2 * Math.PI;
+      const dx = Math.sin(angleRad) * popDistance;
+      const dy = -Math.cos(angleRad) * popDistance;
+      const strokeLength = (segPercent / 100) * circumference;
+
+      return {
+        ...seg,
+        startDeg,
+        dx,
+        dy,
+        strokeLength,
+        circumference,
+        segPercent
+      };
+    });
+  }, [sec1Metrics]);
+
+  const riskSegments = useMemo(() => {
+    const list = [
+      { id: 'low', name: 'Low Risk', label: 'LOW RISK', fullName: 'Low Risk (<40)', count: sec1Metrics.risk.low, pct: sec1Metrics.riskPcts.low, color: '#16A34A', riskFilter: 'Low' },
+      { id: 'moderate', name: 'Moderate Risk', label: 'MODERATE RISK', fullName: 'Moderate Risk (40–64)', count: sec1Metrics.risk.moderate, pct: sec1Metrics.riskPcts.moderate, color: '#D97706', riskFilter: 'Medium' },
+      { id: 'high', name: 'High Risk', label: 'HIGH RISK', fullName: 'High Risk (65–79)', count: sec1Metrics.risk.high, pct: sec1Metrics.riskPcts.high, color: '#DC2626', riskFilter: 'High' },
+      { id: 'critical', name: 'Critical Risk', label: 'CRITICAL RISK', fullName: 'Critical Risk (≥80)', count: sec1Metrics.risk.critical, pct: sec1Metrics.riskPcts.critical, color: '#7F1D1D', riskFilter: 'Critical' }
+    ];
+
+    const totalCount = sec1Metrics.total;
+    let acc = 0;
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+    const popDistance = 4.5;
+
+    return list.map(seg => {
+      const startPercent = acc;
+      const segPercent = totalCount > 0 ? (seg.count / totalCount) * 100 : seg.pct;
+      const endPercent = startPercent + segPercent;
+      const midPercent = (startPercent + endPercent) / 2;
+      acc = endPercent;
+
+      const startDeg = (startPercent / 100) * 360 - 90;
+      const angleRad = (midPercent / 100) * 2 * Math.PI;
+      const dx = Math.sin(angleRad) * popDistance;
+      const dy = -Math.cos(angleRad) * popDistance;
+      const strokeLength = (segPercent / 100) * circumference;
+
+      return {
+        ...seg,
+        startDeg,
+        dx,
+        dy,
+        strokeLength,
+        circumference,
+        segPercent
+      };
+    });
+  }, [sec1Metrics]);
+
+  const activeHealthSeg = useMemo(() => healthSegments.find(s => s.id === hoveredHealthId) || null, [healthSegments, hoveredHealthId]);
+  const activeRiskSeg = useMemo(() => riskSegments.find(s => s.id === hoveredRiskId) || null, [riskSegments, hoveredRiskId]);
+
+  /* ─────────────────────────────────────────────────────────────
+     SECTION 2: PRIORITY INTERVENTIONS DATA CALCULATIONS
+     ───────────────────────────────────────────────────────────── */
+  const sec2FilteredProjects = useMemo(() => {
+    let list = projects;
+    if (sec2SelectedEntity !== 'All') {
+      if (sec2Mode === 'ministry') {
+        list = projects.filter(p => p.ministry?.trim() === sec2SelectedEntity);
+      } else {
+        list = projects.filter(p => p.sector?.trim() === sec2SelectedEntity);
+      }
+    }
+
+    // Sort by highest risk score, then cost overrun
+    return [...list]
+      .sort((a, b) => {
+        const rA = a.riskScore ?? 50;
+        const rB = b.riskScore ?? 50;
+        if (rB !== rA) return rB - rA;
+
+        const origA = parseFloat(a.costApproved.replace(/[^0-9.]/g, '')) || 0;
+        const revA = parseFloat(a.costRevised.replace(/[^0-9.]/g, '')) || 0;
+        const deltaA = revA - origA;
+
+        const origB = parseFloat(b.costApproved.replace(/[^0-9.]/g, '')) || 0;
+        const revB = parseFloat(b.costRevised.replace(/[^0-9.]/g, '')) || 0;
+        const deltaB = revB - origB;
+
+        return deltaB - deltaA;
+      })
+      .slice(0, sec2Count);
+  }, [projects, sec2Mode, sec2SelectedEntity, sec2Count]);
+
+  /* ─────────────────────────────────────────────────────────────
+     SECTION 3: COMPARATIVE ANALYTICS CALCULATIONS
+     ───────────────────────────────────────────────────────────── */
+  const calculateEntityStats = useCallback((entityName: string, mode: 'ministry' | 'sector') => {
+    const list = projects.filter(p => (mode === 'ministry' ? p.ministry : p.sector)?.trim() === entityName);
+    const count = list.length;
+    if (count === 0) {
+      return { count: 0, totalCostCr: 0, avgRisk: 0, overrunPct: 0, criticalCount: 0, avgProgress: 0 };
+    }
+
+    let totalCost = 0;
+    let totalOrigCost = 0;
+    let sumRisk = 0;
+    let critCount = 0;
+    let sumProg = 0;
+
+    list.forEach(p => {
+      const rev = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
+      const orig = parseFloat(p.costApproved.replace(/[^0-9.]/g, '')) || 0;
+      totalCost += rev;
+      totalOrigCost += orig;
+
+      const r = p.riskScore ?? 50;
+      sumRisk += r;
+      if (r >= 70 || p.scheduleStatus === 'CRITICAL' || p.riskLevel === 'Critical') critCount++;
+
+      sumProg += p.progressPhysical || 0;
+    });
+
+    const overrunPct = totalOrigCost > 0 ? Math.round(((totalCost - totalOrigCost) / totalOrigCost) * 100) : 0;
+
+    return {
+      count,
+      totalCostCr: Math.round(totalCost),
+      avgRisk: Math.round(sumRisk / count),
+      overrunPct: Math.max(0, overrunPct),
+      criticalCount: critCount,
+      avgProgress: Math.round(sumProg / count)
+    };
+  }, [projects]);
+
+  const statsA = useMemo(() => calculateEntityStats(sec3EntityA, sec3Mode), [calculateEntityStats, sec3EntityA, sec3Mode]);
+  const statsB = useMemo(() => calculateEntityStats(sec3EntityB, sec3Mode), [calculateEntityStats, sec3EntityB, sec3Mode]);
+
+  // Top 6 Entities Leaderboard Matrix
+  const leaderboardItems = useMemo(() => {
+    const sourceList = sec3Mode === 'ministry' ? allMinistries : allSectors;
+    return sourceList
+      .map(name => {
+        const st = calculateEntityStats(name, sec3Mode);
+        return { name, ...st };
+      })
+      .filter(x => x.count > 0)
+      .sort((a, b) => b.avgRisk - a.avgRisk)
+      .slice(0, 6);
+  }, [sec3Mode, allMinistries, allSectors, calculateEntityStats]);
 
   return (
     <div className="dist-page-layout animation-fade-in">
-      {/* ── Page Header ── */}
+      {/* ── Portaled Navigation Sidebar (Rendered ONLY on distribution tab) ── */}
+      {activeTab === 'distribution' && typeof document !== 'undefined' && createPortal(
+        <aside className={`pnav ${sidebarCollapsed ? 'pnav--collapsed' : ''}`} aria-label="Distribution Navigation">
+          <div className="pnav__card">
+            {/* Header */}
+            <div className="pnav__brand">
+              {!sidebarCollapsed && (
+                <div className="pnav__brand-text">
+                  <Activity size={14} className="pnav__brand-icon" />
+                  <span>Distribution Telemetry</span>
+                </div>
+              )}
+              <button
+                className="pnav__toggle"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                title={sidebarCollapsed ? "Expand Navigation" : "Collapse Navigation"}
+              >
+                {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+              </button>
+            </div>
+
+            {/* Gauge summary */}
+            {!sidebarCollapsed && (
+              <div className="pnav__gauge">
+                <div className="pnav__gauge-row">
+                  <span className="pnav__gauge-label">Portfolio Risk</span>
+                  <span className="pnav__gauge-val" style={{ color: '#D97706' }}>Moderate</span>
+                </div>
+                <div className="pnav__gauge-num" style={{ color: '#D97706' }}>
+                  {sec1Metrics.avgRisk}
+                  <span className="pnav__gauge-denom">/100</span>
+                </div>
+                <div className="pnav__gauge-track">
+                  <div className="pnav__gauge-fill" style={{ width: `${sec1Metrics.avgRisk}%`, background: '#D97706' }} />
+                </div>
+              </div>
+            )}
+
+            <div className="pnav__sep" />
+
+            {/* Nav Items */}
+            <nav className="pnav__nav">
+              {SIDEBAR_SECTIONS.map((sec) => {
+                const isActive = activeSection === sec.id;
+                const Icon = sec.icon;
+                return (
+                  <button
+                    key={sec.id}
+                    className={`pnav__item ${isActive ? 'pnav__item--active' : ''}`}
+                    onClick={() => scrollToSection(sec.id)}
+                    title={sidebarCollapsed ? sec.label : undefined}
+                  >
+                    <span className="pnav__pill" />
+                    {!sidebarCollapsed && <span className="pnav__num">{sec.num}</span>}
+                    <span className={`pnav__icon ${isActive ? 'pnav__icon--active' : ''}`}>
+                      <Icon size={15} strokeWidth={isActive ? 2.5 : 1.75} />
+                    </span>
+                    {!sidebarCollapsed && (
+                      <span className="pnav__text">
+                        <span className="pnav__label">{sec.label}</span>
+                        {isActive && <span className="pnav__desc pnav__desc--in">{sec.desc}</span>}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="pnav__sep" style={{ marginTop: 'auto' }} />
+
+            {/* Footer */}
+            <div className="pnav__footer">
+              <button className="pnav__ftr-btn" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Back to Top">
+                <ArrowUp size={13} />
+                {!sidebarCollapsed && <span>Top</span>}
+              </button>
+            </div>
+          </div>
+        </aside>,
+        document.body
+      )}
+
+      {/* ── Page Title Banner ── */}
       <div className="dist-page-header">
         <div className="dist-header-left">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 className="dist-page-title">Project Distribution</h1>
-            <InfoButton 
-              title="Project Distribution Telemetry" 
-              summary="Structural overview of all monitored central infrastructure assets, tracking sector concentration, risk tier distributions, and regional allocations."
+            <h1 className="dist-page-title">Project Distribution Analytics</h1>
+            <InfoButton
+              title="Distribution Intelligence Telemetry"
+              summary="Cross-sectoral and departmental analytical engine tracking health distributions, ML risk profiles, priority intervention targets, and side-by-side performance benchmarks."
               size="md"
             />
           </div>
           <p className="dist-page-subtitle">
-            Sectoral composition, risk tier dispersion, and portfolio health across central infrastructure ministries.
+            Departmental risk concentration, sectoral health breakdown, and targeted priority intervention models.
           </p>
         </div>
         <div className="dist-header-right">
           <div className="dist-header-badge">
             <span className="dist-pulse-dot" />
-            <span>Live Portfolio Telemetry</span>
+            <span>6,568 Active Assets Synchronized</span>
           </div>
         </div>
       </div>
 
-      {/* ── SECTION 1: Summary Peer Metric Cards (4-Column Responsive Grid) ── */}
-      <section className="dist-section">
-        <div className="dist-summary-grid">
-          {loading ? (
-            [1, 2, 3, 4].map((i) => (
-              <div key={i} className="dist-stat-card dist-card-skeleton">
-                <div className="skeleton-pulse" style={{ width: '40%', height: '14px', marginBottom: '14px', borderRadius: '4px' }} />
-                <div className="skeleton-pulse" style={{ width: '65%', height: '36px', marginBottom: '10px', borderRadius: '8px' }} />
-                <div className="skeleton-pulse" style={{ width: '85%', height: '12px', borderRadius: '4px' }} />
-              </div>
-            ))
-          ) : (
-            summaryCards.map((card) => (
-              <div key={card.id} className={`dist-stat-card card-${card.id}`}>
-                {/* Top Row: Title + Info + Icon Chip */}
-                <div className="dist-stat-top">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span className="dist-stat-label">{card.title}</span>
-                    <InfoButton title={card.infoTitle} summary={card.infoSummary} size="sm" />
-                  </div>
-                  <div className={`dist-stat-icon-chip ${card.chipClass}`}>
-                    {card.icon}
-                  </div>
-                </div>
-
-                {/* Middle: Large Numeric Value + Percentage Badge */}
-                <div className="dist-stat-value-row">
-                  <span className="dist-stat-number">
-                    <AnimatedCounter value={card.value} />
-                  </span>
-                  <span className={`dist-stat-badge ${card.chipClass}`}>
-                    {card.badge}
-                  </span>
-                </div>
-
-                {/* Subtext description */}
-                <div className="dist-stat-footer">
-                  <span className="dist-stat-desc">{card.desc}</span>
-                </div>
-
-                {/* Inline mini progress bar representing portfolio proportion */}
-                <div className="dist-stat-progress-track">
-                  <div
-                    className={`dist-stat-progress-fill ${card.progressClass}`}
-                    style={{ width: card.progressWidth }}
-                  />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
-
-      {/* ── SECTION 2: Sectoral Risk Breakdown (Hybrid Table with Segmented Mini Progress Bars) ── */}
-      <section className="dist-section">
-        <div className="dist-table-panel">
-          {/* Panel Header & Legend */}
-          <div className="dist-table-panel-header">
-            <div className="dist-table-title-group">
-              <div className="dist-panel-icon-wrap">
-                <Layers size={18} color="#2563EB" />
-              </div>
+      {/* ════════════════════════════════════════════════════════════════
+         SECTION 1: HEALTH & RISK BREAKDOWN (INTERACTIVE DONUTS + PROGRESS BARS)
+         ════════════════════════════════════════════════════════════════ */}
+      <section id="dist-section-breakdown" className="dist-section">
+        <div className="dist-panel-card">
+          {/* Header Controls */}
+          <div className="dist-panel-head">
+            <div className="dist-panel-title-group">
+              <span className="dist-section-badge">01</span>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h3 className="dist-panel-title">Sectoral Risk Breakdown</h3>
-                  <InfoButton
-                    title="Sectoral Risk Breakdown"
-                    summary="Evaluates project volume, composite risk severity, and high/medium/low tier distribution for each infrastructure sector."
-                    size="sm"
-                  />
-                </div>
-                <p className="dist-panel-desc">
-                  Proportional risk distribution and composite severity indices per national infrastructure sector
+                <h2 className="dist-section-title">Health &amp; Risk Breakdown</h2>
+                <p className="dist-section-sub">
+                  Interactive Donut analytics. Click any donut segment or bar row to open filtered projects list!
                 </p>
               </div>
             </div>
 
-            {/* Interactive Color Legend */}
-            <div className="dist-table-legend">
-              <span className="dist-legend-item">
-                <span className="dist-legend-dot legend-dot-high" />
-                <span>High Risk</span>
-              </span>
-              <span className="dist-legend-item">
-                <span className="dist-legend-dot legend-dot-med" />
-                <span>Medium Risk</span>
-              </span>
-              <span className="dist-legend-item">
-                <span className="dist-legend-dot legend-dot-low" />
-                <span>Low Risk</span>
-              </span>
+            {/* Controls: Mode Switcher + Entity Select Dropdown */}
+            <div className="dist-controls-group">
+              <div className="dist-toggle-pill">
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec1Mode === 'ministry' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSec1Mode('ministry');
+                    setSec1SelectedEntity('All');
+                  }}
+                >
+                  Ministry-Wise
+                </button>
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec1Mode === 'sector' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSec1Mode('sector');
+                    setSec1SelectedEntity('All');
+                  }}
+                >
+                  Sector-Wise
+                </button>
+              </div>
+
+              <div className="dist-dropdown-wrapper">
+                <Filter size={14} className="dist-dropdown-icon" />
+                <select
+                  className="dist-select"
+                  value={sec1SelectedEntity}
+                  onChange={(e) => setSec1SelectedEntity(e.target.value)}
+                >
+                  <option value="All">All {sec1Mode === 'ministry' ? 'Ministries' : 'Sectors'} ({projects.length} Assets)</option>
+                  {(sec1Mode === 'ministry' ? allMinistries : allSectors).map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="dist-dropdown-arrow" />
+              </div>
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="dist-table-scroll-container">
-            <table className="dist-hybrid-table">
-              <thead>
-                <tr>
-                  <th className="th-col-sector">SECTOR</th>
-                  <th className="th-col-total">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>TOTAL ASSETS</span>
-                      <InfoButton title="Total Sector Assets" summary="Total number of monitored infrastructure projects within this sector." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-col-proportion">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>PROPORTIONAL DISTRIBUTION</span>
-                      <InfoButton title="Risk Proportion" summary="Relative share of high risk (red), medium risk (amber), and low risk (green) projects in this sector." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-col-metric">HIGH RISK</th>
-                  <th className="th-col-metric">MEDIUM RISK</th>
-                  <th className="th-col-metric">LOW RISK</th>
-                  <th className="th-col-score">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-                      <span>AVG RISK SCORE</span>
-                      <InfoButton title="Average Risk Index" summary="Mean composite risk score (0 to 100) combining schedule delay, cost escalation, and milestone slippage." size="sm" />
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={7} className="dist-table-empty-cell">
-                      Loading sector breakdown telemetry...
-                    </td>
-                  </tr>
-                ) : !data || data.sectors.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="dist-table-empty-cell">
-                      No sector data available from backend.
-                    </td>
-                  </tr>
-                ) : (
-                  data.sectors.map((row, idx) => (
-                    <tr key={idx} className="dist-hybrid-row">
-                      {/* Sector Name */}
-                      <td className="td-col-sector">
-                        <span className="sector-primary-name">{row.name}</span>
-                      </td>
+          {/* Mode Context Insight Banner — felt difference when toggled */}
+          <div key={sec1Mode} className="dist-mode-context-banner dist-mode-fade-in">
+            <div className="context-banner-left">
+              <span className="context-banner-tag">{sec1Mode === 'ministry' ? 'DEPARTMENTAL PERSPECTIVE' : 'SECTORAL INFRASTRUCTURE PERSPECTIVE'}</span>
+              <span className="context-banner-text">
+                {sec1Mode === 'ministry'
+                  ? `Monitored across ${allMinistries.length} Central Ministries & Executive Departments.`
+                  : `Categorized into ${allSectors.length} Key Infrastructure Sectors (Railways, Roads, Power, Coal, etc.).`}
+              </span>
+            </div>
+            <div className="context-banner-right">
+              <span className="context-hint">💡 Click any segment below to view filtered assets</span>
+            </div>
+          </div>
 
-                      {/* Total Projects */}
-                      <td className="td-col-total">
-                        <span className="sector-total-badge">{row.total}</span>
-                      </td>
+          {/* Donut Charts & Progress Bars Grid */}
+          <div key={`${sec1Mode}-${sec1SelectedEntity}`} className="dist-donuts-grid dist-mode-fade-in">
+            {/* ── Donut 1: Health Index Breakdown ── */}
+            <div className="dist-donut-card">
+              <div className="dist-card-header-row">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Activity size={18} color="#2563EB" />
+                  <h3 className="dist-card-heading">Portfolio Health Index Breakdown</h3>
+                </div>
+                <span className="dist-count-chip">{sec1Metrics.total.toLocaleString()} Projects</span>
+              </div>
 
-                      {/* Composite Stacked Mini Progress Bar */}
-                      <td className="td-col-proportion">
-                        <div className="composite-bar-container">
-                          <div
-                            className="composite-bar-segment segment-high"
-                            style={{ width: `${row.highPct}%` }}
-                            title={`High: ${row.high} (${row.highPct}%)`}
-                          />
-                          <div
-                            className="composite-bar-segment segment-med"
-                            style={{ width: `${row.mediumPct}%` }}
-                            title={`Medium: ${row.medium} (${row.mediumPct}%)`}
-                          />
-                          <div
-                            className="composite-bar-segment segment-low"
-                            style={{ width: `${row.lowPct}%` }}
-                            title={`Low: ${row.low} (${row.lowPct}%)`}
-                          />
-                        </div>
-                      </td>
-
-                      {/* High Risk Count + Percent */}
-                      <td className="td-col-metric">
-                        <span className="risk-pill pill-high">
-                          <span className="risk-count">{row.high}</span>
-                          <span className="risk-pct">({row.highPct}%)</span>
-                        </span>
-                      </td>
-
-                      {/* Medium Risk Count + Percent */}
-                      <td className="td-col-metric">
-                        <span className="risk-pill pill-med">
-                          <span className="risk-count">{row.medium}</span>
-                          <span className="risk-pct">({row.mediumPct}%)</span>
-                        </span>
-                      </td>
-
-                      {/* Low Risk Count + Percent */}
-                      <td className="td-col-metric">
-                        <span className="risk-pill pill-low">
-                          <span className="risk-count">{row.low}</span>
-                          <span className="risk-pct">({row.lowPct}%)</span>
-                        </span>
-                      </td>
-
-                      {/* Avg Risk Index Score Badge */}
-                      <td className="td-col-score">
-                        <div
-                          className={`score-badge ${
-                            row.avgRisk >= 60
-                              ? 'score-danger'
-                              : row.avgRisk >= 48
-                              ? 'score-warning'
-                              : 'score-normal'
-                          }`}
+              <div className="donut-visualization-block">
+                {/* SVG Donut Chart with Dynamic Trigonometric Segment Pop-out & Glow */}
+                <div className="svg-donut-wrapper">
+                  <svg className="svg-donut" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="16" />
+                    {healthSegments.map((seg) => {
+                      const isHovered = hoveredHealthId === seg.id;
+                      const isAnyHovered = hoveredHealthId !== null;
+                      return (
+                        <g
+                          key={seg.id}
+                          style={{
+                            transform: isHovered ? `translate(${seg.dx.toFixed(2)}px, ${seg.dy.toFixed(2)}px)` : 'translate(0px, 0px)',
+                            transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
                         >
-                          <span className="score-num">{row.avgRisk}</span>
-                          <span className="score-max">/100</span>
+                          <circle
+                            cx="80"
+                            cy="80"
+                            r="60"
+                            fill="none"
+                            stroke={seg.color}
+                            strokeWidth={isHovered ? 20 : 16}
+                            strokeDasharray={`${seg.strokeLength.toFixed(1)} ${seg.circumference}`}
+                            strokeDashoffset={0}
+                            style={{
+                              transformOrigin: '80px 80px',
+                              transform: `rotate(${seg.startDeg}deg)`,
+                              transition: 'stroke-width 0.25s ease, filter 0.25s ease, opacity 0.25s ease',
+                              cursor: 'pointer',
+                              filter: isHovered ? `drop-shadow(0 0 12px ${seg.color})` : 'none',
+                              opacity: isAnyHovered && !isHovered ? 0.45 : 1
+                            }}
+                            onMouseEnter={() => setHoveredHealthId(seg.id)}
+                            onMouseLeave={() => setHoveredHealthId(null)}
+                            onClick={() => onFilterStatus?.(seg.statusFilter)}
+                          >
+                            <title>{`${seg.fullName}: Click to view ${seg.count} projects`}</title>
+                          </circle>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                  <div className="svg-donut-center">
+                    <span
+                      className="donut-center-num"
+                      style={{ color: activeHealthSeg ? activeHealthSeg.color : '#0F172A' }}
+                    >
+                      {activeHealthSeg ? activeHealthSeg.count.toLocaleString() : sec1Metrics.avgHealth}
+                    </span>
+                    <span
+                      className="donut-center-label"
+                      style={{
+                        color: activeHealthSeg ? activeHealthSeg.color : '#64748B',
+                        fontWeight: activeHealthSeg ? 850 : 700
+                      }}
+                    >
+                      {activeHealthSeg ? activeHealthSeg.label : 'AVG HEALTH INDEX'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Horizontal Breakdown Bars Below Donut 1 — Synced Clickable Rows */}
+                <div className="donut-bars-list">
+                  {healthSegments.map((seg) => {
+                    const isHovered = hoveredHealthId === seg.id;
+                    return (
+                      <div
+                        key={seg.id}
+                        className={`bar-breakdown-row clickable-row${isHovered ? ' active-breakdown-row' : ''}`}
+                        onMouseEnter={() => setHoveredHealthId(seg.id)}
+                        onMouseLeave={() => setHoveredHealthId(null)}
+                        onClick={() => onFilterStatus?.(seg.statusFilter)}
+                        title={`Click to view ${seg.name} projects in Portfolio`}
+                        style={isHovered ? { backgroundColor: `${seg.color}15`, borderRadius: '8px' } : undefined}
+                      >
+                        <div className="bar-info-row">
+                          <span
+                            className="bar-label-dot"
+                            style={{
+                              backgroundColor: seg.color,
+                              boxShadow: isHovered ? `0 0 8px ${seg.color}` : 'none',
+                              transform: isHovered ? 'scale(1.25)' : 'scale(1)',
+                              transition: 'transform 0.18s ease, box-shadow 0.18s ease'
+                            }}
+                          />
+                          <span
+                            className="bar-name"
+                            style={{
+                              fontWeight: isHovered ? 800 : 600,
+                              color: isHovered ? seg.color : '#334155'
+                            }}
+                          >
+                            {seg.fullName}
+                          </span>
+                          <span className="bar-value" style={{ fontWeight: isHovered ? 900 : 750 }}>
+                            {seg.count.toLocaleString()} ({seg.pct}%)
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                        <div className="bar-track">
+                          <div
+                            className="bar-fill"
+                            style={{
+                              width: `${seg.pct}%`,
+                              background: seg.color,
+                              boxShadow: isHovered ? `0 0 6px ${seg.color}` : 'none'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Donut 2: Risk Index Breakdown ── */}
+            <div className="dist-donut-card">
+              <div className="dist-card-header-row">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldAlert size={18} color="#DC2626" />
+                  <h3 className="dist-card-heading">ML Composite Risk Index Breakdown</h3>
+                </div>
+                <span className="dist-count-chip count-red">Avg Risk: {sec1Metrics.avgRisk}/100</span>
+              </div>
+
+              <div className="donut-visualization-block">
+                {/* SVG Donut Chart with Dynamic Trigonometric Segment Pop-out & Glow */}
+                <div className="svg-donut-wrapper">
+                  <svg className="svg-donut" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="16" />
+                    {riskSegments.map((seg) => {
+                      const isHovered = hoveredRiskId === seg.id;
+                      const isAnyHovered = hoveredRiskId !== null;
+                      return (
+                        <g
+                          key={seg.id}
+                          style={{
+                            transform: isHovered ? `translate(${seg.dx.toFixed(2)}px, ${seg.dy.toFixed(2)}px)` : 'translate(0px, 0px)',
+                            transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
+                        >
+                          <circle
+                            cx="80"
+                            cy="80"
+                            r="60"
+                            fill="none"
+                            stroke={seg.color}
+                            strokeWidth={isHovered ? 20 : 16}
+                            strokeDasharray={`${seg.strokeLength.toFixed(1)} ${seg.circumference}`}
+                            strokeDashoffset={0}
+                            style={{
+                              transformOrigin: '80px 80px',
+                              transform: `rotate(${seg.startDeg}deg)`,
+                              transition: 'stroke-width 0.25s ease, filter 0.25s ease, opacity 0.25s ease',
+                              cursor: 'pointer',
+                              filter: isHovered ? `drop-shadow(0 0 12px ${seg.color})` : 'none',
+                              opacity: isAnyHovered && !isHovered ? 0.45 : 1
+                            }}
+                            onMouseEnter={() => setHoveredRiskId(seg.id)}
+                            onMouseLeave={() => setHoveredRiskId(null)}
+                            onClick={() => onFilterRisk?.(seg.riskFilter)}
+                          >
+                            <title>{`${seg.fullName}: Click to view ${seg.count} projects`}</title>
+                          </circle>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                  <div className="svg-donut-center">
+                    <span
+                      className="donut-center-num"
+                      style={{ color: activeRiskSeg ? activeRiskSeg.color : '#DC2626' }}
+                    >
+                      {activeRiskSeg ? activeRiskSeg.count.toLocaleString() : sec1Metrics.avgRisk}
+                    </span>
+                    <span
+                      className="donut-center-label"
+                      style={{
+                        color: activeRiskSeg ? activeRiskSeg.color : '#64748B',
+                        fontWeight: activeRiskSeg ? 850 : 700
+                      }}
+                    >
+                      {activeRiskSeg ? activeRiskSeg.label : 'AVG ML RISK'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Horizontal Breakdown Bars Below Donut 2 — Synced Clickable Rows */}
+                <div className="donut-bars-list">
+                  {riskSegments.map((seg) => {
+                    const isHovered = hoveredRiskId === seg.id;
+                    return (
+                      <div
+                        key={seg.id}
+                        className={`bar-breakdown-row clickable-row${isHovered ? ' active-breakdown-row' : ''}`}
+                        onMouseEnter={() => setHoveredRiskId(seg.id)}
+                        onMouseLeave={() => setHoveredRiskId(null)}
+                        onClick={() => onFilterRisk?.(seg.riskFilter)}
+                        title={`Click to view ${seg.name} projects in Portfolio`}
+                        style={isHovered ? { backgroundColor: `${seg.color}15`, borderRadius: '8px' } : undefined}
+                      >
+                        <div className="bar-info-row">
+                          <span
+                            className="bar-label-dot"
+                            style={{
+                              backgroundColor: seg.color,
+                              boxShadow: isHovered ? `0 0 8px ${seg.color}` : 'none',
+                              transform: isHovered ? 'scale(1.25)' : 'scale(1)',
+                              transition: 'transform 0.18s ease, box-shadow 0.18s ease'
+                            }}
+                          />
+                          <span
+                            className="bar-name"
+                            style={{
+                              fontWeight: isHovered ? 800 : 600,
+                              color: isHovered ? seg.color : '#334155'
+                            }}
+                          >
+                            {seg.fullName}
+                          </span>
+                          <span className="bar-value" style={{ fontWeight: isHovered ? 900 : 750 }}>
+                            {seg.count.toLocaleString()} ({seg.pct}%)
+                          </span>
+                        </div>
+                        <div className="bar-track">
+                          <div
+                            className="bar-fill"
+                            style={{
+                              width: `${seg.pct}%`,
+                              background: seg.color,
+                              boxShadow: isHovered ? `0 0 6px ${seg.color}` : 'none'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── SECTION 3: Strategic Intelligence & Regional Focus (Bottom 4 Cards) ── */}
-      <section className="dist-section">
-        <div className="dist-section-header">
-          <span className="dist-section-tag">STRATEGIC INTELLIGENCE</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h2 className="dist-section-heading">Priority Interventions &amp; Regional Focus</h2>
-            <InfoButton
-              title="Strategic Intelligence Overview"
-              summary="High-level operational takeaways pinpointing where urgent intervention, capital focus, and targeted policies yield the highest risk reduction."
-              size="md"
-            />
+      {/* ════════════════════════════════════════════════════════════════
+         SECTION 2: PRIORITY INTERVENTIONS (STACKED 1-COLUMN DASHBOARD LIST)
+         ════════════════════════════════════════════════════════════════ */}
+      <section id="dist-section-interventions" className="dist-section">
+        <div className="dist-panel-card">
+          {/* Header Controls */}
+          <div className="dist-panel-head">
+            <div className="dist-panel-title-group">
+              <span className="dist-section-badge badge-red">02</span>
+              <div>
+                <h2 className="dist-section-title">Priority Interventions</h2>
+                <p className="dist-section-sub">
+                  Stacked high-priority assets requiring urgent departmental intervention and executive oversight.
+                </p>
+              </div>
+            </div>
+
+            {/* Controls: Mode + Dropdown + Count Selector (Top 5 / Top 10) */}
+            <div className="dist-controls-group">
+              <div className="dist-toggle-pill">
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec2Mode === 'ministry' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSec2Mode('ministry');
+                    setSec2SelectedEntity('All');
+                  }}
+                >
+                  Ministry
+                </button>
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec2Mode === 'sector' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSec2Mode('sector');
+                    setSec2SelectedEntity('All');
+                  }}
+                >
+                  Sector
+                </button>
+              </div>
+
+              <div className="dist-dropdown-wrapper">
+                <select
+                  className="dist-select"
+                  value={sec2SelectedEntity}
+                  onChange={(e) => setSec2SelectedEntity(e.target.value)}
+                >
+                  <option value="All">All {sec2Mode === 'ministry' ? 'Ministries' : 'Sectors'}</option>
+                  {(sec2Mode === 'ministry' ? allMinistries : allSectors).map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="dist-dropdown-arrow" />
+              </div>
+
+              {/* Count Toggle Pill */}
+              <div className="dist-toggle-pill count-toggle">
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec2Count === 5 ? 'active' : ''}`}
+                  onClick={() => setSec2Count(5)}
+                >
+                  Top 5
+                </button>
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec2Count === 10 ? 'active' : ''}`}
+                  onClick={() => setSec2Count(10)}
+                >
+                  Top 10
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Stacked 1-Column Projects List (Image 3 Executive Horizontal Row Layout) */}
+          <div className="interventions-stacked-list">
+            {sec2FilteredProjects.length === 0 ? (
+              <div className="dist-empty-state">
+                <ShieldAlert size={32} color="#94A3B8" />
+                <p>No critical intervention assets found for this selection.</p>
+              </div>
+            ) : (
+              sec2FilteredProjects.map((proj, idx) => {
+                const origCost = parseFloat(proj.costApproved.replace(/[^0-9.]/g, '')) || 0;
+                const revCost = parseFloat(proj.costRevised.replace(/[^0-9.]/g, '')) || 0;
+                const deltaCr = revCost - origCost;
+                const overrunPct = origCost > 0 ? Math.round(((revCost - origCost) / origCost) * 100) : parseInt(proj.costOverrunPct) || 0;
+                const delayMonths = proj.timeOverrunMonths || 0;
+                const riskVal = proj.riskScore ?? 50;
+                const isCrit = riskVal >= 75 || proj.scheduleStatus === 'CRITICAL';
+
+                return (
+                  <div key={proj.id} className="img3-intervention-row">
+                    <span className={`img3-rank-badge ${idx % 2 === 1 ? 'rank-blue' : 'rank-dark'}`}>
+                      #{String(idx + 1).padStart(2, '0')}
+                    </span>
+
+                    <div className="img3-info-col">
+                      <div className="img3-meta-top">
+                        <span className="img3-id-tag">#{proj.id}</span>
+                        <span className="img3-meta-dot">•</span>
+                        <span className="img3-sector-tag"><Building2 size={12} /> {proj.sector}</span>
+                        <span className="img3-meta-dot">•</span>
+                        <span className="img3-ministry-tag">{proj.ministry}</span>
+                      </div>
+                      <h3 className="img3-project-title">{proj.name}</h3>
+                    </div>
+
+                    <div className="img3-metrics-group">
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">COST OVERRUN</span>
+                        <div className="img3-metric-val-row text-red">
+                          <TrendingUp size={13} />
+                          <span className="img3-val-bold">+{overrunPct}%</span>
+                          {deltaCr > 0 && <span className="img3-val-sub">(+₹{Math.round(deltaCr)} Cr)</span>}
+                        </div>
+                      </div>
+
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">SCHEDULE SLIPPAGE</span>
+                        <div className="img3-metric-val-row text-amber">
+                          <Clock size={13} />
+                          <span className="img3-val-bold">+{delayMonths} mo delay</span>
+                        </div>
+                      </div>
+
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">RISK INDEX</span>
+                        <div className="img3-risk-val-row">
+                          <span className="img3-risk-num">{riskVal} <span className="img3-risk-denom">/100</span></span>
+                          <span className={`img3-critical-badge ${isCrit ? 'badge-crit' : 'badge-high'}`}>
+                            {isCrit ? 'CRITICAL' : 'HIGH RISK'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="img3-actions-group">
+                      <button
+                        type="button"
+                        className="img3-inspect-btn"
+                        onClick={() => onSelectProject?.(proj.id)}
+                      >
+                        <span>Inspect</span>
+                        <ExternalLink size={13} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="img3-action-btn"
+                        onClick={() => onNavigateTab?.('action-centre')}
+                      >
+                        <ShieldAlert size={13} />
+                        <span>Take Action</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Footer Navigation CTA */}
+          <div className="interventions-footer-bar">
+            <span>Showing Top {sec2Count} Priority Interventions in {sec2SelectedEntity}</span>
+            <button
+              type="button"
+              className="dist-explore-all-btn"
+              onClick={() => onNavigateTab?.('projects')}
+            >
+              <span>Explore All Monitored Assets in Portfolio</span>
+              <ArrowRight size={14} />
+            </button>
           </div>
         </div>
+      </section>
 
-        <div className="dist-strategic-grid">
-          {/* Card 1: Critical Action Required */}
-          <div className="strategic-card card-critical-action">
-            <div className="strategic-top-row">
-              <span className="strategic-tag tag-red">CRITICAL ACTION REQUIRED</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <InfoButton title="Critical Interventions" summary="Total high-risk projects and aggregate cost escalation requiring immediate administrative escalation." size="sm" />
-                <ShieldAlert size={18} color="#DC2626" />
+      {/* ════════════════════════════════════════════════════════════════
+         SECTION 3: COMPARATIVE ANALYTICS (ENTITY VS ENTITY BENCHMARK)
+         ════════════════════════════════════════════════════════════════ */}
+      <section id="dist-section-comparison" className="dist-section">
+        <div className="dist-panel-card">
+          {/* Header Controls */}
+          <div className="dist-panel-head">
+            <div className="dist-panel-title-group">
+              <span className="dist-section-badge badge-blue">03</span>
+              <div>
+                <h2 className="dist-section-title">Comparative Analytics</h2>
+                <p className="dist-section-sub">
+                  Head-to-head entity benchmarks and sectoral performance leaderboards.
+                </p>
               </div>
             </div>
-            <h4 className="strategic-card-title text-red">High Priority Interventions</h4>
-            <p className="strategic-card-desc">
-              {data?.high || delayedCount} projects are flagged as critical or delayed requiring administrative escalation.
-            </p>
-            <div className="strategic-metrics-box">
-              <div className="strategic-metric-item">
-                <span className="strategic-num text-red">
-                  <AnimatedCounter value={data?.high || delayedCount} />
-                </span>
-                <span className="strategic-lbl">High Risk Projects</span>
-              </div>
-              <div className="strategic-divider" />
-              <div className="strategic-metric-item">
-                <span className="strategic-num">{totalEscalationFormatted}</span>
-                <span className="strategic-lbl">Escalation Cost</span>
+
+            {/* Controls: Mode Switcher */}
+            <div className="dist-controls-group">
+              <div className="dist-toggle-pill">
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec3Mode === 'ministry' ? 'active' : ''}`}
+                  onClick={() => setSec3Mode('ministry')}
+                >
+                  Ministry Comparison
+                </button>
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${sec3Mode === 'sector' ? 'active' : ''}`}
+                  onClick={() => setSec3Mode('sector')}
+                >
+                  Sector Comparison
+                </button>
               </div>
             </div>
-            <button type="button" className="strategic-btn btn-action-red">
-              <span>Fast Track Approvals</span>
-              <ArrowRight size={14} />
-            </button>
           </div>
 
-          {/* Card 2: Prioritised Sector */}
-          <div className="strategic-card card-priority-sector">
-            <div className="strategic-top-row">
-              <span className="strategic-tag tag-blue">TOP CAPITAL SECTOR</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <InfoButton title="Top Capital Sector" summary="Sector accounting for the highest volume of national infrastructure capital and its specific risk concentration." size="sm" />
-                <TrendingUp size={18} color="#2563EB" />
+          {/* Dual Dropdowns for Entity A vs Entity B */}
+          <div className="dist-compare-selector-bar">
+            <div className="compare-select-col">
+              <label className="compare-lbl">Entity A ({sec3Mode === 'ministry' ? 'Primary Ministry' : 'Sector A'}):</label>
+              <div className="dist-dropdown-wrapper full-w">
+                <select
+                  className="dist-select"
+                  value={sec3EntityA}
+                  onChange={(e) => setSec3EntityA(e.target.value)}
+                >
+                  {(sec3Mode === 'ministry' ? allMinistries : allSectors).map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="dist-dropdown-arrow" />
               </div>
             </div>
-            <h4 className="strategic-card-title">{topSectorName}</h4>
-            <p className="strategic-card-desc">
-              Accounts for {topSectorTotal} monitored national assets with {topSectorHighPct}% in elevated risk tier.
-            </p>
-            <div className="strategic-metrics-box">
-              <div className="strategic-metric-item">
-                <span className="strategic-num text-amber">{topSectorHighPct}%</span>
-                <span className="strategic-lbl">High Risk Pct</span>
-              </div>
-              <div className="strategic-divider" />
-              <div className="strategic-metric-item">
-                <span className="strategic-num">{topSectorAvgRisk}/100</span>
-                <span className="strategic-lbl">Avg Risk Index</span>
+
+            <div className="compare-vs-badge">VS</div>
+
+            <div className="compare-select-col">
+              <label className="compare-lbl">Entity B ({sec3Mode === 'ministry' ? 'Benchmark Ministry' : 'Sector B'}):</label>
+              <div className="dist-dropdown-wrapper full-w">
+                <select
+                  className="dist-select"
+                  value={sec3EntityB}
+                  onChange={(e) => setSec3EntityB(e.target.value)}
+                >
+                  {(sec3Mode === 'ministry' ? allMinistries : allSectors).map(item => (
+                    <option key={item} value={item}>{item}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="dist-dropdown-arrow" />
               </div>
             </div>
-            <button type="button" className="strategic-btn btn-action-blue">
-              <span>Review Tenders</span>
-              <ArrowRight size={14} />
-            </button>
           </div>
 
-          {/* Card 3: Regional Distribution */}
-          <div className="strategic-card card-region-focus">
-            <div className="strategic-top-row">
-              <span className="strategic-tag tag-neutral">REGIONAL CONCENTRATION</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <InfoButton title="Regional Allocation" summary="The geographic state or territory with the largest concentration of active monitored projects and sanctioned capital." size="sm" />
-                <MapPin size={18} color="#059669" />
+          {/* Head to Head Comparison Matrix Card */}
+          <div className="compare-matrix-card">
+            <div className="matrix-head-row">
+              <div className="matrix-cell-head text-blue">{sec3EntityA}</div>
+              <div className="matrix-cell-head text-center">COMPARISON METRIC</div>
+              <div className="matrix-cell-head text-right text-indigo">{sec3EntityB}</div>
+            </div>
+
+            {/* Metric 1: Total Assets */}
+            <div className="matrix-data-row">
+              <div className="matrix-val-cell font-bold text-blue">{statsA.count} Assets</div>
+              <div className="matrix-label-cell">Monitored Project Count</div>
+              <div className="matrix-val-cell font-bold text-indigo text-right">{statsB.count} Assets</div>
+            </div>
+
+            {/* Metric 2: Total Sanctioned Outlay */}
+            <div className="matrix-data-row">
+              <div className="matrix-val-cell font-bold">₹{statsA.totalCostCr.toLocaleString()} Cr</div>
+              <div className="matrix-label-cell">Total Revised Outlay</div>
+              <div className="matrix-val-cell font-bold text-right">₹{statsB.totalCostCr.toLocaleString()} Cr</div>
+            </div>
+
+            {/* Metric 3: Avg Risk Score */}
+            <div className="matrix-data-row">
+              <div className="matrix-val-cell">
+                <span className={`badge-pill ${statsA.avgRisk >= 60 ? 'bg-red' : 'bg-blue'}`}>{statsA.avgRisk}/100</span>
+              </div>
+              <div className="matrix-label-cell">Composite Risk Index</div>
+              <div className="matrix-val-cell text-right">
+                <span className={`badge-pill ${statsB.avgRisk >= 60 ? 'bg-red' : 'bg-indigo'}`}>{statsB.avgRisk}/100</span>
               </div>
             </div>
-            <h4 className="strategic-card-title">{topStateName} Region</h4>
-            <p className="strategic-card-desc">
-              Concentration of {topStateCount} active central sector projects across primary corridor nodes.
-            </p>
-            <div className="strategic-metrics-box">
-              <div className="strategic-metric-item">
-                <span className="strategic-num">
-                  <AnimatedCounter value={topStateCount} />
-                </span>
-                <span className="strategic-lbl">Active Projects</span>
-              </div>
-              <div className="strategic-divider" />
-              <div className="strategic-metric-item">
-                <span className="strategic-num">{topStateCostFormatted}</span>
-                <span className="strategic-lbl">Total Sanctioned</span>
-              </div>
+
+            {/* Metric 4: Cost Overrun Delta */}
+            <div className="matrix-data-row">
+              <div className="matrix-val-cell font-bold text-red">+{statsA.overrunPct}% Overrun</div>
+              <div className="matrix-label-cell">Cost Escalation Rate</div>
+              <div className="matrix-val-cell font-bold text-red text-right">+{statsB.overrunPct}% Overrun</div>
             </div>
-            <button type="button" className="strategic-btn btn-action-neutral">
-              <span>Inspect Region</span>
-              <ArrowRight size={14} />
-            </button>
+
+            {/* Metric 5: Average Execution Progress */}
+            <div className="matrix-data-row">
+              <div className="matrix-val-cell font-bold">{statsA.avgProgress}% Executed</div>
+              <div className="matrix-label-cell">Avg Physical Execution</div>
+              <div className="matrix-val-cell font-bold text-right">{statsB.avgProgress}% Executed</div>
+            </div>
           </div>
 
-          {/* Card 4: Strategic Policy Playbook */}
-          <div className="strategic-card card-ai-policy">
-            <div className="strategic-top-row">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span className="strategic-tag tag-purple">STRATEGIC PLAYBOOK</span>
-                <span style={{
-                  fontSize: '9px',
-                  fontWeight: 800,
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  backgroundColor: '#FEF3C7',
-                  color: '#B45309',
-                  border: '1px solid #FDE68A',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.4px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  Under Development • Illustration
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <InfoButton 
-                  title="Portfolio Risk Playbook (Under Development)" 
-                  summary="Future expansion: Automated policy recommendation and dispatch engine under active development for illustration of intervention levers." 
-                  size="sm" 
-                />
-                <Sparkles size={18} color="#7C3AED" />
-              </div>
+          {/* Sector / Ministry Leaderboard Grid */}
+          <div className="dist-leaderboard-section">
+            <h3 className="leaderboard-title">Top Portfolio {sec3Mode === 'ministry' ? 'Ministries' : 'Sectors'} Ranked by Risk Index</h3>
+            <div className="leaderboard-grid">
+              {leaderboardItems.map((item, idx) => (
+                <div key={item.name} className="leaderboard-card">
+                  <div className="lb-card-top">
+                    <span className="lb-rank">#{idx + 1}</span>
+                    <span className="lb-name">{item.name}</span>
+                  </div>
+                  <div className="lb-metrics-row">
+                    <span className="lb-score-pill" style={{ backgroundColor: item.avgRisk >= 60 ? '#FEF2F2' : '#EFF6FF', color: item.avgRisk >= 60 ? '#DC2626' : '#2563EB' }}>
+                      Risk Index: {item.avgRisk}/100
+                    </span>
+                    <span className="lb-count">{item.count} Assets</span>
+                  </div>
+                  <div className="lb-bar-track">
+                    <div className="lb-bar-fill" style={{ width: `${item.avgRisk}%`, background: item.avgRisk >= 60 ? '#DC2626' : '#2563EB' }} />
+                  </div>
+                </div>
+              ))}
             </div>
-            <h4 className="strategic-card-title">Portfolio Risk Mitigation</h4>
-
-            {/* Under Development Notice Banner */}
-            <div style={{
-              fontSize: '11px',
-              color: '#6B21A8',
-              backgroundColor: '#FAF5FF',
-              border: '1px dashed #C084FC',
-              borderRadius: '6px',
-              padding: '6px 10px',
-              marginBottom: '10px',
-              lineHeight: 1.4
-            }}>
-              <strong>FUTURE EXPANSION:</strong> Policy dispatch automation is under active development for illustration.
-            </div>
-
-            <div className="strategic-checklist">
-              <div className="checklist-item">
-                <span className="checklist-dot">✓</span>
-                <span>Priority milestone recovery mobilization</span>
-              </div>
-              <div className="checklist-item">
-                <span className="checklist-dot">✓</span>
-                <span>Financial outlay &amp; expenditure audit</span>
-              </div>
-              <div className="checklist-item">
-                <span className="checklist-dot">✓</span>
-                <span>Critical path schedule re-baselining</span>
-              </div>
-            </div>
-            <button type="button" className="strategic-btn btn-action-purple">
-              <span>View Strategic Playbook (Demo)</span>
-              <ArrowRight size={14} />
-            </button>
           </div>
         </div>
       </section>

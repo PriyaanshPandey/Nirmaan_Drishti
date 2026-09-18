@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Sparkles, LayoutDashboard, Database, ArrowRight, Cpu, ShieldAlert,
-  TrendingUp, Layers, BarChart3, Globe, Play
+  ArrowRight, Cpu, TrendingUp, BarChart3, Globe, Play
 } from 'lucide-react';
 import './Home.css';
 import { VideoHero } from './VideoHero';
@@ -11,36 +10,11 @@ import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
 import heroIllustrationBase from '../assets/hero_illustration_base.png';
 
-import { projectsData } from '../data/projectsData';
 import { api } from '../services/api';
 
-const initialProjectsCount = projectsData.length;
-const initialTotalRevCostCr = projectsData.reduce((acc, p) => {
-  const num = parseFloat(p.costRevised.replace(/[^0-9.]/g, '')) || 0;
-  return acc + num;
-}, 0);
-const initialLakhCrores = initialTotalRevCostCr > 0 ? initialTotalRevCostCr / 100000 : 106.52;
-const INDIAN_STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
-  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
-  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
-  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
-  'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
-];
-
-const initialStatesCount = (() => {
-  const covered = new Set<string>();
-  for (const p of projectsData) {
-    const loc = p.location || '';
-    for (const state of INDIAN_STATES) {
-      if (loc.includes(state)) {
-        covered.add(state);
-      }
-    }
-  }
-  return covered.size || 28;
-})();
+const initialProjectsCount = 6568;
+const initialLakhCrores = 35.8;
+const initialStatesCount = 28;
 
 interface HomeProps {
   activeTab?: string;
@@ -113,37 +87,30 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
   const modules = [
     {
       tab: 'dashboard',
-      title: 'Analytics Dashboard',
-      desc: 'National health overview with real-time risk scores, sector breakdowns, and priority interventions.',
-      icon: <LayoutDashboard size={22} color="#2563EB" />,
+      tag: 'Executive Overview',
+      title: 'Dashboard',
+      desc: 'National health index, budget overruns, and priority interventions.',
       color: 'blue'
     },
     {
       tab: 'projects',
-      title: 'Project Portfolio',
-      desc: `Browse all ${totalProjects.toLocaleString()} infrastructure assets with search, filters, and detailed milestone tracking.`,
-      icon: <Database size={22} color="#059669" />,
+      tag: 'Master Portfolio',
+      title: 'Projects',
+      desc: 'Telemetry, risk diagnostics, and milestone tracking across 6,568 assets.',
       color: 'green'
     },
     {
-      tab: 'insights',
-      title: 'AI Intelligence',
-      desc: 'Qwen-8B powered executive Q&A with SHAP feature attributions and root-cause analysis.',
-      icon: <Sparkles size={22} color="#7C3AED" />,
-      color: 'purple'
-    },
-    {
       tab: 'distribution',
-      title: 'Sector Distribution',
-      desc: 'Geographic and sector-level breakdown across all central infrastructure ministries.',
-      icon: <Layers size={22} color="#0284C7" />,
+      tag: 'Resource Allocation',
+      title: 'Distribution',
+      desc: 'Cross-ministry expenditure and state-level infrastructure spread.',
       color: 'teal'
     },
     {
       tab: 'action-centre',
+      tag: 'Intervention Matrix',
       title: 'Action Center',
-      desc: 'Automated executive alerts, inter-ministerial task assignments, and contractor milestone resolutions.',
-      icon: <ShieldAlert size={22} color="#DC2626" />,
+      desc: 'Bottleneck escalations, contractor accountability, and resolution alerts.',
       color: 'red'
     }
   ];
@@ -189,7 +156,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
                   onClick={() => onNavigateTab('dashboard')}
                 >
                   <span>Launch Dashboard</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -200,7 +167,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
                   }}
                   title="Watch Video Intro"
                 >
-                  <Play size={14} />
+                  <Play size={14} aria-hidden="true" />
                   <span>Watch Intro</span>
                 </button>
               </div>
@@ -273,7 +240,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       {/* ── 2. Key Metrics Strip ── */}
       <section className="metrics-strip-row">
         <div className="metric-strip-card">
-          <div className="strip-icon"><BarChart3 size={20} color="#2563EB" /></div>
+          <div className="strip-icon"><BarChart3 size={20} color="#2563EB" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
               <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
@@ -283,7 +250,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         </div>
 
         <div className="metric-strip-card">
-          <div className="strip-icon"><TrendingUp size={20} color="#059669" /></div>
+          <div className="strip-icon"><TrendingUp size={20} color="#059669" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
               ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
@@ -293,15 +260,15 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         </div>
 
         <div className="metric-strip-card">
-          <div className="strip-icon"><Cpu size={20} color="#7C3AED" /></div>
+          <div className="strip-icon"><Cpu size={20} color="#7C3AED" aria-hidden="true" /></div>
           <div className="strip-info">
-            <span className="strip-val">3 &amp; 6 Mo</span>
+            <span className="strip-val">3 &amp; 6 Months</span>
             <span className="strip-lbl">Forecast Horizon</span>
           </div>
         </div>
 
         <div className="metric-strip-card">
-          <div className="strip-icon"><Globe size={20} color="#D97706" /></div>
+          <div className="strip-icon"><Globe size={20} color="#D97706" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
               <AnimatedCounter value={statesCount} duration={800} resetKey={activeTab} />+
@@ -326,14 +293,20 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
               key={i}
               className={`module-card module-${m.color}`}
               onClick={() => onNavigateTab(m.tab)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onNavigateTab(m.tab);
+                }
+              }}
               role="button"
               tabIndex={0}
+              aria-label={`Open ${m.title}`}
+              aria-current={activeTab === m.tab ? 'page' : undefined}
             >
               <div className="module-card-top">
-                <div className={`module-icon icon-${m.color}`}>{m.icon}</div>
-                <div className="module-arrow-wrap">
-                  <ArrowRight size={15} className="module-arrow" />
-                </div>
+                <span className="module-tag">{m.tag}</span>
+                <span className="module-arrow" aria-hidden="true">→</span>
               </div>
               <div className="module-body">
                 <h3 className="module-name">{m.title}</h3>

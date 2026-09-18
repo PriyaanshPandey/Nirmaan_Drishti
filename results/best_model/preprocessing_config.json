@@ -1,0 +1,20 @@
+{
+  "deduplication_keys": [
+    "project_id",
+    "report_month"
+  ],
+  "deduplication_rule": "drop_duplicates(subset=['project_id', 'report_month'], keep='last')",
+  "zero_original_cost_imputation": "clip anticipated cost at 150.0 Cr if original_cost <= 1.0",
+  "categorical_features": [
+    "sector",
+    "ministry_department",
+    "state"
+  ],
+  "categorical_encoding": "pd.Series.astype('category').cat.codes",
+  "min_history_snapshots": 6,
+  "split_type": "chronological_project_wise_3way",
+  "train_ratio": 0.6,
+  "val_ratio": 0.15,
+  "test_ratio": 0.25,
+  "temporal_order": "min(T_test) > max(T_train) for all projects"
+}

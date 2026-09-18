@@ -10,16 +10,19 @@
   overflow: hidden;
   flex: 1;
   background-color: var(--bg-card);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
   border-radius: var(--border-radius-md);
   padding: 22px 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
               box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-color 0.3s ease;
+              border-color 0.3s ease,
+              background-color 0.3s ease;
 }
 
 .card-decor-pattern {
@@ -40,21 +43,31 @@
 }
 
 .metric-card.dark-theme {
-  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
-  border: none;
-  box-shadow: 0 8px 20px rgba(9, 11, 46, 0.18);
+  background: rgba(9, 11, 46, 0.92);
+  backdrop-filter: var(--card-backdrop-dark);
+  -webkit-backdrop-filter: var(--card-backdrop-dark);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 10px 28px -4px rgba(9, 11, 46, 0.32), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 
 .metric-card.dark-theme:hover {
-  box-shadow: 0 14px 30px rgba(9, 11, 46, 0.28), var(--shadow-glow);
+  background: rgba(10, 13, 48, 0.96);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 16px 36px rgba(9, 11, 46, 0.42), var(--shadow-glow);
 }
 
 .metric-card.light-theme:hover {
-  border-color: rgba(47, 107, 244, 0.25);
+  border-color: var(--border-color-hover);
+  background-color: var(--bg-card-hover);
+}
+
+.metric-card.alert-card {
+  border-color: rgba(214, 47, 57, 0.45);
 }
 
 .metric-card.alert-card:hover {
-  border-color: rgba(214, 47, 57, 0.25);
+  border-color: rgba(214, 47, 57, 0.7);
+  background-color: var(--bg-card-hover);
 }
 
 .metric-title {
@@ -127,39 +140,4 @@
   border-radius: 50%;
   background-color: var(--color-accent-red);
   box-shadow: 0 0 6px var(--color-accent-red);
-}
-
-@media (max-width: 768px) {
-  .metrics-column {
-    gap: 12px;
-  }
-
-  .metric-card {
-    padding: 16px 14px;
-    border-radius: 14px;
-  }
-
-  .metric-value {
-    font-size: 26px;
-  }
-
-  .metric-title {
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
-
-  .metric-subtext {
-    font-size: 12px;
-    margin-top: 4px;
-  }
-
-  .metric-footer-badge {
-    padding: 3px 8px;
-    font-size: 11px;
-    margin-top: 5px;
-  }
-
-  .card-decor-pattern {
-    display: none; /* Hide heavy decor pattern on mobile to keep focus on key figures */
-  }
 }

@@ -1,67 +1,117 @@
 import React from 'react';
-import { ExternalLink, Globe, Cpu, Building2 } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import './Footer.css';
 
 interface FooterProps {
   onNavigateTab?: (tabId: string) => void;
+  activeTab?: string;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigateTab }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigateTab, activeTab = 'home' }) => {
+  const quickLinks = [
+    { id: 'home', label: 'Home' },
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'projects', label: 'Project' },
+    { id: 'distribution', label: 'Distribution' },
+    { id: 'action-centre', label: 'Action Center' },
+  ];
+
   return (
-    <footer className="simple-govt-footer">
-      <div className="footer-simple-container">
-        {/* Left: Brand & External Government Links */}
-        <div className="footer-brand-section">
-          <div className="brand-header">
-            <Building2 size={22} className="govt-icon" />
-            <div>
-              <span className="brand-title">NIRMAAN DRISHTI</span>
-              <span className="brand-sub">MoSPI &amp; PAIMANA Infrastructure Intelligence Platform</span>
+    <footer className="nirmaan-unified-navy-footer" aria-label="Official Portal Footer">
+      {/* Distinction Top Accent Line */}
+      <div className="footer-accent-stripe" aria-hidden="true" />
+
+      <div className="footer-main-wrapper">
+        {/* ── Top Row: Logos on Left, Quick Links on Right ── */}
+        <div className="footer-top-row">
+          {/* LEFT: 3 Cleaned Logos in Sleek Cards */}
+          <div className="footer-logos-left" aria-label="Official Institutional Logos">
+            {/* MoSPI Logo (Clickable) */}
+            <a
+              href="https://www.mospi.gov.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-logo-card clickable"
+              title="Ministry of Statistics and Programme Implementation (MoSPI) — Visit Official Portal"
+            >
+              <img
+                src="/mospi%20logo.png"
+                alt="MoSPI Government of India"
+                className="logo-img mospi-logo-img"
+              />
+            </a>
+
+            {/* NavDrishti Logo (Brand Identity — No redirect needed) */}
+            <div
+              className="footer-logo-card brand-card"
+              title="NavDrishti — National Infrastructure Intelligence Dashboard"
+            >
+              <img
+                src="/navdrishti.png"
+                alt="NavDrishti"
+                className="logo-img navdrishti-logo-img"
+              />
             </div>
+
+            {/* PAIMANA Logo (Clickable) */}
+            <a
+              href="https://www.mospi.gov.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-logo-card clickable"
+              title="PAIMANA — Project Monitoring & Telemetry Platform"
+            >
+              <img
+                src="/paimana.png"
+                alt="PAIMANA Monitoring Platform"
+                className="logo-img paimana-logo-img"
+              />
+            </a>
           </div>
 
-          <div className="official-link-row">
-            <a 
-              href="https://www.mospi.gov.in" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="simple-link-pill"
-            >
-              <Globe size={13} />
-              <span>MoSPI Official Site</span>
-              <ExternalLink size={11} />
-            </a>
-
-            <a 
-              href="https://www.mospi.gov.in" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="simple-link-pill pill-paimana"
-            >
-              <Cpu size={13} />
-              <span>PAIMANA Platform</span>
-              <ExternalLink size={11} />
-            </a>
+          {/* RIGHT: Quick Links with ONLY Underline on Active / Click */}
+          <div className="footer-links-right">
+            <span className="footer-links-label">Quick Links:</span>
+            <nav className="footer-nav-group" aria-label="Footer Quick Navigation">
+              {quickLinks.map((item) => {
+                const isActive = activeTab === item.id || (item.id === 'projects' && activeTab === 'project');
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`footer-underline-nav-btn ${isActive ? 'active' : ''}`}
+                    onClick={() => {
+                      onNavigateTab?.(item.id);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    title={`Navigate to ${item.label}`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
 
-        {/* Right: Our App Pages */}
-        <div className="footer-nav-section">
-          <span className="nav-section-title">Quick Pages</span>
-          <div className="nav-links-grid">
-            <button onClick={() => onNavigateTab?.('home')}>Home</button>
-            <button onClick={() => onNavigateTab?.('dashboard')}>Dashboard</button>
-            <button onClick={() => onNavigateTab?.('projects')}>Projects</button>
-            <button onClick={() => onNavigateTab?.('insights')}>AI Insights</button>
-            <button onClick={() => onNavigateTab?.('action')}>Action Center</button>
-            <button onClick={() => onNavigateTab?.('distribution')}>Distribution</button>
-          </div>
-        </div>
-      </div>
+        {/* Divider */}
+        <div className="footer-inner-divider" />
 
-      {/* Bottom Copyright Bar */}
-      <div className="footer-bottom-simple">
-        <p>© 2026 Ministry of Statistics &amp; Programme Implementation (MoSPI), Government of India. All Rights Reserved.</p>
+        {/* ── Bottom Row: Copyright & Email ── */}
+        <div className="footer-bottom-row">
+          <p className="footer-copyright-text">
+            Copyright © 2026 Team NavDrishti. All Rights Reserved.
+          </p>
+
+          <a
+            href="mailto:teamnavdrishti@gmail.com"
+            className="footer-email-text-link"
+            title="Send email to Team NavDrishti"
+          >
+            <Mail size={13} className="footer-mail-icon" />
+            <span>teamnavdrishti@gmail.com</span>
+          </a>
+        </div>
       </div>
     </footer>
   );

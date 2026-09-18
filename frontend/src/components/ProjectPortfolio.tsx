@@ -1,14 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { Project } from '../data/projectsData';
+import { getProjectDisplayStatus } from '../utils/projectStatus';
 import { api } from '../services/api';
 import './ProjectPortfolio.css';
+import { StatusIndicator } from './StatusIndicator';
 
 interface ProjectPortfolioProps {
   onSelectProject: (projectId: string) => void;
+  onTakeAction?: (projectId: string) => void;
+  initialStatus?: string;
+  statusFilterNonce?: number;
+  initialRisk?: string;
+  riskFilterNonce?: number;
 }
 
-export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProject }) => {
+export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ 
+  onSelectProject, 
+  onTakeAction,
+  initialStatus, 
+  statusFilterNonce,
+  initialRisk,
+  riskFilterNonce
+}) => {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [totalProjects, setTotalProjects] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,6 +38,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMinistry, setSelectedMinistry] = useState('All');
+  const [selectedSector, setSelectedSector] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
+  const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
+
   const fetchProjects = () => {
     setLoading(true);
     setError(false);
@@ -36,7 +56,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
       undefined, 
       selectedStatus !== 'All' ? selectedStatus : undefined,
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
-      selectedSector !== 'All' ? selectedSector : undefined
+      selectedSector !== 'All' ? selectedSector : undefined,
+      selectedRisk !== 'All' ? selectedRisk : undefined
     )
       .then((res) => {
         setProjectsList(res.items);
@@ -87,13 +108,31 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     }
   };
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMinistry, setSelectedMinistry] = useState('All');
-  const [selectedSector, setSelectedSector] = useState('All');
-  const [selectedStatus, setSelectedStatus] = useState('All');
+  useEffect(() => {
+    if (initialStatus !== undefined) {
+      setSelectedStatus(initialStatus || 'All');
+      setPage(1);
+    }
+  }, [initialStatus, statusFilterNonce]);
+
+  useEffect(() => {
+    if (initialRisk !== undefined) {
+      setSelectedRisk(initialRisk || 'All');
+      setPage(1);
+    }
+  }, [initialRisk, riskFilterNonce]);
 
   const [ministries, setMinistries] = useState<string[]>(['All']);
   const [sectors, setSectors] = useState<string[]>(['All']);
+
+  useEffect(() => {
+    if (!showNewProjectModal) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowNewProjectModal(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showNewProjectModal]);
 
   // Fetch filter options (Ministries & Sectors) from backend
   useEffect(() => {
@@ -135,6 +174,20 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     setPage(1);
   };
 
+  const handleRiskChange = (val: string) => {
+    setSelectedRisk(val);
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedStatus('All');
+    setSelectedRisk('All');
+    setSelectedMinistry('All');
+    setSelectedSector('All');
+    setSearchQuery('');
+    setPage(1);
+  };
+
   // Fetch paginated & filtered projects from backend
   useEffect(() => {
     let isMounted = true;
@@ -149,7 +202,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
       undefined, 
       selectedStatus !== 'All' ? selectedStatus : undefined,
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
-      selectedSector !== 'All' ? selectedSector : undefined
+      selectedSector !== 'All' ? selectedSector : undefined,
+      selectedRisk !== 'All' ? selectedRisk : undefined
     )
       .then((res) => {
         if (!isMounted) return;
@@ -167,19 +221,22 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
     return () => {
       isMounted = false;
     };
-  }, [page, searchQuery, selectedMinistry, selectedSector, selectedStatus]);
+  }, [page, searchQuery, selectedMinistry, selectedSector, selectedStatus, selectedRisk]);
 
   const filteredProjects = projectsList;
 
-  const getStatusBadge = (status: Project['scheduleStatus'] | string) => {
-    const stat = (status || '').toUpperCase();
-    if (stat.includes('CRIT') || stat.includes('OVERDUE')) {
-      return <span className="status-badge-pill status-critical">CRITICAL</span>;
+  const getStatusBadge = (status: Project['scheduleStatus'] | string, project?: Project) => {
+    const dispStatus = project ? getProjectDisplayStatus(project) : getProjectDisplayStatus({ scheduleStatus: status });
+    if (dispStatus === 'CRITICAL') {
+      return <StatusIndicator kind="critical" label="CRITICAL" className="status-badge-pill status-critical" />;
     }
-    if (stat.includes('DELAY') || stat.includes('EXTEND')) {
-      return <span className="status-badge-pill status-delayed">DELAYED</span>;
+    if (dispStatus === 'DELAYED') {
+      return <StatusIndicator kind="delayed" label="DELAYED" className="status-badge-pill status-delayed" />;
     }
-    return <span className="status-badge-pill status-on-track">ON TRACK</span>;
+    if (dispStatus === 'IN REVIEW') {
+      return <StatusIndicator kind="medium" label="IN REVIEW" className="status-badge-pill status-in-review" />;
+    }
+    return <StatusIndicator kind="on-track" label="ON TRACK" className="status-badge-pill status-on-track" />;
   };
 
   const totalPages = Math.ceil(totalProjects / pageSize) || 1;
@@ -255,11 +312,63 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             >
               <option value="All">All Schedule Statuses</option>
               <option value="ON TRACK">On Track</option>
+              <option value="Needs Attention">Needs Attention</option>
               <option value="DELAYED">Delayed</option>
-              <option value="CRITICAL">Critical</option>
+              <option value="High Risk">High Risk</option>
+              <option value="CRITICAL">Critical Delay</option>
+            </select>
+          </div>
+
+          <div className="portfolio-filter-select-wrapper">
+            <select
+              value={selectedRisk}
+              onChange={(e) => handleRiskChange(e.target.value)}
+              className="portfolio-filter-select"
+            >
+              <option value="All">All Risk Levels</option>
+              <option value="Critical">Critical Risk</option>
+              <option value="High">High Risk</option>
+              <option value="Medium">Medium Risk</option>
+              <option value="Low">Low Risk</option>
             </select>
           </div>
         </div>
+
+        {(selectedStatus !== 'All' || selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || searchQuery) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Active Filters:</span>
+            {selectedStatus !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#EFF6FF', color: '#1D4ED8', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                Status: {selectedStatus}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleStatusChange('All')} />
+              </span>
+            )}
+            {selectedRisk !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF2F2', color: '#B91C1C', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                Risk: {selectedRisk}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleRiskChange('All')} />
+              </span>
+            )}
+            {selectedMinistry !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', color: '#334155', padding: '3px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                Ministry: {selectedMinistry}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleMinistryChange('All')} />
+              </span>
+            )}
+            {selectedSector !== 'All' && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F8FAFC', color: '#334155', padding: '3px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                Sector: {selectedSector}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleSectorChange('All')} />
+              </span>
+            )}
+            <button
+              onClick={handleClearFilters}
+              style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '12px', textDecoration: 'underline', cursor: 'pointer', padding: '2px 6px' }}
+            >
+              Reset all
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Table Card Section */}
@@ -293,7 +402,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
               <tbody>
                 {filteredProjects.length === 0 ? (
                   <tr>
-                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                       No infrastructure projects found matching the criteria.
                     </td>
                   </tr>
@@ -303,8 +412,25 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                       key={project.id} 
                       className="portfolio-table-row"
                       onClick={() => onSelectProject(project.id)}
+                      tabIndex={0}
+                      aria-label={`Open project ${project.name}`}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onSelectProject(project.id);
+                        }
+                      }}
                     >
-                      <td className="td-project-id">{project.id}</td>
+                      <td className="td-project-id">
+                        <div style={{ fontWeight: 600 }}>{project.id}</div>
+                        {(project.legacyOcmsCode || (project as any).legacy_ocms_code) && (
+                          <div style={{ fontSize: '11px', marginTop: '3px' }}>
+                            <span style={{ background: '#FEF3C7', color: '#92400E', padding: '1px 5px', borderRadius: '4px', border: '1px solid #FDE68A', fontWeight: 600 }}>
+                              OCMS: {project.legacyOcmsCode || (project as any).legacy_ocms_code}
+                            </span>
+                          </div>
+                        )}
+                      </td>
                       <td className="td-project-name">
                         <div className="project-primary-name">{project.name}</div>
                         <div className="project-sub-meta">{project.sector} • {project.ministry}</div>
@@ -328,15 +454,26 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                         </div>
                       </td>
                       <td className="td-schedule-status">
-                        {getStatusBadge(project.scheduleStatus)}
+                        {getStatusBadge(project.scheduleStatus, project)}
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                          className="view-project-details-btn"
-                          onClick={() => onSelectProject(project.id)}
-                        >
-                          View Details
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button 
+                            className="view-project-details-btn"
+                            onClick={() => onSelectProject(project.id)}
+                          >
+                            View Details
+                          </button>
+                          {onTakeAction && (
+                            <button
+                              className="view-project-details-btn"
+                              style={{ background: '#2563EB', borderColor: '#2563EB', color: '#FFFFFF' }}
+                              onClick={() => onTakeAction(project.id)}
+                            >
+                              Take Action
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -358,8 +495,9 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                 disabled={page <= 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 title="Previous Page"
+                aria-label="Previous page"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={16} aria-hidden="true" />
               </button>
 
               {(() => {
@@ -379,6 +517,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                     key={pNum}
                     className={`page-btn ${page === pNum ? 'active' : ''}`}
                     onClick={() => setPage(pNum)}
+                    aria-label={`Page ${pNum}`}
+                    aria-current={page === pNum ? 'page' : undefined}
                   >
                     {pNum}
                   </button>
@@ -390,8 +530,9 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 title="Next Page"
+                aria-label="Next page"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={16} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -400,7 +541,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
 
       {/* New Project Modal */}
       {showNewProjectModal && (
-        <div 
+        <div className="portfolio-modal-backdrop"
+          role="presentation"
           style={{
             position: 'fixed',
             top: 0,
@@ -417,7 +559,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
           }}
           onClick={() => setShowNewProjectModal(false)}
         >
-          <div 
+          <div className="portfolio-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="new-project-modal-title"
             style={{
               backgroundColor: '#FFFFFF',
               borderRadius: '16px',
@@ -430,14 +575,15 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ onSelectProj
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
+              <h2 id="new-project-modal-title" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--navy-dark)', margin: 0 }}>
                 Onboard New Infrastructure Project
               </h2>
               <button 
                 onClick={() => setShowNewProjectModal(false)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#64748B' }}
+                aria-label="Close new project dialog"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 

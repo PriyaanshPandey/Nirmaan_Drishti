@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 import './ExplainabilityInfo.css';
@@ -7,6 +7,7 @@ export interface InfoButtonProps {
   title: string;
   category?: string;
   summary: string;
+  dataSummary?: ChartDataSummary;
   calculation?: string;
   implication?: string;
   theme?: 'dark' | 'light';
@@ -14,15 +15,22 @@ export interface InfoButtonProps {
   style?: React.CSSProperties;
 }
 
+export interface ChartDataSummary {
+  items: Array<{ label: string; value: string }>;
+  insight?: string;
+}
+
 export const InfoButton: React.FC<InfoButtonProps> = ({
   title,
   summary,
+  dataSummary,
   theme = 'light',
   size = 'md',
   style
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const popoverId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -30,7 +38,7 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
   const updatePosition = () => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const popoverWidth = 270;
+    const popoverWidth = 320;
     const padding = 12;
 
     // Calculate left, keeping within viewport
@@ -42,8 +50,8 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
 
     // Calculate top: prefer below; flip above if near bottom
     let top = rect.bottom + 6;
-    if (top + 160 > window.innerHeight && rect.top - 160 > padding) {
-      top = rect.top - 140;
+    if (top + 360 > window.innerHeight && rect.top - 360 > padding) {
+      top = Math.max(padding, rect.top - 360);
     }
 
     setCoords({ top, left });
@@ -75,10 +83,19 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
   };
 
   useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
     return () => {
+      document.removeEventListener('keydown', handleEscape);
       if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     };
-  }, []);
+  }, [isOpen]);
 
   return (
     <>
@@ -91,15 +108,20 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
         onClick={handleToggleClick}
         title={title}
         aria-label={`Explain ${title}`}
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? popoverId : undefined}
+        aria-describedby={isOpen ? popoverId : undefined}
         style={style}
       >
-        <Info size={size === 'sm' ? 10 : 11} strokeWidth={2.4} />
+        <Info size={size === 'sm' ? 10 : 11} strokeWidth={2.4} aria-hidden="true" />
       </button>
 
       {isOpen &&
         createPortal(
           <div
             ref={popoverRef}
+            id={popoverId}
+            role="tooltip"
             className="info-popover-card"
             style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
             onMouseEnter={handleMouseEnter}
@@ -110,6 +132,25 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
               <h4 className="info-popover-title">{title}</h4>
             </div>
             <p className="info-popover-summary">{summary}</p>
+            {dataSummary && (
+              <div className="info-popover-data-summary" aria-label="Current chart data">
+                <h5 className="info-popover-section-title">Current Data</h5>
+                <ul className="info-popover-data-list">
+                  {dataSummary.items.map((item) => (
+                    <li key={`${item.label}-${item.value}`}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </li>
+                  ))}
+                </ul>
+                {dataSummary.insight && (
+                  <div className="info-popover-insight">
+                    <h5 className="info-popover-section-title">Key Insight</h5>
+                    <p>{dataSummary.insight}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>,
           document.body
         )}

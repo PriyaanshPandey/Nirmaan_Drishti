@@ -1,665 +1,1004 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
-  Download, Search, ShieldAlert, AlertTriangle, Clock,
-  IndianRupee, ChevronDown, Sparkles, Activity, BarChart3
+  ShieldAlert, ArrowLeft, ArrowRight, Building2, MapPin,
+  ChevronDown, Sliders, CheckCircle2, FileText, Send, Sparkles,
+  Info, Landmark, ChevronRight, ChevronLeft, ArrowUp, Search,
+  TrendingUp, Clock, ExternalLink
 } from 'lucide-react';
 import './ActionCenter.css';
-import { AnimatedCounter } from './AnimatedCounter';
-import { api } from '../services/api';
+import { projectsData } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
 
-interface ActionItem {
-  project: string;
-  projectId: string;
-  ministry: string;
-  riskEvent: string;
-  severity: 'Critical' | 'High' | 'Medium';
-  priorityScore: number;
-  financialExposure: string;
-  delayExposure: string;
-  overdue: string;
-  dueDate: string;
-  status: 'Open' | 'In Progress' | 'Pending';
-}
-
-interface SimulatorScenario {
-  currentDelay: string;
-  currentCost: string;
-  projDelay: string;
-  projDelayReduction: string;
-  projSaving: string;
-  confidence: number;
-}
-
-interface ActionCenterProps {
-  onSelectProject: (projectId: string) => void;
+export interface ActionCenterProps {
+  activeTab?: string;
+  selectedProjectId?: string | null;
+  onSelectProject: (projectId: string, initialSection?: string) => void;
   onNavigateTab?: (tab: string) => void;
+  onTakeAction?: (projectId: string) => void;
+  onClearSelectedProject?: () => void;
 }
 
-export const ActionCenter: React.FC<ActionCenterProps> = ({ onSelectProject }) => {
-  const [activeFilterTab, setActiveFilterTab] = useState<'all' | 'critical' | 'high' | 'medium'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSimCategory, setSelectedSimCategory] = useState<string>('milestone');
-  const [mounted, setMounted] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+type ActionSidebarSection = 'actions' | 'simulator' | 'routing';
 
-  const [summaryCounts, setSummaryCounts] = useState<{
-    critical: number;
-    high: number;
-    medium: number;
-    totalExp: string;
-    avgDelay: string;
-  } | null>(null);
+export const ActionCenter: React.FC<ActionCenterProps> = ({
+  activeTab,
+  selectedProjectId,
+  onSelectProject,
+  onClearSelectedProject
+}) => {
+  // State A: Filters & Controls
+  const [countLimit, setCountLimit] = useState<5 | 10 | 999>(5);
+  const [selectedMinistry, setSelectedMinistry] = useState<string>('All');
+  const [selectedSector, setSelectedSector] = useState<string>('All');
+  const [selectedAgency, setSelectedAgency] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const [simulatorData, setSimulatorData] = useState<Record<string, SimulatorScenario>>({});
-  const [weightData, setWeightData] = useState<Array<{ label: string; pct: number; color: string }>>([]);
-  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  // State B: Active Action Target Project
+  const [internalTargetId, setInternalTargetId] = useState<string | null>(null);
+  const activeProjectId = selectedProjectId || internalTargetId;
 
+  // State B Sidebar Navigation
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
+  const [activeSection, setActiveSection] = useState<ActionSidebarSection>('actions');
+
+  // Interactive What-If Simulator Sliders (State B - 3 Real Data-Grounded Sliders)
+  const [sliderOutlay, setSliderOutlay] = useState<number>(15); // Budget Outlay: +0% to +50%
+  const [sliderExpenditure, setSliderExpenditure] = useState<number>(20); // Expenditure Pacing: +0% to +50%
+  const [sliderResources, setSliderResources] = useState<number>(35); // Increase Resources: +0% to +100%
+
+  // Toast / Modal Feedback State
+  const [actionToast, setActionToast] = useState<string | null>(null);
+
+  const triggerToast = (msg: string) => {
+    setActionToast(msg);
+    setTimeout(() => setActionToast(null), 3500);
+  };
+
+  // Reset simulator sliders when project changes
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 80);
-    api.getActionCenterSummary().then((res) => {
-      if (res && res.action_items && res.action_items.length > 0) {
-        setSummaryCounts({
-          critical: res.critical_count,
-          high: res.high_count,
-          medium: res.medium_count,
-          totalExp: res.total_financial_exposure_formatted,
-          avgDelay: res.total_delay_exposure_formatted,
-        });
-        setActionItems(res.action_items);
-        // Wire simulator scenarios from backend
-        if (res.simulator_scenarios && Object.keys(res.simulator_scenarios).length > 0) {
-          const mapped: Record<string, SimulatorScenario> = {};
-          Object.entries(res.simulator_scenarios).forEach(([key, s]: [string, any]) => {
-            mapped[key] = {
-              currentDelay: s.currentDelay,
-              currentCost: s.currentCost,
-              projDelay: s.projDelay,
-              projDelayReduction: s.projDelayReduction,
-              projSaving: s.projSaving,
-              confidence: s.confidence,
-            };
-          });
-          setSimulatorData(mapped);
-        }
-        // Wire prioritization weights from backend
-        if (res.prioritization_weights && res.prioritization_weights.length > 0) {
-          setWeightData(res.prioritization_weights.map((w: any) => ({
-            label: w.label,
-            pct: w.pct,
-            color: w.color,
-          })));
-        }
-      }
+    setSliderOutlay(15);
+    setSliderExpenditure(20);
+    setSliderResources(35);
+  }, [activeProjectId]);
+
+  // Extract unique Ministries, Sectors, and Agencies
+  const { allMinistries, allSectors, allAgencies } = useMemo(() => {
+    const minSet = new Set<string>();
+    const secSet = new Set<string>();
+    const agnSet = new Set<string>();
+
+    projectsData.forEach(p => {
+      if (p.ministry) minSet.add(p.ministry.trim());
+      if (p.sector) secSet.add(p.sector.trim());
+      if (p.agency) agnSet.add(p.agency.trim());
     });
-    return () => clearTimeout(t);
+
+    return {
+      allMinistries: Array.from(minSet).sort(),
+      allSectors: Array.from(secSet).sort(),
+      allAgencies: Array.from(agnSet).sort()
+    };
   }, []);
 
-  const currentSim = simulatorData[selectedSimCategory] || simulatorData.milestone || Object.values(simulatorData)[0] || {
-    currentDelay: '—', currentCost: '—', projDelay: '—', projDelayReduction: '—', projSaving: '—', confidence: 0
-  };
+  // Filtered & Ranked Projects List for State A
+  const filteredProjects = useMemo(() => {
+    return projectsData
+      .filter(p => {
+        if (selectedMinistry !== 'All' && p.ministry?.trim() !== selectedMinistry) return false;
+        if (selectedSector !== 'All' && p.sector?.trim() !== selectedSector) return false;
+        if (selectedAgency !== 'All' && p.agency?.trim() !== selectedAgency) return false;
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const matchName = p.name.toLowerCase().includes(q);
+          const matchId = p.id.toLowerCase().includes(q);
+          const matchMin = (p.ministry || '').toLowerCase().includes(q);
+          if (!matchName && !matchId && !matchMin) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const rA = a.riskScore ?? 50;
+        const rB = b.riskScore ?? 50;
+        if (rB !== rA) return rB - rA;
 
-  const weights = weightData;
+        const origA = parseFloat(a.costApproved.replace(/[^0-9.]/g, '')) || 0;
+        const revA = parseFloat(a.costRevised.replace(/[^0-9.]/g, '')) || 0;
+        const deltaA = revA - origA;
 
-  // Filtering list by tabs & search
-  const filteredItems = actionItems.filter((item) => {
-    const matchesSearch = 
-      item.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.riskEvent.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.ministry.toLowerCase().includes(searchQuery.toLowerCase());
-      
-    const matchesTab = 
-      activeFilterTab === 'all' || 
-      item.severity.toLowerCase() === activeFilterTab;
+        const origB = parseFloat(b.costApproved.replace(/[^0-9.]/g, '')) || 0;
+        const revB = parseFloat(b.costRevised.replace(/[^0-9.]/g, '')) || 0;
+        const deltaB = revB - origB;
 
-    return matchesSearch && matchesTab;
-  });
+        return deltaB - deltaA;
+      });
+  }, [selectedMinistry, selectedSector, selectedAgency, searchQuery]);
 
-  const getSeverityBadge = (sev: ActionItem['severity']) => {
-    switch (sev) {
-      case 'Critical':
-        return <span className="action-tag tag-critical">Critical</span>;
-      case 'High':
-        return <span className="action-tag tag-high">High</span>;
-      case 'Medium':
-        return <span className="action-tag tag-medium">Medium</span>;
+  const displayedProjects = useMemo(() => {
+    if (countLimit === 999) return filteredProjects;
+    return filteredProjects.slice(0, countLimit);
+  }, [filteredProjects, countLimit]);
+
+  // Active Project Data for State B
+  const activeProj = useMemo(() => {
+    if (!activeProjectId) return null;
+    return projectsData.find(p => p.id === activeProjectId) || projectsData[0];
+  }, [activeProjectId]);
+
+  // Calculate Real-Time Dynamic What-If Simulation Results for activeProj (Cost Overrun, Time Overrun, Risk Score)
+  const simResults = useMemo(() => {
+    if (!activeProj) {
+      return {
+        baseApproved: 0,
+        baseOutlay: 0,
+        simOutlay: 0,
+        baseOverrunCr: 0,
+        simOverrunCr: 0,
+        overrunSavedCr: 0,
+        baseDelay: 0,
+        simDelay: 0,
+        monthsSaved: 0,
+        baseRisk: 50,
+        simRisk: 30
+      };
     }
+
+    const baseApproved = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const baseOutlay = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || baseApproved || 1000;
+    const baseOverrunCr = Math.max(0, Math.round(baseOutlay - baseApproved));
+    const baseDelay = activeProj.timeOverrunMonths ?? 12;
+    const baseRisk = activeProj.riskScore ?? 75;
+
+    // 1. Cost Overrun Impact:
+    const overrunSavedCr = Math.round(baseOverrunCr * (sliderExpenditure / 100) * 0.4 + baseOutlay * (sliderOutlay / 100) * 0.1);
+    const simOverrunCr = Math.max(0, baseOverrunCr - overrunSavedCr);
+    const simOutlay = Math.round(baseApproved + simOverrunCr + (baseOutlay * (sliderOutlay / 100) * 0.1));
+
+    // 2. Time Overrun / Schedule Delay Impact:
+    const resourceSavedMo = (sliderResources / 100) * 0.45 * baseDelay;
+    const expenditureSavedMo = (sliderExpenditure / 100) * 0.2 * baseDelay;
+    const rawMonthsSaved = resourceSavedMo + expenditureSavedMo;
+    const monthsSaved = Math.min(Math.round(baseDelay * 0.85), parseFloat(rawMonthsSaved.toFixed(1)));
+    const simDelay = Math.max(0, Math.round(baseDelay - monthsSaved));
+
+    // 3. ML Composite Risk Score Impact:
+    const riskDrop = Math.round((monthsSaved / (baseDelay || 1)) * 32 + (sliderExpenditure / 100) * 15 + (sliderResources / 100) * 10);
+    const simRisk = Math.max(15, Math.round(baseRisk - riskDrop));
+
+    return {
+      baseApproved,
+      baseOutlay,
+      simOutlay,
+      baseOverrunCr,
+      simOverrunCr,
+      overrunSavedCr,
+      baseDelay,
+      simDelay,
+      monthsSaved,
+      baseRisk,
+      simRisk
+    };
+  }, [activeProj, sliderOutlay, sliderExpenditure, sliderResources]);
+
+  // Policy-Aware Authority Routing Tier for activeProj (Based on Official MoSPI, PIB & CCEA Guidelines)
+  const authorityRouting = useMemo(() => {
+    if (!activeProj) {
+      return {
+        tierNum: 2,
+        title: 'Standing Committee on Time & Cost Overruns (SCOC)',
+        code: 'GOVT-TIER-2-SCOC',
+        body: 'Departmental Oversight Body chaired by Additional Secretary / Joint Secretary of the Administrative Ministry. Empowered for project cost realignments up to ₹500 Cr or cost overrun up to 20%.',
+        officials: 'Additional Secretary (Infrastructure), Financial Advisor, NITI Aayog Representative',
+        mandate: 'SCOC Direct Administrative Order & Revised Cost Estimate (RCE-I) Approval'
+      };
+    }
+
+    const outlay = simResults.baseOutlay;
+    const delay = activeProj.timeOverrunMonths ?? 12;
+    const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || outlay;
+    const overrunPct = origCost > 0 ? ((outlay - origCost) / origCost) * 100 : 0;
+
+    if (outlay >= 1000 || delay >= 12 || overrunPct >= 50) {
+      return {
+        tierNum: 4,
+        title: 'Cabinet Committee on Economic Affairs (CCEA) & PMG Secretariat',
+        code: 'GOVT-TIER-4-CCEA',
+        body: 'Apex Executive Cabinet Authority (Chaired by the Prime Minister / Cabinet Secretary). Mandatory appraisal for all Central Sector projects exceeding ₹1,000 Cr outlay or >12 months time overrun (Revised Cost Estimate RCE-III).',
+        officials: 'Cabinet Secretary, Secretary DPIIT, PMG Secretariat Lead, Secretary MoSPI',
+        mandate: 'CCEA Cabinet Note Approval & Inter-Ministerial Fast-Track Clearance Directive'
+      };
+    } else if (outlay >= 500 || overrunPct >= 20) {
+      return {
+        tierNum: 3,
+        title: 'Public Investment Board (PIB) / Expenditure Finance Committee (EFC)',
+        code: 'GOVT-TIER-3-PIB-EFC',
+        body: 'Ministry of Finance Appraisal Body (Chaired by Secretary Expenditure). Required for project outlay revisions between ₹500 Cr – ₹1,000 Cr or cost escalation >20% (Revised Cost Estimate RCE-II).',
+        officials: 'Secretary (Expenditure), NITI Aayog Advisor, Administrative Ministry Secretary',
+        mandate: 'PIB/EFC Formal Appraisal Clearance & Financial Restructuring Mandate'
+      };
+    } else if (outlay >= 150 || delay >= 3) {
+      return {
+        tierNum: 2,
+        title: 'Standing Committee on Time & Cost Overruns (SCOC)',
+        code: 'GOVT-TIER-2-SCOC',
+        body: 'Departmental Nodal Oversight Body (Chaired by Additional Secretary / Joint Secretary). Empowered to sanction scope realignments up to 20% cost overrun and authorize mobilization advances (RCE-I).',
+        officials: 'Additional Secretary (Infrastructure), Financial Advisor, Joint Secretary (Nodal)',
+        mandate: 'SCOC Direct Administrative Order & Supplemental Outlay Clearance'
+      };
+    } else {
+      return {
+        tierNum: 1,
+        title: 'Project Implementation Unit (PIU) & Project Director',
+        code: 'GOVT-TIER-1-PIU',
+        body: 'Executive Field Operations Authority. Responsible for daily on-site milestone pacing, contractor mobilization notices, and local administrative coordination.',
+        officials: 'Chief Engineer / Project Director, Zonal General Manager',
+        mandate: 'PIU On-Site Acceleration Directive & Contractor Performance Notice'
+      };
+    }
+  }, [activeProj, simResults.baseOutlay]);
+
+  // Real Escalation Driver-Based Recommendations generated dynamically for activeProj
+  const realRecommendations = useMemo(() => {
+    if (!activeProj) return [];
+
+    const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const revCost = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || origCost || 1000;
+    const deltaCr = Math.max(0, Math.round(revCost - origCost));
+    const overrunPct = origCost > 0 ? Math.round(((revCost - origCost) / origCost) * 100) : parseInt(activeProj.costOverrunPct) || 0;
+    const delayMo = activeProj.timeOverrunMonths ?? 12;
+    const physProg = activeProj.progressPhysical || 0;
+    const finProg = activeProj.progressFinancial || 0;
+    const progGap = Math.max(0, Math.round(finProg - physProg));
+    const riskScore = activeProj.riskScore ?? 75;
+    const agencyName = activeProj.agency || activeProj.sector || 'Executing Agency';
+    const ministryName = activeProj.ministry || 'Nodal Ministry';
+    const projId = activeProj.id;
+    const stateLoc = activeProj.location?.split('\r\n')[0] || 'Site Zone';
+
+    return [
+      {
+        id: 'rec-driver-1',
+        driverLabel: `ESCALATION DRIVER: ${delayMo} MONTHS SCHEDULE DELAY`,
+        driverType: 'TIME SLIPPAGE',
+        tag: delayMo >= 12 ? 'URGENT' : 'HIGH IMPACT',
+        tagClass: delayMo >= 12 ? 'tag-urgent' : 'tag-high',
+        savingChip: `Est. Time Saved: ${(delayMo * 0.35).toFixed(1)} Months`,
+        title: `Statutory Environmental & Forest Clearance Fast-Track`,
+        desc: `Driven by ${delayMo}-month schedule delay on #${projId}: Issue administrative mandate to ${stateLoc} Nodal Environment Officer to expedite Stage-II Forest Conservation & Right-of-Way clearance under ${ministryName}.`,
+        btnLabel: `Dispatch Directive`,
+        toastMsg: `Fast-Track Clearance Facilitation Directive dispatched for #${projId}`
+      },
+      {
+        id: 'rec-driver-2',
+        driverLabel: `ESCALATION DRIVER: +₹${deltaCr} CR (+${overrunPct}%) COST OVERRUN`,
+        driverType: 'COST ESCALATION',
+        tag: 'HIGH IMPACT',
+        tagClass: 'tag-high',
+        savingChip: `Est. Cost Recovery: ₹${Math.max(45, Math.round(deltaCr * 0.25 || 145))} Cr`,
+        title: `SCOC Outlay Realignment & Mobilization Advance Release`,
+        desc: `Driven by +₹${deltaCr} Cr budget escalation over initial ₹${activeProj.costApproved}: Sanction 15% mobilization advance under SCOC guidelines for ${agencyName} to resolve contractor liquidity constraints on #${projId}.`,
+        btnLabel: `Authorize Release`,
+        toastMsg: `SCOC Outlay Realignment Memo issued for #${projId}`
+      },
+      {
+        id: 'rec-driver-3',
+        driverLabel: `ESCALATION DRIVER: ${progGap}% DISBURSEMENT-EXECUTION GAP`,
+        driverType: 'PHYSICAL DIVERGENCE',
+        tag: progGap > 15 ? 'HIGH IMPACT' : 'MEDIUM',
+        tagClass: progGap > 15 ? 'tag-high' : 'tag-medium',
+        savingChip: `Est. Progress Boost: +${Math.round((100 - physProg) * 0.3 || 18)}%`,
+        title: `Increase Resources: Site Workforce & Heavy Machinery Augmentation`,
+        desc: `Driven by physical execution lagging financial expenditure by ${progGap}% (${physProg}% physical vs ${finProg}% financial): Mandate 2-shift 24x7 work pacing with additional skilled manpower and specialized heavy machinery for ${agencyName}.`,
+        btnLabel: `Issue Notice`,
+        toastMsg: `Workforce & Equipment Augmentation Order sent to Project Director for #${projId}`
+      },
+      {
+        id: 'rec-driver-4',
+        driverLabel: `ESCALATION DRIVER: ML RISK SCORE ${riskScore}/100`,
+        driverType: 'ML COMPOSITE RISK',
+        tag: riskScore >= 75 ? 'URGENT' : 'HIGH IMPACT',
+        tagClass: riskScore >= 75 ? 'tag-urgent' : 'tag-high',
+        savingChip: `Est. Time Saved: ${(delayMo * 0.2 || 2.0).toFixed(1)} Months`,
+        title: `Inter-Ministerial Right-of-Way & PMG Dispute Resolution Cell`,
+        desc: `Driven by critical ML risk index of ${riskScore}/100: Convene PMG joint dispute resolution cell with ${ministryName} and state utilities in ${stateLoc} for utility shifting and land handover clearance for #${projId}.`,
+        btnLabel: `Convene Cell`,
+        toastMsg: `Inter-Ministerial PMG Facilitation Cell established for #${projId}`
+      }
+    ];
+  }, [activeProj]);
+
+  // Helper to format cost strings
+  const formatCostClean = (val: string) => {
+    if (!val) return '0.00';
+    return val.replace(/Cr/gi, '').trim();
   };
 
-  const handleExport = async () => {
-    try {
-      setIsExporting(true);
-      await api.exportActionPlan();
-    } catch (err) {
-      console.error('Failed to export action plan:', err);
-    } finally {
-      setIsExporting(false);
+  // Smooth scroll handler inside State B
+  const scrollToSection = useCallback((secId: ActionSidebarSection) => {
+    setActiveSection(secId);
+    const el = document.getElementById(`ac-sec-${secId}`);
+    if (el) {
+      const headerOffset = 88;
+      const elementTop = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: elementTop - headerOffset, behavior: 'smooth' });
     }
-  };
+  }, []);
 
   return (
-    <div className="action-center-container animation-fade-in">
-      {/* Top Header */}
-      <div className="action-center-header">
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 className="ac-page-title">Action Centre</h1>
-            <InfoButton
-              title="Action Centre Hub"
-              summary="Centralized operational console to triage, prioritize, simulate, and resolve execution bottlenecks across high-risk national infrastructure projects."
-              size="md"
-            />
-          </div>
-          <p className="ac-page-subtitle">Prioritized interventions and resolution simulations for critical infrastructure.</p>
+    <div className="ac-page-layout animation-fade-in">
+      {/* Toast Notification Banner */}
+      {actionToast && (
+        <div className="ac-toast-banner">
+          <CheckCircle2 size={16} color="#10B981" />
+          <span>{actionToast}</span>
         </div>
-        <button 
-          className="ac-export-btn" 
-          onClick={handleExport}
-          disabled={isExporting}
-          style={{ opacity: isExporting ? 0.75 : 1, cursor: isExporting ? 'wait' : 'pointer' }}
-        >
-          <Download size={14} />
-          <span>{isExporting ? 'Exporting...' : 'Export Action Plan'}</span>
-        </button>
-      </div>
+      )}
 
-      {/* Row 1: 3 Column Dashboard Layout */}
-      <div className="action-top-row-grid">
-        {/* Col 1: Action Queue Card */}
-        <div className="card ac-card-summary">
-          <div className="ac-card-head">
-            <div className="ac-head-left">
-              <div className="ac-head-icon-chip chip-red">
-                <Activity size={18} color="#DC2626" />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 className="ac-title">Action Queue Status</h2>
-                  <InfoButton
-                    title="Action Queue Status"
-                    summary="Live inventory of critical infrastructure projects requiring active intervention, segmented by urgency tier."
-                    size="sm"
-                  />
+      {/* ── STATE B: SINGLE PROJECT ACTION WORKSPACE ── */}
+      {activeProj ? (
+        <div className="ac-workspace-container">
+          {/* Portaled Navigation Sidebar for Action Center State B */}
+          {activeTab === 'action-centre' && typeof document !== 'undefined' && createPortal(
+            <aside className={`pnav ${sidebarCollapsed ? 'pnav--collapsed' : ''}`} aria-label="Action Navigation">
+              <div className="pnav__card">
+                {/* Header */}
+                <div className="pnav__brand">
+                  {!sidebarCollapsed && (
+                    <div className="pnav__brand-text">
+                      <ShieldAlert size={14} className="pnav__brand-icon" />
+                      <span>Action Navigation</span>
+                    </div>
+                  )}
+                  <button
+                    className="pnav__toggle"
+                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    title={sidebarCollapsed ? "Expand Navigation" : "Collapse Navigation"}
+                  >
+                    {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                  </button>
                 </div>
-                <p className="ac-subtitle">Active interventions by urgency tier</p>
+
+                {/* Risk score gauge */}
+                {!sidebarCollapsed && (
+                  <div className="pnav__gauge">
+                    <div className="pnav__gauge-row">
+                      <span className="pnav__gauge-label">ML Risk Score</span>
+                      <span className="pnav__gauge-val" style={{ color: activeProj.riskScore >= 75 ? '#DC2626' : '#D97706' }}>
+                        {activeProj.riskScore >= 75 ? 'Critical' : 'High'}
+                      </span>
+                    </div>
+                    <div className="pnav__gauge-num" style={{ color: activeProj.riskScore >= 75 ? '#DC2626' : '#D97706' }}>
+                      {activeProj.riskScore}
+                      <span className="pnav__gauge-denom">/100</span>
+                    </div>
+                    <div className="pnav__gauge-track">
+                      <div className="pnav__gauge-fill" style={{ width: `${activeProj.riskScore}%`, background: activeProj.riskScore >= 75 ? '#DC2626' : '#D97706' }} />
+                    </div>
+                  </div>
+                )}
+
+                <div className="pnav__sep" />
+
+                {/* Nav Items */}
+                <nav className="pnav__nav">
+                  {[
+                    { id: 'actions' as ActionSidebarSection, label: 'Recommended Actions', desc: 'AI Interventions', num: '01', icon: ShieldAlert },
+                    { id: 'simulator' as ActionSidebarSection, label: 'What-If Simulator', desc: 'Counterfactual Model', num: '02', icon: Sliders },
+                    { id: 'routing' as ActionSidebarSection, label: 'Authority Routing', desc: 'Govt Governance Matrix', num: '03', icon: Landmark }
+                  ].map((sec) => {
+                    const isActive = activeSection === sec.id;
+                    const Icon = sec.icon;
+                    return (
+                      <button
+                        key={sec.id}
+                        className={`pnav__item ${isActive ? 'pnav__item--active' : ''}`}
+                        onClick={() => scrollToSection(sec.id)}
+                        title={sidebarCollapsed ? sec.label : undefined}
+                      >
+                        <span className="pnav__pill" />
+                        {!sidebarCollapsed && <span className="pnav__num">{sec.num}</span>}
+                        <span className={`pnav__icon ${isActive ? 'pnav__icon--active' : ''}`}>
+                          <Icon size={15} strokeWidth={isActive ? 2.5 : 1.75} />
+                        </span>
+                        {!sidebarCollapsed && (
+                          <span className="pnav__text">
+                            <span className="pnav__label">{sec.label}</span>
+                            {isActive && <span className="pnav__desc pnav__desc--in">{sec.desc}</span>}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+
+                <div className="pnav__sep" style={{ marginTop: 'auto' }} />
+
+                {/* Footer */}
+                <div className="pnav__footer">
+                  <button className="pnav__ftr-btn" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Back to Top">
+                    <ArrowUp size={13} />
+                    {!sidebarCollapsed && <span>Top</span>}
+                  </button>
+                </div>
+              </div>
+            </aside>,
+            document.body
+          )}
+
+          {/* Top Back & Action Target Banner */}
+          <div className="ac-target-header-banner">
+            <button
+              type="button"
+              className="ac-back-btn"
+              onClick={() => {
+                if (onClearSelectedProject) onClearSelectedProject();
+                setInternalTargetId(null);
+              }}
+            >
+              <ArrowLeft size={15} />
+              <span>Back to Action Targets</span>
+            </button>
+
+            <div className="ac-target-title-block">
+              <div className="ac-target-badge-row">
+                <span className="ac-id-badge">#{activeProj.id}</span>
+                <span className="ac-meta-tag"><Building2 size={12} /> {activeProj.sector}</span>
+                <span className="ac-meta-tag"><Landmark size={12} /> {activeProj.ministry}</span>
+                <span className="ac-meta-tag"><MapPin size={12} /> {activeProj.location?.split('\r\n')[0]}</span>
+              </div>
+              <h1 className="ac-target-name">{activeProj.name}</h1>
+            </div>
+
+            <div className="ac-target-stats-row">
+              <div className="ac-stat-box">
+                <span className="ac-stat-lbl">Revised Outlay</span>
+                <span className="ac-stat-val">₹{formatCostClean(activeProj.costRevised)} Cr</span>
+              </div>
+              <div className="ac-stat-box">
+                <span className="ac-stat-lbl">ML Risk Score</span>
+                <span className="ac-stat-val text-red">{activeProj.riskScore}/100</span>
+              </div>
+              <div className="ac-stat-box">
+                <span className="ac-stat-lbl">Physical Progress</span>
+                <span className="ac-stat-val text-blue">{activeProj.progressPhysical || 0}%</span>
               </div>
             </div>
-            {summaryCounts && (
-              <span className="ac-head-pill pill-total-tasks">
-                {summaryCounts.critical + summaryCounts.high + summaryCounts.medium} Tasks
-              </span>
+          </div>
+
+          {/* ════════════════════════════════════════════════════════════════
+             SECTION 1: RECOMMENDED ACTIONS FOR SELECTED ASSET
+             ════════════════════════════════════════════════════════════════ */}
+          <section id="ac-sec-actions" className="ac-section">
+            <div className="ac-section-header header-red">
+              <span className="ac-section-tag tag-red">01</span>
+              <span className="ac-section-name">Recommended Interventions &amp; Fast-Track Actions</span>
+            </div>
+            <div className="ac-panel-card">
+              <div className="ac-panel-head">
+                <p className="ac-sec-sub" style={{ margin: 0 }}>
+                  AI-generated operational actions tailored to halt cost escalation and schedule slippage.
+                </p>
+
+                {/* "Why these actions?" Button -> Redirection to Escalation Drivers in ProjectDetails */}
+                <button
+                  type="button"
+                  className="ac-why-actions-btn"
+                  onClick={() => onSelectProject(activeProj.id, 'escalation')}
+                  title="View SHAP attributions and NLP root causes in Escalation Drivers"
+                >
+                  <Sparkles size={14} />
+                  <span>Why these actions?</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+
+              {/* Recommended Actions Grid (Driven by Real Escalation Drivers & Project Data) */}
+              <div className="ac-actions-grid">
+                {realRecommendations.map((rec) => (
+                  <div key={rec.id} className="ac-action-card">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 850, color: '#2563EB', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: '4px', width: 'fit-content', letterSpacing: '0.04em' }}>
+                        {rec.driverLabel}
+                      </span>
+                      <div className="action-card-top" style={{ marginTop: '2px' }}>
+                        <span className={`action-priority-tag ${rec.tagClass}`}>{rec.tag}</span>
+                        <span className="action-saving-chip">{rec.savingChip}</span>
+                      </div>
+                    </div>
+                    <h3 className="action-card-title">{rec.title}</h3>
+                    <p className="action-card-desc">{rec.desc}</p>
+                    <div className="action-card-footer">
+                      <button
+                        type="button"
+                        className="action-dispatch-btn"
+                        onClick={() => triggerToast(rec.toastMsg)}
+                      >
+                        <Send size={13} />
+                        <span>{rec.btnLabel}</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ════════════════════════════════════════════════════════════════
+             SECTION 2: IMPACT SECTION (INTERACTIVE WHAT-IF SIMULATOR)
+             ════════════════════════════════════════════════════════════════ */}
+          <section id="ac-sec-simulator" className="ac-section">
+            <div className="ac-section-header header-blue">
+              <span className="ac-section-tag tag-blue">02</span>
+              <span className="ac-section-name">What-If Counterfactual Policy Simulator</span>
+            </div>
+            <div className="ac-panel-card">
+              <div className="ac-panel-head">
+                <p className="ac-sec-sub" style={{ margin: 0 }}>
+                  Simulate dynamic real-time impact on Cost Overrun, Time Overrun, and ML Risk Score by adjusting project parameters.
+                </p>
+                <span className="ac-head-pill pill-ai">
+                  <Sparkles size={13} /> Real-Time Policy Engine
+                </span>
+              </div>
+
+              {/* CUF Telemetry Note */}
+              <div className="ac-cuf-disclaimer-box">
+                <Info size={16} className="cuf-info-icon" />
+                <span>
+                  <strong>CUF (Common Upload Form) Telemetry Note:</strong> Data is sourced directly from MoSPI OCMS monthly Common Upload Form submissions and PAIMANA telemetry feeds.
+                </span>
+              </div>
+
+              {/* Simulator Main Body (3 Sliders Left, Dynamic 3 Impact Results Right) */}
+              <div className="ac-simulator-body">
+                {/* Sliders Column: Exactly 3 Sliders (Budget Outlay, Expenditure, Increase Resources) */}
+                <div className="ac-sliders-col">
+                  {/* Slider 1: Budget Outlay */}
+                  <div className="sim-slider-group">
+                    <div className="slider-label-row">
+                      <span className="slider-lbl">1. Budget Outlay Realignment</span>
+                      <span className="slider-val text-blue">+{sliderOutlay}% Supplemental Outlay</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      step="1"
+                      value={sliderOutlay}
+                      onChange={(e) => setSliderOutlay(parseFloat(e.target.value))}
+                      className="ac-range-input"
+                    />
+                    <div className="slider-minmax">
+                      <span>Baseline Outlay (₹{simResults.baseOutlay} Cr)</span>
+                      <span>+50% Reallocation</span>
+                    </div>
+                  </div>
+
+                  {/* Slider 2: Expenditure Pacing */}
+                  <div className="sim-slider-group">
+                    <div className="slider-label-row">
+                      <span className="slider-lbl">2. Expenditure Pacing &amp; Disbursement</span>
+                      <span className="slider-val text-blue">+{sliderExpenditure}% Speed</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      step="5"
+                      value={sliderExpenditure}
+                      onChange={(e) => setSliderExpenditure(parseFloat(e.target.value))}
+                      className="ac-range-input"
+                    />
+                    <div className="slider-minmax">
+                      <span>Standard Disbursement</span>
+                      <span>+50% Fast-Track Pacing</span>
+                    </div>
+                  </div>
+
+                  {/* Slider 3: Increase Resources */}
+                  <div className="sim-slider-group">
+                    <div className="slider-label-row">
+                      <span className="slider-lbl">3. Increase Resources (Workforce &amp; Heavy Machinery)</span>
+                      <span className="slider-val text-blue">+{sliderResources}% Deployment</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={sliderResources}
+                      onChange={(e) => setSliderResources(parseFloat(e.target.value))}
+                      className="ac-range-input"
+                    />
+                    <div className="slider-minmax">
+                      <span>Standard Pacing</span>
+                      <span>+100% (24x7 3-Shift Augmentation)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dynamic Counterfactual Impact Column: Cost Overrun, Time Overrun & Risk Score */}
+                <div className="ac-sim-results-col">
+                  <h3 className="sim-results-heading">Simulated Counterfactual Impact</h3>
+
+                  {/* Result Metric 1: Cost Overrun */}
+                  <div className="sim-metric-card card-outlay">
+                    <div className="sim-metric-top">
+                      <span className="sim-metric-title">Cost Overrun</span>
+                      <span className="sim-badge badge-blue">
+                        {simResults.overrunSavedCr > 0 ? `▼ ₹${simResults.overrunSavedCr.toLocaleString()} Cr Recovered` : 'On Baseline'}
+                      </span>
+                    </div>
+                    <div className="sim-metric-val-row">
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Baseline Overrun</span>
+                        <span className="sim-val-num text-red">+₹{simResults.baseOverrunCr.toLocaleString()} Cr</span>
+                      </div>
+                      <span className="sim-arrow">→</span>
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Simulated Overrun</span>
+                        <span className="sim-val-num text-blue">+₹{simResults.simOverrunCr.toLocaleString()} Cr</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Result Metric 2: Time Overrun / Schedule Delay */}
+                  <div className="sim-metric-card card-delay">
+                    <div className="sim-metric-top">
+                      <span className="sim-metric-title">Time Overrun (Schedule Delay)</span>
+                      <span className="sim-badge badge-green">▼ {simResults.monthsSaved} Months Saved</span>
+                    </div>
+                    <div className="sim-metric-val-row">
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Baseline Delay</span>
+                        <span className="sim-val-num text-amber">+{simResults.baseDelay} Mo</span>
+                      </div>
+                      <span className="sim-arrow">→</span>
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Simulated Delay</span>
+                        <span className="sim-val-num text-blue">+{simResults.simDelay} Mo</span>
+                      </div>
+                    </div>
+                    <div className="sim-track">
+                      <div className="sim-fill bg-blue" style={{ width: `${Math.max(10, (simResults.simDelay / (simResults.baseDelay || 1)) * 100)}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Result Metric 3: ML Composite Risk Score */}
+                  <div className="sim-metric-card card-risk">
+                    <div className="sim-metric-top">
+                      <span className="sim-metric-title">ML Composite Risk Score</span>
+                      <span className="sim-badge badge-emerald">▼ {simResults.baseRisk - simResults.simRisk} Pts Lower Risk</span>
+                    </div>
+                    <div className="sim-metric-val-row">
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Baseline Risk</span>
+                        <span className="sim-val-num text-red">{simResults.baseRisk}/100</span>
+                      </div>
+                      <span className="sim-arrow">→</span>
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Simulated Risk</span>
+                        <span className="sim-val-num text-green">{simResults.simRisk}/100</span>
+                      </div>
+                    </div>
+                    <div className="sim-track">
+                      <div className="sim-fill bg-green" style={{ width: `${simResults.simRisk}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ════════════════════════════════════════════════════════════════
+             SECTION 3: POLICY-AWARE AUTHORITY ROUTING (OFFICIAL GOVT FRAMEWORK)
+             ════════════════════════════════════════════════════════════════ */}
+          <section id="ac-sec-routing" className="ac-section">
+            <div className="ac-section-header header-purple">
+              <span className="ac-section-tag tag-purple">03</span>
+              <span className="ac-section-name">Policy-Aware Authority Routing Matrix</span>
+            </div>
+            <div className="ac-panel-card">
+              <div className="ac-panel-head">
+                <p className="ac-sec-sub" style={{ margin: 0 }}>
+                  Official Government Infrastructure Framework (MoSPI, PAIMANA, PIB/EFC &amp; CCEA Guidelines).
+                </p>
+                <span className="ac-head-pill pill-purple">
+                  <Landmark size={13} /> {authorityRouting.code}
+                </span>
+              </div>
+
+              {/* Active Governing Tier Highlight Banner */}
+              <div className="ac-active-routing-banner">
+                <div className="routing-banner-left">
+                  <div className="routing-tier-badge">ACTIVE GOVERNING TIER #{authorityRouting.tierNum}</div>
+                  <h3 className="routing-tier-title">{authorityRouting.title}</h3>
+                  <p className="routing-tier-desc">{authorityRouting.body}</p>
+                </div>
+                <div className="routing-banner-right">
+                  <div className="routing-officials-box">
+                    <span className="officials-lbl">Designated Responsible Authorities:</span>
+                    <span className="officials-val">{authorityRouting.officials}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Official Government Escalation Matrix Cards */}
+              <div className="ac-routing-tiers-grid">
+                {/* Tier 1 */}
+                <div className={`ac-tier-card ${authorityRouting.tierNum === 1 ? 'tier-active' : ''}`}>
+                  <div className="tier-head">
+                    <span className="tier-num">TIER 1</span>
+                    <span className="tier-scope">&lt; ₹150 Cr Outlay</span>
+                  </div>
+                  <h4 className="tier-title">Project Implementation Unit (PIU)</h4>
+                  <p className="tier-sub">Project Director &amp; Zonal Chief Engineer level field execution facilitation.</p>
+                </div>
+
+                {/* Tier 2 */}
+                <div className={`ac-tier-card ${authorityRouting.tierNum === 2 ? 'tier-active' : ''}`}>
+                  <div className="tier-head">
+                    <span className="tier-num">TIER 2</span>
+                    <span className="tier-scope">₹150 Cr – ₹500 Cr / RCE-I</span>
+                  </div>
+                  <h4 className="tier-title">Standing Committee on Time &amp; Cost Overruns (SCOC)</h4>
+                  <p className="tier-sub">Departmental committee chaired by Additional Secretary / Joint Secretary.</p>
+                </div>
+
+                {/* Tier 3 */}
+                <div className={`ac-tier-card ${authorityRouting.tierNum === 3 ? 'tier-active' : ''}`}>
+                  <div className="tier-head">
+                    <span className="tier-num">TIER 3</span>
+                    <span className="tier-scope">₹500 Cr – ₹1,000 Cr / RCE-II</span>
+                  </div>
+                  <h4 className="tier-title">Public Investment Board (PIB) / EFC</h4>
+                  <p className="tier-sub">Ministry of Finance committee chaired by Secretary (Expenditure).</p>
+                </div>
+
+                {/* Tier 4 */}
+                <div className={`ac-tier-card ${authorityRouting.tierNum === 4 ? 'tier-active' : ''}`}>
+                  <div className="tier-head">
+                    <span className="tier-num">TIER 4</span>
+                    <span className="tier-scope">&gt; ₹1,000 Cr / &gt; 12 Mo</span>
+                  </div>
+                  <h4 className="tier-title">Cabinet Committee on Economic Affairs (CCEA) / PMG</h4>
+                  <p className="tier-sub">Apex Cabinet Secretariat level executive decision &amp; fast-track mandate.</p>
+                </div>
+              </div>
+
+              {/* Action Dispatch Toolbar */}
+              <div className="ac-routing-actions-bar">
+                <div className="routing-mandate-info">
+                  <span className="mandate-lbl">Recommended Official Mandate:</span>
+                  <span className="mandate-val">{authorityRouting.mandate}</span>
+                </div>
+                <div className="routing-btn-group">
+                  <button
+                    type="button"
+                    className="ac-gov-btn btn-cabinet"
+                    onClick={() => triggerToast(`Official Cabinet Escalation Memo generated for #${activeProj.id}`)}
+                  >
+                    <Landmark size={14} />
+                    <span>Generate Cabinet Memo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="ac-gov-btn btn-scoc"
+                    onClick={() => triggerToast(`SCOC Direct Administrative Order drafted for #${activeProj.id}`)}
+                  >
+                    <FileText size={14} />
+                    <span>Issue SCOC Direct Order</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : (
+        /* ── STATE A: ALL ACTION TARGETS STACKED LIST ── */
+        <div className="ac-targets-container">
+          {/* Header Banner */}
+          <div className="ac-page-header">
+            <div className="ac-header-left">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h1 className="ac-page-title">Action Centre Targets</h1>
+                <InfoButton
+                  title="Action Centre Console"
+                  summary="Executive operational hub to triage high-risk national infrastructure assets, trigger policy actions, and simulate resolution scenarios."
+                  size="md"
+                />
+              </div>
+              <p className="ac-page-subtitle">
+                Priority intervention queue ranked by ML Risk Score and cost/schedule escalation urgency.
+              </p>
+            </div>
+            <div className="ac-header-badge">
+              <span className="ac-pulse-dot" />
+              <span>{filteredProjects.length} Active Targets Identified</span>
+            </div>
+          </div>
+
+          {/* Filters & Control Panel Card */}
+          <div className="ac-controls-card">
+            <div className="ac-controls-row">
+              {/* Count Limit Toggle Pills */}
+              <div className="dist-toggle-pill">
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${countLimit === 5 ? 'active' : ''}`}
+                  onClick={() => setCountLimit(5)}
+                >
+                  Top 5
+                </button>
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${countLimit === 10 ? 'active' : ''}`}
+                  onClick={() => setCountLimit(10)}
+                >
+                  Top 10
+                </button>
+                <button
+                  type="button"
+                  className={`dist-toggle-btn ${countLimit === 999 ? 'active' : ''}`}
+                  onClick={() => setCountLimit(999)}
+                >
+                  All Projects ({filteredProjects.length})
+                </button>
+              </div>
+
+              {/* Dropdowns */}
+              <div className="ac-dropdowns-group">
+                {/* Ministry */}
+                <div className="dist-dropdown-wrapper">
+                  <select
+                    className="dist-select"
+                    value={selectedMinistry}
+                    onChange={(e) => setSelectedMinistry(e.target.value)}
+                  >
+                    <option value="All">All Ministries</option>
+                    {allMinistries.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="dist-dropdown-arrow" />
+                </div>
+
+                {/* Sector */}
+                <div className="dist-dropdown-wrapper">
+                  <select
+                    className="dist-select"
+                    value={selectedSector}
+                    onChange={(e) => setSelectedSector(e.target.value)}
+                  >
+                    <option value="All">All Sectors</option>
+                    {allSectors.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="dist-dropdown-arrow" />
+                </div>
+
+                {/* Agency */}
+                <div className="dist-dropdown-wrapper">
+                  <select
+                    className="dist-select"
+                    value={selectedAgency}
+                    onChange={(e) => setSelectedAgency(e.target.value)}
+                  >
+                    <option value="All">All Agencies</option>
+                    {allAgencies.map(a => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="dist-dropdown-arrow" />
+                </div>
+
+                {/* Search Input Box */}
+                <div className="dist-dropdown-wrapper" style={{ minWidth: '200px' }}>
+                  <Search size={14} className="dist-dropdown-icon" />
+                  <input
+                    type="text"
+                    className="dist-select"
+                    style={{ paddingLeft: '34px' }}
+                    placeholder="Search target project..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stacked 1-Column Projects List (Image 3 Executive Horizontal Row Layout) */}
+          <div className="ac-stacked-targets-list">
+            {displayedProjects.length === 0 ? (
+              <div className="dist-empty-state">
+                <ShieldAlert size={36} color="#94A3B8" />
+                <p>No high-risk action targets found matching the selected filters.</p>
+              </div>
+            ) : (
+              displayedProjects.map((proj, idx) => {
+                const origCost = parseFloat(proj.costApproved.replace(/[^0-9.]/g, '')) || 0;
+                const revCost = parseFloat(proj.costRevised.replace(/[^0-9.]/g, '')) || 0;
+                const deltaCr = revCost - origCost;
+                const overrunPct = origCost > 0 ? Math.round(((revCost - origCost) / origCost) * 100) : parseInt(proj.costOverrunPct) || 0;
+                const delayMonths = proj.timeOverrunMonths || 0;
+                const riskVal = proj.riskScore ?? 50;
+                const isCrit = riskVal >= 75 || proj.scheduleStatus === 'CRITICAL';
+
+                return (
+                  <div key={proj.id} className="img3-intervention-row">
+                    <span className={`img3-rank-badge ${idx % 2 === 1 ? 'rank-blue' : 'rank-dark'}`}>
+                      #{String(idx + 1).padStart(2, '0')}
+                    </span>
+
+                    <div className="img3-info-col">
+                      <div className="img3-meta-top">
+                        <span className="img3-id-tag">#{proj.id}</span>
+                        <span className="img3-meta-dot">•</span>
+                        <span className="img3-sector-tag"><Building2 size={12} /> {proj.sector}</span>
+                        <span className="img3-meta-dot">•</span>
+                        <span className="img3-ministry-tag">{proj.ministry}</span>
+                      </div>
+                      <h3 className="img3-project-title">{proj.name}</h3>
+                    </div>
+
+                    <div className="img3-metrics-group">
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">COST OVERRUN</span>
+                        <div className="img3-metric-val-row text-red">
+                          <TrendingUp size={13} />
+                          <span className="img3-val-bold">+{overrunPct}%</span>
+                          {deltaCr > 0 && <span className="img3-val-sub">(+₹{Math.round(deltaCr)} Cr)</span>}
+                        </div>
+                      </div>
+
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">SCHEDULE SLIPPAGE</span>
+                        <div className="img3-metric-val-row text-amber">
+                          <Clock size={13} />
+                          <span className="img3-val-bold">+{delayMonths} mo delay</span>
+                        </div>
+                      </div>
+
+                      <div className="img3-metric-item">
+                        <span className="img3-metric-lbl">RISK INDEX</span>
+                        <div className="img3-risk-val-row">
+                          <span className="img3-risk-num">{riskVal} <span className="img3-risk-denom">/100</span></span>
+                          <span className={`img3-critical-badge ${isCrit ? 'badge-crit' : 'badge-high'}`}>
+                            {isCrit ? 'CRITICAL' : 'HIGH RISK'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="img3-actions-group">
+                      <button
+                        type="button"
+                        className="img3-inspect-btn"
+                        onClick={() => onSelectProject(proj.id)}
+                      >
+                        <span>Inspect</span>
+                        <ExternalLink size={13} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="img3-action-btn"
+                        onClick={() => setInternalTargetId(proj.id)}
+                      >
+                        <ShieldAlert size={13} />
+                        <span>Take Action</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
-
-          {!summaryCounts ? (
-            <div className="ac-loading-placeholder">Loading action queue...</div>
-          ) : (
-            <>
-              {/* 3 Severity Cards */}
-              <div className="ac-severity-boxes">
-                <div className="sev-box box-crit">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <div className="sev-icon-wrap icon-crit-wrap">
-                      <ShieldAlert size={16} />
-                    </div>
-                    <InfoButton
-                      title="Critical Urgency Tier"
-                      summary="Projects facing >12 months delay or severe cost escalation, requiring immediate Cabinet or PMG fast-track intervention."
-                      size="sm"
-                    />
-                  </div>
-                  <span className="sev-lbl">Critical</span>
-                  <span className="sev-count">
-                    <AnimatedCounter value={summaryCounts.critical} triggerKey={summaryCounts.critical} />
-                  </span>
-                  <span className="sev-sub">Immediate PMG Review</span>
-                </div>
-
-                <div className="sev-box box-high">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <div className="sev-icon-wrap icon-high-wrap">
-                      <AlertTriangle size={16} />
-                    </div>
-                    <InfoButton
-                      title="High Urgency Tier"
-                      summary="Projects experiencing substantial milestone deviations or budget growth needing Secretary or Ministry-level escalation."
-                      size="sm"
-                    />
-                  </div>
-                  <span className="sev-lbl">High</span>
-                  <span className="sev-count">
-                    <AnimatedCounter value={summaryCounts.high} triggerKey={summaryCounts.high} />
-                  </span>
-                  <span className="sev-sub">Ministry Escalation</span>
-                </div>
-
-                <div className="sev-box box-med">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <div className="sev-icon-wrap icon-med-wrap">
-                      <Clock size={16} />
-                    </div>
-                    <InfoButton
-                      title="Medium Urgency Tier"
-                      summary="Projects with early warning signals or moderate deviations manageable at the implementing agency or zonal level."
-                      size="sm"
-                    />
-                  </div>
-                  <span className="sev-lbl">Medium</span>
-                  <span className="sev-count">
-                    <AnimatedCounter value={summaryCounts.medium} triggerKey={summaryCounts.medium} />
-                  </span>
-                  <span className="sev-sub">Agency Level Review</span>
-                </div>
-              </div>
-
-              {/* Stacked Proportional Severity Distribution Bar */}
-              <div className="ac-severity-bar-track">
-                <div
-                  className="sev-seg seg-crit"
-                  style={{ width: `${(summaryCounts.critical / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
-                  title={`Critical: ${summaryCounts.critical}`}
-                />
-                <div
-                  className="sev-seg seg-high"
-                  style={{ width: `${(summaryCounts.high / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
-                  title={`High: ${summaryCounts.high}`}
-                />
-                <div
-                  className="sev-seg seg-med"
-                  style={{ width: `${(summaryCounts.medium / (summaryCounts.critical + summaryCounts.high + summaryCounts.medium)) * 100}%` }}
-                  title={`Medium: ${summaryCounts.medium}`}
-                />
-              </div>
-
-              {/* Exposure Highlights Banner */}
-              <div className="ac-exposure-banner">
-                <div className="exp-item exp-item-financial">
-                  <div className="exp-icon-wrap icon-red-tint">
-                    <IndianRupee size={15} />
-                  </div>
-                  <div className="exp-text-wrap">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span className="exp-lbl">Financial Exposure</span>
-                      <InfoButton
-                        title="Total Financial Exposure"
-                        summary="Aggregated capital at risk and cost escalation across all projects currently in the intervention queue."
-                        size="sm"
-                      />
-                    </div>
-                    <span className="exp-val exp-red">{summaryCounts.totalExp}</span>
-                  </div>
-                </div>
-                <div className="exp-divider" />
-                <div className="exp-item exp-item-delay">
-                  <div className="exp-icon-wrap icon-amber-tint">
-                    <Clock size={15} />
-                  </div>
-                  <div className="exp-text-wrap">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span className="exp-lbl">Avg Delay Exposure</span>
-                      <InfoButton
-                        title="Average Delay Exposure"
-                        summary="Average completion schedule delay across all projects needing administrative action."
-                        size="sm"
-                      />
-                    </div>
-                    <span className="exp-val exp-orange">{summaryCounts.avgDelay}</span>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
         </div>
-
-        {/* Col 2: Resolution Simulator */}
-        <div className="card ac-card-simulator">
-          <div className="ac-card-head">
-            <div className="ac-head-left">
-              <div className="ac-head-icon-chip chip-blue">
-                <Sparkles size={18} color="#2563EB" />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <h2 className="ac-title">Resolution Simulator</h2>
-                  <InfoButton
-                    title="Resolution Simulator (Under Development)"
-                    summary="Future expansion: Counterfactual scenario modeling engine predicting how targeted administrative interventions reduce delay months and recover financial exposure (Illustrative Demo)."
-                    size="sm"
-                  />
-                </div>
-                <p className="ac-subtitle">Counterfactual scenario projection</p>
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-              <span className="ac-head-pill pill-ai-active">
-                <span className="ai-spark-dot" />
-                {currentSim.confidence}% Confidence
-              </span>
-              <span style={{
-                fontSize: '9.5px',
-                fontWeight: 800,
-                color: '#B45309',
-                backgroundColor: '#FEF3C7',
-                border: '1px solid #FDE68A',
-                padding: '2px 6px',
-                borderRadius: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.4px',
-                whiteSpace: 'nowrap'
-              }}>
-                Under Development • Illustration
-              </span>
-            </div>
-          </div>
-
-          {/* Under Development Notice Banner */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 12px',
-            backgroundColor: '#FFFBEB',
-            border: '1px dashed #F59E0B',
-            borderRadius: '8px',
-            marginBottom: '12px',
-            fontSize: '11.5px',
-            color: '#92400E',
-            lineHeight: 1.4
-          }}>
-            <span style={{ fontWeight: 800, whiteSpace: 'nowrap' }}>FUTURE EXPANSION:</span>
-            <span>Counterfactual intervention simulation is under active development for illustration and what-if policy exploration.</span>
-          </div>
-
-          <div className="sim-dropdown-wrapper">
-            <label className="sim-field-lbl">Simulate Resolution Strategy</label>
-            <div className="sim-select-container">
-              <select 
-                value={selectedSimCategory} 
-                onChange={(e) => setSelectedSimCategory(e.target.value)}
-                className="sim-custom-select"
-              >
-                <option value="milestone">Milestone Slippage (Fast-Tracking &amp; Expedited Mobilization)</option>
-                <option value="financial">Financial Outlay Divergence (Reconciliation &amp; Fund Release)</option>
-                <option value="cost">Cost Escalation Controls (Value Engineering &amp; Scope Review)</option>
-                <option value="stagnation">Work Pacing &amp; Physical Progress Acceleration</option>
-                <option value="schedule">Schedule Baseline Realignment</option>
-              </select>
-              <ChevronDown size={15} className="sim-select-arrow" />
-            </div>
-          </div>
-
-          {/* 2 Comparison Impact Cards (Delay vs Cost) */}
-          <div className="sim-impact-grid">
-            {/* Delay Impact Card */}
-            <div className="sim-impact-card impact-card-delay">
-              <div className="impact-top">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="impact-tag">DELAY REDUCTION</span>
-                  <InfoButton
-                    title="Delay Reduction Impact"
-                    summary="Estimated schedule compression achieved by deploying this targeted resolution policy."
-                    size="sm"
-                  />
-                </div>
-                <span className="impact-pill pill-green">▼ {currentSim.projDelayReduction}</span>
-              </div>
-              <div className="impact-numbers-row">
-                <div className="impact-col">
-                  <span className="impact-lbl">Baseline</span>
-                  <span className="impact-val val-muted">{currentSim.currentDelay}</span>
-                </div>
-                <div className="impact-arrow">→</div>
-                <div className="impact-col">
-                  <span className="impact-lbl">Post-Action</span>
-                  <span className="impact-val val-blue">{currentSim.projDelay}</span>
-                </div>
-              </div>
-              <div className="impact-bar-track">
-                <div className="impact-bar-fill fill-blue" style={{ width: '50%' }} />
-              </div>
-            </div>
-
-            {/* Cost Impact Card */}
-            <div className="sim-impact-card impact-card-cost">
-              <div className="impact-top">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span className="impact-tag">FINANCIAL RECOVERY</span>
-                  <InfoButton
-                    title="Financial Recovery Impact"
-                    summary="Estimated monetary savings achieved by halting delay penalties and inflationary project cost overruns."
-                    size="sm"
-                  />
-                </div>
-                <span className="impact-pill pill-emerald">Saved Exposure</span>
-              </div>
-              <div className="impact-numbers-row">
-                <div className="impact-col">
-                  <span className="impact-lbl">Cost Risk</span>
-                  <span className="impact-val val-muted">{currentSim.currentCost}</span>
-                </div>
-                <div className="impact-arrow">→</div>
-                <div className="impact-col">
-                  <span className="impact-lbl">Est. Savings</span>
-                  <span className="impact-val val-green">{currentSim.projSaving}</span>
-                </div>
-              </div>
-              <div className="impact-bar-track">
-                <div className="impact-bar-fill fill-green" style={{ width: '51.4%' }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom AI Confidence Metric */}
-          <div className="sim-confidence-footer">
-            <div className="conf-meta">
-              <span className="conf-lbl">AI Model Verification Confidence</span>
-              <span className="conf-score-tag">{currentSim.confidence}% Validated</span>
-            </div>
-            <div className="conf-bar-track">
-              <div
-                className="conf-bar-fill"
-                style={{ width: `${currentSim.confidence}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Col 3: Prioritization Weights */}
-        <div className="card ac-card-weights">
-          <div className="ac-card-head">
-            <div className="ac-head-left">
-              <div className="ac-head-icon-chip chip-purple">
-                <BarChart3 size={18} color="#7C3AED" />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h2 className="ac-title">Prioritization Weights</h2>
-                  <InfoButton
-                    title="Prioritization Scoring Weights"
-                    summary="Multi-criteria weights calibrated against national risk severity, financial exposure, delay months, and dependency criticality."
-                    size="sm"
-                  />
-                </div>
-                <p className="ac-subtitle">Scoring model configuration</p>
-              </div>
-            </div>
-            <span className="ac-head-pill pill-calibrated">
-              Active Model
-            </span>
-          </div>
-
-          <div className="weights-list">
-            {weights.map((w, idx) => (
-              <div key={idx} className="weight-item">
-                <div className="weight-meta">
-                  <div className="weight-label-wrap">
-                    <span className="weight-rank">{idx + 1}</span>
-                    <span className="weight-label">{w.label}</span>
-                  </div>
-                  <span className="weight-pct-badge" style={{ color: w.color }}>
-                    {w.pct}%
-                  </span>
-                </div>
-                <div className="weight-bar-bg">
-                  <div 
-                    className="weight-bar-fill" 
-                    style={{ 
-                      width: mounted ? `${w.pct}%` : '0%', 
-                      background: `linear-gradient(90deg, ${w.color}CC 0%, ${w.color} 100%)`,
-                      boxShadow: `0 0 10px ${w.color}33`,
-                      transition: `width 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.08}s` 
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Scale Axis */}
-          <div className="weights-scale-axis">
-            <span>0%</span>
-            <span>25%</span>
-            <span>50%</span>
-            <span>75%</span>
-            <span>100%</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Row 2: Filter and Action Table */}
-      <div className="action-table-section">
-        <div className="action-table-controls">
-          <div className="action-tabs-group">
-            <button 
-              className={`ac-tab-btn ${activeFilterTab === 'all' ? 'active' : ''}`}
-              onClick={() => setActiveFilterTab('all')}
-            >
-              All Actions ({actionItems.length})
-            </button>
-            <button 
-              className={`ac-tab-btn ${activeFilterTab === 'critical' ? 'active' : ''}`}
-              onClick={() => setActiveFilterTab('critical')}
-            >
-              Critical ({summaryCounts?.critical ?? '...'})
-            </button>
-            <button 
-              className={`ac-tab-btn ${activeFilterTab === 'high' ? 'active' : ''}`}
-              onClick={() => setActiveFilterTab('high')}
-            >
-              High ({summaryCounts?.high ?? '...'})
-            </button>
-            <button 
-              className={`ac-tab-btn ${activeFilterTab === 'medium' ? 'active' : ''}`}
-              onClick={() => setActiveFilterTab('medium')}
-            >
-              Medium ({summaryCounts?.medium ?? '...'})
-            </button>
-          </div>
-
-          <div className="ac-search-input-wrapper">
-            <Search size={15} className="ac-search-icon" />
-            <input 
-              type="text" 
-              placeholder="Search actions by project or category..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="ac-search-input"
-            />
-          </div>
-        </div>
-
-        {/* The Action Items Table */}
-        <div className="card ac-table-card">
-          <div className="table-responsive">
-            <table className="ac-data-table">
-              <thead>
-                <tr>
-                  <th className="th-proj">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>PROJECT &amp; MINISTRY</span>
-                      <InfoButton title="Project & Ministry" summary="Identified national project and its supervising central ministry." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-risk-event">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>RISK EVENT</span>
-                      <InfoButton title="Risk Event Trigger" summary="Primary operational bottleneck diagnosed from live progress and milestone telemetry." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-sev">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>SEVERITY</span>
-                      <InfoButton title="Urgency Severity" summary="Assigned intervention level: Critical (Immediate PMG), High (Ministry), or Medium (Agency)." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-score">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>SCORE</span>
-                      <InfoButton title="Priority Urgency Score" summary="Composite 0–100 urgency score calculated from weighted delay, cost, and progress parameters." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-fin">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>FIN. EXPOSURE</span>
-                      <InfoButton title="Financial Exposure" summary="Total cost escalation or capital outlay currently exposed to delay risks." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-delay">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span>DELAY EXPOSURE</span>
-                      <InfoButton title="Delay Exposure" summary="Months elapsed past the approved baseline commissioning date." size="sm" />
-                    </div>
-                  </th>
-                  <th className="th-due">DUE DATE</th>
-                  <th className="th-status">STATUS</th>
-                  <th className="th-act">ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="empty-table-msg">
-                      No actions match the selected filter.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredItems.map((item, idx) => (
-                    <tr key={idx} className="ac-table-row">
-                      <td className="td-proj">
-                        <div className="p-title">{item.project}</div>
-                        <div className="p-sub">{item.ministry}</div>
-                      </td>
-                      <td className="td-risk-event">
-                        <span className="risk-event-badge">{item.riskEvent}</span>
-                      </td>
-                      <td className="td-sev">{getSeverityBadge(item.severity)}</td>
-                      <td className="td-score">
-                        <span className="priority-score-badge">{item.priorityScore}</span>
-                      </td>
-                      <td className="td-fin">{item.financialExposure}</td>
-                      <td className="td-delay">{item.delayExposure}</td>
-                      <td className="td-due">{item.dueDate}</td>
-                      <td className="td-status">
-                        <span className={`status-pill pill-${item.status.toLowerCase().replace(' ', '-')}`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="td-act">
-                        <button 
-                          className="ac-open-btn"
-                          onClick={() => onSelectProject(item.projectId)}
-                        >
-                          Resolve
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,0 +1,482 @@
+/* =====================================================
+   Project Sidebar — Pristine Light Glassmorphism Panel
+   Vertically centered left edge control drawer
+   Clean light theme matching Nirmaan Drishti palette
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+/* ─────────────────────────────────────────────
+   OUTER WRAPPER — fixed & vertically centered on left viewport edge
+   ───────────────────────────────────────────── */
+aside.pnav {
+  position: fixed !important;
+  left: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  height: 62vh !important;
+  max-height: 640px !important;
+  min-height: 440px !important;
+  width: 250px !important;
+  z-index: 99999 !important;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+  transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: flex !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  pointer-events: auto !important;
+}
+
+aside.pnav.pnav--collapsed {
+  width: 70px !important;
+}
+
+/* ─────────────────────────────────────────────
+   SIDEBAR CARD — pristine light glassmorphism
+   ───────────────────────────────────────────── */
+.pnav__card {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-right: 1px solid rgba(203, 213, 225, 0.9) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-left: none !important;
+  border-radius: 0 20px 20px 0 !important;
+  overflow: hidden !important;
+  box-shadow:
+    0 16px 36px -4px rgba(9, 11, 46, 0.12),
+    0 4px 14px rgba(9, 11, 46, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-sizing: border-box !important;
+}
+
+/* ─────────────────────────────────────────────
+   BRAND STRIP (header)
+   ───────────────────────────────────────────── */
+.pnav__brand {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 14px 12px 16px !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  background: rgba(248, 250, 252, 0.7) !important;
+  box-sizing: border-box !important;
+}
+
+.pnav__brand-text {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.11em !important;
+  color: #0F172A !important;
+}
+
+.pnav__brand-icon {
+  color: #2563EB !important;
+  flex-shrink: 0 !important;
+}
+
+.pnav__toggle {
+  all: unset !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  background: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+.pnav__toggle:hover {
+  background: #EFF6FF !important;
+  border-color: #93C5FD !important;
+  color: #2563EB !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
+}
+
+.pnav__toggle:active {
+  transform: scale(0.92) !important;
+}
+
+/* ─────────────────────────────────────────────
+   RISK GAUGE
+   ───────────────────────────────────────────── */
+.pnav__gauge {
+  margin: 10px 12px 6px 12px !important;
+  padding: 10px 12px !important;
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+}
+
+.pnav__gauge-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 4px !important;
+}
+
+.pnav__gauge-label {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #64748B !important;
+}
+
+.pnav__gauge-val {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+.pnav__gauge-num {
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1 !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 2px !important;
+}
+
+.pnav__gauge-denom {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #94A3B8 !important;
+}
+
+.pnav__gauge-track {
+  height: 4px !important;
+  background: #E2E8F0 !important;
+  border-radius: 99px !important;
+  overflow: hidden !important;
+}
+
+.pnav__gauge-fill {
+  height: 100% !important;
+  border-radius: 99px !important;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 0 6px currentColor !important;
+}
+
+/* ─────────────────────────────────────────────
+   SEPARATOR
+   ───────────────────────────────────────────── */
+.pnav__sep {
+  height: 1px !important;
+  background: rgba(226, 232, 240, 0.8) !important;
+  flex-shrink: 0 !important;
+  margin: 4px 0 !important;
+}
+
+/* ─────────────────────────────────────────────
+   NAVIGATION LIST
+   ───────────────────────────────────────────── */
+.pnav__nav {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 6px 0 !important;
+  gap: 4px !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* ─────────────────────────────────────────────
+   NAV ITEM
+   ───────────────────────────────────────────── */
+.pnav__item {
+  all: unset !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: calc(100% - 16px) !important;
+  margin: 0 8px !important;
+  padding: 9px 10px 9px 10px !important;
+  border-radius: 10px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.pnav__item:hover {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  transform: translateX(3px) !important;
+}
+
+.pnav__item:active {
+  transform: scale(0.96) translateX(2px) !important;
+}
+
+.pnav__item--active {
+  background: #EFF6FF !important;
+  border-color: #BFDBFE !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.08) !important;
+}
+
+.pnav__item--active:hover {
+  background: #DBEAFE !important;
+}
+
+/* Animated left pill */
+.pnav__pill {
+  position: absolute !important;
+  left: 0 !important;
+  top: 15% !important;
+  bottom: 15% !important;
+  width: 0 !important;
+  border-radius: 0 4px 4px 0 !important;
+  background: #2563EB !important;
+  transition: width 0.25s ease !important;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4) !important;
+}
+
+.pnav__item--active .pnav__pill {
+  width: 4px !important;
+}
+
+/* Step number */
+.pnav__num {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #94A3B8 !important;
+  letter-spacing: 0.06em !important;
+  width: 16px !important;
+  flex-shrink: 0 !important;
+  transition: color 0.2s ease !important;
+}
+
+.pnav__num--active {
+  color: #2563EB !important;
+}
+
+/* Icon */
+.pnav__icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  flex-shrink: 0 !important;
+  color: #64748B !important;
+  background: #F1F5F9 !important;
+  transition: all 0.18s ease !important;
+}
+
+.pnav__icon--active {
+  color: #2563EB !important;
+  background: #DBEAFE !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
+  transform: scale(1.06) !important;
+}
+
+.pnav__item:hover .pnav__icon:not(.pnav__icon--active) {
+  color: #0F172A !important;
+  background: #E2E8F0 !important;
+}
+
+/* Text block */
+.pnav__text {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.pnav__label {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: color 0.2s ease !important;
+}
+
+.pnav__item--active .pnav__label {
+  color: #1E40AF !important;
+  font-weight: 750 !important;
+}
+
+.pnav__item:hover .pnav__label {
+  color: #0F172A !important;
+}
+
+/* Description animation */
+.pnav__desc {
+  font-size: 10px !important;
+  color: #64748B !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.pnav__desc--in {
+  animation: pnavSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+@keyframes pnavSlideIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Warning Badge (Expanded mode) */
+.pnav__badge {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 99px !important;
+  background: #EF4444 !important;
+  color: #FFFFFF !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35) !important;
+  animation: pnavBadgePulse 2s infinite !important;
+}
+
+@keyframes pnavBadgePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35); }
+  50% { transform: scale(1.1); box-shadow: 0 2px 10px rgba(239, 68, 68, 0.55); }
+}
+
+/* ─────────────────────────────────────────────
+   FOOTER
+   ───────────────────────────────────────────── */
+.pnav__footer {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  padding: 8px 10px 12px 10px !important;
+  box-sizing: border-box !important;
+}
+
+.pnav__ftr-btn {
+  all: unset !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 10px !important;
+  border-radius: 9px !important;
+  border: 1px solid #E2E8F0 !important;
+  background: #F8FAFC !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.pnav__ftr-btn:hover {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+  transform: translateX(2px) !important;
+}
+
+.pnav__ftr-btn:active {
+  transform: scale(0.95) !important;
+}
+
+.pnav__ftr-btn--ai {
+  background: #EEF2FF !important;
+  border-color: #C7D2FE !important;
+  color: #4338CA !important;
+}
+
+.pnav__ftr-btn--ai:hover {
+  background: #E0E7FF !important;
+  border-color: #A5B4FC !important;
+  color: #3730A3 !important;
+  box-shadow: 0 2px 10px rgba(67, 56, 202, 0.15) !important;
+}
+
+/* ─────────────────────────────────────────────
+   COLLAPSED STATE OVERRIDES — Pristine Light Theme & Overlay Badge
+   ───────────────────────────────────────────── */
+aside.pnav.pnav--collapsed .pnav__item {
+  width: calc(100% - 12px) !important;
+  margin: 0 6px !important;
+  padding: 9px 0 !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+aside.pnav.pnav--collapsed .pnav__ftr-btn {
+  justify-content: center !important;
+  padding: 8px 0 !important;
+}
+
+aside.pnav.pnav--collapsed .pnav__brand {
+  justify-content: center !important;
+  padding: 14px 6px 12px !important;
+}
+
+aside.pnav.pnav--collapsed .pnav__icon {
+  margin: 0 auto !important;
+  color: #64748B !important;
+  background: #F1F5F9 !important;
+}
+
+aside.pnav.pnav--collapsed .pnav__icon--active {
+  color: #2563EB !important;
+  background: #DBEAFE !important;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25) !important;
+}
+
+aside.pnav.pnav--collapsed .pnav__item:hover .pnav__icon {
+  color: #0F172A !important;
+  background: #E2E8F0 !important;
+}
+
+/* In collapsed mode, position badge neatly as a small overlay dot on top-right of the item */
+aside.pnav.pnav--collapsed .pnav__badge {
+  position: absolute !important;
+  top: 4px !important;
+  right: 12px !important;
+  min-width: 15px !important;
+  height: 15px !important;
+  padding: 0 3px !important;
+  font-size: 8.5px !important;
+  border-radius: 99px !important;
+  border: 1.5px solid #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4) !important;
+}
