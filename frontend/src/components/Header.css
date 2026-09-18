@@ -221,40 +221,66 @@
   width: 100%;
 }
 
-/* Nav Item Button (Text-only clean aesthetic) */
-.navy-nav-item {
+/* Nav Item Buttons (Pristine Dark Navy Tabs) */
+.navy-nav-item,
+.header-nav-rectangular-tab {
+  all: unset;
+  box-sizing: border-box;
   height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   padding: 0 24px;
   background: transparent;
   border: none;
-  color: #cbd5e1;
+  color: #CBD5E1;
   font-family: inherit;
   font-size: 13.5px;
   font-weight: 550;
   letter-spacing: -0.01em;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   position: relative;
 }
 
-.navy-nav-item:hover {
-  color: #ffffff;
+.navy-nav-item:hover,
+.header-nav-rectangular-tab:hover {
+  color: #FFFFFF;
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Active Nav Tab: Elevated lighter navy rectangular block (Matching design mockup) */
-.navy-nav-item.active {
-  background-color: #12195f;
-  color: #ffffff;
-  font-weight: 650;
-  box-shadow: inset 0 -2px 0 0 #38BDF8;
+.navy-nav-item:active,
+.header-nav-rectangular-tab:active {
+  transform: scale(0.97);
 }
 
-.navy-nav-label {
+/* Active Nav Tab: Elevated lighter navy rectangular block with cyan accent bar */
+.navy-nav-item.active,
+.header-nav-rectangular-tab.active {
+  background-color: #12195F;
+  color: #FFFFFF;
+  font-weight: 650;
+  box-shadow: inset 0 -3px 0 0 #38BDF8;
+}
+
+.navy-nav-icon,
+.nav-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+}
+
+.navy-nav-item.active .navy-nav-icon,
+.header-nav-rectangular-tab.active .nav-tab-icon {
+  color: #38BDF8;
+  opacity: 1;
+}
+
+.navy-nav-label,
+.nav-tab-label {
   letter-spacing: -0.01em;
 }
 

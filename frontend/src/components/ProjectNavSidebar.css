@@ -1,24 +1,26 @@
 /* =====================================================
-   Project Sidebar — Extreme Left Pinned Control Panel
-   65vh height, docked to left screen edge, dark glassmorphism
+   Project Sidebar — Vertically Centered Left Control Panel
+   Matches Nirmaan Drishti color theory, high contrast,
+   tactile click feedback, clean badge containment
    ===================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 /* ─────────────────────────────────────────────
-   OUTER WRAPPER — fixed strictly to left viewport edge
+   OUTER WRAPPER — fixed & vertically centered on left viewport edge
    ───────────────────────────────────────────── */
 aside.pnav {
   position: fixed !important;
   left: 0 !important;
-  top: 100px !important;
-  height: 65vh !important;
-  max-height: 680px !important;
-  min-height: 460px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  height: 62vh !important;
+  max-height: 640px !important;
+  min-height: 440px !important;
   width: 250px !important;
   z-index: 99999 !important;
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
-  transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: width 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
   display: flex !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -27,7 +29,7 @@ aside.pnav {
 }
 
 aside.pnav.pnav--collapsed {
-  width: 72px !important;
+  width: 70px !important;
 }
 
 /* ─────────────────────────────────────────────
@@ -38,10 +40,10 @@ aside.pnav.pnav--collapsed {
   flex-direction: column !important;
   width: 100% !important;
   height: 100% !important;
-  background: linear-gradient(168deg, #0A0D30 0%, #101540 55%, #070924 100%) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: linear-gradient(168deg, #090B2E 0%, #101648 55%, #060824 100%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-left: none !important;
   border-radius: 0 20px 20px 0 !important;
   overflow: hidden !important;
@@ -99,7 +101,7 @@ aside.pnav.pnav--collapsed {
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   color: #FFFFFF !important;
   cursor: pointer !important;
-  transition: all 0.22s ease !important;
+  transition: all 0.18s ease !important;
   box-sizing: border-box !important;
   flex-shrink: 0 !important;
 }
@@ -110,6 +112,10 @@ aside.pnav.pnav--collapsed {
   color: #38BDF8 !important;
   transform: scale(1.08) !important;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
+}
+
+.pnav__toggle:active {
+  transform: scale(0.92) !important;
 }
 
 /* ─────────────────────────────────────────────
@@ -218,7 +224,7 @@ aside.pnav.pnav--collapsed {
   background: transparent !important;
   cursor: pointer !important;
   text-align: left !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
 }
@@ -227,6 +233,10 @@ aside.pnav.pnav--collapsed {
   background: rgba(255, 255, 255, 0.08) !important;
   border-color: rgba(255, 255, 255, 0.14) !important;
   transform: translateX(3px) !important;
+}
+
+.pnav__item:active {
+  transform: scale(0.96) translateX(2px) !important;
 }
 
 .pnav__item--active {
@@ -283,7 +293,7 @@ aside.pnav.pnav--collapsed {
   flex-shrink: 0 !important;
   color: rgba(241, 245, 249, 0.85) !important;
   background: rgba(255, 255, 255, 0.06) !important;
-  transition: all 0.22s ease !important;
+  transition: all 0.18s ease !important;
 }
 
 .pnav__icon--active {
@@ -348,7 +358,7 @@ aside.pnav.pnav--collapsed {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Warning Badge */
+/* Warning Badge (Expanded mode) */
 .pnav__badge {
   display: flex !important;
   align-items: center !important;
@@ -395,7 +405,7 @@ aside.pnav.pnav--collapsed {
   font-size: 11px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  transition: all 0.22s ease !important;
+  transition: all 0.18s ease !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -405,6 +415,10 @@ aside.pnav.pnav--collapsed {
   border-color: rgba(255, 255, 255, 0.22) !important;
   color: #FFFFFF !important;
   transform: translateX(2px) !important;
+}
+
+.pnav__ftr-btn:active {
+  transform: scale(0.95) !important;
 }
 
 .pnav__ftr-btn--ai {
@@ -421,13 +435,14 @@ aside.pnav.pnav--collapsed {
 }
 
 /* ─────────────────────────────────────────────
-   COLLAPSED STATE OVERRIDES — High Contrast Icons
+   COLLAPSED STATE OVERRIDES — High Contrast & No Overflow
    ───────────────────────────────────────────── */
 aside.pnav.pnav--collapsed .pnav__item {
   width: calc(100% - 12px) !important;
   margin: 0 6px !important;
   padding: 9px 0 !important;
   justify-content: center !important;
+  position: relative !important;
 }
 
 aside.pnav.pnav--collapsed .pnav__ftr-btn {
@@ -455,4 +470,17 @@ aside.pnav.pnav--collapsed .pnav__icon--active {
 aside.pnav.pnav--collapsed .pnav__item:hover .pnav__icon {
   color: #FFFFFF !important;
   background: rgba(255, 255, 255, 0.16) !important;
+}
+
+/* In collapsed mode, position badge neatly as a small overlay dot on top-right of the item */
+aside.pnav.pnav--collapsed .pnav__badge {
+  position: absolute !important;
+  top: 4px !important;
+  right: 12px !important;
+  min-width: 15px !important;
+  height: 15px !important;
+  padding: 0 3px !important;
+  font-size: 8.5px !important;
+  border-radius: 99px !important;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.8) !important;
 }

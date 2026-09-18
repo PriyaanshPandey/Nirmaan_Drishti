@@ -7,18 +7,13 @@
 }
 
 /* ─── Sidebar + Main Content Layout ─── */
-.pd-layout-wrapper {
+.pd-layout-wrapper,
+.pd-layout-wrapper--sidebar-collapsed {
   display: flex;
   gap: 0;
   align-items: flex-start;
-  /* Fixed sidebar is 250px wide; push content right with margin */
-  padding-left: 265px;
-  transition: padding-left 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* When sidebar collapses to 70px */
-.pd-layout-wrapper--sidebar-collapsed {
-  padding-left: 82px;
+  /* Allocated stable space for sidebar — page content NEVER shifts when toggled */
+  padding-left: 270px;
 }
 
 .pd-main-content {
