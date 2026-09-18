@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Nirmaan Dristi National Infrastructure Intelligence API"
     DEBUG: bool = True
 
+    # Authentication
+    SECRET_KEY: str = "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE) if ENV_FILE.exists() else None,
         env_file_encoding="utf-8",

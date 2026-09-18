@@ -3,6 +3,9 @@ FastAPI Backend Application for Standalone MoSPI PDF Extractor Suite.
 Provides endpoints for file upload, format classification, live extraction,
 preview datasets, styled Excel exports, pre-flight dataset verification,
 and master dataset synchronization with automated ML model retraining.
+
+Authentication: All functional endpoints require a valid JWT Bearer token
+with role="impd_officer". Only IMPD officers may access the PDF Extractor.
 """
 
 import os
@@ -11,9 +14,59 @@ import uuid
 import shutil
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.security import OAuth2PasswordBearer
+
+# JWT verification (uses same SECRET_KEY as main backend)
+try:
+    from jose import JWTError, jwt as _jose_jwt
+    _JOSE_AVAILABLE = True
+except ImportError:
+    _JOSE_AVAILABLE = False
+
+# Load SECRET_KEY from environment (same variable as main backend)
+_PDF_SECRET_KEY = os.environ.get("SECRET_KEY", "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION")
+_PDF_ALGORITHM = "HS256"
+
+_pdf_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+
+def _require_impd_officer(token: str = Depends(_pdf_oauth2_scheme)):
+    """
+    FastAPI dependency: validates JWT and enforces impd_officer role.
+    Raises HTTP 401 if token is missing/invalid, HTTP 403 if role is wrong.
+    """
+    if not _JOSE_AVAILABLE:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication library not installed on this server."
+        )
+    try:
+        payload = _jose_jwt.decode(token, _PDF_SECRET_KEY, algorithms=[_PDF_ALGORITHM])
+        role: str = payload.get("role", "")
+        username: str = payload.get("sub", "")
+        if not username:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if role != "impd_officer":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied. PDF Extractor requires impd_officer role.",
+            )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+# Convenience type alias for route signatures
+_IMPDUser = Depends(_require_impd_officer)
 
 # Ensure current directory is in sys.path
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -72,7 +125,7 @@ def health_check():
         "supported_formats": ["PAIMANA (2025-2027+)", "Modern Flash (2024-2025)", "Legacy Milestone (2001-2024)", "Future-Adaptive Semantic"]
     }
 
-@app.get("/api/sample-files")
+@app.get("/api/sample-files", dependencies=[_IMPDUser])
 def list_sample_files():
     """Lists representative sample files from the workspace for one-click testing."""
     def find_file(rel_paths):
@@ -134,7 +187,7 @@ def list_sample_files():
 
     return {"samples": available}
 
-@app.get("/api/check-dataset")
+@app.get("/api/check-dataset", dependencies=[_IMPDUser])
 def check_dataset_period(month: str = Query(...), year: str = Query(...)):
     """
     Pre-flight verification endpoint:
@@ -151,7 +204,7 @@ class MasterUpdateRequest(BaseModel):
     overwrite: bool = False
     records: Optional[List[Dict[str, Any]]] = None
 
-@app.post("/api/update-master-dataset")
+@app.post("/api/update-master-dataset", dependencies=[_IMPDUser])
 def update_dataset_endpoint(payload: MasterUpdateRequest):
     """
     Merges extracted records into the central master dataset (Features.csv)
@@ -180,7 +233,7 @@ def update_dataset_endpoint(payload: MasterUpdateRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to update master dataset: {str(e)}")
 
-@app.post("/api/reconcile-dataset")
+@app.post("/api/reconcile-dataset", dependencies=[_IMPDUser])
 def reconcile_dataset_endpoint(payload: MasterUpdateRequest):
     """
     Self-healing dataset reconciliation endpoint:
@@ -212,7 +265,7 @@ def reconcile_dataset_endpoint(payload: MasterUpdateRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to reconcile dataset: {str(e)}")
 
-@app.post("/api/classify")
+@app.post("/api/classify", dependencies=[_IMPDUser])
 async def classify_uploaded_pdf(file: UploadFile = File(...)):
     """Classifies a PDF and returns document metadata and detected structure."""
     if not file.filename.lower().endswith(".pdf"):
@@ -230,7 +283,7 @@ async def classify_uploaded_pdf(file: UploadFile = File(...)):
         if os.path.exists(temp_path):
             os.remove(temp_path)
 
-@app.post("/api/extract")
+@app.post("/api/extract", dependencies=[_IMPDUser])
 async def extract_pdf(
     file: UploadFile = File(...),
     month: Optional[str] = Query(None),
@@ -297,7 +350,7 @@ class SampleExtractRequest(BaseModel):
     month: Optional[str] = None
     year: Optional[str] = None
 
-@app.post("/api/extract-sample")
+@app.post("/api/extract-sample", dependencies=[_IMPDUser])
 async def extract_sample_pdf(
     sample_path: Optional[str] = Query(None),
     month: Optional[str] = Query(None),
@@ -350,7 +403,7 @@ async def extract_sample_pdf(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Sample extraction failed: {str(e)}")
 
-@app.get("/api/download/{filename}")
+@app.get("/api/download/{filename}", dependencies=[_IMPDUser])
 def download_excel(filename: str):
     """Download generated styled Excel workbook."""
     file_path = os.path.join(EXPORT_DIR, filename)

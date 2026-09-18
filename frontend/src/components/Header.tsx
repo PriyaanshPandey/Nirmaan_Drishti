@@ -3,11 +3,12 @@ import { createPortal } from 'react-dom';
 import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
   SlidersHorizontal, CornerDownLeft, Home, LayoutDashboard,
-  Database, Layers, ShieldAlert, FileSpreadsheet
+  Database, Layers, ShieldAlert, FileSpreadsheet, LogOut
 } from 'lucide-react';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import type { Project } from '../data/projectsData';
 import './Header.css';
+import { useAuth } from '../auth/AuthContext';
 
 interface HeaderProps {
   activeTab?: string;
@@ -32,6 +33,8 @@ export const Header: React.FC<HeaderProps> = ({
   onFilterStatus,
   currentStatusFilter = 'All'
 }) => {
+  const { user, logout } = useAuth();
+  const isIMPD = user?.role === 'impd_officer';
   const [projectsList, setProjectsList] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -47,15 +50,17 @@ export const Header: React.FC<HeaderProps> = ({
   const cardRef = useRef<HTMLDivElement | null>(null);
   const resultsContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Exact nav items with icons and PDF Extractor link
-  const navItems = [
+  // Exact nav items — PDF Extractor only shown to impd_officer
+  const allNavItems = [
     { id: 'home', label: 'Home', icon: <Home size={15} /> },
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
     { id: 'projects', label: 'Projects', icon: <Database size={15} /> },
     { id: 'distribution', label: 'Distribution', icon: <Layers size={15} /> },
     { id: 'action-centre', label: 'Action Center', icon: <ShieldAlert size={15} /> },
-    { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} /> },
+    { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} />, impdOnly: true },
   ];
+
+  const navItems = allNavItems.filter(item => !item.impdOnly || isIMPD);
 
   // Compute exact counts from 6,568 master dataset
   const statusItems: StatusItem[] = useMemo(() => {
@@ -302,6 +307,21 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Search size={19} strokeWidth={2} className="search-icon-svg" />
             </button>
+
+            {/* Logout Button — minimal, matching search button style */}
+            {user && (
+              <button
+                type="button"
+                id="header-logout-btn"
+                className="header-search-icon-btn"
+                onClick={logout}
+                title={`Sign out (${user.full_name || user.username})`}
+                aria-label="Sign out"
+                style={{ marginLeft: '4px' }}
+              >
+                <LogOut size={17} strokeWidth={2} className="search-icon-svg" />
+              </button>
+            )}
           </div>
         </div>
       </header>

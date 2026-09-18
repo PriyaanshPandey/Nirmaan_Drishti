@@ -13,8 +13,11 @@ import { PdfExtractor } from './components/PdfExtractor';
 import { PageSlot } from './components/PageTransition';
 import { Home } from './components/Home';
 import { Footer } from './components/Footer';
+import { LoginPage } from './components/LoginPage';
+import { AuthProvider, useAuth } from './auth/AuthContext';
 
-function App() {
+// ── Inner app: renders only when authenticated ─────────────────────────────
+function AuthenticatedApp() {
   type NavigationState = { tab: string; projectId: string | null };
   const initialNavigation = (window.history.state as NavigationState | null) || { tab: 'home', projectId: null };
   const [activeTab, setActiveTab] = useState(initialNavigation.tab);
@@ -242,7 +245,7 @@ function App() {
           </main>
         </PageSlot>
 
-        {/* ── PDF Extractor ── */}
+        {/* ── PDF Extractor (impd_officer only — nav item already hidden for ministry_officer) ── */}
         <PageSlot id="extractor" activeTab={activeTab}>
           <main className="extractor-content" style={{ padding: '24px 32px' }}>
             <PdfExtractor
@@ -256,6 +259,102 @@ function App() {
       {/* Official Government MoSPI & PAIMANA Footer ending the page cleanly with 0 whitespace */}
       <Footer activeTab={activeTab} onNavigateTab={handleTabChange} />
     </div>
+  );
+}
+
+// ── Root app: handles the animation → login → app gate ────────────────────
+function AppGate() {
+  const { isAuthenticated, isLoading, logout } = useAuth();
+
+  const [animationDone, setAnimationDone] = useState<boolean>(false);
+  const [showApp, setShowApp] = useState<boolean>(false);
+
+  // When auth finishes loading and user is already authenticated, skip the intro
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setAnimationDone(true);
+      setShowApp(true);
+    }
+  }, [isLoading, isAuthenticated]);
+
+  // Listen for token-expiry events fired by apiFetch() in api.ts
+  useEffect(() => {
+    const handleExpired = () => {
+      logout();
+      setShowApp(false);
+      setAnimationDone(true); // Don't replay animation on token expiry
+    };
+    window.addEventListener('nd:auth:expired', handleExpired);
+    return () => window.removeEventListener('nd:auth:expired', handleExpired);
+  }, [logout]);
+
+  const handleLoginSuccess = () => {
+    setShowApp(true);
+  };
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (showApp && isAuthenticated) {
+    return <AuthenticatedApp />;
+  }
+
+  return (
+    <PreLoginShell
+      animationDone={animationDone}
+      onAnimationDone={() => setAnimationDone(true)}
+      onLoginSuccess={handleLoginSuccess}
+    />
+  );
+}
+
+// ── Pre-login shell: runs the intro video then shows the login page ────────
+import { VideoHero } from './components/VideoHero';
+
+interface PreLoginShellProps {
+  animationDone: boolean;
+  onAnimationDone: () => void;
+  onLoginSuccess: () => void;
+}
+
+function PreLoginShell({ animationDone, onAnimationDone, onLoginSuccess }: PreLoginShellProps) {
+  return (
+    <>
+      {/* Run the intro video overlay exactly as before.
+          onFinished() now transitions to Login instead of the home page. */}
+      {!animationDone && (
+        <VideoHero onFinished={onAnimationDone} />
+      )}
+
+      {/* Show Login after animation finishes */}
+      {animationDone && (
+        <LoginPage onSuccess={onLoginSuccess} />
+      )}
+
+      {/* Invisible background — same dark bg as the video overlay
+          so there's no flash when the video ends */}
+      {!animationDone && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#06090f',
+            zIndex: -1,
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+// ── Main export ────────────────────────────────────────────────────────────
+function App() {
+  return (
+    <AuthProvider>
+      <AppGate />
+    </AuthProvider>
   );
 }
 
