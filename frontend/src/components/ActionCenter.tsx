@@ -475,15 +475,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
-                <div className="ac-title-group">
-                  <span className="ac-sec-badge badge-red">01</span>
-                  <div>
-                    <h2 className="ac-sec-title">Recommended Interventions &amp; Fast-Track Actions</h2>
-                    <p className="ac-sec-sub">
-                      AI-generated operational actions tailored to halt cost escalation and schedule slippage.
-                    </p>
-                  </div>
-                </div>
+                <p className="ac-sec-sub" style={{ margin: 0 }}>
+                  AI-generated operational actions tailored to halt cost escalation and schedule slippage.
+                </p>
 
                 {/* "Why these actions?" Button -> Redirection to Escalation Drivers in ProjectDetails */}
                 <button
@@ -539,15 +533,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
-                <div className="ac-title-group">
-                  <span className="ac-sec-badge badge-blue">02</span>
-                  <div>
-                    <h2 className="ac-sec-title">What-If Counterfactual Policy Simulator</h2>
-                    <p className="ac-sec-sub">
-                      Simulate dynamic real-time impact on Cost Overrun, Time Overrun, and ML Risk Score by adjusting project parameters.
-                    </p>
-                  </div>
-                </div>
+                <p className="ac-sec-sub" style={{ margin: 0 }}>
+                  Simulate dynamic real-time impact on Cost Overrun, Time Overrun, and ML Risk Score by adjusting project parameters.
+                </p>
                 <span className="ac-head-pill pill-ai">
                   <Sparkles size={13} /> Real-Time Policy Engine
                 </span>
@@ -712,15 +700,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
-                <div className="ac-title-group">
-                  <span className="ac-sec-badge badge-purple">03</span>
-                  <div>
-                    <h2 className="ac-sec-title">Policy-Aware Authority Routing Matrix</h2>
-                    <p className="ac-sec-sub">
-                      Official Government Infrastructure Framework (MoSPI, PAIMANA, PIB/EFC &amp; CCEA Guidelines).
-                    </p>
-                  </div>
-                </div>
+                <p className="ac-sec-sub" style={{ margin: 0 }}>
+                  Official Government Infrastructure Framework (MoSPI, PAIMANA, PIB/EFC &amp; CCEA Guidelines).
+                </p>
                 <span className="ac-head-pill pill-purple">
                   <Landmark size={13} /> {authorityRouting.code}
                 </span>
