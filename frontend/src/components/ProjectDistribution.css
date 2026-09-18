@@ -328,6 +328,7 @@
 .svg-donut {
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
 .svg-donut-center {
@@ -337,6 +338,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  pointer-events: none;
+  width: 100px;
 }
 
 .donut-center-num {
@@ -344,6 +347,8 @@
   font-weight: 900;
   color: #0F172A;
   line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+  font-variant-numeric: tabular-nums;
 }
 
 .donut-center-num.text-red {
@@ -351,12 +356,15 @@
 }
 
 .donut-center-label {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 800;
   color: #64748B;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-top: 2px;
+  margin-top: 3px;
+  transition: color 0.2s ease;
+  max-width: 100px;
+  line-height: 1.15;
 }
 
 /* Horizontal Progress Bars List below Donuts */

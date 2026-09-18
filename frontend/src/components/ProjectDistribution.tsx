@@ -70,7 +70,8 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
   // Section 1 State: Breakdown Toggles & Selection
   const [sec1Mode, setSec1Mode] = useState<'ministry' | 'sector'>('ministry');
   const [sec1SelectedEntity, setSec1SelectedEntity] = useState<string>('All');
-  const [sec1HoverTier, setSec1HoverTier] = useState<string | null>(null);
+  const [hoveredHealthId, setHoveredHealthId] = useState<string | null>(null);
+  const [hoveredRiskId, setHoveredRiskId] = useState<string | null>(null);
 
   // Section 2 State: Interventions Toggles & Selection
   const [sec2Mode, setSec2Mode] = useState<'ministry' | 'sector'>('sector');
@@ -217,6 +218,88 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       avgHealth
     };
   }, [sec1FilteredProjects]);
+
+  // Computed Interactive SVG Donut Segments with Trigonometric Pop-Out Vector Offsets
+  const healthSegments = useMemo(() => {
+    const list = [
+      { id: 'healthy', name: 'Healthy', label: 'HEALTHY', fullName: 'Healthy (Score 75–100)', count: sec1Metrics.health.healthy, pct: sec1Metrics.healthPcts.healthy, color: '#2563EB', statusFilter: 'ON TRACK' },
+      { id: 'moderate', name: 'Moderate', label: 'MODERATE', fullName: 'Moderate (Score 55–74)', count: sec1Metrics.health.moderate, pct: sec1Metrics.healthPcts.moderate, color: '#38BDF8', statusFilter: 'IN REVIEW' },
+      { id: 'vulnerable', name: 'Vulnerable', label: 'VULNERABLE', fullName: 'Vulnerable (Score 35–54)', count: sec1Metrics.health.vulnerable, pct: sec1Metrics.healthPcts.vulnerable, color: '#64748B', statusFilter: 'DELAYED' },
+      { id: 'critical', name: 'Critical Delay', label: 'CRITICAL DELAY', fullName: 'Critical (Score <35)', count: sec1Metrics.health.critical, pct: sec1Metrics.healthPcts.critical, color: '#DC2626', statusFilter: 'CRITICAL' }
+    ];
+
+    const totalCount = sec1Metrics.total;
+    let acc = 0;
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+    const popDistance = 4.5;
+
+    return list.map(seg => {
+      const startPercent = acc;
+      const segPercent = totalCount > 0 ? (seg.count / totalCount) * 100 : seg.pct;
+      const endPercent = startPercent + segPercent;
+      const midPercent = (startPercent + endPercent) / 2;
+      acc = endPercent;
+
+      const startDeg = (startPercent / 100) * 360 - 90;
+      const angleRad = (midPercent / 100) * 2 * Math.PI;
+      const dx = Math.sin(angleRad) * popDistance;
+      const dy = -Math.cos(angleRad) * popDistance;
+      const strokeLength = (segPercent / 100) * circumference;
+
+      return {
+        ...seg,
+        startDeg,
+        dx,
+        dy,
+        strokeLength,
+        circumference,
+        segPercent
+      };
+    });
+  }, [sec1Metrics]);
+
+  const riskSegments = useMemo(() => {
+    const list = [
+      { id: 'low', name: 'Low Risk', label: 'LOW RISK', fullName: 'Low Risk (<40)', count: sec1Metrics.risk.low, pct: sec1Metrics.riskPcts.low, color: '#16A34A', riskFilter: 'Low' },
+      { id: 'moderate', name: 'Moderate Risk', label: 'MODERATE RISK', fullName: 'Moderate Risk (40–64)', count: sec1Metrics.risk.moderate, pct: sec1Metrics.riskPcts.moderate, color: '#D97706', riskFilter: 'Medium' },
+      { id: 'high', name: 'High Risk', label: 'HIGH RISK', fullName: 'High Risk (65–79)', count: sec1Metrics.risk.high, pct: sec1Metrics.riskPcts.high, color: '#DC2626', riskFilter: 'High' },
+      { id: 'critical', name: 'Critical Risk', label: 'CRITICAL RISK', fullName: 'Critical Risk (≥80)', count: sec1Metrics.risk.critical, pct: sec1Metrics.riskPcts.critical, color: '#7F1D1D', riskFilter: 'Critical' }
+    ];
+
+    const totalCount = sec1Metrics.total;
+    let acc = 0;
+    const radius = 60;
+    const circumference = 2 * Math.PI * radius;
+    const popDistance = 4.5;
+
+    return list.map(seg => {
+      const startPercent = acc;
+      const segPercent = totalCount > 0 ? (seg.count / totalCount) * 100 : seg.pct;
+      const endPercent = startPercent + segPercent;
+      const midPercent = (startPercent + endPercent) / 2;
+      acc = endPercent;
+
+      const startDeg = (startPercent / 100) * 360 - 90;
+      const angleRad = (midPercent / 100) * 2 * Math.PI;
+      const dx = Math.sin(angleRad) * popDistance;
+      const dy = -Math.cos(angleRad) * popDistance;
+      const strokeLength = (segPercent / 100) * circumference;
+
+      return {
+        ...seg,
+        startDeg,
+        dx,
+        dy,
+        strokeLength,
+        circumference,
+        segPercent
+      };
+    });
+  }, [sec1Metrics]);
+
+  const activeHealthSeg = useMemo(() => healthSegments.find(s => s.id === hoveredHealthId) || null, [healthSegments, hoveredHealthId]);
+  const activeRiskSeg = useMemo(() => riskSegments.find(s => s.id === hoveredRiskId) || null, [riskSegments, hoveredRiskId]);
 
   /* ─────────────────────────────────────────────────────────────
      SECTION 2: PRIORITY INTERVENTIONS DATA CALCULATIONS
@@ -504,122 +587,121 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                   <Activity size={18} color="#2563EB" />
                   <h3 className="dist-card-heading">Portfolio Health Index Breakdown</h3>
                 </div>
-                <span className="dist-count-chip">{sec1Metrics.total} Projects</span>
+                <span className="dist-count-chip">{sec1Metrics.total.toLocaleString()} Projects</span>
               </div>
 
               <div className="donut-visualization-block">
-                {/* SVG Donut Chart with Interactive Clickable Segments */}
+                {/* SVG Donut Chart with Dynamic Trigonometric Segment Pop-out & Glow */}
                 <div className="svg-donut-wrapper">
                   <svg className="svg-donut" viewBox="0 0 160 160">
-                    <circle cx="80" cy="80" r="62" fill="none" stroke="#F1F5F9" strokeWidth="18" />
-                    {/* Healthy segment */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#2563EB" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.healthPcts.healthy * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset="0"
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterStatus?.('ON TRACK')}
-                      onMouseEnter={() => setSec1HoverTier('Healthy')}
-                      onMouseLeave={() => setSec1HoverTier(null)}
-                    >
-                      <title>Healthy (75-100): Click to view {sec1Metrics.health.healthy} projects</title>
-                    </circle>
-                    {/* Moderate segment */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#38BDF8" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.healthPcts.moderate * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset={`-${(sec1Metrics.healthPcts.healthy * 3.9).toFixed(1)}`}
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterStatus?.('IN REVIEW')}
-                      onMouseEnter={() => setSec1HoverTier('Moderate')}
-                      onMouseLeave={() => setSec1HoverTier(null)}
-                    >
-                      <title>Moderate (55-74): Click to view {sec1Metrics.health.moderate} projects</title>
-                    </circle>
-                    {/* Vulnerable segment */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#64748B" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.healthPcts.vulnerable * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset={`-${((sec1Metrics.healthPcts.healthy + sec1Metrics.healthPcts.moderate) * 3.9).toFixed(1)}`}
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterStatus?.('DELAYED')}
-                      onMouseEnter={() => setSec1HoverTier('Vulnerable')}
-                      onMouseLeave={() => setSec1HoverTier(null)}
-                    >
-                      <title>Vulnerable (35-54): Click to view {sec1Metrics.health.vulnerable} projects</title>
-                    </circle>
-                    {/* Critical segment */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#0F172A" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.healthPcts.critical * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset={`-${((sec1Metrics.healthPcts.healthy + sec1Metrics.healthPcts.moderate + sec1Metrics.healthPcts.vulnerable) * 3.9).toFixed(1)}`}
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterStatus?.('CRITICAL')}
-                      onMouseEnter={() => setSec1HoverTier('Critical')}
-                      onMouseLeave={() => setSec1HoverTier(null)}
-                    >
-                      <title>Critical (&lt;35): Click to view {sec1Metrics.health.critical} projects</title>
-                    </circle>
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="16" />
+                    {healthSegments.map((seg) => {
+                      const isHovered = hoveredHealthId === seg.id;
+                      const isAnyHovered = hoveredHealthId !== null;
+                      return (
+                        <g
+                          key={seg.id}
+                          style={{
+                            transform: isHovered ? `translate(${seg.dx.toFixed(2)}px, ${seg.dy.toFixed(2)}px)` : 'translate(0px, 0px)',
+                            transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
+                        >
+                          <circle
+                            cx="80"
+                            cy="80"
+                            r="60"
+                            fill="none"
+                            stroke={seg.color}
+                            strokeWidth={isHovered ? 20 : 16}
+                            strokeDasharray={`${seg.strokeLength.toFixed(1)} ${seg.circumference}`}
+                            strokeDashoffset={0}
+                            style={{
+                              transformOrigin: '80px 80px',
+                              transform: `rotate(${seg.startDeg}deg)`,
+                              transition: 'stroke-width 0.25s ease, filter 0.25s ease, opacity 0.25s ease',
+                              cursor: 'pointer',
+                              filter: isHovered ? `drop-shadow(0 0 12px ${seg.color})` : 'none',
+                              opacity: isAnyHovered && !isHovered ? 0.45 : 1
+                            }}
+                            onMouseEnter={() => setHoveredHealthId(seg.id)}
+                            onMouseLeave={() => setHoveredHealthId(null)}
+                            onClick={() => onFilterStatus?.(seg.statusFilter)}
+                          >
+                            <title>{`${seg.fullName}: Click to view ${seg.count} projects`}</title>
+                          </circle>
+                        </g>
+                      );
+                    })}
                   </svg>
                   <div className="svg-donut-center">
-                    <span className="donut-center-num">{sec1Metrics.avgHealth}</span>
-                    <span className="donut-center-label">{sec1HoverTier ? `${sec1HoverTier} Tier` : 'Avg Health Index'}</span>
+                    <span
+                      className="donut-center-num"
+                      style={{ color: activeHealthSeg ? activeHealthSeg.color : '#0F172A' }}
+                    >
+                      {activeHealthSeg ? activeHealthSeg.count.toLocaleString() : sec1Metrics.avgHealth}
+                    </span>
+                    <span
+                      className="donut-center-label"
+                      style={{
+                        color: activeHealthSeg ? activeHealthSeg.color : '#64748B',
+                        fontWeight: activeHealthSeg ? 850 : 700
+                      }}
+                    >
+                      {activeHealthSeg ? activeHealthSeg.label : 'AVG HEALTH INDEX'}
+                    </span>
                   </div>
                 </div>
 
-                {/* Horizontal Breakdown Bars Below Donut 1 — Clickable Rows */}
+                {/* Horizontal Breakdown Bars Below Donut 1 — Synced Clickable Rows */}
                 <div className="donut-bars-list">
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('ON TRACK')} title="Click to view Healthy projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#2563EB' }} />
-                      <span className="bar-name">Healthy (Score 75-100)</span>
-                      <span className="bar-value">{sec1Metrics.health.healthy} ({sec1Metrics.healthPcts.healthy}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.healthPcts.healthy}%`, background: '#2563EB' }} />
-                    </div>
-                  </div>
-
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('IN REVIEW')} title="Click to view Moderate projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#38BDF8' }} />
-                      <span className="bar-name">Moderate (Score 55-74)</span>
-                      <span className="bar-value">{sec1Metrics.health.moderate} ({sec1Metrics.healthPcts.moderate}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.healthPcts.moderate}%`, background: '#38BDF8' }} />
-                    </div>
-                  </div>
-
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('DELAYED')} title="Click to view Vulnerable projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#64748B' }} />
-                      <span className="bar-name">Vulnerable (Score 35-54)</span>
-                      <span className="bar-value">{sec1Metrics.health.vulnerable} ({sec1Metrics.healthPcts.vulnerable}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.healthPcts.vulnerable}%`, background: '#64748B' }} />
-                    </div>
-                  </div>
-
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('CRITICAL')} title="Click to view Critical projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#0F172A' }} />
-                      <span className="bar-name">Critical (Score &lt;35)</span>
-                      <span className="bar-value">{sec1Metrics.health.critical} ({sec1Metrics.healthPcts.critical}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.healthPcts.critical}%`, background: '#0F172A' }} />
-                    </div>
-                  </div>
+                  {healthSegments.map((seg) => {
+                    const isHovered = hoveredHealthId === seg.id;
+                    return (
+                      <div
+                        key={seg.id}
+                        className={`bar-breakdown-row clickable-row${isHovered ? ' active-breakdown-row' : ''}`}
+                        onMouseEnter={() => setHoveredHealthId(seg.id)}
+                        onMouseLeave={() => setHoveredHealthId(null)}
+                        onClick={() => onFilterStatus?.(seg.statusFilter)}
+                        title={`Click to view ${seg.name} projects in Portfolio`}
+                        style={isHovered ? { backgroundColor: `${seg.color}15`, borderRadius: '8px' } : undefined}
+                      >
+                        <div className="bar-info-row">
+                          <span
+                            className="bar-label-dot"
+                            style={{
+                              backgroundColor: seg.color,
+                              boxShadow: isHovered ? `0 0 8px ${seg.color}` : 'none',
+                              transform: isHovered ? 'scale(1.25)' : 'scale(1)',
+                              transition: 'transform 0.18s ease, box-shadow 0.18s ease'
+                            }}
+                          />
+                          <span
+                            className="bar-name"
+                            style={{
+                              fontWeight: isHovered ? 800 : 600,
+                              color: isHovered ? seg.color : '#334155'
+                            }}
+                          >
+                            {seg.fullName}
+                          </span>
+                          <span className="bar-value" style={{ fontWeight: isHovered ? 900 : 750 }}>
+                            {seg.count.toLocaleString()} ({seg.pct}%)
+                          </span>
+                        </div>
+                        <div className="bar-track">
+                          <div
+                            className="bar-fill"
+                            style={{
+                              width: `${seg.pct}%`,
+                              background: seg.color,
+                              boxShadow: isHovered ? `0 0 6px ${seg.color}` : 'none'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -635,110 +717,117 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
               </div>
 
               <div className="donut-visualization-block">
-                {/* SVG Donut Chart with Interactive Clickable Segments */}
+                {/* SVG Donut Chart with Dynamic Trigonometric Segment Pop-out & Glow */}
                 <div className="svg-donut-wrapper">
                   <svg className="svg-donut" viewBox="0 0 160 160">
-                    <circle cx="80" cy="80" r="62" fill="none" stroke="#F1F5F9" strokeWidth="18" />
-                    {/* Low Risk */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#16A34A" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.riskPcts.low * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset="0"
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterRisk?.('Low')}
-                    >
-                      <title>Low Risk (&lt;40): Click to view {sec1Metrics.risk.low} projects</title>
-                    </circle>
-                    {/* Moderate Risk */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#D97706" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.riskPcts.moderate * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset={`-${(sec1Metrics.riskPcts.low * 3.9).toFixed(1)}`}
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterRisk?.('Medium')}
-                    >
-                      <title>Moderate Risk (40-64): Click to view {sec1Metrics.risk.moderate} projects</title>
-                    </circle>
-                    {/* High Risk */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#DC2626" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.riskPcts.high * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset={`-${((sec1Metrics.riskPcts.low + sec1Metrics.riskPcts.moderate) * 3.9).toFixed(1)}`}
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterRisk?.('High')}
-                    >
-                      <title>High Risk (65-79): Click to view {sec1Metrics.risk.high} projects</title>
-                    </circle>
-                    {/* Critical Risk */}
-                    <circle
-                      className="donut-interactive-segment"
-                      cx="80" cy="80" r="62" fill="none"
-                      stroke="#7F1D1D" strokeWidth="18"
-                      strokeDasharray={`${(sec1Metrics.riskPcts.critical * 3.9).toFixed(1)} 390`}
-                      strokeDashoffset={`-${((sec1Metrics.riskPcts.low + sec1Metrics.riskPcts.moderate + sec1Metrics.riskPcts.high) * 3.9).toFixed(1)}`}
-                      transform="rotate(-90 80 80)"
-                      onClick={() => onFilterRisk?.('Critical')}
-                    >
-                      <title>Critical Risk (&ge;80): Click to view {sec1Metrics.risk.critical} projects</title>
-                    </circle>
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#F1F5F9" strokeWidth="16" />
+                    {riskSegments.map((seg) => {
+                      const isHovered = hoveredRiskId === seg.id;
+                      const isAnyHovered = hoveredRiskId !== null;
+                      return (
+                        <g
+                          key={seg.id}
+                          style={{
+                            transform: isHovered ? `translate(${seg.dx.toFixed(2)}px, ${seg.dy.toFixed(2)}px)` : 'translate(0px, 0px)',
+                            transition: 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}
+                        >
+                          <circle
+                            cx="80"
+                            cy="80"
+                            r="60"
+                            fill="none"
+                            stroke={seg.color}
+                            strokeWidth={isHovered ? 20 : 16}
+                            strokeDasharray={`${seg.strokeLength.toFixed(1)} ${seg.circumference}`}
+                            strokeDashoffset={0}
+                            style={{
+                              transformOrigin: '80px 80px',
+                              transform: `rotate(${seg.startDeg}deg)`,
+                              transition: 'stroke-width 0.25s ease, filter 0.25s ease, opacity 0.25s ease',
+                              cursor: 'pointer',
+                              filter: isHovered ? `drop-shadow(0 0 12px ${seg.color})` : 'none',
+                              opacity: isAnyHovered && !isHovered ? 0.45 : 1
+                            }}
+                            onMouseEnter={() => setHoveredRiskId(seg.id)}
+                            onMouseLeave={() => setHoveredRiskId(null)}
+                            onClick={() => onFilterRisk?.(seg.riskFilter)}
+                          >
+                            <title>{`${seg.fullName}: Click to view ${seg.count} projects`}</title>
+                          </circle>
+                        </g>
+                      );
+                    })}
                   </svg>
                   <div className="svg-donut-center">
-                    <span className="donut-center-num text-red">{sec1Metrics.avgRisk}</span>
-                    <span className="donut-center-label">Avg ML Risk</span>
+                    <span
+                      className="donut-center-num"
+                      style={{ color: activeRiskSeg ? activeRiskSeg.color : '#DC2626' }}
+                    >
+                      {activeRiskSeg ? activeRiskSeg.count.toLocaleString() : sec1Metrics.avgRisk}
+                    </span>
+                    <span
+                      className="donut-center-label"
+                      style={{
+                        color: activeRiskSeg ? activeRiskSeg.color : '#64748B',
+                        fontWeight: activeRiskSeg ? 850 : 700
+                      }}
+                    >
+                      {activeRiskSeg ? activeRiskSeg.label : 'AVG ML RISK'}
+                    </span>
                   </div>
                 </div>
 
-                {/* Horizontal Breakdown Bars Below Donut 2 — Clickable Rows */}
+                {/* Horizontal Breakdown Bars Below Donut 2 — Synced Clickable Rows */}
                 <div className="donut-bars-list">
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('Low')} title="Click to view Low Risk projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#16A34A' }} />
-                      <span className="bar-name">Low Risk (&lt;40)</span>
-                      <span className="bar-value">{sec1Metrics.risk.low} ({sec1Metrics.riskPcts.low}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.riskPcts.low}%`, background: '#16A34A' }} />
-                    </div>
-                  </div>
-
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('Medium')} title="Click to view Moderate Risk projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#D97706' }} />
-                      <span className="bar-name">Moderate Risk (40-64)</span>
-                      <span className="bar-value">{sec1Metrics.risk.moderate} ({sec1Metrics.riskPcts.moderate}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.riskPcts.moderate}%`, background: '#D97706' }} />
-                    </div>
-                  </div>
-
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('High')} title="Click to view High Risk projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#DC2626' }} />
-                      <span className="bar-name">High Risk (65-79)</span>
-                      <span className="bar-value">{sec1Metrics.risk.high} ({sec1Metrics.riskPcts.high}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.riskPcts.high}%`, background: '#DC2626' }} />
-                    </div>
-                  </div>
-
-                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('Critical')} title="Click to view Critical Risk projects in Portfolio">
-                    <div className="bar-info-row">
-                      <span className="bar-label-dot" style={{ backgroundColor: '#7F1D1D' }} />
-                      <span className="bar-name">Critical Risk (&ge;80)</span>
-                      <span className="bar-value">{sec1Metrics.risk.critical} ({sec1Metrics.riskPcts.critical}%)</span>
-                    </div>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${sec1Metrics.riskPcts.critical}%`, background: '#7F1D1D' }} />
-                    </div>
-                  </div>
+                  {riskSegments.map((seg) => {
+                    const isHovered = hoveredRiskId === seg.id;
+                    return (
+                      <div
+                        key={seg.id}
+                        className={`bar-breakdown-row clickable-row${isHovered ? ' active-breakdown-row' : ''}`}
+                        onMouseEnter={() => setHoveredRiskId(seg.id)}
+                        onMouseLeave={() => setHoveredRiskId(null)}
+                        onClick={() => onFilterRisk?.(seg.riskFilter)}
+                        title={`Click to view ${seg.name} projects in Portfolio`}
+                        style={isHovered ? { backgroundColor: `${seg.color}15`, borderRadius: '8px' } : undefined}
+                      >
+                        <div className="bar-info-row">
+                          <span
+                            className="bar-label-dot"
+                            style={{
+                              backgroundColor: seg.color,
+                              boxShadow: isHovered ? `0 0 8px ${seg.color}` : 'none',
+                              transform: isHovered ? 'scale(1.25)' : 'scale(1)',
+                              transition: 'transform 0.18s ease, box-shadow 0.18s ease'
+                            }}
+                          />
+                          <span
+                            className="bar-name"
+                            style={{
+                              fontWeight: isHovered ? 800 : 600,
+                              color: isHovered ? seg.color : '#334155'
+                            }}
+                          >
+                            {seg.fullName}
+                          </span>
+                          <span className="bar-value" style={{ fontWeight: isHovered ? 900 : 750 }}>
+                            {seg.count.toLocaleString()} ({seg.pct}%)
+                          </span>
+                        </div>
+                        <div className="bar-track">
+                          <div
+                            className="bar-fill"
+                            style={{
+                              width: `${seg.pct}%`,
+                              background: seg.color,
+                              boxShadow: isHovered ? `0 0 6px ${seg.color}` : 'none'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
