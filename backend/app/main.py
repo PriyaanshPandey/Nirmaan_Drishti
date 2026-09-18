@@ -4,13 +4,14 @@ National Infrastructure Early Warning & Predictive Monitoring API.
 """
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database import check_db_connection
 from app.routes.health import router as health_router
+from app.routes.auth import router as auth_router
 from app.routes.projects import router as projects_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.risk import router as risk_router
@@ -20,6 +21,7 @@ from app.routes.assistant import router as assistant_router
 from app.routes.insights import router as insights_router
 from app.routes.distribution import router as distribution_router
 from app.ml_integration.risk_client import get_ml_client
+from app.auth.dependencies import get_current_user
 
 # Configure logging
 logging.basicConfig(
@@ -74,6 +76,10 @@ app = FastAPI(
     * **AI Action Centre & Resolution Simulations**
     * **Comparative Sector Benchmarking**
     * **Project Intelligence Assistant**
+    
+    ### Authentication:
+    All endpoints (except /health and /auth/login) require a valid Bearer JWT token.
+    Obtain a token via **POST /api/auth/login**.
     """,
     version="1.0.0",
     docs_url="/docs",
@@ -107,16 +113,23 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Register API Routers
 api_prefix = settings.API_PREFIX
+
+# ── Public routes (no auth required) ──
 app.include_router(health_router, prefix=api_prefix)
-app.include_router(projects_router, prefix=api_prefix)
-app.include_router(dashboard_router, prefix=api_prefix)
-app.include_router(risk_router, prefix=api_prefix)
-app.include_router(alerts_router, prefix=api_prefix)
-app.include_router(action_centre_router, prefix=api_prefix)
-app.include_router(benchmark_router, prefix=api_prefix)
-app.include_router(assistant_router, prefix=api_prefix)
-app.include_router(insights_router, prefix=api_prefix)
-app.include_router(distribution_router, prefix=api_prefix)
+app.include_router(auth_router, prefix=api_prefix)
+
+# ── Protected routes (any authenticated user) ──
+_auth_dep = [Depends(get_current_user)]
+
+app.include_router(projects_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(dashboard_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(risk_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(alerts_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(action_centre_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(benchmark_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(assistant_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(insights_router, prefix=api_prefix, dependencies=_auth_dep)
+app.include_router(distribution_router, prefix=api_prefix, dependencies=_auth_dep)
 
 
 @app.get("/", tags=["Root"])
@@ -125,7 +138,8 @@ def root():
         "name": settings.PROJECT_NAME,
         "version": "1.0.0",
         "docs": "/docs",
-        "health": f"{settings.API_PREFIX}/health"
+        "health": f"{settings.API_PREFIX}/health",
+        "login": f"{settings.API_PREFIX}/auth/login",
     }
 
 

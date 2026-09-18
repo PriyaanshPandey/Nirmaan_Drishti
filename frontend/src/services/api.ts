@@ -8,7 +8,35 @@
 import type { Project, ProjectBenchmark } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+
+/** localStorage key — must match AuthContext.tsx */
+const _TOKEN_KEY = 'nd_auth_token';
+
+/** Returns Authorization header with the stored JWT, or empty object if not logged in */
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem(_TOKEN_KEY);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/**
+ * Authenticated fetch wrapper.
+ * Injects the JWT header and handles 401 by clearing auth state + firing
+ * a custom "nd:auth:expired" event so App.tsx can redirect to login.
+ */
+async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const headers = {
+    ...getAuthHeaders(),
+    ...(options.headers as Record<string, string> | undefined),
+  };
+  const res = await fetch(url, { ...options, headers });
+  if (res.status === 401) {
+    localStorage.removeItem(_TOKEN_KEY);
+    localStorage.removeItem('nd_auth_user');
+    window.dispatchEvent(new CustomEvent('nd:auth:expired'));
+  }
+  return res;
+}
 
 let _localProjectsCache: Project[] | null = null;
 export async function getLocalProjects(): Promise<Project[]> {
@@ -695,7 +723,7 @@ export const api = {
    */
   async getHealth(): Promise<{ status: string; database: string }> {
     try {
-      const res = await fetch(`${API_BASE_URL}/health`);
+      const res = await apiFetch(`${API_BASE_URL}/health`);
       if (!res.ok) throw new Error('Health check failed');
       return await res.json();
     } catch {
@@ -710,7 +738,7 @@ export const api = {
     const cached = cacheGet<DashboardSummaryData>('dashboard_summary');
     if (cached) return cached;
     try {
-      const res = await fetch(`${API_BASE_URL}/dashboard/summary`);
+      const res = await apiFetch(`${API_BASE_URL}/dashboard/summary`);
       if (!res.ok) throw new Error('Dashboard summary failed');
       const data = await res.json();
       cacheSet('dashboard_summary', data);
@@ -730,7 +758,7 @@ export const api = {
       if (ministry && ministry !== 'All') {
         params.append('ministry', ministry);
       }
-      const res = await fetch(`${API_BASE_URL}/dashboard/critical-projects?${params.toString()}`);
+      const res = await apiFetch(`${API_BASE_URL}/dashboard/critical-projects?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) return data;
@@ -805,7 +833,7 @@ export const api = {
       if (scheduleStatus && scheduleStatus !== 'All') params.append('schedule_status', scheduleStatus);
       if (riskLevel && riskLevel !== 'All') params.append('risk_level', riskLevel);
 
-      const res = await fetch(`${API_BASE_URL}/projects?${params.toString()}`);
+      const res = await apiFetch(`${API_BASE_URL}/projects?${params.toString()}`);
       if (!res.ok) throw new Error('Projects fetch failed');
       const data = await res.json();
 
@@ -936,7 +964,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${projectId}`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${projectId}`);
       if (!res.ok) throw new Error('Project details failed');
       const p = await res.json();
       const projItem: Project = {
@@ -1050,7 +1078,7 @@ export const api = {
     let createdProject: Project;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects`, {
+      const res = await apiFetch(`${API_BASE_URL}/projects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backendPayload)
@@ -1144,7 +1172,7 @@ export const api = {
    */
   async getProjectBenchmark(projectId: string): Promise<ProjectBenchmark | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/benchmark/${projectId}`);
+      const res = await apiFetch(`${API_BASE_URL}/benchmark/${projectId}`);
       if (!res.ok) throw new Error('Benchmark fetch failed');
       return await res.json();
     } catch (e) {
@@ -1183,7 +1211,7 @@ export const api = {
     const cached = cacheGet<RiskSummaryData>('risk_summary');
     if (cached) return cached;
     try {
-      const res = await fetch(`${API_BASE_URL}/risk/summary`);
+      const res = await apiFetch(`${API_BASE_URL}/risk/summary`);
       if (!res.ok) throw new Error('Risk summary failed');
       const data = await res.json();
       cacheSet('risk_summary', data);
@@ -1199,7 +1227,7 @@ export const api = {
    */
   async getHighRiskProjects(limit = 50): Promise<Project[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/risk/high-risk?limit=${limit}`);
+      const res = await apiFetch(`${API_BASE_URL}/risk/high-risk?limit=${limit}`);
       if (!res.ok) throw new Error('High risk fetch failed');
       const items = await res.json();
       return items.map((p: any) => ({
@@ -1245,7 +1273,7 @@ export const api = {
     const cached = cacheGet<ActionCenterData>('action_center');
     if (cached) return cached;
     try {
-      const res = await fetch(`${API_BASE_URL}/alerts/summary`);
+      const res = await apiFetch(`${API_BASE_URL}/alerts/summary`);
       if (!res.ok) throw new Error('Action center fetch failed');
       const data = await res.json();
       cacheSet('action_center', data);
@@ -1263,7 +1291,7 @@ export const api = {
     const cached = cacheGet<DistributionSummaryData>('distribution_summary');
     if (cached) return cached;
     try {
-      const res = await fetch(`${API_BASE_URL}/distribution/summary`);
+      const res = await apiFetch(`${API_BASE_URL}/distribution/summary`);
       if (!res.ok) throw new Error('Distribution fetch failed');
       const data = await res.json();
       cacheSet('distribution_summary', data);
@@ -1279,7 +1307,7 @@ export const api = {
    */
   async getMinistries(): Promise<Array<{ id: number; name: string; code: string; total_projects: number }>> {
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/ministries`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/ministries`);
       if (!res.ok) throw new Error('Ministries fetch failed');
       const data = await res.json();
       if (data && data.length > 0) return data;
@@ -1298,7 +1326,7 @@ export const api = {
 
   async getSectors(): Promise<Array<{ id: number; name: string; code: string; total_projects: number }>> {
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/sectors`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/sectors`);
       if (!res.ok) throw new Error('Sectors fetch failed');
       const data = await res.json();
       if (data && data.length > 0) return data;
@@ -1320,7 +1348,7 @@ export const api = {
    */
   async exportActionPlan(): Promise<boolean> {
     try {
-      const res = await fetch(`${API_BASE_URL}/alerts/export`);
+      const res = await apiFetch(`${API_BASE_URL}/alerts/export`);
       if (!res.ok) throw new Error('Export endpoint returned error');
 
       const blob = await res.blob();
@@ -1344,7 +1372,7 @@ export const api = {
    */
   async getInsightsSummary(): Promise<any | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/insights/summary`);
+      const res = await apiFetch(`${API_BASE_URL}/insights/summary`);
       if (!res.ok) return null;
       return await res.json();
     } catch (e) {
@@ -1362,7 +1390,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/risk/projects/${projectId}/predict?horizon=${horizon}`, {
+      const res = await apiFetch(`${API_BASE_URL}/risk/projects/${projectId}/predict?horizon=${horizon}`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -1456,7 +1484,7 @@ export const api = {
    */
   async getProjectDrivers(projectId: string): Promise<{ top_risk_drivers: any[]; top_protective_factors: any[] } | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/risk/projects/${projectId}/drivers`);
+      const res = await apiFetch(`${API_BASE_URL}/risk/projects/${projectId}/drivers`);
       if (!res.ok) return null;
       return await res.json();
     } catch (e) {
@@ -1481,7 +1509,7 @@ export const api = {
 
   async explainProject(projectId: string): Promise<AIExplanationData | null> {
     try {
-      const res = await fetch(`${API_BASE_URL}/assistant/explain/${projectId}`, {
+      const res = await apiFetch(`${API_BASE_URL}/assistant/explain/${projectId}`, {
         method: 'POST',
       });
       if (!res.ok) return null;
@@ -1527,7 +1555,7 @@ export const api = {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/assistant/query`, {
+      const res = await apiFetch(`${API_BASE_URL}/assistant/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, project_id: projectId }),
@@ -1569,7 +1597,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/prediction`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/prediction`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -1696,7 +1724,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/shap?model_name=${encodeURIComponent(modelName)}`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/shap?model_name=${encodeURIComponent(modelName)}`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -1750,7 +1778,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/cost-drivers`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/cost-drivers`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -1889,7 +1917,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/ai-summary`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/ai-summary`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -1994,7 +2022,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/model-explanations`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/model-explanations`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -2128,7 +2156,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/warnings`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/warnings`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -2217,7 +2245,7 @@ export const api = {
     if (cached) return cached;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/recommendations`);
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/recommendations`);
       if (res.ok) {
         const data = await res.json();
         cacheSet(cacheKey, data);
@@ -2301,7 +2329,7 @@ export const api = {
    */
   async askProjectAssistant(projectId: string, question: string, history: Array<{ role: string; content: string }> = []): Promise<ChatResponse> {
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/chat`, {
+      const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, history }),
