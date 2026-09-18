@@ -96,7 +96,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       tab: 'projects',
       tag: 'Master Portfolio',
       title: 'Projects',
-      desc: 'Telemetry, risk diagnostics, and milestone tracking across 3,361 assets.',
+      desc: 'Telemetry, risk diagnostics, and milestone tracking across 6,568 assets.',
       color: 'green'
     },
     {

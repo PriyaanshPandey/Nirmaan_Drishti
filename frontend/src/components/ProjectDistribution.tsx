@@ -497,7 +497,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
         <div className="dist-header-right">
           <div className="dist-header-badge">
             <span className="dist-pulse-dot" />
-            <span>3,361 Active Assets Synchronized</span>
+            <span>6,568 Active Assets Synchronized</span>
           </div>
         </div>
       </div>

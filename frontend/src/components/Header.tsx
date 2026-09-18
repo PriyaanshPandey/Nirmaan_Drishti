@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} /> },
   ];
 
-  // Compute exact counts from 3,361 master dataset
+  // Compute exact counts from 6,568 master dataset
   const statusItems: StatusItem[] = useMemo(() => {
     let onTrack = 0;
     let inProgress = 0;
@@ -295,7 +295,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               className="header-search-icon-btn"
               onClick={() => setIsSearchOpen(true)}
-              title="Search 3,361 Infrastructure Projects (Ctrl+K or /)"
+              title="Search 6,568 Infrastructure Projects (Ctrl+K or /)"
               aria-label="Search projects"
             >
               <Search size={19} strokeWidth={2} className="search-icon-svg" />
@@ -352,7 +352,7 @@ export const Header: React.FC<HeaderProps> = ({
                 ref={searchInputRef}
                 type="text"
                 className="spotlight-input-field"
-                placeholder="Search 3,361 projects by name, sector, ministry, or ID..."
+                placeholder="Search 6,568 projects by name, sector, ministry, or ID..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -525,7 +525,7 @@ export const Header: React.FC<HeaderProps> = ({
                   if (onNavigateTab) onNavigateTab('projects');
                 }}
               >
-                <span>View All 3,361 Projects</span>
+                <span>View All 6,568 Projects</span>
                 <ArrowRight size={14} />
               </button>
             </div>
