@@ -159,7 +159,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
           const matchName = p.name.toLowerCase().includes(q);
-          const matchId = p.id.toLowerCase().includes(q);
+          const matchId = p.id.toLowerCase().includes(q) || 
+                          (p.legacyOcmsCode && p.legacyOcmsCode.toLowerCase().includes(q)) || 
+                          ((p as any).legacy_ocms_code && String((p as any).legacy_ocms_code).toLowerCase().includes(q));
           const matchMin = (p.ministry || '').toLowerCase().includes(q);
           if (!matchName && !matchId && !matchMin) return false;
         }

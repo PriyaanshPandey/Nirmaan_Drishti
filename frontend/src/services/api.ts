@@ -868,9 +868,10 @@ export const api = {
     scheduleStatus?: string,
     ministry?: string,
     sector?: string,
-    riskLevel?: string
+    riskLevel?: string,
+    searchBy: 'all' | 'name' | 'id' = 'all'
   ): Promise<{ items: Project[]; total: number }> {
-    const cacheKey = `projects_${page}_${pageSize}_${search}_${ministryId}_${sectorId}_${scheduleStatus}_${ministry}_${sector}_${riskLevel}`;
+    const cacheKey = `projects_${page}_${pageSize}_${search}_${searchBy}_${ministryId}_${sectorId}_${scheduleStatus}_${ministry}_${sector}_${riskLevel}`;
     const cached = cacheGet<{ items: Project[]; total: number }>(cacheKey);
     if (cached) return cached;
 
@@ -879,7 +880,12 @@ export const api = {
         page: page.toString(),
         page_size: pageSize.toString()
       });
-      if (search && search.trim()) params.append('search', search.trim());
+      if (search && search.trim()) {
+        params.append('search', search.trim());
+        if (searchBy && searchBy !== 'all') {
+          params.append('search_by', searchBy);
+        }
+      }
       if (ministryId !== undefined) params.append('ministry_id', ministryId.toString());
       if (sectorId !== undefined) params.append('sector_id', sectorId.toString());
       if (ministry && ministry !== 'All') params.append('ministry', ministry);
@@ -941,13 +947,28 @@ export const api = {
       const q = search.toLowerCase().trim();
       let filtered = await getLocalProjects();
       if (q) {
-        filtered = filtered.filter(p => 
-          p.name.toLowerCase().includes(q) ||
-          p.location.toLowerCase().includes(q) ||
-          p.agency.toLowerCase().includes(q) ||
-          p.ministry.toLowerCase().includes(q) ||
-          p.sector.toLowerCase().includes(q)
-        );
+        if (searchBy === 'id') {
+          filtered = filtered.filter(p => 
+            (p.id && String(p.id).toLowerCase().includes(q)) ||
+            (p.legacyOcmsCode && String(p.legacyOcmsCode).toLowerCase().includes(q)) ||
+            ((p as any).legacy_ocms_code && String((p as any).legacy_ocms_code).toLowerCase().includes(q))
+          );
+        } else if (searchBy === 'name') {
+          filtered = filtered.filter(p => 
+            p.name && p.name.toLowerCase().includes(q)
+          );
+        } else {
+          filtered = filtered.filter(p => 
+            (p.name && p.name.toLowerCase().includes(q)) ||
+            (p.id && String(p.id).toLowerCase().includes(q)) ||
+            (p.legacyOcmsCode && String(p.legacyOcmsCode).toLowerCase().includes(q)) ||
+            ((p as any).legacy_ocms_code && String((p as any).legacy_ocms_code).toLowerCase().includes(q)) ||
+            (p.location && p.location.toLowerCase().includes(q)) ||
+            (p.agency && p.agency.toLowerCase().includes(q)) ||
+            (p.ministry && p.ministry.toLowerCase().includes(q)) ||
+            (p.sector && p.sector.toLowerCase().includes(q))
+          );
+        }
       }
       if (ministry && ministry !== 'All') {
         filtered = filtered.filter(p => p.ministry.toLowerCase() === ministry.toLowerCase());

@@ -194,6 +194,7 @@ def get_projects(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=200, description="Items per page"),
     search: Optional[str] = Query(None, description="Search by name, ID, agency, or state"),
+    search_by: Optional[str] = Query("all", description="Search filter field: 'all', 'name', 'id'"),
     ministry_id: Optional[int] = Query(None, description="Filter by Ministry ID"),
     sector_id: Optional[int] = Query(None, description="Filter by Sector ID"),
     ministry: Optional[str] = Query(None, description="Filter by Ministry name"),
@@ -213,17 +214,29 @@ def get_projects(
     # Apply search filter across name, ID, agency, state, location, and project code
     if search and search.strip():
         search_fmt = f"%{search.strip()}%"
-        query = query.filter(
-            or_(
-                Project.name.ilike(search_fmt),
-                Project.id.ilike(search_fmt),
-                Project.legacy_ocms_code.ilike(search_fmt),
-                Project.implementing_agency.ilike(search_fmt),
-                Project.state.ilike(search_fmt),
-                Project.location.ilike(search_fmt),
-                Project.project_code.ilike(search_fmt)
+        mode = (search_by or "all").strip().lower()
+        if mode == "id":
+            query = query.filter(
+                or_(
+                    Project.id.ilike(search_fmt),
+                    Project.legacy_ocms_code.ilike(search_fmt),
+                    Project.project_code.ilike(search_fmt)
+                )
             )
-        )
+        elif mode == "name":
+            query = query.filter(Project.name.ilike(search_fmt))
+        else:
+            query = query.filter(
+                or_(
+                    Project.name.ilike(search_fmt),
+                    Project.id.ilike(search_fmt),
+                    Project.legacy_ocms_code.ilike(search_fmt),
+                    Project.implementing_agency.ilike(search_fmt),
+                    Project.state.ilike(search_fmt),
+                    Project.location.ilike(search_fmt),
+                    Project.project_code.ilike(search_fmt)
+                )
+            )
 
     # Apply direct ministry filters (by ID or name)
     if ministry_id is not None:

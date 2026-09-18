@@ -101,8 +101,57 @@
   box-shadow: var(--shadow-md);
 }
 
+.portfolio-search-bar-row {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  border: 1px solid #64748B;
+  border-radius: 8px;
+  background-color: #F8FAFC;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.portfolio-search-bar-row:focus-within {
+  background-color: #FFFFFF;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.portfolio-search-type-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  border-right: 1px solid #CBD5E1;
+  padding: 0 4px 0 8px;
+  flex-shrink: 0;
+}
+
+.portfolio-search-type-select {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy-dark);
+  padding: 10px 24px 10px 6px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.portfolio-search-type-wrapper .search-type-chevron {
+  position: absolute;
+  right: 8px;
+  color: #64748B;
+  pointer-events: none;
+}
+
 .portfolio-search-input-wrapper {
   position: relative;
+  flex: 1;
   width: 100%;
   display: flex;
   align-items: center;
@@ -117,21 +166,53 @@
 
 .portfolio-search-input {
   width: 100%;
-  padding: 11px 16px 11px 42px;
-  border: 1px solid #64748B;
-  border-radius: 8px;
+  padding: 11px 38px 11px 42px;
+  border: none;
+  border-radius: 0;
   font-family: inherit;
   font-size: 13.5px;
   color: var(--navy-dark);
-  background-color: #F8FAFC;
-  transition: all 0.2s ease;
+  background-color: transparent;
   outline: none;
 }
 
 .portfolio-search-input:focus {
-  background-color: #FFFFFF;
-  border-color: #2563EB;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.portfolio-search-clear-btn {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #E2E8F0;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.portfolio-search-clear-btn:hover {
+  background: #CBD5E1;
+  color: var(--navy-dark);
+}
+
+@media (max-width: 600px) {
+  .portfolio-search-bar-row {
+    flex-direction: column;
+  }
+  .portfolio-search-type-wrapper {
+    border-right: none;
+    border-bottom: 1px solid #CBD5E1;
+    width: 100%;
+  }
 }
 
 .portfolio-dropdowns-group {
