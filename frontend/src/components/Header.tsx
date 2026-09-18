@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
   SlidersHorizontal, CornerDownLeft, Home, LayoutDashboard,
-  Database, Layers, ShieldAlert, FileSpreadsheet, ExternalLink
+  Database, Layers, ShieldAlert, FileSpreadsheet
 } from 'lucide-react';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import type { Project } from '../data/projectsData';
@@ -317,19 +317,12 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   className={`header-nav-rectangular-tab ${isActive ? 'active' : ''}`}
                   onClick={() => {
-                    if (item.id === 'extractor') {
-                      window.open('http://localhost:8000', '_blank', 'noopener,noreferrer');
-                    } else {
-                      onNavigateTab?.(item.id);
-                    }
+                    onNavigateTab?.(item.id);
                   }}
-                  title={item.id === 'extractor' ? "Open MoSPI PDF Extractor (New Tab)" : undefined}
+                  title={item.id === 'extractor' ? "Open MoSPI PDF Extractor Workspace" : undefined}
                 >
                   <span className="nav-tab-icon">{item.icon}</span>
                   <span className="nav-tab-label">{item.label}</span>
-                  {item.id === 'extractor' && (
-                    <ExternalLink size={11} style={{ opacity: 0.65, marginLeft: 2 }} />
-                  )}
                 </button>
               );
             })}

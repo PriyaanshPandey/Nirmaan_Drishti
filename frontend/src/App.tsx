@@ -9,6 +9,7 @@ import { ProjectPortfolio } from './components/ProjectPortfolio';
 import { ProjectDetails } from './components/ProjectDetails';
 import { ActionCenter } from './components/ActionCenter';
 import { ProjectDistribution } from './components/ProjectDistribution';
+import { PdfExtractor } from './components/PdfExtractor';
 import { PageSlot } from './components/PageTransition';
 import { Home } from './components/Home';
 import { Footer } from './components/Footer';
@@ -52,6 +53,7 @@ function App() {
       projects: selectedProjectId ? `Project Details — ${selectedProjectId}` : 'Projects',
       'action-centre': 'Action Center',
       distribution: 'Distribution',
+      extractor: 'PDF Telemetry Extractor',
     };
     document.title = `Nirmaan Drishti — ${titles[activeTab] || 'Home'}`;
   }, [activeTab, selectedProjectId]);
@@ -236,6 +238,16 @@ function App() {
               onNavigateTab={handleTabChange}
               onFilterStatus={handleFilterStatus}
               onFilterRisk={handleFilterRisk}
+            />
+          </main>
+        </PageSlot>
+
+        {/* ── PDF Extractor ── */}
+        <PageSlot id="extractor" activeTab={activeTab}>
+          <main className="extractor-content" style={{ padding: '24px 32px' }}>
+            <PdfExtractor
+              onNavigateTab={handleTabChange}
+              onSelectProject={handleSelectProject}
             />
           </main>
         </PageSlot>

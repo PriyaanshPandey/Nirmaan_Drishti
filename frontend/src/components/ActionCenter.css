@@ -277,6 +277,64 @@
   gap: 16px;
   width: 100%;
   scroll-margin-top: 88px;
+  margin-bottom: 12px;
+}
+
+.ac-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #2563EB;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.ac-section-header.header-red {
+  border-left-color: #DC2626;
+  background: linear-gradient(90deg, #FEF2F2 0%, #FFFFFF 100%);
+}
+
+.ac-section-header.header-blue {
+  border-left-color: #2563EB;
+  background: linear-gradient(90deg, #EFF6FF 0%, #FFFFFF 100%);
+}
+
+.ac-section-header.header-purple {
+  border-left-color: #7C3AED;
+  background: linear-gradient(90deg, #F5F3FF 0%, #FFFFFF 100%);
+}
+
+.ac-section-tag {
+  font-size: 13px;
+  font-weight: 850;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.ac-section-tag.tag-red {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.ac-section-tag.tag-blue {
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.ac-section-tag.tag-purple {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.ac-section-name {
+  font-size: 16px;
+  font-weight: 850;
+  color: #0F172A;
+  letter-spacing: -0.01em;
 }
 
 .ac-panel-card {

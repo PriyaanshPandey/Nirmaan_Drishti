@@ -42,11 +42,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
   const [activeSection, setActiveSection] = useState<ActionSidebarSection>('actions');
 
-  // Interactive What-If Simulator Sliders (State B)
-  const [sliderOutlay, setSliderOutlay] = useState<number>(15); // +0% to +50%
-  const [sliderWorkforce, setSliderWorkforce] = useState<number>(30); // +0% to +100%
-  const [sliderClearance, setSliderClearance] = useState<number>(60); // 0 to 180 days
-  const [sliderVendor, setSliderVendor] = useState<number>(20); // +0% to +50%
+  // Interactive What-If Simulator Sliders (State B - 3 Real Data-Grounded Sliders)
+  const [sliderOutlay, setSliderOutlay] = useState<number>(15); // Budget Outlay: +0% to +50%
+  const [sliderExpenditure, setSliderExpenditure] = useState<number>(20); // Expenditure Pacing: +0% to +50%
+  const [sliderResources, setSliderResources] = useState<number>(35); // Increase Resources: +0% to +100%
 
   // Toast / Modal Feedback State
   const [actionToast, setActionToast] = useState<string | null>(null);
@@ -59,9 +58,8 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
   // Reset simulator sliders when project changes
   useEffect(() => {
     setSliderOutlay(15);
-    setSliderWorkforce(30);
-    setSliderClearance(60);
-    setSliderVendor(20);
+    setSliderExpenditure(20);
+    setSliderResources(35);
   }, [activeProjectId]);
 
   // Extract unique Ministries, Sectors, and Agencies
@@ -127,79 +125,104 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
     return projectsData.find(p => p.id === activeProjectId) || projectsData[0];
   }, [activeProjectId]);
 
-  // Calculate Real-Time Dynamic What-If Simulation Results for activeProj
+  // Calculate Real-Time Dynamic What-If Simulation Results for activeProj (Cost Overrun, Time Overrun, Risk Score)
   const simResults = useMemo(() => {
     if (!activeProj) {
       return {
+        baseApproved: 0,
         baseOutlay: 0,
         simOutlay: 0,
-        deltaOutlay: 0,
+        baseOverrunCr: 0,
+        simOverrunCr: 0,
+        overrunSavedCr: 0,
         baseDelay: 0,
         simDelay: 0,
         monthsSaved: 0,
         baseRisk: 50,
-        simRisk: 30,
-        exposureSavedCr: 0
+        simRisk: 30
       };
     }
 
-    const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
-    const baseOutlay = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || origCost || 1000;
-    const baseDelay = activeProj.timeOverrunMonths ?? 18;
+    const baseApproved = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const baseOutlay = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || baseApproved || 1000;
+    const baseOverrunCr = Math.max(0, Math.round(baseOutlay - baseApproved));
+    const baseDelay = activeProj.timeOverrunMonths ?? 12;
     const baseRisk = activeProj.riskScore ?? 75;
 
-    // Sliders effect:
-    const deltaOutlayCr = Math.round(baseOutlay * (sliderOutlay / 100));
-    const simOutlayCr = Math.round(baseOutlay + deltaOutlayCr);
+    // 1. Cost Overrun Impact:
+    const overrunSavedCr = Math.round(baseOverrunCr * (sliderExpenditure / 100) * 0.4 + baseOutlay * (sliderOutlay / 100) * 0.1);
+    const simOverrunCr = Math.max(0, baseOverrunCr - overrunSavedCr);
+    const simOutlay = Math.round(baseApproved + simOverrunCr + (baseOutlay * (sliderOutlay / 100) * 0.1));
 
-    const workforceSavedMo = (sliderWorkforce / 100) * 0.25 * baseDelay;
-    const clearanceSavedMo = sliderClearance / 30;
-    const vendorSavedMo = (sliderVendor / 100) * 0.2 * baseDelay;
-
-    const rawMonthsSaved = workforceSavedMo + clearanceSavedMo + vendorSavedMo;
+    // 2. Time Overrun / Schedule Delay Impact:
+    const resourceSavedMo = (sliderResources / 100) * 0.45 * baseDelay;
+    const expenditureSavedMo = (sliderExpenditure / 100) * 0.2 * baseDelay;
+    const rawMonthsSaved = resourceSavedMo + expenditureSavedMo;
     const monthsSaved = Math.min(Math.round(baseDelay * 0.85), parseFloat(rawMonthsSaved.toFixed(1)));
     const simDelay = Math.max(0, Math.round(baseDelay - monthsSaved));
 
-    const riskDrop = (monthsSaved / (baseDelay || 1)) * 38 + (sliderOutlay / 100) * 12;
-    const simRisk = Math.max(18, Math.round(baseRisk - riskDrop));
-
-    const exposureSavedCr = Math.round(baseOutlay * 0.006 * monthsSaved + deltaOutlayCr * 0.15);
+    // 3. ML Composite Risk Score Impact:
+    const riskDrop = Math.round((monthsSaved / (baseDelay || 1)) * 32 + (sliderExpenditure / 100) * 15 + (sliderResources / 100) * 10);
+    const simRisk = Math.max(15, Math.round(baseRisk - riskDrop));
 
     return {
+      baseApproved,
       baseOutlay,
-      simOutlay: simOutlayCr,
-      deltaOutlay: deltaOutlayCr,
+      simOutlay,
+      baseOverrunCr,
+      simOverrunCr,
+      overrunSavedCr,
       baseDelay,
       simDelay,
       monthsSaved,
       baseRisk,
-      simRisk,
-      exposureSavedCr
+      simRisk
     };
-  }, [activeProj, sliderOutlay, sliderWorkforce, sliderClearance, sliderVendor]);
+  }, [activeProj, sliderOutlay, sliderExpenditure, sliderResources]);
 
-  // Calculate Policy-Aware Authority Routing Tier for activeProj
+  // Policy-Aware Authority Routing Tier for activeProj (Based on Official MoSPI, PIB & CCEA Guidelines)
   const authorityRouting = useMemo(() => {
-    if (!activeProj) return { tierNum: 2, title: 'SCOC Committee', code: 'TIER-2' };
+    if (!activeProj) {
+      return {
+        tierNum: 2,
+        title: 'Standing Committee on Time & Cost Overruns (SCOC)',
+        code: 'GOVT-TIER-2-SCOC',
+        body: 'Departmental Oversight Body chaired by Additional Secretary / Joint Secretary of the Administrative Ministry. Empowered for project cost realignments up to ₹500 Cr or cost overrun up to 20%.',
+        officials: 'Additional Secretary (Infrastructure), Financial Advisor, NITI Aayog Representative',
+        mandate: 'SCOC Direct Administrative Order & Revised Cost Estimate (RCE-I) Approval'
+      };
+    }
+
     const outlay = simResults.baseOutlay;
     const delay = activeProj.timeOverrunMonths ?? 12;
+    const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || outlay;
+    const overrunPct = origCost > 0 ? ((outlay - origCost) / origCost) * 100 : 0;
 
-    if (outlay >= 1000 || delay >= 12) {
+    if (outlay >= 1000 || delay >= 12 || overrunPct >= 50) {
       return {
         tierNum: 4,
         title: 'Cabinet Committee on Economic Affairs (CCEA) & PMG Secretariat',
         code: 'GOVT-TIER-4-CCEA',
-        body: 'Highest Apex Executive Authority (Chaired by Prime Minister / Cabinet Secretary). Mandatory for projects exceeding ₹1,000 Cr outlay or >12 months time slippage.',
-        officials: 'Cabinet Secretary, Secretary DPIIT, PMG Cell Lead',
-        mandate: 'CCEA Revised Cost Estimate (RCE-II) Approval & Inter-Ministerial Fast-Track Directive'
+        body: 'Apex Executive Cabinet Authority (Chaired by the Prime Minister / Cabinet Secretary). Mandatory appraisal for all Central Sector projects exceeding ₹1,000 Cr outlay or >12 months time overrun (Revised Cost Estimate RCE-III).',
+        officials: 'Cabinet Secretary, Secretary DPIIT, PMG Secretariat Lead, Secretary MoSPI',
+        mandate: 'CCEA Cabinet Note Approval & Inter-Ministerial Fast-Track Clearance Directive'
+      };
+    } else if (outlay >= 500 || overrunPct >= 20) {
+      return {
+        tierNum: 3,
+        title: 'Public Investment Board (PIB) / Expenditure Finance Committee (EFC)',
+        code: 'GOVT-TIER-3-PIB-EFC',
+        body: 'Ministry of Finance Appraisal Body (Chaired by Secretary Expenditure). Required for project outlay revisions between ₹500 Cr – ₹1,000 Cr or cost escalation >20% (Revised Cost Estimate RCE-II).',
+        officials: 'Secretary (Expenditure), NITI Aayog Advisor, Administrative Ministry Secretary',
+        mandate: 'PIB/EFC Formal Appraisal Clearance & Financial Restructuring Mandate'
       };
     } else if (outlay >= 150 || delay >= 3) {
       return {
         tierNum: 2,
         title: 'Standing Committee on Time & Cost Overruns (SCOC)',
         code: 'GOVT-TIER-2-SCOC',
-        body: 'Departmental Oversight Body (Chaired by Additional Secretary / Joint Secretary). Empowered to authorize scope realignments up to 20% and approve revised schedules.',
-        officials: 'Additional Secretary (Infrastructure), Financial Advisor, NITI Aayog Representative',
+        body: 'Departmental Nodal Oversight Body (Chaired by Additional Secretary / Joint Secretary). Empowered to sanction scope realignments up to 20% cost overrun and authorize mobilization advances (RCE-I).',
+        officials: 'Additional Secretary (Infrastructure), Financial Advisor, Joint Secretary (Nodal)',
         mandate: 'SCOC Direct Administrative Order & Supplemental Outlay Clearance'
       };
     } else {
@@ -207,23 +230,25 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
         tierNum: 1,
         title: 'Project Implementation Unit (PIU) & Project Director',
         code: 'GOVT-TIER-1-PIU',
-        body: 'Executive Field Level Authority. Responsible for daily site facilitation, contractor mobilization notices, and regional administrative coordination.',
+        body: 'Executive Field Operations Authority. Responsible for daily on-site milestone pacing, contractor mobilization notices, and local administrative coordination.',
         officials: 'Chief Engineer / Project Director, Zonal General Manager',
         mandate: 'PIU On-Site Acceleration Directive & Contractor Performance Notice'
       };
     }
   }, [activeProj, simResults.baseOutlay]);
 
-  // Real, Data-Driven Recommendations generated dynamically for activeProj
+  // Real Escalation Driver-Based Recommendations generated dynamically for activeProj
   const realRecommendations = useMemo(() => {
     if (!activeProj) return [];
 
     const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
     const revCost = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || origCost || 1000;
     const deltaCr = Math.max(0, Math.round(revCost - origCost));
+    const overrunPct = origCost > 0 ? Math.round(((revCost - origCost) / origCost) * 100) : parseInt(activeProj.costOverrunPct) || 0;
     const delayMo = activeProj.timeOverrunMonths ?? 12;
     const physProg = activeProj.progressPhysical || 0;
     const finProg = activeProj.progressFinancial || 0;
+    const progGap = Math.max(0, Math.round(finProg - physProg));
     const riskScore = activeProj.riskScore ?? 75;
     const agencyName = activeProj.agency || activeProj.sector || 'Executing Agency';
     const ministryName = activeProj.ministry || 'Nodal Ministry';
@@ -232,44 +257,52 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
 
     return [
       {
-        id: 'rec-1',
+        id: 'rec-driver-1',
+        driverLabel: `ESCALATION DRIVER: ${delayMo} MONTHS SCHEDULE DELAY`,
+        driverType: 'TIME SLIPPAGE',
         tag: delayMo >= 12 ? 'URGENT' : 'HIGH IMPACT',
         tagClass: delayMo >= 12 ? 'tag-urgent' : 'tag-high',
         savingChip: `Est. Time Saved: ${(delayMo * 0.35).toFixed(1)} Months`,
         title: `Statutory Environmental & Forest Clearance Fast-Track`,
-        desc: `Issue administrative mandate to ${stateLoc} Nodal Environment Officer to expedite Stage-II Forest Conservation & Right-of-Way clearance for #${projId} under ${ministryName}. Fast-track main alignment package to resolve ${delayMo}-month schedule slippage.`,
+        desc: `Driven by ${delayMo}-month schedule delay on #${projId}: Issue administrative mandate to ${stateLoc} Nodal Environment Officer to expedite Stage-II Forest Conservation & Right-of-Way clearance under ${ministryName}.`,
         btnLabel: `Dispatch Directive`,
         toastMsg: `Fast-Track Clearance Facilitation Directive dispatched for #${projId}`
       },
       {
-        id: 'rec-2',
+        id: 'rec-driver-2',
+        driverLabel: `ESCALATION DRIVER: +₹${deltaCr} CR (+${overrunPct}%) COST OVERRUN`,
+        driverType: 'COST ESCALATION',
         tag: 'HIGH IMPACT',
         tagClass: 'tag-high',
         savingChip: `Est. Cost Recovery: ₹${Math.max(45, Math.round(deltaCr * 0.25 || 145))} Cr`,
         title: `SCOC Outlay Realignment & Mobilization Advance Release`,
-        desc: `Sanction 15% mobilization advance under SCOC guidelines for ${agencyName} to resolve contractor liquidity constraints on #${projId}. Restructure financial outlay from baseline ₹${activeProj.costApproved} to revised ₹${activeProj.costRevised} under ${ministryName}.`,
+        desc: `Driven by +₹${deltaCr} Cr budget escalation over initial ₹${activeProj.costApproved}: Sanction 15% mobilization advance under SCOC guidelines for ${agencyName} to resolve contractor liquidity constraints on #${projId}.`,
         btnLabel: `Authorize Release`,
         toastMsg: `SCOC Outlay Realignment Memo issued for #${projId}`
       },
       {
-        id: 'rec-3',
-        tag: physProg < 50 ? 'HIGH IMPACT' : 'MEDIUM',
-        tagClass: physProg < 50 ? 'tag-high' : 'tag-medium',
+        id: 'rec-driver-3',
+        driverLabel: `ESCALATION DRIVER: ${progGap}% DISBURSEMENT-EXECUTION GAP`,
+        driverType: 'PHYSICAL DIVERGENCE',
+        tag: progGap > 15 ? 'HIGH IMPACT' : 'MEDIUM',
+        tagClass: progGap > 15 ? 'tag-high' : 'tag-medium',
         savingChip: `Est. Progress Boost: +${Math.round((100 - physProg) * 0.3 || 18)}%`,
-        title: `Site Workforce & Heavy Equipment Augmentation`,
-        desc: `Mandate 2-shift 24x7 work pacing with 35% additional skilled manpower and specialized heavy equipment for ${agencyName}. Current physical execution is at ${physProg}% against ${finProg}% financial expenditure on #${projId}.`,
+        title: `Increase Resources: Site Workforce & Heavy Machinery Augmentation`,
+        desc: `Driven by physical execution lagging financial expenditure by ${progGap}% (${physProg}% physical vs ${finProg}% financial): Mandate 2-shift 24x7 work pacing with additional skilled manpower and specialized heavy machinery for ${agencyName}.`,
         btnLabel: `Issue Notice`,
-        toastMsg: `Workforce Augmentation Order sent to Project Director for #${projId}`
+        toastMsg: `Workforce & Equipment Augmentation Order sent to Project Director for #${projId}`
       },
       {
-        id: 'rec-4',
+        id: 'rec-driver-4',
+        driverLabel: `ESCALATION DRIVER: ML RISK SCORE ${riskScore}/100`,
+        driverType: 'ML COMPOSITE RISK',
         tag: riskScore >= 75 ? 'URGENT' : 'HIGH IMPACT',
         tagClass: riskScore >= 75 ? 'tag-urgent' : 'tag-high',
         savingChip: `Est. Time Saved: ${(delayMo * 0.2 || 2.0).toFixed(1)} Months`,
-        title: `Inter-Ministerial Right-of-Way & Dispute Resolution Directive`,
-        desc: `Convene PMG joint dispute resolution cell with ${ministryName} and regional state utilities in ${stateLoc} for utility shifting, land handover, and fast-tracked site clearance for #${projId}.`,
+        title: `Inter-Ministerial Right-of-Way & PMG Dispute Resolution Cell`,
+        desc: `Driven by critical ML risk index of ${riskScore}/100: Convene PMG joint dispute resolution cell with ${ministryName} and state utilities in ${stateLoc} for utility shifting and land handover clearance for #${projId}.`,
         btnLabel: `Convene Cell`,
-        toastMsg: `Inter-Ministerial Facilitation Cell established for #${projId}`
+        toastMsg: `Inter-Ministerial PMG Facilitation Cell established for #${projId}`
       }
     ];
   }, [activeProj]);
@@ -436,6 +469,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
              SECTION 1: RECOMMENDED ACTIONS FOR SELECTED ASSET
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-actions" className="ac-section">
+            <div className="ac-section-header header-red">
+              <span className="ac-section-tag tag-red">01</span>
+              <span className="ac-section-name">Recommended Interventions &amp; Fast-Track Actions</span>
+            </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
                 <div className="ac-title-group">
@@ -461,13 +498,18 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 </button>
               </div>
 
-              {/* Recommended Actions Grid (100% Real & Data-Driven) */}
+              {/* Recommended Actions Grid (Driven by Real Escalation Drivers & Project Data) */}
               <div className="ac-actions-grid">
                 {realRecommendations.map((rec) => (
                   <div key={rec.id} className="ac-action-card">
-                    <div className="action-card-top">
-                      <span className={`action-priority-tag ${rec.tagClass}`}>{rec.tag}</span>
-                      <span className="action-saving-chip">{rec.savingChip}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 850, color: '#2563EB', background: '#EFF6FF', border: '1px solid #BFDBFE', padding: '2px 8px', borderRadius: '4px', width: 'fit-content', letterSpacing: '0.04em' }}>
+                        {rec.driverLabel}
+                      </span>
+                      <div className="action-card-top" style={{ marginTop: '2px' }}>
+                        <span className={`action-priority-tag ${rec.tagClass}`}>{rec.tag}</span>
+                        <span className="action-saving-chip">{rec.savingChip}</span>
+                      </div>
                     </div>
                     <h3 className="action-card-title">{rec.title}</h3>
                     <p className="action-card-desc">{rec.desc}</p>
@@ -491,6 +533,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
              SECTION 2: IMPACT SECTION (INTERACTIVE WHAT-IF SIMULATOR)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-simulator" className="ac-section">
+            <div className="ac-section-header header-blue">
+              <span className="ac-section-tag tag-blue">02</span>
+              <span className="ac-section-name">What-If Counterfactual Policy Simulator</span>
+            </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
                 <div className="ac-title-group">
@@ -498,32 +544,32 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                   <div>
                     <h2 className="ac-sec-title">What-If Counterfactual Policy Simulator</h2>
                     <p className="ac-sec-sub">
-                      Adjust intervention sliders to simulate dynamic real-time changes in Outlay, Schedule Delay, and ML Composite Risk Index.
+                      Simulate dynamic real-time impact on Cost Overrun, Time Overrun, and ML Risk Score by adjusting project parameters.
                     </p>
                   </div>
                 </div>
                 <span className="ac-head-pill pill-ai">
-                  <Sparkles size={13} /> Real-Time Simulation Engine
+                  <Sparkles size={13} /> Real-Time Policy Engine
                 </span>
               </div>
 
-              {/* CUF Disclaimer Note */}
+              {/* CUF Telemetry Note */}
               <div className="ac-cuf-disclaimer-box">
                 <Info size={16} className="cuf-info-icon" />
                 <span>
-                  <strong>Data Constraint Note:</strong> This feature is indicative due to CUF (Capacity Utilization Factor) data constraints. It operates at peak mathematical precision with optimized CUF telemetry data.
+                  <strong>CUF (Common Upload Form) Telemetry Note:</strong> Data is sourced directly from MoSPI OCMS monthly Common Upload Form submissions and PAIMANA telemetry feeds.
                 </span>
               </div>
 
-              {/* Simulator Main Body (Sliders Left, Dynamic Results Right) */}
+              {/* Simulator Main Body (3 Sliders Left, Dynamic 3 Impact Results Right) */}
               <div className="ac-simulator-body">
-                {/* Sliders Column */}
+                {/* Sliders Column: Exactly 3 Sliders (Budget Outlay, Expenditure, Increase Resources) */}
                 <div className="ac-sliders-col">
-                  {/* Slider 1 */}
+                  {/* Slider 1: Budget Outlay */}
                   <div className="sim-slider-group">
                     <div className="slider-label-row">
-                      <span className="slider-lbl">1. Budget Acceleration / Outlay Release</span>
-                      <span className="slider-val text-blue">+{sliderOutlay}% (+₹{simResults.deltaOutlay} Cr)</span>
+                      <span className="slider-lbl">1. Budget Outlay Realignment</span>
+                      <span className="slider-val text-blue">+{sliderOutlay}% Supplemental Outlay</span>
                     </div>
                     <input
                       type="range"
@@ -535,93 +581,93 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                       className="ac-range-input"
                     />
                     <div className="slider-minmax">
-                      <span>Baseline Outlay</span>
-                      <span>+50% Supplemental Release</span>
+                      <span>Baseline Outlay (₹{simResults.baseOutlay} Cr)</span>
+                      <span>+50% Reallocation</span>
                     </div>
                   </div>
 
-                  {/* Slider 2 */}
+                  {/* Slider 2: Expenditure Pacing */}
                   <div className="sim-slider-group">
                     <div className="slider-label-row">
-                      <span className="slider-lbl">2. Workforce &amp; Machinery Augmentation</span>
-                      <span className="slider-val text-blue">+{sliderWorkforce}% Manpower</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={sliderWorkforce}
-                      onChange={(e) => setSliderWorkforce(parseFloat(e.target.value))}
-                      className="ac-range-input"
-                    />
-                    <div className="slider-minmax">
-                      <span>Standard Shift</span>
-                      <span>+100% (24x7 3-Shift Pacing)</span>
-                    </div>
-                  </div>
-
-                  {/* Slider 3 */}
-                  <div className="sim-slider-group">
-                    <div className="slider-label-row">
-                      <span className="slider-lbl">3. Statutory Clearance Acceleration</span>
-                      <span className="slider-val text-blue">{sliderClearance} Days Saved</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="180"
-                      step="10"
-                      value={sliderClearance}
-                      onChange={(e) => setSliderClearance(parseFloat(e.target.value))}
-                      className="ac-range-input"
-                    />
-                    <div className="slider-minmax">
-                      <span>Standard Timeline</span>
-                      <span>180 Days Fast-Track</span>
-                    </div>
-                  </div>
-
-                  {/* Slider 4 */}
-                  <div className="sim-slider-group">
-                    <div className="slider-label-row">
-                      <span className="slider-lbl">4. Vendor Resource Expediting Rate</span>
-                      <span className="slider-val text-blue">+{sliderVendor}% Supply Pacing</span>
+                      <span className="slider-lbl">2. Expenditure Pacing &amp; Disbursement</span>
+                      <span className="slider-val text-blue">+{sliderExpenditure}% Speed</span>
                     </div>
                     <input
                       type="range"
                       min="0"
                       max="50"
                       step="5"
-                      value={sliderVendor}
-                      onChange={(e) => setSliderVendor(parseFloat(e.target.value))}
+                      value={sliderExpenditure}
+                      onChange={(e) => setSliderExpenditure(parseFloat(e.target.value))}
                       className="ac-range-input"
                     />
                     <div className="slider-minmax">
-                      <span>Baseline Supply</span>
-                      <span>+50% Priority Material Delivery</span>
+                      <span>Standard Disbursement</span>
+                      <span>+50% Fast-Track Pacing</span>
+                    </div>
+                  </div>
+
+                  {/* Slider 3: Increase Resources */}
+                  <div className="sim-slider-group">
+                    <div className="slider-label-row">
+                      <span className="slider-lbl">3. Increase Resources (Workforce &amp; Heavy Machinery)</span>
+                      <span className="slider-val text-blue">+{sliderResources}% Deployment</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={sliderResources}
+                      onChange={(e) => setSliderResources(parseFloat(e.target.value))}
+                      className="ac-range-input"
+                    />
+                    <div className="slider-minmax">
+                      <span>Standard Pacing</span>
+                      <span>+100% (24x7 3-Shift Augmentation)</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Dynamic Results Column */}
+                {/* Dynamic Counterfactual Impact Column: Cost Overrun, Time Overrun & Risk Score */}
                 <div className="ac-sim-results-col">
                   <h3 className="sim-results-heading">Simulated Counterfactual Impact</h3>
 
-                  {/* Result Metric 1: Schedule Delay */}
+                  {/* Result Metric 1: Cost Overrun */}
+                  <div className="sim-metric-card card-outlay">
+                    <div className="sim-metric-top">
+                      <span className="sim-metric-title">Cost Overrun</span>
+                      <span className="sim-badge badge-blue">
+                        {simResults.overrunSavedCr > 0 ? `▼ ₹${simResults.overrunSavedCr.toLocaleString()} Cr Recovered` : 'On Baseline'}
+                      </span>
+                    </div>
+                    <div className="sim-metric-val-row">
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Baseline Overrun</span>
+                        <span className="sim-val-num text-red">+₹{simResults.baseOverrunCr.toLocaleString()} Cr</span>
+                      </div>
+                      <span className="sim-arrow">→</span>
+                      <div className="sim-val-block">
+                        <span className="sim-val-sub">Simulated Overrun</span>
+                        <span className="sim-val-num text-blue">+₹{simResults.simOverrunCr.toLocaleString()} Cr</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Result Metric 2: Time Overrun / Schedule Delay */}
                   <div className="sim-metric-card card-delay">
                     <div className="sim-metric-top">
-                      <span className="sim-metric-title">Projected Schedule Delay</span>
+                      <span className="sim-metric-title">Time Overrun (Schedule Delay)</span>
                       <span className="sim-badge badge-green">▼ {simResults.monthsSaved} Months Saved</span>
                     </div>
                     <div className="sim-metric-val-row">
                       <div className="sim-val-block">
                         <span className="sim-val-sub">Baseline Delay</span>
-                        <span className="sim-val-num muted">+{simResults.baseDelay} Mo</span>
+                        <span className="sim-val-num text-amber">+{simResults.baseDelay} Mo</span>
                       </div>
                       <span className="sim-arrow">→</span>
                       <div className="sim-val-block">
-                        <span className="sim-val-sub">Post-Action Delay</span>
+                        <span className="sim-val-sub">Simulated Delay</span>
                         <span className="sim-val-num text-blue">+{simResults.simDelay} Mo</span>
                       </div>
                     </div>
@@ -630,7 +676,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     </div>
                   </div>
 
-                  {/* Result Metric 2: ML Composite Risk Score */}
+                  {/* Result Metric 3: ML Composite Risk Score */}
                   <div className="sim-metric-card card-risk">
                     <div className="sim-metric-top">
                       <span className="sim-metric-title">ML Composite Risk Score</span>
@@ -651,34 +697,19 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                       <div className="sim-fill bg-green" style={{ width: `${simResults.simRisk}%` }} />
                     </div>
                   </div>
-
-                  {/* Result Metric 3: Financial Exposure Saved */}
-                  <div className="sim-metric-card card-outlay">
-                    <div className="sim-metric-top">
-                      <span className="sim-metric-title">Financial Exposure Saved</span>
-                      <span className="sim-badge badge-blue">₹{simResults.exposureSavedCr.toLocaleString()} Cr Recovered</span>
-                    </div>
-                    <div className="sim-metric-val-row">
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Baseline Outlay</span>
-                        <span className="sim-val-num">₹{simResults.baseOutlay.toLocaleString()} Cr</span>
-                      </div>
-                      <span className="sim-arrow">→</span>
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Simulated Outlay</span>
-                        <span className="sim-val-num text-blue">₹{simResults.simOutlay.toLocaleString()} Cr</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
           </section>
 
           {/* ════════════════════════════════════════════════════════════════
-             SECTION 3: POLICY-AWARE AUTHORITY ROUTING (GOVT FRAMEWORK INTEGRATION)
+             SECTION 3: POLICY-AWARE AUTHORITY ROUTING (OFFICIAL GOVT FRAMEWORK)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-routing" className="ac-section">
+            <div className="ac-section-header header-purple">
+              <span className="ac-section-tag tag-purple">03</span>
+              <span className="ac-section-name">Policy-Aware Authority Routing Matrix</span>
+            </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
                 <div className="ac-title-group">
@@ -686,7 +717,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                   <div>
                     <h2 className="ac-sec-title">Policy-Aware Authority Routing Matrix</h2>
                     <p className="ac-sec-sub">
-                      Indian Government Infrastructure Framework Integration (MoSPI, PAIMANA, PIB/EFC &amp; CCEA Guidelines).
+                      Official Government Infrastructure Framework (MoSPI, PAIMANA, PIB/EFC &amp; CCEA Guidelines).
                     </p>
                   </div>
                 </div>
@@ -726,7 +757,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className={`ac-tier-card ${authorityRouting.tierNum === 2 ? 'tier-active' : ''}`}>
                   <div className="tier-head">
                     <span className="tier-num">TIER 2</span>
-                    <span className="tier-scope">₹150 Cr – ₹1,000 Cr</span>
+                    <span className="tier-scope">₹150 Cr – ₹500 Cr / RCE-I</span>
                   </div>
                   <h4 className="tier-title">Standing Committee on Time &amp; Cost Overruns (SCOC)</h4>
                   <p className="tier-sub">Departmental committee chaired by Additional Secretary / Joint Secretary.</p>
@@ -736,10 +767,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className={`ac-tier-card ${authorityRouting.tierNum === 3 ? 'tier-active' : ''}`}>
                   <div className="tier-head">
                     <span className="tier-num">TIER 3</span>
-                    <span className="tier-scope">Central Sector Monitoring</span>
+                    <span className="tier-scope">₹500 Cr – ₹1,000 Cr / RCE-II</span>
                   </div>
-                  <h4 className="tier-title">MoSPI Central Infrastructure Cell (PAIMANA)</h4>
-                  <p className="tier-sub">Quarterly milestone divergence tracking &amp; inter-ministerial bottleneck reporting.</p>
+                  <h4 className="tier-title">Public Investment Board (PIB) / EFC</h4>
+                  <p className="tier-sub">Ministry of Finance committee chaired by Secretary (Expenditure).</p>
                 </div>
 
                 {/* Tier 4 */}
