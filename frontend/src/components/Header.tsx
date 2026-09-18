@@ -166,6 +166,8 @@ export const Header: React.FC<HeaderProps> = ({
         return (
           p.name.toLowerCase().includes(q) ||
           p.id.toLowerCase().includes(q) ||
+          (p.legacyOcmsCode && p.legacyOcmsCode.toLowerCase().includes(q)) ||
+          ((p as any).legacy_ocms_code && String((p as any).legacy_ocms_code).toLowerCase().includes(q)) ||
           p.ministry.toLowerCase().includes(q) ||
           p.sector.toLowerCase().includes(q) ||
           p.location.toLowerCase().includes(q)
