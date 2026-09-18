@@ -12,8 +12,8 @@
   display: flex;
   gap: 0;
   align-items: flex-start;
-  /* Allocated stable space for sidebar — page content NEVER shifts when toggled */
-  padding-left: 270px;
+  /* Mathematically aligned to 275px from screen edge — tight ~25px gap from 250px sidebar, stable on toggle */
+  padding-left: max(16px, calc(275px - (100vw - 1360px) / 2 - 48px));
 }
 
 .pd-main-content {
