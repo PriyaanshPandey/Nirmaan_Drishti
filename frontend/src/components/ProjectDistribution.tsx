@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ShieldAlert,
-  AlertTriangle,
-  CheckCircle2,
-  Layers,
-  TrendingUp,
   MapPin,
-  Sparkles,
   ArrowRight,
   ChevronDown,
   Building2,
@@ -15,23 +10,19 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUp,
-  Bot,
   PieChart,
   BarChart3,
-  Sliders,
   Filter
 } from 'lucide-react';
 import './ProjectDistribution.css';
-import { AnimatedCounter } from './AnimatedCounter';
-import { api } from '../services/api';
-import type { DistributionSummaryData } from '../services/api';
-import { StatusIndicator } from './StatusIndicator';
 import { projectsData, type Project } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
 
 export interface ProjectDistributionProps {
   onSelectProject?: (projectId: string) => void;
   onNavigateTab?: (tab: string) => void;
+  onFilterStatus?: (status: string) => void;
+  onFilterRisk?: (risk: string) => void;
 }
 
 type SidebarSection = 'breakdown' | 'interventions' | 'comparison';
@@ -41,7 +32,7 @@ const SIDEBAR_SECTIONS = [
     id: 'breakdown' as SidebarSection,
     icon: PieChart,
     label: 'Health & Risk Breakdown',
-    desc: 'Donuts & tier progress bars',
+    desc: 'Interactive Donut analytics',
     num: '01',
   },
   {
@@ -62,7 +53,9 @@ const SIDEBAR_SECTIONS = [
 
 export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
   onSelectProject,
-  onNavigateTab
+  onNavigateTab,
+  onFilterStatus,
+  onFilterRisk
 }) => {
   // Navigation Sidebar State — closed by default on page load
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
@@ -77,9 +70,10 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
   // Section 1 State: Breakdown Toggles & Selection
   const [sec1Mode, setSec1Mode] = useState<'ministry' | 'sector'>('ministry');
   const [sec1SelectedEntity, setSec1SelectedEntity] = useState<string>('All');
+  const [sec1HoverTier, setSec1HoverTier] = useState<string | null>(null);
 
   // Section 2 State: Interventions Toggles & Selection
-  const [sec2Mode, setSec2Mode] = useState<'ministry' | 'sector'>('ministry');
+  const [sec2Mode, setSec2Mode] = useState<'ministry' | 'sector'>('sector');
   const [sec2SelectedEntity, setSec2SelectedEntity] = useState<string>('All');
   const [sec2Count, setSec2Count] = useState<5 | 10>(5);
 
@@ -192,7 +186,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       else if (risk >= 40) rMod++;
       else rLow++;
 
-      // Health Index tiers (inverse of risk + physical progress weight)
+      // Health Index tiers
       const healthScore = Math.max(0, Math.min(100, Math.round(100 - risk * 0.7 + (p.progressPhysical || 0) * 0.3)));
       if (healthScore >= 75) healthy++;
       else if (healthScore >= 55) hMod++;
@@ -314,6 +308,12 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       .slice(0, 6);
   }, [sec3Mode, allMinistries, allSectors, calculateEntityStats]);
 
+  // Helper to clean cost text (remove double 'Cr Cr')
+  const formatCostText = (rawCost: string) => {
+    if (!rawCost) return '0.00';
+    return rawCost.replace(/Cr/gi, '').trim();
+  };
+
   return (
     <div className="dist-page-layout animation-fade-in">
       {/* ── Portaled Navigation Sidebar (Closed by default) ── */}
@@ -358,7 +358,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
 
             {/* Nav Items */}
             <nav className="pnav__nav">
-              {SIDEBAR_SECTIONS.map((sec, idx) => {
+              {SIDEBAR_SECTIONS.map((sec) => {
                 const isActive = activeSection === sec.id;
                 const Icon = sec.icon;
                 return (
@@ -422,7 +422,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       </div>
 
       {/* ════════════════════════════════════════════════════════════════
-         SECTION 1: HEALTH & RISK BREAKDOWN (DONUTS + PROGRESS BARS)
+         SECTION 1: HEALTH & RISK BREAKDOWN (INTERACTIVE DONUTS + PROGRESS BARS)
          ════════════════════════════════════════════════════════════════ */}
       <section id="dist-section-breakdown" className="dist-section">
         <div className="dist-panel-card">
@@ -433,7 +433,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
               <div>
                 <h2 className="dist-section-title">Health &amp; Risk Breakdown</h2>
                 <p className="dist-section-sub">
-                  Dynamic Donut distribution charts and tier volume indicators by Ministry or Sector.
+                  Interactive Donut analytics. Click any donut segment or bar row to open filtered projects list!
                 </p>
               </div>
             </div>
@@ -480,8 +480,23 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             </div>
           </div>
 
+          {/* Mode Context Insight Banner — felt difference when toggled */}
+          <div key={sec1Mode} className="dist-mode-context-banner dist-mode-fade-in">
+            <div className="context-banner-left">
+              <span className="context-banner-tag">{sec1Mode === 'ministry' ? 'DEPARTMENTAL PERSPECTIVE' : 'SECTORAL INFRASTRUCTURE PERSPECTIVE'}</span>
+              <span className="context-banner-text">
+                {sec1Mode === 'ministry'
+                  ? `Monitored across ${allMinistries.length} Central Ministries & Executive Departments.`
+                  : `Categorized into ${allSectors.length} Key Infrastructure Sectors (Railways, Roads, Power, Coal, etc.).`}
+              </span>
+            </div>
+            <div className="context-banner-right">
+              <span className="context-hint">💡 Click any segment below to view filtered assets</span>
+            </div>
+          </div>
+
           {/* Donut Charts & Progress Bars Grid */}
-          <div className="dist-donuts-grid">
+          <div key={`${sec1Mode}-${sec1SelectedEntity}`} className="dist-donuts-grid dist-mode-fade-in">
             {/* ── Donut 1: Health Index Breakdown ── */}
             <div className="dist-donut-card">
               <div className="dist-card-header-row">
@@ -493,52 +508,76 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
               </div>
 
               <div className="donut-visualization-block">
-                {/* SVG Donut Chart */}
+                {/* SVG Donut Chart with Interactive Clickable Segments */}
                 <div className="svg-donut-wrapper">
                   <svg className="svg-donut" viewBox="0 0 160 160">
                     <circle cx="80" cy="80" r="62" fill="none" stroke="#F1F5F9" strokeWidth="18" />
                     {/* Healthy segment */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#2563EB" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.healthPcts.healthy * 3.9).toFixed(1)} 390`}
                       strokeDashoffset="0"
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterStatus?.('ON TRACK')}
+                      onMouseEnter={() => setSec1HoverTier('Healthy')}
+                      onMouseLeave={() => setSec1HoverTier(null)}
+                    >
+                      <title>Healthy (75-100): Click to view {sec1Metrics.health.healthy} projects</title>
+                    </circle>
                     {/* Moderate segment */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#38BDF8" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.healthPcts.moderate * 3.9).toFixed(1)} 390`}
                       strokeDashoffset={`-${(sec1Metrics.healthPcts.healthy * 3.9).toFixed(1)}`}
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterStatus?.('IN REVIEW')}
+                      onMouseEnter={() => setSec1HoverTier('Moderate')}
+                      onMouseLeave={() => setSec1HoverTier(null)}
+                    >
+                      <title>Moderate (55-74): Click to view {sec1Metrics.health.moderate} projects</title>
+                    </circle>
                     {/* Vulnerable segment */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#64748B" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.healthPcts.vulnerable * 3.9).toFixed(1)} 390`}
                       strokeDashoffset={`-${((sec1Metrics.healthPcts.healthy + sec1Metrics.healthPcts.moderate) * 3.9).toFixed(1)}`}
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterStatus?.('DELAYED')}
+                      onMouseEnter={() => setSec1HoverTier('Vulnerable')}
+                      onMouseLeave={() => setSec1HoverTier(null)}
+                    >
+                      <title>Vulnerable (35-54): Click to view {sec1Metrics.health.vulnerable} projects</title>
+                    </circle>
                     {/* Critical segment */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#0F172A" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.healthPcts.critical * 3.9).toFixed(1)} 390`}
                       strokeDashoffset={`-${((sec1Metrics.healthPcts.healthy + sec1Metrics.healthPcts.moderate + sec1Metrics.healthPcts.vulnerable) * 3.9).toFixed(1)}`}
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterStatus?.('CRITICAL')}
+                      onMouseEnter={() => setSec1HoverTier('Critical')}
+                      onMouseLeave={() => setSec1HoverTier(null)}
+                    >
+                      <title>Critical (&lt;35): Click to view {sec1Metrics.health.critical} projects</title>
+                    </circle>
                   </svg>
                   <div className="svg-donut-center">
                     <span className="donut-center-num">{sec1Metrics.avgHealth}</span>
-                    <span className="donut-center-label">Avg Health Index</span>
+                    <span className="donut-center-label">{sec1HoverTier ? `${sec1HoverTier} Tier` : 'Avg Health Index'}</span>
                   </div>
                 </div>
 
-                {/* Horizontal Breakdown Bars Below Donut 1 */}
+                {/* Horizontal Breakdown Bars Below Donut 1 — Clickable Rows */}
                 <div className="donut-bars-list">
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('ON TRACK')} title="Click to view Healthy projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#2563EB' }} />
                       <span className="bar-name">Healthy (Score 75-100)</span>
@@ -549,7 +588,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                     </div>
                   </div>
 
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('IN REVIEW')} title="Click to view Moderate projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#38BDF8' }} />
                       <span className="bar-name">Moderate (Score 55-74)</span>
@@ -560,7 +599,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                     </div>
                   </div>
 
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('DELAYED')} title="Click to view Vulnerable projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#64748B' }} />
                       <span className="bar-name">Vulnerable (Score 35-54)</span>
@@ -571,7 +610,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                     </div>
                   </div>
 
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterStatus?.('CRITICAL')} title="Click to view Critical projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#0F172A' }} />
                       <span className="bar-name">Critical (Score &lt;35)</span>
@@ -596,42 +635,58 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
               </div>
 
               <div className="donut-visualization-block">
-                {/* SVG Donut Chart */}
+                {/* SVG Donut Chart with Interactive Clickable Segments */}
                 <div className="svg-donut-wrapper">
                   <svg className="svg-donut" viewBox="0 0 160 160">
                     <circle cx="80" cy="80" r="62" fill="none" stroke="#F1F5F9" strokeWidth="18" />
                     {/* Low Risk */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#16A34A" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.riskPcts.low * 3.9).toFixed(1)} 390`}
                       strokeDashoffset="0"
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterRisk?.('Low')}
+                    >
+                      <title>Low Risk (&lt;40): Click to view {sec1Metrics.risk.low} projects</title>
+                    </circle>
                     {/* Moderate Risk */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#D97706" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.riskPcts.moderate * 3.9).toFixed(1)} 390`}
                       strokeDashoffset={`-${(sec1Metrics.riskPcts.low * 3.9).toFixed(1)}`}
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterRisk?.('Medium')}
+                    >
+                      <title>Moderate Risk (40-64): Click to view {sec1Metrics.risk.moderate} projects</title>
+                    </circle>
                     {/* High Risk */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#DC2626" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.riskPcts.high * 3.9).toFixed(1)} 390`}
                       strokeDashoffset={`-${((sec1Metrics.riskPcts.low + sec1Metrics.riskPcts.moderate) * 3.9).toFixed(1)}`}
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterRisk?.('High')}
+                    >
+                      <title>High Risk (65-79): Click to view {sec1Metrics.risk.high} projects</title>
+                    </circle>
                     {/* Critical Risk */}
                     <circle
+                      className="donut-interactive-segment"
                       cx="80" cy="80" r="62" fill="none"
                       stroke="#7F1D1D" strokeWidth="18"
                       strokeDasharray={`${(sec1Metrics.riskPcts.critical * 3.9).toFixed(1)} 390`}
                       strokeDashoffset={`-${((sec1Metrics.riskPcts.low + sec1Metrics.riskPcts.moderate + sec1Metrics.riskPcts.high) * 3.9).toFixed(1)}`}
                       transform="rotate(-90 80 80)"
-                    />
+                      onClick={() => onFilterRisk?.('Critical')}
+                    >
+                      <title>Critical Risk (&ge;80): Click to view {sec1Metrics.risk.critical} projects</title>
+                    </circle>
                   </svg>
                   <div className="svg-donut-center">
                     <span className="donut-center-num text-red">{sec1Metrics.avgRisk}</span>
@@ -639,9 +694,9 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                   </div>
                 </div>
 
-                {/* Horizontal Breakdown Bars Below Donut 2 */}
+                {/* Horizontal Breakdown Bars Below Donut 2 — Clickable Rows */}
                 <div className="donut-bars-list">
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('Low')} title="Click to view Low Risk projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#16A34A' }} />
                       <span className="bar-name">Low Risk (&lt;40)</span>
@@ -652,7 +707,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                     </div>
                   </div>
 
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('Medium')} title="Click to view Moderate Risk projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#D97706' }} />
                       <span className="bar-name">Moderate Risk (40-64)</span>
@@ -663,7 +718,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                     </div>
                   </div>
 
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('High')} title="Click to view High Risk projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#DC2626' }} />
                       <span className="bar-name">High Risk (65-79)</span>
@@ -674,7 +729,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                     </div>
                   </div>
 
-                  <div className="bar-breakdown-row">
+                  <div className="bar-breakdown-row clickable-row" onClick={() => onFilterRisk?.('Critical')} title="Click to view Critical Risk projects in Portfolio">
                     <div className="bar-info-row">
                       <span className="bar-label-dot" style={{ backgroundColor: '#7F1D1D' }} />
                       <span className="bar-name">Critical Risk (&ge;80)</span>
@@ -692,7 +747,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
-         SECTION 2: PRIORITY INTERVENTIONS (TOP 5 & TOP 10 CARDS GRID)
+         SECTION 2: PRIORITY INTERVENTIONS (STACKED 1-COLUMN DASHBOARD LIST)
          ════════════════════════════════════════════════════════════════ */}
       <section id="dist-section-interventions" className="dist-section">
         <div className="dist-panel-card">
@@ -703,7 +758,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
               <div>
                 <h2 className="dist-section-title">Priority Interventions</h2>
                 <p className="dist-section-sub">
-                  High-priority assets requiring urgent departmental intervention and executive oversight.
+                  Stacked high-priority assets requiring urgent departmental intervention and executive oversight.
                 </p>
               </div>
             </div>
@@ -767,8 +822,8 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             </div>
           </div>
 
-          {/* Projects Cards Grid */}
-          <div className="interventions-cards-grid">
+          {/* Stacked 1-Column Projects List (One below another like Dashboard) */}
+          <div className="interventions-stacked-list">
             {sec2FilteredProjects.length === 0 ? (
               <div className="dist-empty-state">
                 <ShieldAlert size={32} color="#94A3B8" />
@@ -784,30 +839,28 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                 const statusColor = isCrit ? '#DC2626' : proj.scheduleStatus === 'DELAYED' ? '#D97706' : '#2563EB';
 
                 return (
-                  <div key={proj.id} className="intervention-item-card">
-                    {/* Top Rank Badge & Risk Score Pill */}
-                    <div className="item-card-top">
-                      <div className="rank-badge-wrap">
+                  <div key={proj.id} className="intervention-stacked-card">
+                    {/* Top Info Bar */}
+                    <div className="stacked-card-top">
+                      <div className="stacked-rank-group">
                         <span className="rank-num">#{String(idx + 1).padStart(2, '0')}</span>
                         <span className="item-project-id">#{proj.id}</span>
+                        <span className="item-meta-tag"><Building2 size={12} /> {proj.sector}</span>
+                        <span className="item-meta-tag"><MapPin size={12} /> {proj.location?.split('\r\n')[0]}</span>
                       </div>
                       <div className="item-risk-pill" style={{ color: statusColor, borderColor: `${statusColor}44`, backgroundColor: `${statusColor}10` }}>
-                        <span>ML Risk: {riskVal}/100</span>
+                        <span>ML Risk Score: {riskVal}/100</span>
                       </div>
                     </div>
 
-                    {/* Title & Metadata */}
-                    <h3 className="item-project-name">{proj.name}</h3>
-                    <div className="item-meta-row">
-                      <span className="item-meta-tag"><Building2 size={12} /> {proj.sector}</span>
-                      <span className="item-meta-tag"><MapPin size={12} /> {proj.location?.split('\r\n')[0]}</span>
-                    </div>
+                    {/* Title */}
+                    <h3 className="stacked-project-title">{proj.name}</h3>
 
-                    {/* Cost & Progress Metrics Grid */}
+                    {/* Metrics Grid */}
                     <div className="item-metrics-grid">
                       <div className="item-metric-col">
                         <span className="metric-lbl">Revised Outlay</span>
-                        <span className="metric-val">₹{proj.costRevised} Cr</span>
+                        <span className="metric-val">₹{formatCostText(proj.costRevised)} Cr</span>
                       </div>
                       <div className="item-metric-col">
                         <span className="metric-lbl">Cost Overrun</span>
@@ -821,7 +874,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                       </div>
                     </div>
 
-                    {/* Progress Bar */}
+                    {/* Progress Track Bar */}
                     <div className="item-progress-track">
                       <div
                         className="item-progress-fill"
@@ -829,15 +882,28 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                       />
                     </div>
 
-                    {/* Action CTA */}
-                    <button
-                      type="button"
-                      className="item-inspect-btn"
-                      onClick={() => onSelectProject?.(proj.id)}
-                    >
-                      <span>Inspect Detailed Telemetry</span>
-                      <ArrowRight size={14} />
-                    </button>
+                    {/* Two CTA Buttons Row: Inspect Telemetry & Take Action */}
+                    <div className="stacked-actions-row">
+                      <button
+                        type="button"
+                        className="item-inspect-btn"
+                        onClick={() => onSelectProject?.(proj.id)}
+                      >
+                        <Activity size={13} />
+                        <span>Inspect Telemetry</span>
+                        <ArrowRight size={13} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="item-action-btn"
+                        onClick={() => onNavigateTab?.('action-centre')}
+                      >
+                        <ShieldAlert size={13} />
+                        <span>Take Action</span>
+                        <ArrowRight size={13} />
+                      </button>
+                    </div>
                   </div>
                 );
               })

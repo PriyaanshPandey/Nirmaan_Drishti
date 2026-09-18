@@ -206,6 +206,8 @@ function App() {
             <ProjectDistribution
               onSelectProject={handleSelectProject}
               onNavigateTab={handleTabChange}
+              onFilterStatus={handleFilterStatus}
+              onFilterRisk={handleFilterRisk}
             />
           </main>
         </PageSlot>

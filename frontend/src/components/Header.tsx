@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
   SlidersHorizontal, CornerDownLeft, Home, LayoutDashboard,
-  Database, Sparkles, Layers, ShieldAlert, FileSpreadsheet, ExternalLink
+  Database, Layers, ShieldAlert, FileSpreadsheet, ExternalLink
 } from 'lucide-react';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import type { Project } from '../data/projectsData';
