@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown } from 'lucide-react';
 import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 import { api } from '../services/api';
@@ -39,6 +39,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState<'all' | 'name' | 'id'>('all');
   const [selectedMinistry, setSelectedMinistry] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
@@ -57,7 +58,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       selectedStatus !== 'All' ? selectedStatus : undefined,
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
       selectedSector !== 'All' ? selectedSector : undefined,
-      selectedRisk !== 'All' ? selectedRisk : undefined
+      selectedRisk !== 'All' ? selectedRisk : undefined,
+      searchType
     )
       .then((res) => {
         setProjectsList(res.items);
@@ -159,6 +161,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     setPage(1);
   };
 
+  const handleSearchTypeChange = (val: 'all' | 'name' | 'id') => {
+    setSearchType(val);
+    setPage(1);
+  };
+
   const handleMinistryChange = (val: string) => {
     setSelectedMinistry(val);
     setPage(1);
@@ -185,6 +192,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     setSelectedMinistry('All');
     setSelectedSector('All');
     setSearchQuery('');
+    setSearchType('all');
     setPage(1);
   };
 
@@ -203,7 +211,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       selectedStatus !== 'All' ? selectedStatus : undefined,
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
       selectedSector !== 'All' ? selectedSector : undefined,
-      selectedRisk !== 'All' ? selectedRisk : undefined
+      selectedRisk !== 'All' ? selectedRisk : undefined,
+      searchType
     )
       .then((res) => {
         if (!isMounted) return;
@@ -221,7 +230,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [page, searchQuery, selectedMinistry, selectedSector, selectedStatus, selectedRisk]);
+  }, [page, searchQuery, searchType, selectedMinistry, selectedSector, selectedStatus, selectedRisk]);
 
   const filteredProjects = projectsList;
 
@@ -263,15 +272,49 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
 
       {/* Filter and Search Bar Section */}
       <div className="portfolio-filters-card">
-        <div className="portfolio-search-input-wrapper">
-          <Search size={16} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search projects by name, ID, agency or location..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="portfolio-search-input"
-          />
+        <div className="portfolio-search-bar-row">
+          <div className="portfolio-search-type-wrapper">
+            <select
+              value={searchType}
+              onChange={(e) => handleSearchTypeChange(e.target.value as 'all' | 'name' | 'id')}
+              className="portfolio-search-type-select"
+              aria-label="Search filter criteria"
+            >
+              <option value="all">All Fields</option>
+              <option value="name">Project Name</option>
+              <option value="id">Project ID</option>
+            </select>
+            <ChevronDown size={14} className="search-type-chevron" />
+          </div>
+
+          <div className="portfolio-search-input-wrapper">
+            <Search size={16} className="search-icon" />
+            <input
+              type="text"
+              placeholder={
+                searchType === 'id'
+                  ? 'Search by Project ID or OCMS Code (e.g., 020100044)...'
+                  : searchType === 'name'
+                  ? 'Search by Project Name...'
+                  : 'Search projects by name, ID, agency or location...'
+              }
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="portfolio-search-input"
+              autoComplete="off"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="portfolio-search-clear-btn"
+                onClick={() => handleSearchChange('')}
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="portfolio-dropdowns-group">
@@ -334,9 +377,21 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
           </div>
         </div>
 
-        {(selectedStatus !== 'All' || selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || searchQuery) && (
+        {(selectedStatus !== 'All' || selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || searchQuery || searchType !== 'all') && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Active Filters:</span>
+            {searchQuery && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F1F5F9', color: '#1E293B', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                {searchType === 'id' ? 'ID: ' : searchType === 'name' ? 'Name: ' : 'Search: '} "{searchQuery}"
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleSearchChange('')} />
+              </span>
+            )}
+            {searchType !== 'all' && !searchQuery && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#EFF6FF', color: '#2563EB', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                Filter: {searchType === 'id' ? 'By Project ID' : 'By Project Name'}
+                <X size={12} style={{ cursor: 'pointer' }} onClick={() => handleSearchTypeChange('all')} />
+              </span>
+            )}
             {selectedStatus !== 'All' && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#EFF6FF', color: '#1D4ED8', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
                 Status: {selectedStatus}
