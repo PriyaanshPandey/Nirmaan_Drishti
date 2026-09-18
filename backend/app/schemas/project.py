@@ -53,12 +53,16 @@ class ProjectBase(BaseModel):
     financial_progress: float = 0.0
     schedule_extension_months: float = 0.0
     delay_days: int = 0
-    risk_score: int = 30
+    risk_score: float = 30.0
     risk_level: str = "Low"
-    cost_risk: int = 20
-    time_risk: int = 20
-    impl_risk: int = 20
-    overall_risk: int = 20
+    cost_risk: float = 20.0
+    time_risk: float = 20.0
+    impl_risk: float = 20.0
+    overall_risk: float = 20.0
+    cost_risk_component: Optional[float] = None
+    schedule_risk_component: Optional[float] = None
+    predicted_cost_overrun: Optional[float] = None
+    predicted_schedule_delay: Optional[float] = None
 
 
 class ProjectCreate(ProjectBase):
@@ -93,8 +97,12 @@ class ProjectUpdate(BaseModel):
     physical_progress: Optional[float] = None
     physical_progress_target: Optional[float] = None
     financial_progress: Optional[float] = None
-    risk_score: Optional[int] = None
+    risk_score: Optional[float] = None
     risk_level: Optional[str] = None
+    cost_risk_component: Optional[float] = None
+    schedule_risk_component: Optional[float] = None
+    predicted_cost_overrun: Optional[float] = None
+    predicted_schedule_delay: Optional[float] = None
 
 
 class ProjectResponse(ProjectBase):

@@ -728,8 +728,12 @@ def main():
     clf_xgb_risk.save_model(str(BEST_MODEL_DIR / "best_model_delay_risk.json"))
 
     # Sync to ai/models/
+    import shutil
     for fn in ["lgb_cost_multiplier.joblib", "lgb_delay_delta.joblib", "lgb_delay_risk.joblib"]:
         joblib.dump(joblib.load(BEST_MODEL_DIR / fn), AI_MODELS_DIR / fn)
+
+    for json_fn in ["best_model_schedule_delay.json", "best_model_anticipated_cost.json", "best_model_delay_risk.json"]:
+        shutil.copy2(BEST_MODEL_DIR / json_fn, AI_MODELS_DIR / json_fn)
 
     print(f"\nExecution finished in {time.time() - t_start:.2f}s. All models, metrics, and predictions persisted!")
 

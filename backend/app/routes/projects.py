@@ -24,6 +24,7 @@ from app.schemas.progress import ProgressCreate, ProgressResponse
 from app.schemas.common import PaginatedResponse, MessageResponse
 from app.audit import log_audit_event
 from app.services.ai_engine_service import ai_engine
+from app.services.risk_engine import calculate_risk_score, get_risk_level
 from app.schemas.prediction_extended import (
     FullProjectPredictionResponse, CostHorizonPrediction, TimeHorizonPrediction,
     ModelRiskMetrics, ShapContribution, EnrichedCostDriver,
@@ -33,6 +34,8 @@ from app.schemas.prediction_extended import (
     ModelExplanationItem, ProjectModelExplanationsResponse,
     ChatRequest, ChatResponse
 )
+from app.schemas.simulation import WhatIfRequest, WhatIfResponse
+from app.services.simulation_service import simulate_project_scenario
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -160,6 +163,10 @@ def format_project_response(p: Project) -> dict:
         "time_risk": p.time_risk,
         "impl_risk": p.impl_risk,
         "overall_risk": p.overall_risk,
+        "cost_risk_component": float(p.cost_risk) if p.cost_risk is not None else None,
+        "schedule_risk_component": float(p.time_risk) if p.time_risk is not None else None,
+        "predicted_cost_overrun": overrun_pct,
+        "predicted_schedule_delay": time_overrun_months if time_overrun_months is not None else round(float(p.schedule_extension_months or 0.0), 1),
         "created_at": p.created_at,
         "updated_at": p.updated_at,
         "ministry": {"id": p.ministry.id, "name": p.ministry.name, "code": p.ministry.code} if p.ministry else None,
@@ -370,8 +377,14 @@ def get_project_by_id(project_id: str, db: Session = Depends(get_db)):
                     "physical_progress": round(float(curr.get("physical_progress_pct", 50.0)), 1),
                     "financial_progress": round(float(cost.get("expenditure_ratio_pct", 50.0)), 1),
                     "schedule_status": curr.get("schedule_status", "DELAYED"),
-                    "risk_score": 50,
-                    "risk_level": "Medium",
+                    "risk_score": calculate_risk_score(round(float(cost.get("cost_overrun_pct", 0.0)), 1), round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1)).risk_score,
+                    "risk_level": calculate_risk_score(round(float(cost.get("cost_overrun_pct", 0.0)), 1), round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1)).risk_level,
+                    "cost_risk": calculate_risk_score(round(float(cost.get("cost_overrun_pct", 0.0)), 1), round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1)).cost_risk_component,
+                    "time_risk": calculate_risk_score(round(float(cost.get("cost_overrun_pct", 0.0)), 1), round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1)).schedule_risk_component,
+                    "cost_risk_component": calculate_risk_score(round(float(cost.get("cost_overrun_pct", 0.0)), 1), round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1)).cost_risk_component,
+                    "schedule_risk_component": calculate_risk_score(round(float(cost.get("cost_overrun_pct", 0.0)), 1), round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1)).schedule_risk_component,
+                    "predicted_cost_overrun": round(float(cost.get("cost_overrun_pct", 0.0)), 1),
+                    "predicted_schedule_delay": round(float(curr.get("schedule_extension_months", curr.get("delay_months", 0.0))), 1),
                     "state": "National",
                     "implementing_agency": info.get("agency", "Executing Agency"),
                     "created_at": datetime.utcnow(),
@@ -815,3 +828,18 @@ def chat_with_project_assistant_endpoint(project_id: str, req: ChatRequest, db: 
         question=req.question,
         answer=ans
     )
+
+
+@router.post("/{project_id}/what-if", response_model=WhatIfResponse, summary="Counterfactual What-If Scenario Simulation")
+def simulate_project_what_if_endpoint(
+    project_id: str,
+    payload: WhatIfRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Execute backend ML counterfactual simulation for a project under user-defined scenario parameters.
+    Returns baseline inference, scenario predictions from trained XGBoost models, centralized risk score,
+    partial dependence curves (PDP), and dynamic narrative explainability.
+    """
+    return simulate_project_scenario(project_id=project_id, request=payload, db=db)
+

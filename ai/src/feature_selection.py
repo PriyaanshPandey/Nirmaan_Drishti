@@ -178,7 +178,7 @@ def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
     df["snapshot_history_count"] = df.groupby("project_id").cumcount() + 1
 
     # Project-level rolling backward-looking features
-    grouped = df.groupby("project_id", sort=False)
+    grouped = df.groupby("project_id", sort=False, dropna=False)
     df["cost_overrun_rolling_mean_3m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(3, min_periods=1).mean()).fillna(0)
     df["cost_overrun_rolling_mean_6m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(6, min_periods=1).mean()).fillna(0)
     df["cost_overrun_rolling_std_3m"] = grouped["cost_overrun_pct"].transform(lambda s: s.rolling(3, min_periods=1).std()).fillna(0)
@@ -207,17 +207,18 @@ def enrich_trajectory_features(df: pd.DataFrame) -> pd.DataFrame:
     df["delay_acceleration"] = df.groupby("project_id", sort=False)["delay_change_1m"].diff(1).fillna(0)
 
     # Consecutive stagnant months
-    stagnant_counts = []
-    for pid, grp in grouped:
-        current_streak = 0
-        deltas = grp["progress_change_1m"].values
-        for d in deltas:
+    def _calc_stagnant_streak(grp_series):
+        streak = 0
+        res = []
+        for d in grp_series:
             if pd.notna(d) and d <= 0.1:
-                current_streak += 1
+                streak += 1
             else:
-                current_streak = 0
-            stagnant_counts.append(float(current_streak))
-    df["consecutive_stagnant_months"] = stagnant_counts
+                streak = 0
+            res.append(float(streak))
+        return res
+
+    df["consecutive_stagnant_months"] = grouped["progress_change_1m"].transform(_calc_stagnant_streak)
 
     return df
 

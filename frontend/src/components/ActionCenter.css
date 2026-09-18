@@ -579,9 +579,10 @@
 }
 
 .ac-range-input {
-  width: 100%;
+  flex: 1;
   accent-color: #2563EB;
   cursor: pointer;
+  height: 6px;
 }
 
 .slider-minmax {
@@ -592,104 +593,271 @@
   color: #94A3B8;
 }
 
-/* Dynamic Results Column */
-.ac-sim-results-col {
+.slider-controls-row {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  gap: 14px;
 }
 
-.sim-results-heading {
-  font-size: 15px;
+.ac-num-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 4px 10px;
+  width: 125px;
+  box-sizing: border-box;
+}
+
+.ac-num-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 750;
+  color: #0F172A;
+  outline: none;
+  text-align: right;
+}
+
+.ac-num-unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  white-space: nowrap;
+}
+
+.ac-sim-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.ac-btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ac-btn-reset:hover:not(:disabled) {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+  color: #0F172A;
+}
+
+.ac-btn-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  background: #2563EB;
+  border: 1px solid #1D4ED8;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: all 0.18s ease;
+}
+
+.ac-btn-run:hover:not(:disabled) {
+  background: #1D4ED8;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.ac-btn-run:disabled, .ac-btn-reset:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Simulation Impact Comparison Table */
+.ac-impact-table-wrap {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.ac-impact-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.ac-impact-table th {
+  background: #F8FAFC;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1.5px solid #E2E8F0;
+}
+
+.ac-impact-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  color: #0F172A;
+}
+
+.ac-impact-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ac-table-metric {
+  font-weight: 750;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ac-table-base {
+  font-weight: 650;
+  color: #475569;
+}
+
+.ac-table-scen {
   font-weight: 800;
   color: #0F172A;
-  margin: 0;
 }
 
-.sim-metric-card {
+.ac-table-delta {
+  font-weight: 800;
+}
+
+.delta-bad { color: #DC2626; }
+.delta-good { color: #16A34A; }
+.delta-neutral { color: #64748B; }
+
+/* PDP Sensitivity Charts Grid */
+.pdp-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.pdp-chart-card {
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 12px;
   padding: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
-.sim-metric-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sim-metric-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #64748B;
-  text-transform: uppercase;
-}
-
-.sim-badge {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 6px;
-}
-
-.sim-badge.badge-green { background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; }
-.sim-badge.badge-emerald { background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; }
-.sim-badge.badge-blue { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
-
-.sim-metric-val-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sim-val-block {
+.pdp-chart-head {
   display: flex;
   flex-direction: column;
 }
 
-.sim-val-sub {
+.pdp-chart-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.pdp-chart-sub {
   font-size: 10.5px;
   font-weight: 600;
   color: #64748B;
 }
 
-.sim-val-num {
-  font-size: 17px;
+.pdp-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.pdp-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10.5px;
+  font-weight: 650;
+  color: #64748B;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.pdp-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pdp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.pdp-dot.dot-base { background: #2563EB; }
+.pdp-dot.dot-scen { background: #DC2626; }
+
+.pdp-line-sample {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* Scenario Dynamic Explanation */
+.ac-narrative-box {
+  background: #F0FDF4;
+  border: 1.5px solid #BBF7D0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: #14532D;
+  line-height: 1.55;
+}
+
+.ac-narrative-title {
+  font-size: 11px;
   font-weight: 850;
-  color: #0F172A;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #15803D;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.sim-val-num.muted { color: #94A3B8; }
-.sim-val-num.text-red { color: #DC2626; }
-.sim-val-num.text-green { color: #16A34A; }
-.sim-val-num.text-blue { color: #2563EB; }
-
-.sim-arrow {
-  font-size: 16px;
-  font-weight: 800;
-  color: #2563EB;
+.ac-sim-error-banner {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #991B1B;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
 }
-
-.sim-track {
-  height: 5px;
-  background: #E2E8F0;
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.sim-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.3s ease;
-}
-
-.sim-fill.bg-blue { background: #2563EB; }
-.sim-fill.bg-green { background: #16A34A; }
 
 /* Section 3: Policy-Aware Authority Routing */
 .ac-active-routing-banner {

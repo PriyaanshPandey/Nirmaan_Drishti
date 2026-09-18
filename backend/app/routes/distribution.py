@@ -33,17 +33,17 @@ def get_distribution_summary(db: Session = Depends(get_db)) -> Dict[str, Any]:
             "sectors": []
         }
 
-    high = db.query(func.count(Project.id)).filter(Project.risk_score >= 70).scalar() or 0
-    medium = db.query(func.count(Project.id)).filter(Project.risk_score.between(50, 69)).scalar() or 0
-    low = db.query(func.count(Project.id)).filter(Project.risk_score < 50).scalar() or 0
+    high = db.query(func.count(Project.id)).filter(Project.risk_score >= 60).scalar() or 0
+    medium = db.query(func.count(Project.id)).filter(Project.risk_score.between(35, 59.99)).scalar() or 0
+    low = db.query(func.count(Project.id)).filter(Project.risk_score < 35).scalar() or 0
 
     # Sector breakdown
     sector_results = db.query(
         Sector.name,
         func.count(Project.id).label("total_count"),
-        func.count(case((Project.risk_score >= 70, 1))).label("high_count"),
-        func.count(case((Project.risk_score.between(50, 69), 1))).label("med_count"),
-        func.count(case((Project.risk_score < 50, 1))).label("low_count"),
+        func.count(case((Project.risk_score >= 60, 1))).label("high_count"),
+        func.count(case((Project.risk_score.between(35, 59.99), 1))).label("med_count"),
+        func.count(case((Project.risk_score < 35, 1))).label("low_count"),
         func.avg(Project.risk_score).label("avg_risk")
     ).outerjoin(Project, Sector.id == Project.sector_id).group_by(Sector.id, Sector.name).having(func.count(Project.id) > 0).order_by(func.count(Project.id).desc()).all()
 

@@ -4,11 +4,12 @@ import {
   ShieldAlert, ArrowLeft, ArrowRight, Building2, MapPin,
   ChevronDown, Sliders, CheckCircle2, FileText, Send, Sparkles,
   Info, Landmark, ChevronRight, ChevronLeft, ArrowUp, Search,
-  TrendingUp, Clock, ExternalLink
+  TrendingUp, Clock, ExternalLink, RotateCcw, Play, AlertCircle, Loader2
 } from 'lucide-react';
 import './ActionCenter.css';
 import { projectsData } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
+import { api, type WhatIfResponse } from '../services/api';
 
 export interface ActionCenterProps {
   activeTab?: string;
@@ -42,10 +43,16 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
   const [activeSection, setActiveSection] = useState<ActionSidebarSection>('actions');
 
-  // Interactive What-If Simulator Sliders (State B - 3 Real Data-Grounded Sliders)
-  const [sliderOutlay, setSliderOutlay] = useState<number>(15); // Budget Outlay: +0% to +50%
-  const [sliderExpenditure, setSliderExpenditure] = useState<number>(20); // Expenditure Pacing: +0% to +50%
-  const [sliderResources, setSliderResources] = useState<number>(35); // Increase Resources: +0% to +100%
+  // ML-Driven What-If Simulator State (3 Counterfactual Inputs)
+  const [additionalCost, setAdditionalCost] = useState<number>(0); // ₹ Crore (default 0)
+  const [additionalDelayMonths, setAdditionalDelayMonths] = useState<number>(0); // Months (default 0)
+  const [monthlyExpenditure, setMonthlyExpenditure] = useState<number>(0); // ₹ Cr/mo (default: project's baseline velocity)
+
+  // What-If Backend API State
+  const [simLoading, setSimLoading] = useState<boolean>(false);
+  const [simError, setSimError] = useState<string | null>(null);
+  const [whatIfData, setWhatIfData] = useState<WhatIfResponse | null>(null);
+  const [baselineData, setBaselineData] = useState<WhatIfResponse | null>(null);
 
   // Toast / Modal Feedback State
   const [actionToast, setActionToast] = useState<string | null>(null);
@@ -55,12 +62,73 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
     setTimeout(() => setActionToast(null), 3500);
   };
 
-  // Reset simulator sliders when project changes
+  // Fetch real model-driven baseline when selected project changes
   useEffect(() => {
-    setSliderOutlay(15);
-    setSliderExpenditure(20);
-    setSliderResources(35);
+    setAdditionalCost(0);
+    setAdditionalDelayMonths(0);
+    setWhatIfData(null);
+    setSimError(null);
+
+    if (!activeProjectId) {
+      setBaselineData(null);
+      return;
+    }
+
+    let isMounted = true;
+    setSimLoading(true);
+
+    api.simulateWhatIf(activeProjectId, {
+      additional_cost: 0,
+      additional_delay_months: 0
+    })
+      .then((res) => {
+        if (!isMounted) return;
+        setBaselineData(res);
+        setMonthlyExpenditure(res.baseline.monthly_expenditure);
+        setSimError(null);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        setSimError(err.message || 'Failed to load project baseline for simulation');
+      })
+      .finally(() => {
+        if (isMounted) setSimLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [activeProjectId]);
+
+  // Execute real counterfactual simulation via XGBoost pipeline
+  const handleRunSimulation = async () => {
+    if (!activeProjectId) return;
+    setSimLoading(true);
+    setSimError(null);
+    try {
+      const res = await api.simulateWhatIf(activeProjectId, {
+        additional_cost: Math.max(0, Number(additionalCost) || 0),
+        additional_delay_months: Math.max(0, Number(additionalDelayMonths) || 0),
+        monthly_expenditure: monthlyExpenditure !== undefined && monthlyExpenditure !== null ? Number(monthlyExpenditure) : undefined
+      });
+      setWhatIfData(res);
+    } catch (err: any) {
+      setSimError(err.message || 'Simulation failed. Please check backend connection.');
+    } finally {
+      setSimLoading(false);
+    }
+  };
+
+  // Reset inputs and scenario back to pristine model baseline
+  const handleResetSimulation = () => {
+    setAdditionalCost(0);
+    setAdditionalDelayMonths(0);
+    if (baselineData) {
+      setMonthlyExpenditure(baselineData.baseline.monthly_expenditure);
+    }
+    setWhatIfData(null);
+    setSimError(null);
+  };
 
   // Extract unique Ministries, Sectors, and Agencies
   const { allMinistries, allSectors, allAgencies } = useMemo(() => {
@@ -125,61 +193,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
     return projectsData.find(p => p.id === activeProjectId) || projectsData[0];
   }, [activeProjectId]);
 
-  // Calculate Real-Time Dynamic What-If Simulation Results for activeProj (Cost Overrun, Time Overrun, Risk Score)
-  const simResults = useMemo(() => {
-    if (!activeProj) {
-      return {
-        baseApproved: 0,
-        baseOutlay: 0,
-        simOutlay: 0,
-        baseOverrunCr: 0,
-        simOverrunCr: 0,
-        overrunSavedCr: 0,
-        baseDelay: 0,
-        simDelay: 0,
-        monthsSaved: 0,
-        baseRisk: 50,
-        simRisk: 30
-      };
-    }
-
-    const baseApproved = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
-    const baseOutlay = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || baseApproved || 1000;
-    const baseOverrunCr = Math.max(0, Math.round(baseOutlay - baseApproved));
-    const baseDelay = activeProj.timeOverrunMonths ?? 12;
-    const baseRisk = activeProj.riskScore ?? 75;
-
-    // 1. Cost Overrun Impact:
-    const overrunSavedCr = Math.round(baseOverrunCr * (sliderExpenditure / 100) * 0.4 + baseOutlay * (sliderOutlay / 100) * 0.1);
-    const simOverrunCr = Math.max(0, baseOverrunCr - overrunSavedCr);
-    const simOutlay = Math.round(baseApproved + simOverrunCr + (baseOutlay * (sliderOutlay / 100) * 0.1));
-
-    // 2. Time Overrun / Schedule Delay Impact:
-    const resourceSavedMo = (sliderResources / 100) * 0.45 * baseDelay;
-    const expenditureSavedMo = (sliderExpenditure / 100) * 0.2 * baseDelay;
-    const rawMonthsSaved = resourceSavedMo + expenditureSavedMo;
-    const monthsSaved = Math.min(Math.round(baseDelay * 0.85), parseFloat(rawMonthsSaved.toFixed(1)));
-    const simDelay = Math.max(0, Math.round(baseDelay - monthsSaved));
-
-    // 3. ML Composite Risk Score Impact:
-    const riskDrop = Math.round((monthsSaved / (baseDelay || 1)) * 32 + (sliderExpenditure / 100) * 15 + (sliderResources / 100) * 10);
-    const simRisk = Math.max(15, Math.round(baseRisk - riskDrop));
-
-    return {
-      baseApproved,
-      baseOutlay,
-      simOutlay,
-      baseOverrunCr,
-      simOverrunCr,
-      overrunSavedCr,
-      baseDelay,
-      simDelay,
-      monthsSaved,
-      baseRisk,
-      simRisk
-    };
-  }, [activeProj, sliderOutlay, sliderExpenditure, sliderResources]);
-
   // Policy-Aware Authority Routing Tier for activeProj (Based on Official MoSPI, PIB & CCEA Guidelines)
   const authorityRouting = useMemo(() => {
     if (!activeProj) {
@@ -193,9 +206,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
       };
     }
 
-    const outlay = simResults.baseOutlay;
+    const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || 0;
+    const outlay = parseFloat(activeProj.costRevised.replace(/[^0-9.]/g, '')) || origCost || 1000;
     const delay = activeProj.timeOverrunMonths ?? 12;
-    const origCost = parseFloat(activeProj.costApproved.replace(/[^0-9.]/g, '')) || outlay;
     const overrunPct = origCost > 0 ? ((outlay - origCost) / origCost) * 100 : 0;
 
     if (outlay >= 1000 || delay >= 12 || overrunPct >= 50) {
@@ -235,7 +248,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
         mandate: 'PIU On-Site Acceleration Directive & Contractor Performance Notice'
       };
     }
-  }, [activeProj, simResults.baseOutlay]);
+  }, [activeProj]);
 
   // Real Escalation Driver-Based Recommendations generated dynamically for activeProj
   const realRecommendations = useMemo(() => {
@@ -524,7 +537,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
           </section>
 
           {/* ════════════════════════════════════════════════════════════════
-             SECTION 2: IMPACT SECTION (INTERACTIVE WHAT-IF SIMULATOR)
+             SECTION 2: IMPACT SECTION (REAL ML-DRIVEN WHAT-IF SIMULATOR)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-simulator" className="ac-section">
             <div className="ac-section-header header-blue">
@@ -533,11 +546,16 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
-                <p className="ac-sec-sub" style={{ margin: 0 }}>
-                  Simulate dynamic real-time impact on Cost Overrun, Time Overrun, and ML Risk Score by adjusting project parameters.
-                </p>
+                <div>
+                  <p className="ac-sec-sub" style={{ margin: 0 }}>
+                    Simulate dynamic real-time counterfactual impact using the trained PAIMANA XGBoost pipelines and centralized Risk Engine.
+                  </p>
+                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
+                    Active Project: <strong style={{ color: '#0F172A' }}>{activeProj?.name}</strong> (ID: {activeProj?.id})
+                  </div>
+                </div>
                 <span className="ac-head-pill pill-ai">
-                  <Sparkles size={13} /> Real-Time Policy Engine
+                  <Sparkles size={13} /> ML Counterfactual Engine
                 </span>
               </div>
 
@@ -545,148 +563,520 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
               <div className="ac-cuf-disclaimer-box">
                 <Info size={16} className="cuf-info-icon" />
                 <span>
-                  <strong>CUF (Common Upload Form) Telemetry Note:</strong> Data is sourced directly from MoSPI OCMS monthly Common Upload Form submissions and PAIMANA telemetry feeds.
+                  <strong>CUF (Common Upload Form) Telemetry Note:</strong> Baseline inference and counterfactual scenarios run directly against trained XGBoost Cost &amp; Schedule regressors and the empirical Risk Engine.
                 </span>
               </div>
 
-              {/* Simulator Main Body (3 Sliders Left, Dynamic 3 Impact Results Right) */}
+              {/* API Error Notification */}
+              {simError && (
+                <div className="ac-sim-error-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '8px', margin: '12px 0' }}>
+                  <AlertCircle size={16} style={{ color: '#DC2626', flexShrink: 0 }} />
+                  <span style={{ fontSize: '12px', color: '#B91C1C', flex: 1 }}>{simError}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRunSimulation()}
+                    style={{ background: '#DC2626', color: '#FFF', border: 'none', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {/* Simulator Main Body (3 Sliders Left, Dynamic Comparison Table Right) */}
               <div className="ac-simulator-body">
-                {/* Sliders Column: Exactly 3 Sliders (Budget Outlay, Expenditure, Increase Resources) */}
+                {/* Sliders Column: Exactly 3 Variables (Additional Cost, Additional Time Delay, Monthly Expenditure) */}
                 <div className="ac-sliders-col">
-                  {/* Slider 1: Budget Outlay */}
+                  {/* Variable 1: Additional Cost */}
                   <div className="sim-slider-group">
                     <div className="slider-label-row">
-                      <span className="slider-lbl">1. Budget Outlay Realignment</span>
-                      <span className="slider-val text-blue">+{sliderOutlay}% Supplemental Outlay</span>
+                      <span className="slider-lbl">1. Additional Cost (Capital Outlay)</span>
+                      <span className="slider-val text-blue">
+                        +{Number(additionalCost).toLocaleString('en-IN')} ₹ Cr
+                      </span>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="50"
-                      step="1"
-                      value={sliderOutlay}
-                      onChange={(e) => setSliderOutlay(parseFloat(e.target.value))}
-                      className="ac-range-input"
-                    />
+                    <div className="slider-controls-row">
+                      <input
+                        type="range"
+                        min="0"
+                        max={Math.max(500, Math.round((baselineData?.baseline.cost || 1000) * 0.5))}
+                        step="10"
+                        value={additionalCost}
+                        onChange={(e) => setAdditionalCost(Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="ac-range-input"
+                      />
+                      <div className="ac-num-input-wrap">
+                        <input
+                          type="number"
+                          min="0"
+                          value={additionalCost}
+                          onChange={(e) => setAdditionalCost(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="ac-num-input"
+                        />
+                        <span className="ac-num-unit">₹ Cr</span>
+                      </div>
+                    </div>
                     <div className="slider-minmax">
-                      <span>Baseline Outlay (₹{simResults.baseOutlay} Cr)</span>
-                      <span>+50% Reallocation</span>
+                      <span>Baseline (₹0 Cr)</span>
+                      <span>+₹{Math.max(500, Math.round((baselineData?.baseline.cost || 1000) * 0.5))} Cr</span>
                     </div>
                   </div>
 
-                  {/* Slider 2: Expenditure Pacing */}
+                  {/* Variable 2: Additional Time Delay */}
                   <div className="sim-slider-group">
                     <div className="slider-label-row">
-                      <span className="slider-lbl">2. Expenditure Pacing &amp; Disbursement</span>
-                      <span className="slider-val text-blue">+{sliderExpenditure}% Speed</span>
+                      <span className="slider-lbl">2. Additional Time Delay</span>
+                      <span className="slider-val text-blue">+{additionalDelayMonths} Months</span>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="50"
-                      step="5"
-                      value={sliderExpenditure}
-                      onChange={(e) => setSliderExpenditure(parseFloat(e.target.value))}
-                      className="ac-range-input"
-                    />
+                    <div className="slider-controls-row">
+                      <input
+                        type="range"
+                        min="0"
+                        max="36"
+                        step="1"
+                        value={additionalDelayMonths}
+                        onChange={(e) => setAdditionalDelayMonths(Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="ac-range-input"
+                      />
+                      <div className="ac-num-input-wrap">
+                        <input
+                          type="number"
+                          min="0"
+                          max="72"
+                          value={additionalDelayMonths}
+                          onChange={(e) => setAdditionalDelayMonths(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="ac-num-input"
+                        />
+                        <span className="ac-num-unit">Mo</span>
+                      </div>
+                    </div>
                     <div className="slider-minmax">
-                      <span>Standard Disbursement</span>
-                      <span>+50% Fast-Track Pacing</span>
+                      <span>Baseline (0 Months)</span>
+                      <span>+36 Months Delay</span>
                     </div>
                   </div>
 
-                  {/* Slider 3: Increase Resources */}
+                  {/* Variable 3: Monthly Expenditure */}
                   <div className="sim-slider-group">
                     <div className="slider-label-row">
-                      <span className="slider-lbl">3. Increase Resources (Workforce &amp; Heavy Machinery)</span>
-                      <span className="slider-val text-blue">+{sliderResources}% Deployment</span>
+                      <span className="slider-lbl">3. Monthly Expenditure Velocity</span>
+                      <span className="slider-val text-blue">
+                        ₹{Number(monthlyExpenditure).toFixed(1)} Cr/mo
+                      </span>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={sliderResources}
-                      onChange={(e) => setSliderResources(parseFloat(e.target.value))}
-                      className="ac-range-input"
-                    />
+                    <div className="slider-controls-row">
+                      <input
+                        type="range"
+                        min="0"
+                        max={Math.max(100, Math.round((baselineData?.baseline.monthly_expenditure || 25) * 3))}
+                        step="1"
+                        value={monthlyExpenditure}
+                        onChange={(e) => setMonthlyExpenditure(Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="ac-range-input"
+                      />
+                      <div className="ac-num-input-wrap">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={monthlyExpenditure}
+                          onChange={(e) => setMonthlyExpenditure(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="ac-num-input"
+                        />
+                        <span className="ac-num-unit">Cr/mo</span>
+                      </div>
+                    </div>
                     <div className="slider-minmax">
-                      <span>Standard Pacing</span>
-                      <span>+100% (24x7 3-Shift Augmentation)</span>
+                      <span>₹0 Cr/mo</span>
+                      <span>Baseline: ₹{(baselineData?.baseline.monthly_expenditure || 0).toFixed(1)} Cr/mo</span>
+                      <span>₹{Math.max(100, Math.round((baselineData?.baseline.monthly_expenditure || 25) * 3))} Cr/mo</span>
                     </div>
+                  </div>
+
+                  {/* Action Buttons: Reset & Run Simulation */}
+                  <div className="ac-sim-actions-bar">
+                    <button
+                      type="button"
+                      className="ac-btn-reset"
+                      onClick={handleResetSimulation}
+                      disabled={simLoading}
+                    >
+                      <RotateCcw size={13} />
+                      <span>Reset to Baseline</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="ac-btn-run"
+                      onClick={handleRunSimulation}
+                      disabled={simLoading}
+                    >
+                      {simLoading ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Simulating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play size={13} fill="currentColor" />
+                          <span>Run Simulation</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                {/* Dynamic Counterfactual Impact Column: Cost Overrun, Time Overrun & Risk Score */}
+                {/* Simulation Impact Column: Comparison Table */}
                 <div className="ac-sim-results-col">
-                  <h3 className="sim-results-heading">Simulated Counterfactual Impact</h3>
+                  <div className="ac-impact-table-wrap">
+                    <table className="ac-impact-table">
+                      <thead>
+                        <tr>
+                          <th>Metric</th>
+                          <th>Baseline</th>
+                          <th>Scenario</th>
+                          <th>Change</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* 1. Direct Metric: Projected Cost */}
+                        <tr>
+                          <td>
+                            <div className="ac-table-metric">
+                              <span>Projected Cost</span>
+                            </div>
+                          </td>
+                          <td className="ac-table-base">
+                            ₹{(baselineData?.baseline.cost ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr
+                          </td>
+                          <td className="ac-table-scen">
+                            {whatIfData ? `₹${whatIfData.scenario.cost.toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr` : '—'}
+                          </td>
+                          <td>
+                            {whatIfData ? (
+                              <span className={`ac-table-delta ${whatIfData.impact.cost_change > 0 ? 'delta-bad' : whatIfData.impact.cost_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
+                                {whatIfData.impact.cost_change >= 0 ? '+' : ''}₹{whatIfData.impact.cost_change.toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr
+                              </span>
+                            ) : (
+                              <span className="ac-table-delta delta-neutral">—</span>
+                            )}
+                          </td>
+                        </tr>
 
-                  {/* Result Metric 1: Cost Overrun */}
-                  <div className="sim-metric-card card-outlay">
-                    <div className="sim-metric-top">
-                      <span className="sim-metric-title">Cost Overrun</span>
-                      <span className="sim-badge badge-blue">
-                        {simResults.overrunSavedCr > 0 ? `▼ ₹${simResults.overrunSavedCr.toLocaleString()} Cr Recovered` : 'On Baseline'}
-                      </span>
-                    </div>
-                    <div className="sim-metric-val-row">
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Baseline Overrun</span>
-                        <span className="sim-val-num text-red">+₹{simResults.baseOverrunCr.toLocaleString()} Cr</span>
-                      </div>
-                      <span className="sim-arrow">→</span>
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Simulated Overrun</span>
-                        <span className="sim-val-num text-blue">+₹{simResults.simOverrunCr.toLocaleString()} Cr</span>
-                      </div>
-                    </div>
-                  </div>
+                        {/* 2. Direct Metric: Remaining Months */}
+                        <tr>
+                          <td>
+                            <div className="ac-table-metric">
+                              <span>Remaining Months</span>
+                            </div>
+                          </td>
+                          <td className="ac-table-base">
+                            {baselineData?.baseline.remaining_months ?? 0} mo
+                          </td>
+                          <td className="ac-table-scen">
+                            {whatIfData ? `${whatIfData.scenario.remaining_months} mo` : '—'}
+                          </td>
+                          <td>
+                            {whatIfData ? (
+                              <span className={`ac-table-delta ${whatIfData.impact.remaining_months_change > 0 ? 'delta-bad' : whatIfData.impact.remaining_months_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
+                                {whatIfData.impact.remaining_months_change >= 0 ? '+' : ''}{whatIfData.impact.remaining_months_change} mo
+                              </span>
+                            ) : (
+                              <span className="ac-table-delta delta-neutral">—</span>
+                            )}
+                          </td>
+                        </tr>
 
-                  {/* Result Metric 2: Time Overrun / Schedule Delay */}
-                  <div className="sim-metric-card card-delay">
-                    <div className="sim-metric-top">
-                      <span className="sim-metric-title">Time Overrun (Schedule Delay)</span>
-                      <span className="sim-badge badge-green">▼ {simResults.monthsSaved} Months Saved</span>
-                    </div>
-                    <div className="sim-metric-val-row">
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Baseline Delay</span>
-                        <span className="sim-val-num text-amber">+{simResults.baseDelay} Mo</span>
-                      </div>
-                      <span className="sim-arrow">→</span>
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Simulated Delay</span>
-                        <span className="sim-val-num text-blue">+{simResults.simDelay} Mo</span>
-                      </div>
-                    </div>
-                    <div className="sim-track">
-                      <div className="sim-fill bg-blue" style={{ width: `${Math.max(10, (simResults.simDelay / (simResults.baseDelay || 1)) * 100)}%` }} />
-                    </div>
-                  </div>
+                        {/* 3. Direct Metric: Monthly Expenditure */}
+                        <tr>
+                          <td>
+                            <div className="ac-table-metric">
+                              <span>Monthly Expenditure</span>
+                            </div>
+                          </td>
+                          <td className="ac-table-base">
+                            ₹{(baselineData?.baseline.monthly_expenditure ?? 0).toFixed(1)} Cr/mo
+                          </td>
+                          <td className="ac-table-scen">
+                            {whatIfData ? `₹${whatIfData.scenario.monthly_expenditure.toFixed(1)} Cr/mo` : '—'}
+                          </td>
+                          <td>
+                            {whatIfData ? (
+                              <span className="ac-table-delta delta-neutral">
+                                {whatIfData.impact.expenditure_change >= 0 ? '+' : ''}₹{whatIfData.impact.expenditure_change.toFixed(1)} Cr/mo
+                              </span>
+                            ) : (
+                              <span className="ac-table-delta delta-neutral">—</span>
+                            )}
+                          </td>
+                        </tr>
 
-                  {/* Result Metric 3: ML Composite Risk Score */}
-                  <div className="sim-metric-card card-risk">
-                    <div className="sim-metric-top">
-                      <span className="sim-metric-title">ML Composite Risk Score</span>
-                      <span className="sim-badge badge-emerald">▼ {simResults.baseRisk - simResults.simRisk} Pts Lower Risk</span>
-                    </div>
-                    <div className="sim-metric-val-row">
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Baseline Risk</span>
-                        <span className="sim-val-num text-red">{simResults.baseRisk}/100</span>
-                      </div>
-                      <span className="sim-arrow">→</span>
-                      <div className="sim-val-block">
-                        <span className="sim-val-sub">Simulated Risk</span>
-                        <span className="sim-val-num text-green">{simResults.simRisk}/100</span>
-                      </div>
-                    </div>
-                    <div className="sim-track">
-                      <div className="sim-fill bg-green" style={{ width: `${simResults.simRisk}%` }} />
-                    </div>
+                        {/* 4. Model Prediction: Cost Overrun */}
+                        <tr style={{ background: '#F8FAFC' }}>
+                          <td>
+                            <div className="ac-table-metric">
+                              <span style={{ color: '#2563EB', fontWeight: 800 }}>Predicted Cost Overrun</span>
+                            </div>
+                          </td>
+                          <td className="ac-table-base">
+                            {(baselineData?.baseline.predicted_cost_overrun ?? 0).toFixed(1)}%
+                          </td>
+                          <td className="ac-table-scen">
+                            {whatIfData ? `${whatIfData.scenario.predicted_cost_overrun.toFixed(1)}%` : '—'}
+                          </td>
+                          <td>
+                            {whatIfData ? (
+                              <span className={`ac-table-delta ${whatIfData.impact.cost_overrun_change > 0 ? 'delta-bad' : whatIfData.impact.cost_overrun_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
+                                {whatIfData.impact.cost_overrun_change >= 0 ? '+' : ''}{whatIfData.impact.cost_overrun_change.toFixed(1)} pp
+                              </span>
+                            ) : (
+                              <span className="ac-table-delta delta-neutral">—</span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* 5. Model Prediction: Schedule Delay */}
+                        <tr style={{ background: '#F8FAFC' }}>
+                          <td>
+                            <div className="ac-table-metric">
+                              <span style={{ color: '#2563EB', fontWeight: 800 }}>Predicted Schedule Delay</span>
+                            </div>
+                          </td>
+                          <td className="ac-table-base">
+                            {(baselineData?.baseline.predicted_schedule_delay ?? 0).toFixed(1)} mo
+                          </td>
+                          <td className="ac-table-scen">
+                            {whatIfData ? `${whatIfData.scenario.predicted_schedule_delay.toFixed(1)} mo` : '—'}
+                          </td>
+                          <td>
+                            {whatIfData ? (
+                              <span className={`ac-table-delta ${whatIfData.impact.schedule_delay_change > 0 ? 'delta-bad' : whatIfData.impact.schedule_delay_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
+                                {whatIfData.impact.schedule_delay_change >= 0 ? '+' : ''}{whatIfData.impact.schedule_delay_change.toFixed(1)} mo
+                              </span>
+                            ) : (
+                              <span className="ac-table-delta delta-neutral">—</span>
+                            )}
+                          </td>
+                        </tr>
+
+                        {/* 6. Centralized Risk Engine: Composite Risk Score */}
+                        <tr style={{ background: '#EFF6FF' }}>
+                          <td>
+                            <div className="ac-table-metric">
+                              <span style={{ color: '#1E3A8A', fontWeight: 850 }}>Composite Risk Score</span>
+                            </div>
+                          </td>
+                          <td className="ac-table-base" style={{ fontWeight: 800 }}>
+                            {baselineData?.baseline.risk_score ?? 0}/100 ({baselineData?.baseline.risk_level ?? '—'})
+                          </td>
+                          <td className="ac-table-scen" style={{ fontWeight: 850, color: '#1E3A8A' }}>
+                            {whatIfData ? `${whatIfData.scenario.risk_score}/100 (${whatIfData.scenario.risk_level})` : '—'}
+                          </td>
+                          <td>
+                            {whatIfData ? (
+                              <span className={`ac-table-delta ${whatIfData.impact.risk_score_change > 0 ? 'delta-bad' : whatIfData.impact.risk_score_change < 0 ? 'delta-good' : 'delta-neutral'}`} style={{ fontSize: '13px' }}>
+                                {whatIfData.impact.risk_score_change >= 0 ? '+' : ''}{whatIfData.impact.risk_score_change} pts
+                              </span>
+                            ) : (
+                              <span className="ac-table-delta delta-neutral">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
+
+              {/* Partial Dependence Plots (PDP / Sensitivity Analysis) */}
+              <div className="pdp-charts-grid">
+                {/* PDP Chart 1: Cost Overrun Sensitivity */}
+                <div className="pdp-chart-card">
+                  <div className="pdp-chart-head">
+                    <span className="pdp-chart-title">Cost Overrun Sensitivity (PDP)</span>
+                    <span className="pdp-chart-sub">Trained XGBoost Cost Regressor | Feature: cost_escalation_crore</span>
+                  </div>
+                  {(() => {
+                    const curve = whatIfData?.pdp_cost || baselineData?.pdp_cost;
+                    if (!curve || !curve.points || curve.points.length === 0) {
+                      return (
+                        <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: 12 }}>
+                          {simLoading ? 'Scoring trained XGBoost cost model...' : 'PDP data unavailable'}
+                        </div>
+                      );
+                    }
+                    const width = 360;
+                    const height = 180;
+                    const padding = { top: 20, right: 25, bottom: 35, left: 45 };
+                    const plotW = width - padding.left - padding.right;
+                    const plotH = height - padding.top - padding.bottom;
+
+                    const allX = curve.points.map(p => p.x);
+                    allX.push(curve.baseline_point.x);
+                    if (whatIfData && curve.scenario_point) allX.push(curve.scenario_point.x);
+                    let minX = Math.min(...allX);
+                    let maxX = Math.max(...allX);
+                    if (minX === maxX) maxX = minX + 10;
+
+                    const allY = curve.points.map(p => p.y);
+                    allY.push(curve.baseline_point.y);
+                    if (whatIfData && curve.scenario_point) allY.push(curve.scenario_point.y);
+                    let minY = Math.min(...allY);
+                    let maxY = Math.max(...allY);
+                    if (minY === maxY) maxY = minY + 5;
+                    const yPad = (maxY - minY) * 0.1 || 1;
+                    minY -= yPad;
+                    maxY += yPad;
+
+                    const scaleX = (x: number) => padding.left + ((x - minX) / (maxX - minX)) * plotW;
+                    const scaleY = (y: number) => padding.top + plotH - ((y - minY) / (maxY - minY)) * plotH;
+
+                    const poly = curve.points.map(p => `${scaleX(p.x).toFixed(1)},${scaleY(p.y).toFixed(1)}`).join(' ');
+                    const bX = scaleX(curve.baseline_point.x);
+                    const bY = scaleY(curve.baseline_point.y);
+                    const hasScen = Boolean(whatIfData && curve.scenario_point);
+                    const sX = hasScen ? scaleX(curve.scenario_point.x) : 0;
+                    const sY = hasScen ? scaleY(curve.scenario_point.y) : 0;
+
+                    return (
+                      <div>
+                        <svg viewBox={`0 0 ${width} ${height}`} className="pdp-svg">
+                          <line x1={padding.left} y1={scaleY(minY + yPad)} x2={width - padding.right} y2={scaleY(minY + yPad)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                          <line x1={padding.left} y1={scaleY((minY + maxY) / 2)} x2={width - padding.right} y2={scaleY((minY + maxY) / 2)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                          <line x1={padding.left} y1={scaleY(maxY - yPad)} x2={width - padding.right} y2={scaleY(maxY - yPad)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                          <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
+                          <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
+                          <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={poly} />
+                          <circle cx={bX} cy={bY} r={6} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} />
+                          {hasScen && <circle cx={sX} cy={sY} r={6.5} fill="#DC2626" stroke="#FFFFFF" strokeWidth={2} />}
+                          <text x={padding.left} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="start">₹{minX.toFixed(0)} Cr</text>
+                          <text x={width - padding.right} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="end">₹{maxX.toFixed(0)} Cr</text>
+                          <text x={padding.left - 6} y={padding.top + 8} fontSize="9.5" fill="#64748B" textAnchor="end">{maxY.toFixed(1)}%</text>
+                          <text x={padding.left - 6} y={height - padding.bottom} fontSize="9.5" fill="#64748B" textAnchor="end">{minY.toFixed(1)}%</text>
+                        </svg>
+                        <div className="pdp-legend">
+                          <div className="pdp-legend-item">
+                            <span className="pdp-line-sample" style={{ background: '#2563EB' }}></span>
+                            <span>PDP Response</span>
+                          </div>
+                          <div className="pdp-legend-item">
+                            <span className="pdp-dot dot-base"></span>
+                            <span>Baseline ({curve.baseline_point.x.toFixed(0)} Cr, {curve.baseline_point.y.toFixed(1)}%)</span>
+                          </div>
+                          {hasScen && (
+                            <div className="pdp-legend-item">
+                              <span className="pdp-dot dot-scen"></span>
+                              <span>Scenario ({curve.scenario_point.x.toFixed(0)} Cr, {curve.scenario_point.y.toFixed(1)}%)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* PDP Chart 2: Schedule Delay Sensitivity */}
+                <div className="pdp-chart-card">
+                  <div className="pdp-chart-head">
+                    <span className="pdp-chart-title">Schedule Delay Sensitivity (PDP)</span>
+                    <span className="pdp-chart-sub">Trained XGBoost Schedule Regressor | Feature: schedule_extension_months</span>
+                  </div>
+                  {(() => {
+                    const curve = whatIfData?.pdp_schedule || baselineData?.pdp_schedule;
+                    if (!curve || !curve.points || curve.points.length === 0) {
+                      return (
+                        <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: 12 }}>
+                          {simLoading ? 'Scoring trained XGBoost schedule model...' : 'PDP data unavailable'}
+                        </div>
+                      );
+                    }
+                    const width = 360;
+                    const height = 180;
+                    const padding = { top: 20, right: 25, bottom: 35, left: 45 };
+                    const plotW = width - padding.left - padding.right;
+                    const plotH = height - padding.top - padding.bottom;
+
+                    const allX = curve.points.map(p => p.x);
+                    allX.push(curve.baseline_point.x);
+                    if (whatIfData && curve.scenario_point) allX.push(curve.scenario_point.x);
+                    let minX = Math.min(...allX);
+                    let maxX = Math.max(...allX);
+                    if (minX === maxX) maxX = minX + 10;
+
+                    const allY = curve.points.map(p => p.y);
+                    allY.push(curve.baseline_point.y);
+                    if (whatIfData && curve.scenario_point) allY.push(curve.scenario_point.y);
+                    let minY = Math.min(...allY);
+                    let maxY = Math.max(...allY);
+                    if (minY === maxY) maxY = minY + 5;
+                    const yPad = (maxY - minY) * 0.1 || 1;
+                    minY -= yPad;
+                    maxY += yPad;
+
+                    const scaleX = (x: number) => padding.left + ((x - minX) / (maxX - minX)) * plotW;
+                    const scaleY = (y: number) => padding.top + plotH - ((y - minY) / (maxY - minY)) * plotH;
+
+                    const poly = curve.points.map(p => `${scaleX(p.x).toFixed(1)},${scaleY(p.y).toFixed(1)}`).join(' ');
+                    const bX = scaleX(curve.baseline_point.x);
+                    const bY = scaleY(curve.baseline_point.y);
+                    const hasScen = Boolean(whatIfData && curve.scenario_point);
+                    const sX = hasScen ? scaleX(curve.scenario_point.x) : 0;
+                    const sY = hasScen ? scaleY(curve.scenario_point.y) : 0;
+
+                    return (
+                      <div>
+                        <svg viewBox={`0 0 ${width} ${height}`} className="pdp-svg">
+                          <line x1={padding.left} y1={scaleY(minY + yPad)} x2={width - padding.right} y2={scaleY(minY + yPad)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                          <line x1={padding.left} y1={scaleY((minY + maxY) / 2)} x2={width - padding.right} y2={scaleY((minY + maxY) / 2)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                          <line x1={padding.left} y1={scaleY(maxY - yPad)} x2={width - padding.right} y2={scaleY(maxY - yPad)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+                          <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
+                          <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
+                          <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={poly} />
+                          <circle cx={bX} cy={bY} r={6} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} />
+                          {hasScen && <circle cx={sX} cy={sY} r={6.5} fill="#DC2626" stroke="#FFFFFF" strokeWidth={2} />}
+                          <text x={padding.left} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="start">{minX.toFixed(0)} Mo</text>
+                          <text x={width - padding.right} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="end">{maxX.toFixed(0)} Mo</text>
+                          <text x={padding.left - 6} y={padding.top + 8} fontSize="9.5" fill="#64748B" textAnchor="end">{maxY.toFixed(1)}m</text>
+                          <text x={padding.left - 6} y={height - padding.bottom} fontSize="9.5" fill="#64748B" textAnchor="end">{minY.toFixed(1)}m</text>
+                        </svg>
+                        <div className="pdp-legend">
+                          <div className="pdp-legend-item">
+                            <span className="pdp-line-sample" style={{ background: '#2563EB' }}></span>
+                            <span>PDP Response</span>
+                          </div>
+                          <div className="pdp-legend-item">
+                            <span className="pdp-dot dot-base"></span>
+                            <span>Baseline ({curve.baseline_point.x.toFixed(0)} Mo, {curve.baseline_point.y.toFixed(1)}m)</span>
+                          </div>
+                          {hasScen && (
+                            <div className="pdp-legend-item">
+                              <span className="pdp-dot dot-scen"></span>
+                              <span>Scenario ({curve.scenario_point.x.toFixed(0)} Mo, {curve.scenario_point.y.toFixed(1)}m)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Dynamic Scenario Explanation */}
+              {whatIfData ? (
+                <div className="ac-narrative-box">
+                  <div className="ac-narrative-title">
+                    <Sparkles size={14} /> ML Model Counterfactual Evaluation
+                  </div>
+                  <p style={{ margin: 0 }}>{whatIfData.narrative_insight}</p>
+                </div>
+              ) : (
+                <div className="ac-narrative-box" style={{ background: '#F8FAFC', borderColor: '#E2E8F0', color: '#64748B' }}>
+                  <div className="ac-narrative-title" style={{ color: '#475569' }}>
+                    <Info size={14} /> Baseline Mode Active
+                  </div>
+                  <p style={{ margin: 0 }}>
+                    Adjust Additional Cost, Additional Time Delay, or Monthly Expenditure above and click <strong>Run Simulation</strong> to score the counterfactual scenario through the trained PAIMANA XGBoost models and centralized Risk Engine.
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 
