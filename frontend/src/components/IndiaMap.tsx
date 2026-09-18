@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Building2, Coins, TrendingUp, Clock } from 'lucide-react';
 import './IndiaMap.css';
-import type { Project } from '../data/projectsData';
+import { projectsData, type Project } from '../data/projectsData';
 // @ts-ignore - no types available for this package
 import indiaMapData from '@svg-maps/india';
 import { AnimatedCounter } from './AnimatedCounter';
@@ -19,15 +19,15 @@ interface StateSummary {
 
 // Map SVG-map location id → our dataset state name
 const ID_TO_STATE: Record<string, string> = {
-  'an': 'Andaman and Nicobar',
+  'an': 'Andaman & Nicobar',
   'ap': 'Andhra Pradesh',
-  'ar': 'North-East Region',
+  'ar': 'Arunachal Pradesh',
   'as': 'Assam',
   'br': 'Bihar',
   'ch': 'Chandigarh',
   'ct': 'Chhattisgarh',
-  'dn': 'Gujarat',
-  'dd': 'Gujarat',
+  'dn': 'Dadra & Nagar Haveli',
+  'dd': 'Daman & Diu',
   'dl': 'Delhi',
   'ga': 'Goa',
   'gj': 'Gujarat',
@@ -40,18 +40,18 @@ const ID_TO_STATE: Record<string, string> = {
   'ld': 'Lakshadweep',
   'mp': 'Madhya Pradesh',
   'mh': 'Maharashtra',
-  'mn': 'North-East Region',
-  'ml': 'North-East Region',
-  'mz': 'North-East Region',
-  'nl': 'North-East Region',
+  'mn': 'Manipur',
+  'ml': 'Meghalaya',
+  'mz': 'Mizoram',
+  'nl': 'Nagaland',
   'or': 'Odisha',
-  'py': 'Tamil Nadu',
+  'py': 'Puducherry',
   'pb': 'Punjab',
   'rj': 'Rajasthan',
   'sk': 'Sikkim',
   'tn': 'Tamil Nadu',
   'tg': 'Telangana',
-  'tr': 'North-East Region',
+  'tr': 'Tripura',
   'up': 'Uttar Pradesh',
   'ut': 'Uttarakhand',
   'wb': 'West Bengal',
@@ -146,68 +146,78 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey }) => {
     return parseFloat(cleaned) || 0;
   };
 
-  const [projectsList, setProjectsList] = React.useState<Project[]>([]);
-
-  React.useEffect(() => {
-    import('../data/projectsData').then(mod => setProjectsList(mod.projectsData));
-  }, []);
-
-  // Compute 100% REAL state-by-state aggregations from projectsData (3,361 dataset)
+  // Compute 100% REAL state-by-state aggregations from projectsData
   const stateDataMap = useMemo(() => {
     const map = new Map<string, StateSummary>();
 
-    projectsList.forEach((p: Project) => {
-      let loc = (p.location || '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
+    projectsData.forEach((p: Project) => {
+      const locRaw = (p.location || '').replace(/\r\n/g, ' ').replace(/\n/g, ' ').trim();
 
-      if (loc.includes('Uttar Pradesh')) loc = 'Uttar Pradesh';
-      else if (loc.includes('Madhya Pradesh')) loc = 'Madhya Pradesh';
-      else if (loc.includes('Maharashtra')) loc = 'Maharashtra';
-      else if (loc.includes('Gujarat')) loc = 'Gujarat';
-      else if (loc.includes('Karnataka')) loc = 'Karnataka';
-      else if (loc.includes('Andhra Pradesh')) loc = 'Andhra Pradesh';
-      else if (loc.includes('Tamil Nadu')) loc = 'Tamil Nadu';
-      else if (loc.includes('Telangana')) loc = 'Telangana';
-      else if (loc.includes('Bihar')) loc = 'Bihar';
-      else if (loc.includes('Odisha')) loc = 'Odisha';
-      else if (loc.includes('Jharkhand')) loc = 'Jharkhand';
-      else if (loc.includes('West Bengal')) loc = 'West Bengal';
-      else if (loc.includes('Chhattisgarh')) loc = 'Chhattisgarh';
-      else if (loc.includes('Punjab')) loc = 'Punjab';
-      else if (loc.includes('Jammu')) loc = 'Jammu & Kashmir';
-      else if (loc.includes('Rajasthan')) loc = 'Rajasthan';
-      else if (loc.includes('Assam')) loc = 'Assam';
-      else if (loc.includes('Haryana')) loc = 'Haryana';
-      else if (loc.includes('Uttarakhand')) loc = 'Uttarakhand';
-      else if (loc.includes('Himachal')) loc = 'Himachal Pradesh';
-      else if (loc.includes('Manipur') || loc.includes('Tripura') || loc.includes('Arunachal') || loc.includes('Mizoram') || loc.includes('Meghalaya') || loc.includes('Nagaland')) loc = 'North-East Region';
-      else if (loc.includes('Goa')) loc = 'Goa';
-      else if (loc.includes('Delhi')) loc = 'Delhi';
-      else if (loc.includes('Sikkim')) loc = 'Sikkim';
-      else if (loc.includes('Ladakh')) loc = 'Jammu & Kashmir';
-      else if (loc.includes('Puducherry')) loc = 'Tamil Nadu';
-      else if (loc.includes('Multi-State') || loc.includes('PAN India') || loc.includes('Offshore')) loc = 'Multi-State';
+      const statesFound = new Set<string>();
+      if (locRaw.includes('Uttar Pradesh')) statesFound.add('Uttar Pradesh');
+      if (locRaw.includes('Madhya Pradesh')) statesFound.add('Madhya Pradesh');
+      if (locRaw.includes('Maharashtra')) statesFound.add('Maharashtra');
+      if (locRaw.includes('Gujarat')) statesFound.add('Gujarat');
+      if (locRaw.includes('Karnataka')) statesFound.add('Karnataka');
+      if (locRaw.includes('Andhra Pradesh')) statesFound.add('Andhra Pradesh');
+      if (locRaw.includes('Tamil Nadu')) statesFound.add('Tamil Nadu');
+      if (locRaw.includes('Telangana')) statesFound.add('Telangana');
+      if (locRaw.includes('Bihar')) statesFound.add('Bihar');
+      if (locRaw.includes('Odisha')) statesFound.add('Odisha');
+      if (locRaw.includes('Jharkhand')) statesFound.add('Jharkhand');
+      if (locRaw.includes('West Bengal')) statesFound.add('West Bengal');
+      if (locRaw.includes('Chhattisgarh')) statesFound.add('Chhattisgarh');
+      if (locRaw.includes('Punjab')) statesFound.add('Punjab');
+      if (locRaw.includes('Jammu') || locRaw.includes('Kashmir') || locRaw.includes('Ladakh')) statesFound.add('Jammu & Kashmir');
+      if (locRaw.includes('Rajasthan')) statesFound.add('Rajasthan');
+      if (locRaw.includes('Assam')) statesFound.add('Assam');
+      if (locRaw.includes('Haryana')) statesFound.add('Haryana');
+      if (locRaw.includes('Uttarakhand')) statesFound.add('Uttarakhand');
+      if (locRaw.includes('Himachal')) statesFound.add('Himachal Pradesh');
+      if (locRaw.includes('Arunachal')) statesFound.add('Arunachal Pradesh');
+      if (locRaw.includes('Manipur')) statesFound.add('Manipur');
+      if (locRaw.includes('Nagaland')) statesFound.add('Nagaland');
+      if (locRaw.includes('Tripura')) statesFound.add('Tripura');
+      if (locRaw.includes('Mizoram')) statesFound.add('Mizoram');
+      if (locRaw.includes('Meghalaya')) statesFound.add('Meghalaya');
+      if (locRaw.includes('Sikkim')) statesFound.add('Sikkim');
+      if (locRaw.includes('Goa')) statesFound.add('Goa');
+      if (locRaw.includes('Delhi')) statesFound.add('Delhi');
+      if (locRaw.includes('Chandigarh')) statesFound.add('Chandigarh');
+      if (locRaw.includes('Puducherry')) statesFound.add('Puducherry');
+      if (locRaw.includes('Andaman')) statesFound.add('Andaman & Nicobar');
+      if (locRaw.includes('Dadra') || locRaw.includes('Daman')) {
+        statesFound.add('Dadra & Nagar Haveli');
+        statesFound.add('Daman & Diu');
+      }
+
+      if (statesFound.size === 0) {
+        statesFound.add('Multi-State');
+      }
 
       const origCost = parseCrores(p.costApproved);
       const revCost = parseCrores(p.costRevised);
       const expCost = parseCrores(p.costExpenditure);
 
-      if (!map.has(loc)) {
-        map.set(loc, {
-          stateName: loc,
-          projectCount: 0,
-          originalCostCrore: 0,
-          revisedCostCrore: 0,
-          expenditureCrore: 0,
-          completedMonth: 0,
-          newlyAdded: 0
-        });
-      }
+      statesFound.forEach(loc => {
+        if (!map.has(loc)) {
+          map.set(loc, {
+            stateName: loc,
+            projectCount: 0,
+            originalCostCrore: 0,
+            revisedCostCrore: 0,
+            expenditureCrore: 0,
+            completedMonth: 0,
+            newlyAdded: 0
+          });
+        }
 
-      const entry = map.get(loc)!;
-      entry.projectCount += 1;
-      entry.originalCostCrore += origCost;
-      entry.revisedCostCrore += revCost;
-      entry.expenditureCrore += expCost;
+        const entry = map.get(loc)!;
+        entry.projectCount += 1;
+        entry.originalCostCrore += origCost;
+        entry.revisedCostCrore += revCost;
+        entry.expenditureCrore += expCost;
+      });
     });
 
     return map;
