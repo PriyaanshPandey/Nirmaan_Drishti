@@ -203,7 +203,10 @@ function App() {
         {/* ── Distribution ── */}
         <PageSlot id="distribution" activeTab={activeTab}>
           <main className="distribution-content">
-            <ProjectDistribution />
+            <ProjectDistribution
+              onSelectProject={handleSelectProject}
+              onNavigateTab={handleTabChange}
+            />
           </main>
         </PageSlot>
       </div>
