@@ -60,7 +60,7 @@ export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
   onScrollToTop,
   onOpenAIChat,
 }) => {
-  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [internalCollapsed, setInternalCollapsed] = useState(true);
   const isCollapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
 
   const handleToggle = () => {

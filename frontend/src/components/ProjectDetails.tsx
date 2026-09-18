@@ -216,9 +216,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
-  // Sidebar navigation state
+  // Sidebar navigation state — closed by default on page load
   const [sidebarSection, setSidebarSection] = useState<SidebarSection>('basic');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const scrollToSection = useCallback((sectionId: SidebarSection) => {

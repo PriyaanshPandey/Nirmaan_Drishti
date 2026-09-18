@@ -1,7 +1,7 @@
 /* =====================================================
-   Project Sidebar — Vertically Centered Left Control Panel
-   Matches Nirmaan Drishti color theory, high contrast,
-   tactile click feedback, clean badge containment
+   Project Sidebar — Pristine Light Glassmorphism Panel
+   Vertically centered left edge control drawer
+   Clean light theme matching Nirmaan Drishti palette
    ===================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -33,26 +33,26 @@ aside.pnav.pnav--collapsed {
 }
 
 /* ─────────────────────────────────────────────
-   SIDEBAR CARD — dark royal navy glassmorphism
+   SIDEBAR CARD — pristine light glassmorphism
    ───────────────────────────────────────────── */
 .pnav__card {
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   height: 100% !important;
-  background: linear-gradient(168deg, #090B2E 0%, #101648 55%, #060824 100%) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-right: 1px solid rgba(203, 213, 225, 0.9) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
   border-left: none !important;
   border-radius: 0 20px 20px 0 !important;
   overflow: hidden !important;
   box-shadow:
-    8px 0 36px rgba(9, 11, 46, 0.45),
-    0 0 20px rgba(47, 107, 244, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+    0 16px 36px -4px rgba(9, 11, 46, 0.12),
+    0 4px 14px rgba(9, 11, 46, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   box-sizing: border-box !important;
 }
 
@@ -64,8 +64,8 @@ aside.pnav.pnav--collapsed {
   align-items: center !important;
   justify-content: space-between !important;
   padding: 14px 14px 12px 16px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  background: rgba(248, 250, 252, 0.7) !important;
   box-sizing: border-box !important;
 }
 
@@ -77,15 +77,11 @@ aside.pnav.pnav--collapsed {
   font-weight: 800 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.11em !important;
-  color: #38BDF8 !important;
-  background: linear-gradient(90deg, #93C5FD 0%, #38BDF8 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
+  color: #0F172A !important;
 }
 
 .pnav__brand-icon {
-  color: #38BDF8 !important;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8)) !important;
+  color: #2563EB !important;
   flex-shrink: 0 !important;
 }
 
@@ -97,9 +93,9 @@ aside.pnav.pnav--collapsed {
   width: 28px !important;
   height: 28px !important;
   border-radius: 8px !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  color: #FFFFFF !important;
+  background: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
   cursor: pointer !important;
   transition: all 0.18s ease !important;
   box-sizing: border-box !important;
@@ -107,11 +103,11 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__toggle:hover {
-  background: rgba(56, 189, 248, 0.25) !important;
-  border-color: rgba(56, 189, 248, 0.5) !important;
-  color: #38BDF8 !important;
+  background: #EFF6FF !important;
+  border-color: #93C5FD !important;
+  color: #2563EB !important;
   transform: scale(1.08) !important;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
 }
 
 .pnav__toggle:active {
@@ -124,8 +120,8 @@ aside.pnav.pnav--collapsed {
 .pnav__gauge {
   margin: 10px 12px 6px 12px !important;
   padding: 10px 12px !important;
-  background: rgba(15, 23, 42, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
   border-radius: 12px !important;
   box-sizing: border-box !important;
 }
@@ -142,7 +138,7 @@ aside.pnav.pnav--collapsed {
   font-weight: 700 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
-  color: rgba(226, 232, 240, 0.75) !important;
+  color: #64748B !important;
 }
 
 .pnav__gauge-val {
@@ -166,13 +162,12 @@ aside.pnav.pnav--collapsed {
 .pnav__gauge-denom {
   font-size: 12px !important;
   font-weight: 600 !important;
-  opacity: 0.5 !important;
-  color: #FFFFFF !important;
+  color: #94A3B8 !important;
 }
 
 .pnav__gauge-track {
   height: 4px !important;
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: #E2E8F0 !important;
   border-radius: 99px !important;
   overflow: hidden !important;
 }
@@ -181,7 +176,7 @@ aside.pnav.pnav--collapsed {
   height: 100% !important;
   border-radius: 99px !important;
   transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: 0 0 8px currentColor !important;
+  box-shadow: 0 0 6px currentColor !important;
 }
 
 /* ─────────────────────────────────────────────
@@ -189,7 +184,7 @@ aside.pnav.pnav--collapsed {
    ───────────────────────────────────────────── */
 .pnav__sep {
   height: 1px !important;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12) 50%, transparent) !important;
+  background: rgba(226, 232, 240, 0.8) !important;
   flex-shrink: 0 !important;
   margin: 4px 0 !important;
 }
@@ -230,8 +225,8 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__item:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
   transform: translateX(3px) !important;
 }
 
@@ -240,14 +235,14 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__item--active {
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.22) 0%, rgba(56, 189, 248, 0.06) 100%) !important;
-  border-color: rgba(56, 189, 248, 0.38) !important;
+  background: #EFF6FF !important;
+  border-color: #BFDBFE !important;
   transform: translateX(4px) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.08) !important;
 }
 
 .pnav__item--active:hover {
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.28) 0%, rgba(56, 189, 248, 0.1) 100%) !important;
+  background: #DBEAFE !important;
 }
 
 /* Animated left pill */
@@ -258,9 +253,9 @@ aside.pnav.pnav--collapsed {
   bottom: 15% !important;
   width: 0 !important;
   border-radius: 0 4px 4px 0 !important;
-  background: #38BDF8 !important;
+  background: #2563EB !important;
   transition: width 0.25s ease !important;
-  box-shadow: 0 0 10px #38BDF8 !important;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4) !important;
 }
 
 .pnav__item--active .pnav__pill {
@@ -271,7 +266,7 @@ aside.pnav.pnav--collapsed {
 .pnav__num {
   font-size: 10px !important;
   font-weight: 800 !important;
-  color: rgba(226, 232, 240, 0.5) !important;
+  color: #94A3B8 !important;
   letter-spacing: 0.06em !important;
   width: 16px !important;
   flex-shrink: 0 !important;
@@ -279,7 +274,7 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__num--active {
-  color: #38BDF8 !important;
+  color: #2563EB !important;
 }
 
 /* Icon */
@@ -291,21 +286,21 @@ aside.pnav.pnav--collapsed {
   height: 30px !important;
   border-radius: 8px !important;
   flex-shrink: 0 !important;
-  color: rgba(241, 245, 249, 0.85) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  color: #64748B !important;
+  background: #F1F5F9 !important;
   transition: all 0.18s ease !important;
 }
 
 .pnav__icon--active {
-  color: #38BDF8 !important;
-  background: rgba(56, 189, 248, 0.22) !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35) !important;
+  color: #2563EB !important;
+  background: #DBEAFE !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
   transform: scale(1.06) !important;
 }
 
 .pnav__item:hover .pnav__icon:not(.pnav__icon--active) {
-  color: #FFFFFF !important;
-  background: rgba(255, 255, 255, 0.12) !important;
+  color: #0F172A !important;
+  background: #E2E8F0 !important;
 }
 
 /* Text block */
@@ -321,7 +316,7 @@ aside.pnav.pnav--collapsed {
 .pnav__label {
   font-size: 12px !important;
   font-weight: 600 !important;
-  color: rgba(241, 245, 249, 0.85) !important;
+  color: #334155 !important;
   line-height: 1.25 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -330,18 +325,18 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__item--active .pnav__label {
-  color: #FFFFFF !important;
+  color: #1E40AF !important;
   font-weight: 750 !important;
 }
 
 .pnav__item:hover .pnav__label {
-  color: #FFFFFF !important;
+  color: #0F172A !important;
 }
 
 /* Description animation */
 .pnav__desc {
   font-size: 10px !important;
-  color: rgba(148, 163, 184, 0.75) !important;
+  color: #64748B !important;
   font-weight: 500 !important;
   line-height: 1.2 !important;
   white-space: nowrap !important;
@@ -372,13 +367,13 @@ aside.pnav.pnav--collapsed {
   font-size: 9.5px !important;
   font-weight: 800 !important;
   flex-shrink: 0 !important;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35) !important;
   animation: pnavBadgePulse 2s infinite !important;
 }
 
 @keyframes pnavBadgePulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
-  50% { transform: scale(1.1); box-shadow: 0 0 14px rgba(239, 68, 68, 0.9); }
+  0%, 100% { transform: scale(1); box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35); }
+  50% { transform: scale(1.1); box-shadow: 0 2px 10px rgba(239, 68, 68, 0.55); }
 }
 
 /* ─────────────────────────────────────────────
@@ -399,9 +394,9 @@ aside.pnav.pnav--collapsed {
   gap: 8px !important;
   padding: 8px 10px !important;
   border-radius: 9px !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: rgba(241, 245, 249, 0.8) !important;
+  border: 1px solid #E2E8F0 !important;
+  background: #F8FAFC !important;
+  color: #475569 !important;
   font-size: 11px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
@@ -411,9 +406,9 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__ftr-btn:hover {
-  background: rgba(255, 255, 255, 0.14) !important;
-  border-color: rgba(255, 255, 255, 0.22) !important;
-  color: #FFFFFF !important;
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
   transform: translateX(2px) !important;
 }
 
@@ -422,20 +417,20 @@ aside.pnav.pnav--collapsed {
 }
 
 .pnav__ftr-btn--ai {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(147, 51, 234, 0.2)) !important;
-  border-color: rgba(99, 102, 241, 0.4) !important;
-  color: #C7D2FE !important;
+  background: #EEF2FF !important;
+  border-color: #C7D2FE !important;
+  color: #4338CA !important;
 }
 
 .pnav__ftr-btn--ai:hover {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(147, 51, 234, 0.3)) !important;
-  border-color: rgba(99, 102, 241, 0.6) !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.35) !important;
+  background: #E0E7FF !important;
+  border-color: #A5B4FC !important;
+  color: #3730A3 !important;
+  box-shadow: 0 2px 10px rgba(67, 56, 202, 0.15) !important;
 }
 
 /* ─────────────────────────────────────────────
-   COLLAPSED STATE OVERRIDES — High Contrast & No Overflow
+   COLLAPSED STATE OVERRIDES — Pristine Light Theme & Overlay Badge
    ───────────────────────────────────────────── */
 aside.pnav.pnav--collapsed .pnav__item {
   width: calc(100% - 12px) !important;
@@ -457,19 +452,19 @@ aside.pnav.pnav--collapsed .pnav__brand {
 
 aside.pnav.pnav--collapsed .pnav__icon {
   margin: 0 auto !important;
-  color: rgba(241, 245, 249, 0.9) !important;
-  background: rgba(255, 255, 255, 0.08) !important;
+  color: #64748B !important;
+  background: #F1F5F9 !important;
 }
 
 aside.pnav.pnav--collapsed .pnav__icon--active {
-  color: #38BDF8 !important;
-  background: rgba(56, 189, 248, 0.25) !important;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.45) !important;
+  color: #2563EB !important;
+  background: #DBEAFE !important;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25) !important;
 }
 
 aside.pnav.pnav--collapsed .pnav__item:hover .pnav__icon {
-  color: #FFFFFF !important;
-  background: rgba(255, 255, 255, 0.16) !important;
+  color: #0F172A !important;
+  background: #E2E8F0 !important;
 }
 
 /* In collapsed mode, position badge neatly as a small overlay dot on top-right of the item */
@@ -482,5 +477,6 @@ aside.pnav.pnav--collapsed .pnav__badge {
   padding: 0 3px !important;
   font-size: 8.5px !important;
   border-radius: 99px !important;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.8) !important;
+  border: 1.5px solid #FFFFFF !important;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4) !important;
 }
