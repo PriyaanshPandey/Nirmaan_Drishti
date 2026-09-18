@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown } from 'lucide-react';
+import { Download, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown } from 'lucide-react';
 import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 import { api } from '../services/api';
@@ -263,10 +263,6 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
             <Download size={15} />
             <span>Export View</span>
           </button>
-          <button className="portfolio-btn btn-add-project" onClick={() => setShowNewProjectModal(true)}>
-            <Plus size={15} />
-            <span>New Project</span>
-          </button>
         </div>
       </div>
 
@@ -477,13 +473,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                       }}
                     >
                       <td className="td-project-id">
-                        <div style={{ fontWeight: 600 }}>{project.id}</div>
+                        <div className="project-id-text">{project.id}</div>
                         {(project.legacyOcmsCode || (project as any).legacy_ocms_code) && (
-                          <div style={{ fontSize: '11px', marginTop: '3px' }}>
-                            <span style={{ background: '#FEF3C7', color: '#92400E', padding: '1px 5px', borderRadius: '4px', border: '1px solid #FDE68A', fontWeight: 600 }}>
-                              OCMS: {project.legacyOcmsCode || (project as any).legacy_ocms_code}
-                            </span>
-                          </div>
+                          <span className="ocms-pill-badge">
+                            OCMS: {project.legacyOcmsCode || (project as any).legacy_ocms_code}
+                          </span>
                         )}
                       </td>
                       <td className="td-project-name">
@@ -512,18 +506,19 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                         {getStatusBadge(project.scheduleStatus, project)}
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div className="portfolio-actions-group">
                           <button 
-                            className="view-project-details-btn"
+                            className="view-project-details-btn action-btn-details"
                             onClick={() => onSelectProject(project.id)}
+                            title="View project details"
                           >
                             View Details
                           </button>
                           {onTakeAction && (
                             <button
-                              className="view-project-details-btn"
-                              style={{ background: '#2563EB', borderColor: '#2563EB', color: '#FFFFFF' }}
+                              className="view-project-details-btn action-btn-take-action"
                               onClick={() => onTakeAction(project.id)}
+                              title="Take intervention action"
                             >
                               Take Action
                             </button>
