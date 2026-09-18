@@ -67,11 +67,29 @@ function App() {
     updateHistory({ tab, projectId: null });
   };
 
-  const handleSelectProject = (id: string) => {
+  const handleSelectProject = (id: string, initialSection?: string) => {
     setPreviousTab(activeTab);
     setSelectedProjectId(id);
     setActiveTab('projects');
     updateHistory({ tab: 'projects', projectId: id });
+
+    if (initialSection) {
+      setTimeout(() => {
+        const el = document.getElementById(`section-${initialSection}`);
+        if (el) {
+          const headerOffset = 88;
+          const elementTop = el.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: elementTop - headerOffset, behavior: 'smooth' });
+        }
+      }, 200);
+    }
+  };
+
+  const handleTakeAction = (id: string) => {
+    setPreviousTab(activeTab);
+    setSelectedProjectId(id);
+    setActiveTab('action-centre');
+    updateHistory({ tab: 'action-centre', projectId: id });
   };
 
   const handleFilterStatus = (status: string) => {
@@ -158,9 +176,12 @@ function App() {
               </div>
             </section>
 
-            {/* Row 2: Priority Interventions (Top 10 Critical Projects - Click to view full details) */}
+            {/* Row 2: Priority Interventions (Top 10 Critical Projects - Click to view full details or take action) */}
             <section>
-              <PriorityInterventions onSelectProject={handleSelectProject} />
+              <PriorityInterventions
+                onSelectProject={handleSelectProject}
+                onTakeAction={handleTakeAction}
+              />
             </section>
 
             {/* Row 3: Global Cost Escalation & Time Delay Bar Graphs */}
@@ -177,10 +198,12 @@ function App() {
               <ProjectDetails
                 projectId={selectedProjectId}
                 onBack={handleBack}
+                onTakeAction={handleTakeAction}
               />
             ) : (
               <ProjectPortfolio
                 onSelectProject={handleSelectProject}
+                onTakeAction={handleTakeAction}
                 initialStatus={projectStatusFilter}
                 statusFilterNonce={statusFilterNonce}
                 initialRisk={projectRiskFilter}
@@ -194,8 +217,12 @@ function App() {
         <PageSlot id="action-centre" activeTab={activeTab}>
           <main className="action-centre-content">
             <ActionCenter
+              activeTab={activeTab}
+              selectedProjectId={selectedProjectId}
               onSelectProject={handleSelectProject}
               onNavigateTab={handleTabChange}
+              onTakeAction={handleTakeAction}
+              onClearSelectedProject={() => setSelectedProjectId(null)}
             />
           </main>
         </PageSlot>
@@ -204,6 +231,7 @@ function App() {
         <PageSlot id="distribution" activeTab={activeTab}>
           <main className="distribution-content">
             <ProjectDistribution
+              activeTab={activeTab}
               onSelectProject={handleSelectProject}
               onNavigateTab={handleTabChange}
               onFilterStatus={handleFilterStatus}

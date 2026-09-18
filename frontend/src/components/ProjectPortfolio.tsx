@@ -8,6 +8,7 @@ import { StatusIndicator } from './StatusIndicator';
 
 interface ProjectPortfolioProps {
   onSelectProject: (projectId: string) => void;
+  onTakeAction?: (projectId: string) => void;
   initialStatus?: string;
   statusFilterNonce?: number;
   initialRisk?: string;
@@ -16,6 +17,7 @@ interface ProjectPortfolioProps {
 
 export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ 
   onSelectProject, 
+  onTakeAction,
   initialStatus, 
   statusFilterNonce,
   initialRisk,
@@ -455,12 +457,23 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                         {getStatusBadge(project.scheduleStatus, project)}
                       </td>
                       <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                          className="view-project-details-btn"
-                          onClick={() => onSelectProject(project.id)}
-                        >
-                          View Details
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button 
+                            className="view-project-details-btn"
+                            onClick={() => onSelectProject(project.id)}
+                          >
+                            View Details
+                          </button>
+                          {onTakeAction && (
+                            <button
+                              className="view-project-details-btn"
+                              style={{ background: '#2563EB', borderColor: '#2563EB', color: '#FFFFFF' }}
+                              onClick={() => onTakeAction(project.id)}
+                            >
+                              Take Action
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))

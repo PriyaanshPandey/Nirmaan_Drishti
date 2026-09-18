@@ -25,6 +25,7 @@ import { ProjectNavSidebar, type SidebarSection } from './ProjectNavSidebar';
 interface ProjectDetailsProps {
   projectId: string;
   onBack: () => void;
+  onTakeAction?: (projectId: string) => void;
 }
 
 interface AnimatedCounterProps {

@@ -19,6 +19,7 @@ import { projectsData, type Project } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
 
 export interface ProjectDistributionProps {
+  activeTab?: string;
   onSelectProject?: (projectId: string) => void;
   onNavigateTab?: (tab: string) => void;
   onFilterStatus?: (status: string) => void;
@@ -52,6 +53,7 @@ const SIDEBAR_SECTIONS = [
 ];
 
 export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
+  activeTab,
   onSelectProject,
   onNavigateTab,
   onFilterStatus,
@@ -399,8 +401,8 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
 
   return (
     <div className="dist-page-layout animation-fade-in">
-      {/* ── Portaled Navigation Sidebar (Closed by default) ── */}
-      {typeof document !== 'undefined' && createPortal(
+      {/* ── Portaled Navigation Sidebar (Rendered ONLY on distribution tab) ── */}
+      {activeTab === 'distribution' && typeof document !== 'undefined' && createPortal(
         <aside className={`pnav ${sidebarCollapsed ? 'pnav--collapsed' : ''}`} aria-label="Distribution Navigation">
           <div className="pnav__card">
             {/* Header */}

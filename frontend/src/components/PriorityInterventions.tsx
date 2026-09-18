@@ -22,9 +22,10 @@ export interface CriticalProject {
 
 interface PriorityInterventionsProps {
   onSelectProject?: (projectId: string) => void;
+  onTakeAction?: (projectId: string) => void;
 }
 
-export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ onSelectProject }) => {
+export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ onSelectProject, onTakeAction }) => {
   const [projects, setProjects] = useState<CriticalProject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -248,10 +249,32 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                       </div>
                     </div>
 
-                    <button className="open-inspect-btn" title="Inspect Project Details">
-                      <span>Inspect</span>
-                      <ExternalLink size={12} />
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        className="open-inspect-btn"
+                        title="Inspect Project Details"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectProject) onSelectProject(p.projectId || p.id);
+                        }}
+                      >
+                        <span>Inspect</span>
+                        <ExternalLink size={12} />
+                      </button>
+
+                      <button
+                        className="open-inspect-btn"
+                        style={{ background: '#2563EB', borderColor: '#2563EB', color: '#FFFFFF' }}
+                        title="Take Action in Action Center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onTakeAction) onTakeAction(p.projectId || p.id);
+                        }}
+                      >
+                        <span>Take Action</span>
+                        <ShieldAlert size={12} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
