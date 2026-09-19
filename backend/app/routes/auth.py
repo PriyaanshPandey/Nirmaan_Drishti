@@ -55,36 +55,34 @@ class LogoutResponse(BaseModel):
 )
 def login(request: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     """
-    Demo login endpoint: validates vky2002/12345678 credentials and issues a signed JWT token.
+    Demo login endpoint: validates ipmd001/ipmd123 and goi001/goi123 credentials and issues a signed JWT token.
     """
     clean_username = request.username.strip().lower() if request.username else ""
     clean_password = request.password.strip() if request.password else ""
 
     allowed_users = {
-        "vky2002": ("impd_officer", "IMPD Officer A"),
-        "vky2003": ("impd_officer", "IMPD Officer B"),
-        "vky2004": ("ministry_officer", "Ministry Officer A"),
-        "vky2005": ("ministry_officer", "Ministry Officer B"),
-        "admin": ("impd_officer", "System Administrator"),
+        "ipmd001": ("ipmd123", "impd_officer", "IMPD Senior Officer (Full Access)"),
+        "goi001": ("goi123", "ministry_officer", "Ministry Nodal Officer (Restricted)"),
     }
 
-    if clean_username in allowed_users and clean_password == "12345678":
-        role, full_name = allowed_users[clean_username]
-        token = create_access_token(
-            data={
-                "sub": clean_username,
-                "role": role,
-                "user_id": 1,
-            }
-        )
-        logger.info(f"Successful login: username={clean_username} role={role}")
-        return TokenResponse(
-            access_token=token,
-            token_type="bearer",
-            role=role,
-            full_name=full_name,
-            username=clean_username,
-        )
+    if clean_username in allowed_users:
+        expected_pass, role, full_name = allowed_users[clean_username]
+        if clean_password == expected_pass:
+            token = create_access_token(
+                data={
+                    "sub": clean_username,
+                    "role": role,
+                    "user_id": 1 if clean_username == "ipmd001" else 2,
+                }
+            )
+            logger.info(f"Successful demo login: username={clean_username} role={role}")
+            return TokenResponse(
+                access_token=token,
+                token_type="bearer",
+                role=role,
+                full_name=full_name,
+                username=clean_username,
+            )
 
     logger.warning(f"Auth failed for username={clean_username}")
     raise HTTPException(
@@ -92,6 +90,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
         detail="Invalid username or password.",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
 
 
 

@@ -115,28 +115,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const cleanUsername = credentials.username.trim().toLowerCase();
     const cleanPassword = credentials.password.trim();
 
-    const allowedDemoUsers: Record<string, { role: UserRole; full_name: string }> = {
-      vky2002: { role: 'impd_officer', full_name: 'IMPD Officer A' },
-      vky2003: { role: 'impd_officer', full_name: 'IMPD Officer B' },
-      vky2004: { role: 'ministry_officer', full_name: 'Ministry Officer A' },
-      vky2005: { role: 'ministry_officer', full_name: 'Ministry Officer B' },
-      admin: { role: 'impd_officer', full_name: 'System Administrator' },
-    };
-
-    if (allowedDemoUsers[cleanUsername] && cleanPassword === '12345678') {
+    // IMPD Officer Demo: ipmd001 / ipmd123 (Full Access)
+    if (cleanUsername === 'ipmd001' && cleanPassword === 'ipmd123') {
       const demoUser: AuthUser = {
         id: 1,
-        username: cleanUsername,
-        role: allowedDemoUsers[cleanUsername].role,
-        full_name: allowedDemoUsers[cleanUsername].full_name,
+        username: 'ipmd001',
+        role: 'impd_officer',
+        full_name: 'IMPD Senior Officer (Full Access)',
       };
-      const demoToken = `demo_token_${Date.now()}`;
+      const demoToken = `demo_token_impd_${Date.now()}`;
       localStorage.setItem(TOKEN_KEY, demoToken);
       localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
       setToken(demoToken);
       setUser(demoUser);
 
-      // Fire-and-forget backend login sync
+      fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUsername, password: cleanPassword }),
+      }).catch(() => {});
+
+      return;
+    }
+
+    // Ministry Officer Demo: goi001 / goi123 (Ministry Access — PDF Extractor Restricted)
+    if (cleanUsername === 'goi001' && cleanPassword === 'goi123') {
+      const demoUser: AuthUser = {
+        id: 2,
+        username: 'goi001',
+        role: 'ministry_officer',
+        full_name: 'Ministry Nodal Officer (Restricted)',
+      };
+      const demoToken = `demo_token_goi_${Date.now()}`;
+      localStorage.setItem(TOKEN_KEY, demoToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
+      setToken(demoToken);
+      setUser(demoUser);
+
       fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,6 +163,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     throw new Error('Invalid username or password.');
   }, []);
+
 
 
 

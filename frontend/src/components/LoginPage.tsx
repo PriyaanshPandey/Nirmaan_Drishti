@@ -165,17 +165,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
         {/* Footer */}
         <footer className="login-footer">
           <div style={{
-            marginBottom: '10px',
-            padding: '8px 10px',
+            marginBottom: '12px',
+            padding: '10px 12px',
             borderRadius: '6px',
             backgroundColor: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.2)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
             fontSize: '0.75rem',
             color: '#cbd5e1',
-            textAlign: 'center'
+            textAlign: 'left',
+            lineHeight: '1.5'
           }}>
-            💡 <strong>Demo Credentials:</strong> Username: <code style={{ color: '#f59e0b', fontWeight: 'bold' }}>vky2002</code> | Password: <code style={{ color: '#f59e0b', fontWeight: 'bold' }}>12345678</code>
+            <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px' }}>
+              💡 DEMO CREDENTIALS:
+            </div>
+            <div>
+              <strong>IMPD OFFICER DEMO:</strong> Username: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>ipmd001</code> | Pass: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>ipmd123</code> (Full Access)
+            </div>
+            <div style={{ marginTop: '2px' }}>
+              <strong>MINISTRY OFFICER DEMO:</strong> Username: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>goi001</code> | Pass: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>goi123</code> (PDF Extractor Restricted)
+            </div>
           </div>
+
           <p className="login-footer-text">
             <Shield size={10} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} aria-hidden="true" />
             <strong>Restricted Access</strong> — Authorised personnel only.
