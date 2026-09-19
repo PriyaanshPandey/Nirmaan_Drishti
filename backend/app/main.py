@@ -37,9 +37,20 @@ async def lifespan(app: FastAPI):
     Application startup and shutdown event management.
     """
     logger.info("Initializing Sanket-AI Backend Service...")
-    # Verify Database Connection
+    # Verify Database Connection & Auto-Create Tables / Seed Users
     if check_db_connection():
         logger.info("PostgreSQL Database connected successfully (national_infrastructure).")
+        try:
+            from app.database import engine, Base
+            import app.models  # noqa: F401
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables verified/created successfully.")
+
+            from scripts.seed_users import seed_users
+            seed_users()
+            logger.info("Default auth users (vky2002, admin, etc.) verified/seeded successfully.")
+        except Exception as db_err:
+            logger.warning(f"Database auto-setup / user seeding note: {db_err}")
     else:
         logger.warning("Could not establish initial connection to PostgreSQL database.")
 
@@ -88,13 +99,15 @@ app = FastAPI(
 )
 
 # Configure CORS Middleware
+# Enable credentials and allow origins dynamically (supporting Vercel deployments, localhost, and custom domains)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:\d+|http://127\.0\.0\.1:\d+|.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # Global Exception Handler

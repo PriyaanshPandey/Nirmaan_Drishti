@@ -13,7 +13,9 @@ import React, {
   useState,
 } from 'react';
 
-const API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const API_BASE = rawApiUrl.replace(/\/+$/, '');
+
 const TOKEN_KEY = 'nd_auth_token';
 const USER_KEY = 'nd_auth_user';
 

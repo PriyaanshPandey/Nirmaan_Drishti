@@ -178,6 +178,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
 
         {/* Footer */}
         <footer className="login-footer">
+          <div style={{
+            marginBottom: '10px',
+            padding: '8px 10px',
+            borderRadius: '6px',
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.2)',
+            fontSize: '0.75rem',
+            color: '#cbd5e1',
+            textAlign: 'center'
+          }}>
+            💡 <strong>Demo Credentials:</strong> Username: <code style={{ color: '#f59e0b', fontWeight: 'bold' }}>vky2002</code> | Password: <code style={{ color: '#f59e0b', fontWeight: 'bold' }}>12345678</code>
+          </div>
           <p className="login-footer-text">
             <Shield size={10} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} aria-hidden="true" />
             <strong>Restricted Access</strong> — Authorised personnel only.
@@ -185,6 +197,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
             Ministry of Statistics &amp; Programme Implementation
           </p>
         </footer>
+
       </div>
     </div>
   );

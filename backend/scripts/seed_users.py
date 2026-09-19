@@ -21,12 +21,20 @@ from app.auth.security import hash_password
 
 SEED_USERS = [
     {
+        "username": "admin",
+        "password": "12345678",
+        "role": "impd_officer",
+        "full_name": "System Administrator",
+        "name": "System Administrator",
+    },
+    {
         "username": "vky2002",
         "password": "12345678",
         "role": "impd_officer",
         "full_name": "IMPD Officer A",
         "name": "IMPD Officer A",
     },
+
     {
         "username": "vky2003",
         "password": "12345678",

@@ -8,7 +8,9 @@
 import type { Project, ProjectBenchmark } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
+
 
 /** localStorage key — must match AuthContext.tsx */
 const _TOKEN_KEY = 'nd_auth_token';
