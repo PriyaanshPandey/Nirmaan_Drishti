@@ -112,57 +112,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [clearAuth]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
-    const cleanUsername = credentials.username.trim().toLowerCase() || 'vky2002';
-    const role: UserRole = (cleanUsername.includes('ministry') || ['vky2004', 'vky2005'].includes(cleanUsername))
-      ? 'ministry_officer'
-      : 'impd_officer';
-    const fullName = role === 'impd_officer' ? 'IMPD Officer A' : 'Ministry Officer A';
+    const cleanUsername = credentials.username.trim().toLowerCase();
+    const cleanPassword = credentials.password.trim();
 
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+    const allowedDemoUsers: Record<string, { role: UserRole; full_name: string }> = {
+      vky2002: { role: 'impd_officer', full_name: 'IMPD Officer A' },
+      vky2003: { role: 'impd_officer', full_name: 'IMPD Officer B' },
+      vky2004: { role: 'ministry_officer', full_name: 'Ministry Officer A' },
+      vky2005: { role: 'ministry_officer', full_name: 'Ministry Officer B' },
+      admin: { role: 'impd_officer', full_name: 'System Administrator' },
+    };
+
+    if (allowedDemoUsers[cleanUsername] && cleanPassword === '12345678') {
+      const demoUser: AuthUser = {
+        id: 1,
+        username: cleanUsername,
+        role: allowedDemoUsers[cleanUsername].role,
+        full_name: allowedDemoUsers[cleanUsername].full_name,
+      };
+      const demoToken = `demo_token_${Date.now()}`;
+      localStorage.setItem(TOKEN_KEY, demoToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
+      setToken(demoToken);
+      setUser(demoUser);
+
+      // Fire-and-forget backend login sync
+      fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: cleanUsername, password: credentials.password }),
-      });
+        body: JSON.stringify({ username: cleanUsername, password: cleanPassword }),
+      }).catch(() => {});
 
-      if (res.ok) {
-        const data = await res.json() as {
-          access_token: string;
-          role: UserRole;
-          full_name: string;
-          username: string;
-        };
-
-        const authUser: AuthUser = {
-          id: 1,
-          username: data.username || cleanUsername,
-          role: data.role || role,
-          full_name: data.full_name || fullName,
-        };
-
-        localStorage.setItem(TOKEN_KEY, data.access_token);
-        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
-        setToken(data.access_token);
-        setUser(authUser);
-        return;
-      }
-    } catch {
-      // Ignore network errors for demo recording mode
+      return;
     }
 
-    // Demo Mode Guaranteed Access: Always grant access for seamless demo video recording
-    const fallbackUser: AuthUser = {
-      id: 1,
-      username: cleanUsername,
-      role: role,
-      full_name: fullName,
-    };
-    const fallbackToken = `demo_token_${Date.now()}`;
-    localStorage.setItem(TOKEN_KEY, fallbackToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(fallbackUser));
-    setToken(fallbackToken);
-    setUser(fallbackUser);
+    throw new Error('Invalid username or password.');
   }, []);
+
 
 
 

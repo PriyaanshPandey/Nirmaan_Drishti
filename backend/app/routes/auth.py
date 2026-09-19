@@ -55,30 +55,44 @@ class LogoutResponse(BaseModel):
 )
 def login(request: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     """
-    Demo-ready login endpoint: accepts credentials and issues a valid signed JWT token.
+    Demo login endpoint: validates vky2002/12345678 credentials and issues a signed JWT token.
     """
-    clean_username = request.username.strip() if request.username else "vky2002"
-    role = "impd_officer"
-    if "ministry" in clean_username.lower() or clean_username.lower() in ["vky2004", "vky2005"]:
-        role = "ministry_officer"
+    clean_username = request.username.strip().lower() if request.username else ""
+    clean_password = request.password.strip() if request.password else ""
 
-    token = create_access_token(
-        data={
-            "sub": clean_username,
-            "role": role,
-            "user_id": 1,
-        }
+    allowed_users = {
+        "vky2002": ("impd_officer", "IMPD Officer A"),
+        "vky2003": ("impd_officer", "IMPD Officer B"),
+        "vky2004": ("ministry_officer", "Ministry Officer A"),
+        "vky2005": ("ministry_officer", "Ministry Officer B"),
+        "admin": ("impd_officer", "System Administrator"),
+    }
+
+    if clean_username in allowed_users and clean_password == "12345678":
+        role, full_name = allowed_users[clean_username]
+        token = create_access_token(
+            data={
+                "sub": clean_username,
+                "role": role,
+                "user_id": 1,
+            }
+        )
+        logger.info(f"Successful login: username={clean_username} role={role}")
+        return TokenResponse(
+            access_token=token,
+            token_type="bearer",
+            role=role,
+            full_name=full_name,
+            username=clean_username,
+        )
+
+    logger.warning(f"Auth failed for username={clean_username}")
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid username or password.",
+        headers={"WWW-Authenticate": "Bearer"},
     )
 
-    logger.info(f"Successful demo login: username={clean_username} role={role}")
-
-    return TokenResponse(
-        access_token=token,
-        token_type="bearer",
-        role=role,
-        full_name="IMPD Officer A" if role == "impd_officer" else "Ministry Officer A",
-        username=clean_username,
-    )
 
 
 
