@@ -532,6 +532,7 @@
   gap: 18px;
   box-shadow: 0 16px 40px rgba(9, 11, 46, 0.25);
   margin-top: 16px;
+  scroll-margin-top: 160px;
 }
 
 .console-header-bar {
@@ -727,6 +728,7 @@
   flex-direction: column;
   gap: 24px;
   margin-top: 16px;
+  scroll-margin-top: 160px;
 }
 
 .metrics-grid {
@@ -1113,28 +1115,39 @@
 
 /* Modal styles for Period Verification */
 .pdf-modal-backdrop {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(9, 11, 46, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(9, 11, 46, 0.72) !important;
+  backdrop-filter: blur(6px) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  overflow-y: auto !important;
 }
 
 .pdf-modal-card {
-  background: #FFFFFF;
-  border-radius: 20px;
-  padding: 28px;
-  width: 100%;
-  max-width: 480px;
-  box-shadow: 0 20px 50px rgba(9, 11, 46, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  animation: modalIn 0.25s ease-out forwards;
+  background: #FFFFFF !important;
+  border-radius: 20px !important;
+  padding: 28px 32px !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  max-height: 90vh !important;
+  box-shadow: 0 25px 60px rgba(9, 11, 46, 0.45) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+  animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  position: relative !important;
+  margin: auto !important;
 }
 
 @keyframes modalIn {
