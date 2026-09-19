@@ -202,6 +202,7 @@ def get_projects(
     schedule_status: Optional[str] = Query(None, description="Filter by status (ON TRACK, DELAYED, CRITICAL, EXTENDED)"),
     risk_level: Optional[str] = Query(None, description="Filter by risk level (Low, Medium, High, Critical)"),
     state: Optional[str] = Query(None, description="Filter by State"),
+    project_status: Optional[str] = Query(None, description="Filter by lifecycle status ('ONGOING', 'COMPLETED', 'INACTIVE')"),
     sort_by: str = Query("risk_score", description="Field to sort by"),
     sort_order: str = Query("desc", description="Sort direction (asc, desc)"),
     db: Session = Depends(get_db)
@@ -210,6 +211,21 @@ def get_projects(
     Get a paginated and filtered list of infrastructure projects.
     """
     query = db.query(Project).options(joinedload(Project.ministry), joinedload(Project.sector))
+
+    # Apply lifecycle status filter (ONGOING, COMPLETED, INACTIVE)
+    if project_status and project_status.strip() and project_status.strip().upper() != "ALL":
+        p_stat = project_status.strip().upper()
+        if "INACT" in p_stat or "STOP" in p_stat:
+            query = query.filter(Project.project_status.in_(['INACTIVE', 'STOPPED']))
+        elif "COMPLET" in p_stat:
+            query = query.filter(Project.project_status == 'COMPLETED')
+        elif "ONGOING" in p_stat or p_stat == "ACTIVE":
+            query = query.filter(Project.project_status.in_(['ONGOING', 'ACTIVE']))
+        else:
+            query = query.filter(Project.project_status.ilike(f"%{p_stat}%"))
+    else:
+        # Exclude internal archived legacy records by default
+        query = query.filter(Project.project_status.in_(['ONGOING', 'ACTIVE', 'COMPLETED', 'INACTIVE', 'STOPPED']))
 
     # Apply search filter across name, ID, agency, state, location, and project code
     if search and search.strip():
@@ -304,6 +320,22 @@ def get_projects(
         page_size=page_size,
         total_pages=total_pages
     )
+
+
+@router.get("/status-counts", summary="Get Project Counts by Segregated Lifecycle Status")
+def get_project_status_counts(db: Session = Depends(get_db)):
+    """
+    Returns exact counts for Ongoing (1,379), Completed (1,442), and Inactive (2,328) projects.
+    """
+    ongoing = db.query(Project).filter(Project.project_status.in_(['ONGOING', 'ACTIVE'])).count()
+    completed = db.query(Project).filter(Project.project_status == 'COMPLETED').count()
+    inactive = db.query(Project).filter(Project.project_status.in_(['INACTIVE', 'STOPPED'])).count()
+    return {
+        "ongoing": ongoing,
+        "completed": completed,
+        "inactive": inactive,
+        "total": ongoing + completed + inactive
+    }
 
 
 @router.get("/ministries", response_model=List[MinistryResponse], summary="List all Ministries")

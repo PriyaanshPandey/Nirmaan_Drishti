@@ -13,7 +13,7 @@ import React, {
   useState,
 } from 'react';
 
-const rawApiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api';
 const API_BASE = rawApiUrl.replace(/\/+$/, '');
 
 const TOKEN_KEY = 'nd_auth_token';
@@ -94,7 +94,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     })
       .then(async (res) => {
         if (!res.ok) {
-          clearAuth();
+          if (!storedToken.startsWith('demo_token_')) {
+            clearAuth();
+          }
           return;
         }
         const data = (await res.json()) as AuthUser;
@@ -115,7 +117,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const cleanUsername = credentials.username.trim().toLowerCase();
     const cleanPassword = credentials.password.trim();
 
-    // IMPD Officer Demo: ipmd001 / ipmd123 (Full Access)
+    // 1. Attempt official backend authentication (issues signed JWT access token)
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUsername, password: cleanPassword }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const authUser: AuthUser = {
+          id: cleanUsername === 'ipmd001' ? 1 : 2,
+          username: data.username || cleanUsername,
+          role: (data.role || (cleanUsername === 'ipmd001' ? 'impd_officer' : 'ministry_officer')) as UserRole,
+          full_name: data.full_name || (cleanUsername === 'ipmd001' ? 'IMPD Senior Officer (Full Access)' : 'Ministry Nodal Officer (Restricted)'),
+        };
+        const token: string = data.access_token;
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(USER_KEY, JSON.stringify(authUser));
+        setToken(token);
+        setUser(authUser);
+        return;
+      } else if (res.status === 401) {
+        throw new Error('Invalid username or password.');
+      }
+    } catch (networkOrAuthErr: unknown) {
+      if (networkOrAuthErr instanceof Error && networkOrAuthErr.message === 'Invalid username or password.') {
+        throw networkOrAuthErr;
+      }
+      // If backend is offline or unreachable, fall back to demo accounts
+      console.warn('Backend /auth/login unreachable, falling back to local demo authentication:', networkOrAuthErr);
+    }
+
+    // 2. Resilient demo fallback when backend is unreachable
     if (cleanUsername === 'ipmd001' && cleanPassword === 'ipmd123') {
       const demoUser: AuthUser = {
         id: 1,
@@ -128,17 +163,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
       setToken(demoToken);
       setUser(demoUser);
-
-      fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: cleanUsername, password: cleanPassword }),
-      }).catch(() => {});
-
       return;
     }
 
-    // Ministry Officer Demo: goi001 / goi123 (Ministry Access — PDF Extractor Restricted)
     if (cleanUsername === 'goi001' && cleanPassword === 'goi123') {
       const demoUser: AuthUser = {
         id: 2,
@@ -151,13 +178,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
       setToken(demoToken);
       setUser(demoUser);
-
-      fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: cleanUsername, password: cleanPassword }),
-      }).catch(() => {});
-
       return;
     }
 

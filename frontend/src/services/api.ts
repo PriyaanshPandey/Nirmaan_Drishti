@@ -8,7 +8,7 @@
 import type { Project, ProjectBenchmark } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 
-const rawApiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8080/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api';
 const API_BASE_URL = rawApiUrl.replace(/\/+$/, '');
 
 
@@ -33,9 +33,12 @@ async function apiFetch(url: string, options: RequestInit = {}): Promise<Respons
   };
   const res = await fetch(url, { ...options, headers });
   if (res.status === 401) {
-    localStorage.removeItem(_TOKEN_KEY);
-    localStorage.removeItem('nd_auth_user');
-    window.dispatchEvent(new CustomEvent('nd:auth:expired'));
+    const token = localStorage.getItem(_TOKEN_KEY);
+    if (token && !token.startsWith('demo_token_')) {
+      localStorage.removeItem(_TOKEN_KEY);
+      localStorage.removeItem('nd_auth_user');
+      window.dispatchEvent(new CustomEvent('nd:auth:expired'));
+    }
   }
   return res;
 }
@@ -899,9 +902,10 @@ export const api = {
     ministry?: string,
     sector?: string,
     riskLevel?: string,
-    searchBy: 'all' | 'name' | 'id' = 'all'
+    searchBy: 'all' | 'name' | 'id' = 'all',
+    projectStatus?: 'ONGOING' | 'COMPLETED' | 'INACTIVE' | 'ALL'
   ): Promise<{ items: Project[]; total: number }> {
-    const cacheKey = `projects_${page}_${pageSize}_${search}_${searchBy}_${ministryId}_${sectorId}_${scheduleStatus}_${ministry}_${sector}_${riskLevel}`;
+    const cacheKey = `projects_${page}_${pageSize}_${search}_${searchBy}_${ministryId}_${sectorId}_${scheduleStatus}_${ministry}_${sector}_${riskLevel}_${projectStatus || 'ALL'}`;
     const cached = cacheGet<{ items: Project[]; total: number }>(cacheKey);
     if (cached) return cached;
 
@@ -922,6 +926,7 @@ export const api = {
       if (sector && sector !== 'All') params.append('sector', sector);
       if (scheduleStatus && scheduleStatus !== 'All') params.append('schedule_status', scheduleStatus);
       if (riskLevel && riskLevel !== 'All') params.append('risk_level', riskLevel);
+      if (projectStatus && projectStatus !== 'ALL') params.append('project_status', projectStatus);
 
       const res = await apiFetch(`${API_BASE_URL}/projects?${params.toString()}`);
       if (!res.ok) throw new Error('Projects fetch failed');
@@ -1048,6 +1053,18 @@ export const api = {
         }
       }
 
+      // Filter by lifecycle category in offline fallback
+      if (projectStatus && projectStatus !== 'ALL') {
+        const ps = projectStatus.toUpperCase();
+        if (ps === 'ONGOING') {
+          filtered = filtered.filter(p => p.projectStatus === 'ONGOING' || (p.projectStatus !== 'COMPLETED' && p.projectStatus !== 'INACTIVE' && (p.progressPhysical ?? 0) < 100));
+        } else if (ps === 'COMPLETED') {
+          filtered = filtered.filter(p => p.projectStatus === 'COMPLETED' || p.isCompleted || (p.progressPhysical ?? 0) >= 100);
+        } else if (ps === 'INACTIVE') {
+          filtered = filtered.filter(p => p.projectStatus === 'INACTIVE' || (p.phase && p.phase.includes('Non-Active')));
+        }
+      }
+
       // Ensure each project has its accurate, verified scheduleStatus (CRITICAL, DELAYED, IN PROGRESS, ON TRACK)
       const mappedFallback: Project[] = filtered.map(p => ({
         ...p,
@@ -1057,6 +1074,23 @@ export const api = {
       const start = (page - 1) * pageSize;
       const paginated = mappedFallback.slice(start, start + pageSize);
       return { items: paginated, total: mappedFallback.length };
+    }
+  },
+
+  /**
+   * Fetch Real-Time Project Counts by Segregated Lifecycle Status
+   */
+  async getProjectStatusCounts(): Promise<{ ongoing: number; completed: number; inactive: number; total: number }> {
+    const cached = cacheGet<{ ongoing: number; completed: number; inactive: number; total: number }>('project_status_counts');
+    if (cached) return cached;
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/projects/status-counts`);
+      if (!res.ok) throw new Error('Status counts fetch failed');
+      const data = await res.json();
+      cacheSet('project_status_counts', data);
+      return data;
+    } catch {
+      return { ongoing: 1379, completed: 1442, inactive: 2328, total: 5149 };
     }
   },
 

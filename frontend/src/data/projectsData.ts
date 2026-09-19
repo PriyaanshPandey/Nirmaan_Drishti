@@ -24,7 +24,7 @@ export interface Project {
   timeOverrunMonths?: number | null;
   timeOverrunFormatted?: string | null;
   isCompleted?: boolean;
-  projectStatus?: 'ACTIVE' | 'COMPLETED';
+  projectStatus?: 'ONGOING' | 'ACTIVE' | 'COMPLETED' | 'INACTIVE' | 'STOPPED';
   startDate: string;
   phase: string;
   type: string;

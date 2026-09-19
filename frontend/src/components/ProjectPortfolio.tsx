@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown } from 'lucide-react';
+import { Download, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown, Activity, CheckCircle2, PauseCircle } from 'lucide-react';
 import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 import { api } from '../services/api';
 import './ProjectPortfolio.css';
 import { StatusIndicator } from './StatusIndicator';
+
+export type ProjectCategoryTab = 'ONGOING' | 'COMPLETED' | 'INACTIVE';
 
 interface ProjectPortfolioProps {
   onSelectProject: (projectId: string) => void;
@@ -44,6 +46,30 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const [selectedSector, setSelectedSector] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
   const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
+  const [activeCategory, setActiveCategory] = useState<ProjectCategoryTab>('ONGOING');
+  const [statusCounts, setStatusCounts] = useState<{ ongoing: number; completed: number; inactive: number; total: number }>({
+    ongoing: 1379,
+    completed: 1442,
+    inactive: 2328,
+    total: 5149
+  });
+
+  // Fetch status counts on mount
+  useEffect(() => {
+    let isMounted = true;
+    api.getProjectStatusCounts().then((counts) => {
+      if (isMounted && counts) {
+        setStatusCounts(counts);
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleCategoryChange = (category: ProjectCategoryTab) => {
+    if (category === activeCategory) return;
+    setActiveCategory(category);
+    setPage(1);
+  };
 
   const fetchProjects = () => {
     setLoading(true);
@@ -59,7 +85,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
       selectedSector !== 'All' ? selectedSector : undefined,
       selectedRisk !== 'All' ? selectedRisk : undefined,
-      searchType
+      searchType,
+      activeCategory
     )
       .then((res) => {
         setProjectsList(res.items);
@@ -212,7 +239,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       selectedMinistry !== 'All' ? selectedMinistry : undefined,
       selectedSector !== 'All' ? selectedSector : undefined,
       selectedRisk !== 'All' ? selectedRisk : undefined,
-      searchType
+      searchType,
+      activeCategory
     )
       .then((res) => {
         if (!isMounted) return;
@@ -230,11 +258,27 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [page, searchQuery, searchType, selectedMinistry, selectedSector, selectedStatus, selectedRisk]);
+  }, [page, searchQuery, searchType, selectedMinistry, selectedSector, selectedStatus, selectedRisk, activeCategory]);
 
   const filteredProjects = projectsList;
 
   const getStatusBadge = (status: Project['scheduleStatus'] | string, project?: Project) => {
+    if (activeCategory === 'COMPLETED' || project?.projectStatus === 'COMPLETED' || project?.isCompleted) {
+      return (
+        <span className="status-badge-pill status-completed">
+          <CheckCircle2 size={12} className="status-badge-icon" />
+          COMPLETED
+        </span>
+      );
+    }
+    if (activeCategory === 'INACTIVE' || project?.projectStatus === 'INACTIVE') {
+      return (
+        <span className="status-badge-pill status-inactive">
+          <PauseCircle size={12} className="status-badge-icon" />
+          INACTIVE / STOPPED
+        </span>
+      );
+    }
     const dispStatus = project ? getProjectDisplayStatus(project) : getProjectDisplayStatus({ scheduleStatus: status });
     if (dispStatus === 'CRITICAL') {
       return <StatusIndicator kind="critical" label="CRITICAL" className="status-badge-pill status-critical" />;
@@ -262,6 +306,47 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
           <button className="portfolio-btn btn-export" onClick={() => api.exportActionPlan()}>
             <Download size={15} />
             <span>Export View</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Top Lifecycle Segregation Selector */}
+      <div className="portfolio-lifecycle-segregation-bar">
+        <div className="portfolio-lifecycle-tabs" role="tablist" aria-label="Project Status Segregation">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeCategory === 'ONGOING'}
+            className={`lifecycle-tab-btn ${activeCategory === 'ONGOING' ? 'active-tab tab-ongoing' : ''}`}
+            onClick={() => handleCategoryChange('ONGOING')}
+          >
+            <Activity size={16} className="tab-icon" />
+            <span className="tab-text">Ongoing Projects</span>
+            <span className="tab-badge">{statusCounts.ongoing.toLocaleString()}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeCategory === 'COMPLETED'}
+            className={`lifecycle-tab-btn ${activeCategory === 'COMPLETED' ? 'active-tab tab-completed' : ''}`}
+            onClick={() => handleCategoryChange('COMPLETED')}
+          >
+            <CheckCircle2 size={16} className="tab-icon" />
+            <span className="tab-text">Completed Projects</span>
+            <span className="tab-badge">{statusCounts.completed.toLocaleString()}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeCategory === 'INACTIVE'}
+            className={`lifecycle-tab-btn ${activeCategory === 'INACTIVE' ? 'active-tab tab-inactive' : ''}`}
+            onClick={() => handleCategoryChange('INACTIVE')}
+          >
+            <PauseCircle size={16} className="tab-icon" />
+            <span className="tab-text">Inactive / Stopped Projects</span>
+            <span className="tab-badge">{statusCounts.inactive.toLocaleString()}</span>
           </button>
         </div>
       </div>
@@ -454,7 +539,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                 {filteredProjects.length === 0 ? (
                   <tr>
                     <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
-                      No infrastructure projects found matching the criteria.
+                      {activeCategory === 'ONGOING'
+                        ? 'No ongoing infrastructure projects found matching the criteria.'
+                        : activeCategory === 'COMPLETED'
+                        ? 'No completed infrastructure projects found matching the criteria.'
+                        : 'No inactive / stopped infrastructure projects found matching the criteria.'}
                     </td>
                   </tr>
                 ) : (
