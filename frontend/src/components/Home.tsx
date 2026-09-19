@@ -23,7 +23,7 @@ interface HomeProps {
 }
 
 export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickNonce }) => {
-  const [playIntro, setPlayIntro] = useState<boolean>(true);
+  const [playIntro, setPlayIntro] = useState<boolean>(false);
   const [replayCount, setReplayCount] = useState<number>(0);
   const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
   const [animIteration, setAnimIteration] = useState<number>(0);

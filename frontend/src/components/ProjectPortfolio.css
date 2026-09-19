@@ -87,6 +87,93 @@
   box-shadow: 0 6px 20px rgba(9, 11, 46, 0.25);
 }
 
+/* ── Lifecycle Segregation Top Bar ── */
+.portfolio-lifecycle-segregation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.portfolio-lifecycle-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.lifecycle-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.lifecycle-tab-btn:hover:not(.active-tab) {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.lifecycle-tab-btn .tab-icon {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.lifecycle-tab-btn .tab-badge {
+  font-size: 11px;
+  font-weight: 750;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #E2E8F0;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+/* Active tab styles with distinct theme accents */
+.lifecycle-tab-btn.active-tab {
+  color: #FFFFFF;
+}
+
+.lifecycle-tab-btn.active-tab.tab-ongoing {
+  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.lifecycle-tab-btn.active-tab.tab-completed {
+  background: linear-gradient(135deg, #065F46 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+}
+
+.lifecycle-tab-btn.active-tab.tab-inactive {
+  background: linear-gradient(135deg, #334155 0%, #64748B 100%);
+  box-shadow: 0 4px 14px rgba(71, 85, 105, 0.3);
+}
+
+.lifecycle-tab-btn.active-tab .tab-icon {
+  opacity: 1;
+}
+
+.lifecycle-tab-btn.active-tab .tab-badge {
+  background: rgba(255, 255, 255, 0.24);
+  color: #FFFFFF;
+}
+
 /* ── Filters Card ── */
 .portfolio-filters-card {
   background: var(--bg-card);
@@ -473,6 +560,18 @@
   background-color: #DBEAFE;
   color: #1D4ED8;
   border: 1px solid #BFDBFE;
+}
+
+.status-completed {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.status-inactive {
+  background-color: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
 }
 
 /* Action Buttons */
