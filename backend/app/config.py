@@ -52,8 +52,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # Authentication
-    SECRET_KEY: str = "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION"
+    SECRET_KEY: str = "b5304922c38a44ca1560bd0736a1d4fc0503d9c3985c215aad64cba554ef7dd0"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE) if ENV_FILE.exists() else None,
