@@ -20,6 +20,7 @@ from app.routes.benchmark import router as benchmark_router
 from app.routes.assistant import router as assistant_router
 from app.routes.insights import router as insights_router
 from app.routes.distribution import router as distribution_router
+from app.routes.extractor import router as extractor_router
 from app.ml_integration.risk_client import get_ml_client
 from app.auth.dependencies import get_current_user
 
@@ -130,6 +131,7 @@ api_prefix = settings.API_PREFIX
 # ── Public routes (no auth required) ──
 app.include_router(health_router, prefix=api_prefix)
 app.include_router(auth_router, prefix=api_prefix)
+app.include_router(extractor_router, prefix=api_prefix)
 
 # ── Protected routes (any authenticated user) ──
 _auth_dep = [Depends(get_current_user)]

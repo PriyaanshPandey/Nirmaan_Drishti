@@ -60,3 +60,9 @@ pdfextractor/backend/uploads/*
 pdfextractor/backend/exports/*
 !pdfextractor/backend/exports/.gitkeep
 pdfextractor/frontend/node_modules/
+
+*.db
+backend/*.db
+backend/app/uploads/*
+backend/app/exports/*
+data/raw/monthly_extracted_snapshots/

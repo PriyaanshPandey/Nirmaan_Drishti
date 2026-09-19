@@ -47,7 +47,7 @@
 /* ── Active: fully visible and interactive ── */
 .page-slot.page-active {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
   position: static;
   visibility: visible;
   width: 100%;
