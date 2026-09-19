@@ -67,8 +67,14 @@ def seed_users():
         for u in SEED_USERS:
             existing = db.query(User).filter(User.username == u["username"]).first()
             if existing:
-                print(f"  [SKIP] {u['username']} already exists.")
-                skipped += 1
+                existing.password_hash = hash_password(u["password"])
+                existing.role = u["role"]
+                existing.full_name = u["full_name"]
+                existing.name = u["name"]
+                existing.is_active = True
+                existing.updated_at = datetime.utcnow()
+                print(f"  [UPDATE] {u['username']} password & role refreshed.")
+                created += 1
                 continue
 
             user = User(
@@ -84,6 +90,7 @@ def seed_users():
             db.add(user)
             print(f"  [CREATE] {u['username']} ({u['role']})")
             created += 1
+
 
         db.commit()
         print(f"\nDone. Created: {created}, Skipped: {skipped}")

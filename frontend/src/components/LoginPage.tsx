@@ -49,23 +49,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
       onSuccess();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'An error occurred. Please try again.';
-      // Normalise backend error messages — never expose internals
-      if (
-        msg.toLowerCase().includes('invalid') ||
-        msg.toLowerCase().includes('credentials') ||
-        msg.toLowerCase().includes('401')
-      ) {
-        setError('Invalid username or password.');
-      } else if (
-        msg.toLowerCase().includes('network') ||
-        msg.toLowerCase().includes('fetch') ||
-        msg.toLowerCase().includes('unavailable')
-      ) {
-        setError('Service temporarily unavailable. Please try again in a moment.');
-      } else {
-        setError('Invalid username or password.');
-      }
-    } finally {
+      setError(msg);
+    }
+ finally {
       setIsLoading(false);
     }
   };

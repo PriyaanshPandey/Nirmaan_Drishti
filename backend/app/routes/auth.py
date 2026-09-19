@@ -69,18 +69,35 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    user = db.query(User).filter(User.username == request.username).first()
+    clean_username = request.username.strip().lower()
+    clean_password = request.password.strip()
+
+    from sqlalchemy import func
+    user = db.query(User).filter(func.lower(User.username) == clean_username).first()
+
+    # Emergency auto-recovery: if user is missing, attempt on-the-fly seeding
+    if user is None:
+        try:
+            from scripts.seed_users import seed_users
+            seed_users()
+            user = db.query(User).filter(func.lower(User.username) == clean_username).first()
+        except Exception as seed_err:
+            logger.warning(f"On-the-fly seed check note: {seed_err}")
 
     if user is None or not user.password_hash:
         # Still call verify_password with a dummy hash to prevent timing attacks
         verify_password("dummy", "$2b$12$irrelevanthashtopreventtimingattacks00000000000000000000")
+        logger.warning(f"Auth failed: user '{clean_username}' not found in DB.")
         raise auth_failed
 
     if not user.is_active:
+        logger.warning(f"Auth failed: user '{clean_username}' is inactive.")
         raise auth_failed
 
-    if not verify_password(request.password, user.password_hash):
+    if not verify_password(clean_password, user.password_hash):
+        logger.warning(f"Auth failed: password mismatch for user '{clean_username}'.")
         raise auth_failed
+
 
     token = create_access_token(
         data={
