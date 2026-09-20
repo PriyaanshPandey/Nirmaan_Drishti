@@ -47,10 +47,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
   const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
   const [activeCategory, setActiveCategory] = useState<ProjectCategoryTab>('ONGOING');
-  const [statusCounts, setStatusCounts] = useState<{ ongoing: number; completed: number; inactive: number; total: number }>({
+  const [statusCounts, setStatusCounts] = useState<{ ongoing: number; inactive: number; completed: number; total: number }>({
     ongoing: 1379,
-    completed: 1442,
     inactive: 2328,
+    completed: 1442,
     total: 5149
   });
 
@@ -263,7 +263,14 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const filteredProjects = projectsList;
 
   const getStatusBadge = (status: Project['scheduleStatus'] | string, project?: Project) => {
-    if (activeCategory === 'COMPLETED' || project?.projectStatus === 'COMPLETED' || project?.isCompleted) {
+    // Authoritative check based strictly on project status: ongoing | inactive | completed
+    const projectCat = project?.status
+      ? project.status
+      : project?.projectStatus === 'COMPLETED' || project?.isCompleted ? 'completed'
+      : project?.projectStatus === 'INACTIVE' || project?.projectStatus === 'STOPPED' ? 'inactive'
+      : 'ongoing';
+
+    if (projectCat === 'completed') {
       return (
         <span className="status-badge-pill status-completed">
           <CheckCircle2 size={12} className="status-badge-icon" />
@@ -271,11 +278,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
         </span>
       );
     }
-    if (activeCategory === 'INACTIVE' || project?.projectStatus === 'INACTIVE') {
+    if (projectCat === 'inactive') {
       return (
         <span className="status-badge-pill status-inactive">
           <PauseCircle size={12} className="status-badge-icon" />
-          INACTIVE / STOPPED
+          INACTIVE
         </span>
       );
     }
@@ -294,13 +301,30 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
 
   const totalPages = Math.ceil(totalProjects / pageSize) || 1;
 
+  const categoryTotal =
+    activeCategory === 'ONGOING'
+      ? statusCounts.ongoing
+      : activeCategory === 'INACTIVE'
+      ? statusCounts.inactive
+      : statusCounts.completed;
+
+  const isFiltered = Boolean(
+    searchQuery.trim() ||
+    selectedMinistry !== 'All' ||
+    selectedSector !== 'All' ||
+    selectedStatus !== 'All' ||
+    selectedRisk !== 'All'
+  );
+
   return (
     <div className="project-portfolio-page">
       {/* Top Header Controls */}
       <div className="portfolio-top-bar">
         <div className="portfolio-title-section">
           <h1 className="portfolio-main-title">Project Portfolio</h1>
-          <span className="portfolio-total-badge">{totalProjects} Projects</span>
+          <span className="portfolio-total-badge">
+            {isFiltered ? `${totalProjects.toLocaleString()} Filtered Results` : `${categoryTotal.toLocaleString()} Projects`}
+          </span>
         </div>
         <div className="portfolio-action-buttons">
           <button className="portfolio-btn btn-export" onClick={() => api.exportActionPlan()}>
@@ -310,7 +334,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
         </div>
       </div>
 
-      {/* Top Lifecycle Segregation Selector */}
+      {/* Top Lifecycle Segregation Selector: Mutually Exclusive Categories */}
       <div className="portfolio-lifecycle-segregation-bar">
         <div className="portfolio-lifecycle-tabs" role="tablist" aria-label="Project Status Segregation">
           <button
@@ -328,6 +352,18 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
           <button
             type="button"
             role="tab"
+            aria-selected={activeCategory === 'INACTIVE'}
+            className={`lifecycle-tab-btn ${activeCategory === 'INACTIVE' ? 'active-tab tab-inactive' : ''}`}
+            onClick={() => handleCategoryChange('INACTIVE')}
+          >
+            <PauseCircle size={16} className="tab-icon" />
+            <span className="tab-text">Inactive Projects</span>
+            <span className="tab-badge">{statusCounts.inactive.toLocaleString()}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
             aria-selected={activeCategory === 'COMPLETED'}
             className={`lifecycle-tab-btn ${activeCategory === 'COMPLETED' ? 'active-tab tab-completed' : ''}`}
             onClick={() => handleCategoryChange('COMPLETED')}
@@ -335,18 +371,6 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
             <CheckCircle2 size={16} className="tab-icon" />
             <span className="tab-text">Completed Projects</span>
             <span className="tab-badge">{statusCounts.completed.toLocaleString()}</span>
-          </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeCategory === 'INACTIVE'}
-            className={`lifecycle-tab-btn ${activeCategory === 'INACTIVE' ? 'active-tab tab-inactive' : ''}`}
-            onClick={() => handleCategoryChange('INACTIVE')}
-          >
-            <PauseCircle size={16} className="tab-icon" />
-            <span className="tab-text">Inactive / Stopped Projects</span>
-            <span className="tab-badge">{statusCounts.inactive.toLocaleString()}</span>
           </button>
         </div>
       </div>
@@ -541,9 +565,9 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                     <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                       {activeCategory === 'ONGOING'
                         ? 'No ongoing infrastructure projects found matching the criteria.'
-                        : activeCategory === 'COMPLETED'
-                        ? 'No completed infrastructure projects found matching the criteria.'
-                        : 'No inactive / stopped infrastructure projects found matching the criteria.'}
+                        : activeCategory === 'INACTIVE'
+                        ? 'No inactive infrastructure projects found matching the criteria.'
+                        : 'No completed infrastructure projects found matching the criteria.'}
                     </td>
                   </tr>
                 ) : (
@@ -626,7 +650,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
         {totalPages > 1 && (
           <div className="portfolio-pagination-bar">
             <span className="pagination-info">
-              Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalProjects)} of {totalProjects} projects
+              Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalProjects)} of {totalProjects.toLocaleString()} projects
+              {isFiltered && ` (filtered from ${categoryTotal.toLocaleString()} ${activeCategory.toLowerCase()} projects)`}
             </span>
             <div className="pagination-controls">
               <button 

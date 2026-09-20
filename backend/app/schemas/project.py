@@ -38,6 +38,7 @@ class ProjectBase(BaseModel):
     phase: Optional[str] = "Construction"
     type: Optional[str] = None
     project_status: str = "ACTIVE"
+    status: str = "ongoing"  # Authoritative: 'ongoing' | 'inactive' | 'completed'
     schedule_status: str = "ON TRACK"
     start_date: Optional[date] = None
     original_completion_date: Optional[date] = None

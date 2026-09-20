@@ -20,7 +20,7 @@ schedule:
 
 prediction:
   # Forecasting horizons in months
-  horizons: [3, 6]
+  horizons: [3]
 
 walk_forward:
   # Minimum train months before first validation fold

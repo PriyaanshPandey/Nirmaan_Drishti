@@ -1,9 +1,5 @@
 Task,Model,Threshold,ROC-AUC,PR-AUC,Precision,Recall,F1,Balanced Accuracy,Brier Score,"Confusion Matrix (TN,FP,FN,TP)",Status
 Cost Classification 3M,Calibrated XGBoost (Default Threshold),0.5,0.6238,0.025,0.0,0.0,0.0,0.4999,0.0192,"[6452, 1, 127, 0]",Evaluated
 Cost Classification 3M,Calibrated XGBoost (Optimized Threshold),0.2,0.6238,0.025,0.0,0.0,0.0,0.4994,0.0192,"[6445, 8, 127, 0]",OPTIMAL / PRODUCTION READY
-Cost Classification 6M,Calibrated XGBoost (Default Threshold),0.5,0.6512,0.0686,0.0,0.0,0.0,0.5,0.042,"[3327, 0, 152, 0]",Evaluated
-Cost Classification 6M,Calibrated XGBoost (Optimized Threshold),0.2,0.6512,0.0686,0.0909,0.0066,0.0123,0.5018,0.042,"[3317, 10, 151, 1]",OPTIMAL / PRODUCTION READY
 Time Classification 3M,Calibrated XGBoost (Default Threshold),0.5,0.6587,0.5851,0.783,0.1473,0.248,0.5612,0.2446,"[3980, 102, 2130, 368]",Evaluated
 Time Classification 3M,Calibrated XGBoost (Optimized Threshold),0.08,0.6587,0.5851,0.4123,0.8659,0.5586,0.5553,0.2446,"[999, 3083, 335, 2163]",OPTIMAL / PRODUCTION READY
-Time Classification 6M,Calibrated XGBoost (Default Threshold),0.5,0.704,0.722,0.7868,0.3497,0.4842,0.6291,0.2482,"[1607, 162, 1112, 598]",Evaluated
-Time Classification 6M,Calibrated XGBoost (Optimized Threshold),0.21,0.704,0.722,0.6067,0.7316,0.6633,0.6366,0.2482,"[958, 811, 459, 1251]",OPTIMAL / PRODUCTION READY

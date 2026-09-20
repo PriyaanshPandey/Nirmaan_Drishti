@@ -170,7 +170,7 @@ def build_explanation_payload(
     df: pd.DataFrame,
     prediction_result: Dict[str, Any],
     forecast_type: str = "schedule", # "schedule" or "cost"
-    horizon: str = "3_month" # "3_month" or "6_month"
+    horizon: str = "3_month"
 ) -> Dict[str, Any]:
     """
     Construct a verified, structured payload containing only necessary facts
@@ -287,9 +287,7 @@ def build_project_chat_context(
     Build a comprehensive factual context dictionary for interactive Q&A.
     """
     payload_sched_3m = build_explanation_payload(project_id, df, prediction_result, "schedule", "3_month")
-    payload_sched_6m = build_explanation_payload(project_id, df, prediction_result, "schedule", "6_month")
     payload_cost_3m = build_explanation_payload(project_id, df, prediction_result, "cost", "3_month")
-    payload_cost_6m = build_explanation_payload(project_id, df, prediction_result, "cost", "6_month")
 
     return {
         "project_metadata": {
@@ -315,16 +313,6 @@ def build_project_chat_context(
                 "top_risk_drivers": payload_sched_3m["top_positive_shap_drivers"],
                 "protective_factors": payload_sched_3m["top_protective_shap_factors"],
             },
-            "6_month": {
-                "risk_level": payload_sched_6m["risk_level"],
-                "probability_pct": payload_sched_6m["probability_pct"],
-                "predicted_additional_delay": payload_sched_6m["predicted_incremental_change"],
-                "forecasted_total_extension": payload_sched_6m["forecasted_final_outcome"],
-                "tentative_completion_date": payload_sched_6m["tentative_completion_date"],
-                "estimated_time_needed": payload_sched_6m["estimated_time_needed"],
-                "top_risk_drivers": payload_sched_6m["top_positive_shap_drivers"],
-                "protective_factors": payload_sched_6m["top_protective_shap_factors"],
-            },
         },
         "cost_forecasts": {
             "3_month": {
@@ -335,15 +323,6 @@ def build_project_chat_context(
                 "predicted_final_revised_cost_crore": payload_cost_3m.get("predicted_final_revised_cost_crore"),
                 "top_risk_drivers": payload_cost_3m["top_positive_shap_drivers"],
                 "protective_factors": payload_cost_3m["top_protective_shap_factors"],
-            },
-            "6_month": {
-                "risk_level": payload_cost_6m["risk_level"],
-                "probability_pct": payload_cost_6m["probability_pct"],
-                "predicted_additional_overrun": payload_cost_6m["predicted_incremental_change"],
-                "forecasted_final_cost": payload_cost_6m["forecasted_final_outcome"],
-                "predicted_final_revised_cost_crore": payload_cost_6m.get("predicted_final_revised_cost_crore"),
-                "top_risk_drivers": payload_cost_6m["top_positive_shap_drivers"],
-                "protective_factors": payload_cost_6m["top_protective_shap_factors"],
             },
         },
     }
@@ -966,7 +945,7 @@ class QwenExplainer:
                 f"Final cost escalation recorded at {curr.get('cost_escalation_crore', '₹0.00 Cr')} ({curr.get('cost_overrun_pct', '0%')}).",
             ],
             "supporting_factors": [
-                "Future 3-month and 6-month forecasting is discontinued for completed assets.",
+                "Future 3-month forecasting is discontinued for completed assets.",
                 "Historical predictions from earlier active snapshots remain accessible in the timeline.",
             ],
             "risk_reducing_factors": [
@@ -1066,9 +1045,7 @@ class QwenExplainer:
 
         meta = ctx.get("project_metadata", {})
         sched_3m = ctx.get("schedule_forecasts", {}).get("3_month", {})
-        sched_6m = ctx.get("schedule_forecasts", {}).get("6_month", {})
         cost_3m = ctx.get("cost_forecasts", {}).get("3_month", {})
-        cost_6m = ctx.get("cost_forecasts", {}).get("6_month", {})
         metrics = ctx.get("current_metrics", {})
 
         pname = meta.get("project_name", "This project")
@@ -1235,26 +1212,21 @@ class QwenExplainer:
                 f"2. **Continuous Monitoring**: Track monthly velocity to ensure protective buffers are not depleted."
             )
 
-        # 4. Horizon Comparison (3M vs 6M)
-        elif any(k in q_lower for k in ["6-month", "6m", "difference", "horizon", "compare"]):
+        # 4. 3-Month Forecast Explanation
+        elif any(k in q_lower for k in ["forecast", "future", "horizon", "prediction", "outlook", "timeline"]):
             t3 = sched_3m.get("probability_pct", "N/A")
-            t6 = sched_6m.get("probability_pct", "N/A")
             c3 = cost_3m.get("probability_pct", "N/A")
-            c6 = cost_6m.get("probability_pct", "N/A")
             d3 = sched_3m.get("predicted_additional_delay", "N/A")
-            d6 = sched_6m.get("predicted_additional_delay", "N/A")
             target_3m = sched_3m.get("tentative_completion_date", "N/A")
-            target_6m = sched_6m.get("tentative_completion_date", "N/A")
 
             return (
                 f"**Executive Issue Summary:**\n"
-                f"Comparing forecast horizons for **{pname}** reveals expanding timeline exposure: Schedule delay risk is **{t3}% (3-Month, {d3}, target: {target_3m})** vs **{t6}% (6-Month, {d6}, target: {target_6m})**, while cost risk is **{c3}% (3M)** vs **{c6}% (6M)**.\n\n"
+                f"The 3-Month predictive forecast for **{pname}** indicates: Schedule delay risk is **{t3}% ({d3}, tentative completion: {target_3m})**, while cost escalation risk is **{c3}%**.\n\n"
                 f"**Key Operational Takeaway:**\n"
-                f"• **3-Month Horizon**: Captures immediate milestone friction and current work front pace.\n"
-                f"• **6-Month Horizon**: Models compounding delays and extended project lifecycle risks.\n\n"
+                f"• **3-Month Horizon**: Focuses on immediate milestone friction, contractor pace, and critical path execution over the upcoming quarter.\n\n"
                 f"**Recommended Action for Officers:**\n"
-                f"1. **Intervene in 30-Day Window**: Resolve near-term critical path bottlenecks now to prevent compounding delays projected for the 6-month horizon.\n"
-                f"2. **Mid-Horizon Audit**: Review contractor delivery commitments against the 6-month milestone forecast."
+                f"1. **Intervene in 30-Day Window**: Resolve near-term critical path bottlenecks now to prevent compounding delays.\n"
+                f"2. **Quarterly Milestone Audit**: Review contractor delivery commitments against the 3-month milestone forecast."
             )
 
         # 5. Recommendations
@@ -1350,9 +1322,7 @@ class QwenExplainer:
         time_pred = prediction_result.get("time_prediction", {})
         cost_pred = prediction_result.get("cost_prediction", {})
         sched_3m = time_pred.get("3_month", {})
-        sched_6m = time_pred.get("6_month", {})
         c_3m = cost_pred.get("3_month", {})
-        c_6m = cost_pred.get("6_month", {})
 
         # SHAP
         shap_sched = prediction_result.get("explanations", {}).get("time_3m", {})
@@ -1381,9 +1351,7 @@ class QwenExplainer:
             },
             "ml_forecasts": {
                 "schedule_3m": sched_3m,
-                "schedule_6m": sched_6m,
                 "cost_3m": c_3m,
-                "cost_6m": c_6m,
             },
             "top_shap_drivers": {
                 "positive_drivers": top_pos_shap,
@@ -1412,7 +1380,7 @@ class QwenExplainer:
                 "3. FINANCIAL STORY OVER TIME: Original cost -> cost revisions -> expenditure over time (earliest to current) -> remaining budget -> expected final financial position (tentative estimate).\n"
                 "4. GRAPH & TRAJECTORY INTERPRETATION: Progress velocity, widening/narrowing gap, acceleration/slowing, disbursement pace.\n"
                 "5. CONNECT COST + PROGRESS + TIME: Integrate Money + Physical Progress + Schedule dynamics (e.g. cost-progress mismatches or balanced tracking).\n"
-                "6. FUTURE OUTLOOK (EXISTING ML OUTPUT): Interpret 3M & 6M delay probabilities, predicted delay months, tentative completion date, without inventing new predictions.\n"
+                "6. FUTURE OUTLOOK (EXISTING ML OUTPUT): Interpret 3-Month delay probability, predicted delay months, tentative completion date, without inventing new predictions.\n"
                 "7. SHAP ATTRIBUTION: Explain why the model made its assessment ('The model's assessment is primarily influenced by...').\n"
                 "8. MATURITY ADAPTATION:\n"
                 "   - CASE 1 (100% Completed): 'Final Outcome Insights'. Focus on final cost, revisions, expenditure, completion date, historical delay.\n"
@@ -1507,7 +1475,6 @@ class QwenExplainer:
         time_elapsed = sched.get("time_elapsed_till_now", "N/A")
 
         ml_s3 = ctx.get("ml_forecasts", {}).get("schedule_3m", {})
-        ml_s6 = ctx.get("ml_forecasts", {}).get("schedule_6m", {})
         ml_c3 = ctx.get("ml_forecasts", {}).get("cost_3m", {})
         top_shap = ctx.get("top_shap_drivers", {}).get("positive_drivers", [])
 

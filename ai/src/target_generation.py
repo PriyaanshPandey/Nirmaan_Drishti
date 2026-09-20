@@ -32,7 +32,7 @@ def generate_cost_targets(df: pd.DataFrame, horizon_months: int,
     df : pd.DataFrame
         Master dataset sorted by (project_id, report_month).
     horizon_months : int
-        Number of months to look forward (3 or 6).
+        Number of months to look forward (3).
     threshold_pct : float
         Threshold for incremental escalation classification (default >0 pp).
 
@@ -98,7 +98,7 @@ def generate_time_targets(df: pd.DataFrame, horizon_months: int,
     df : pd.DataFrame
         Master dataset sorted by (project_id, report_month).
     horizon_months : int
-        Number of months to look forward (3 or 6).
+        Number of months to look forward (3).
     threshold_months : float
         Threshold for additional delay classification (default >0 months).
 

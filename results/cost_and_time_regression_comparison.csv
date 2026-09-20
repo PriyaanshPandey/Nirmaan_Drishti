@@ -8,22 +8,8 @@ Cost Regression 3M,XGBoost (MSE),Original %,8.2584,0.9142,49.2,-2.6345,-0.0,-2.6
 Cost Regression 3M,XGBoost (Pseudo-Huber),Original %,2.1007,0.0084,25.815,-0.0006,-0.0,-0.0006,Evaluated
 Cost Regression 3M,XGBoost (Signed Log1p Transformed),Signed Log1p,2.1725,0.0287,25.8125,-0.0004,-0.0,-0.0004,Evaluated
 Cost Regression 3M,Two-Stage Hurdle (Classifier + Regressor),Hurdle,6.5509,0.0,73.0191,-7.0054,-0.0,-7.0054,Evaluated
-Cost Regression 6M,Baseline: Mean,Original %,2.8838,0.905,24.0771,-0.0104,-0.0104,Baseline,Baseline
-Cost Regression 6M,Baseline: Median (0.0),Original %,2.0059,0.0,24.0024,-0.0041,-0.0041,Baseline,Baseline
-Cost Regression 6M,Ridge Regression,Original %,13.0149,7.6265,37.1135,-1.4006,-0.0104,-1.3903,Evaluated
-Cost Regression 6M,Random Forest,Original %,5.4055,1.6171,26.3411,-0.2093,-0.0104,-0.1989,Evaluated
-Cost Regression 6M,HistGradientBoosting,Original %,12.7845,2.2488,41.712,-2.0324,-0.0104,-2.0221,Evaluated
-Cost Regression 6M,XGBoost (MSE),Original %,10.9869,2.3176,45.246,-2.568,-0.0104,-2.5577,Evaluated
-Cost Regression 6M,XGBoost (Pseudo-Huber),Original %,2.1135,0.0143,24.0166,-0.0053,-0.0104,+0.0051,Evaluated
-Cost Regression 6M,XGBoost (Signed Log1p Transformed),Signed Log1p,2.1488,0.0531,24.0261,-0.0061,-0.0104,+0.0043,Evaluated
-Cost Regression 6M,Two-Stage Hurdle (Classifier + Regressor),Hurdle,6.7055,0.0,44.473,-2.4471,-0.0104,-2.4368,Evaluated
 Time Regression 3M,Baseline: Mean,Months,14.3872,1.1779,36.2214,-0.1037,-0.1037,Baseline,Baseline
 Time Regression 3M,Ridge Regression,Months,18.7957,7.3014,37.6893,-0.195,-0.1037,-0.0913,Evaluated
 Time Regression 3M,HistGradientBoosting,Months,23.3277,9.4364,42.3415,-0.5082,-0.1037,-0.4045,Evaluated
 Time Regression 3M,XGBoost (MSE),Months,20.8927,6.836,39.9819,-0.3448,-0.1037,-0.2411,Evaluated
 Time Regression 3M,XGBoost (Pseudo-Huber Loss),Months,14.4957,1.1019,36.5498,-0.1239,-0.1037,-0.0201,Evaluated
-Time Regression 6M,Baseline: Mean,Months,22.2757,2.6061,46.9712,-0.191,-0.191,Baseline,Baseline
-Time Regression 6M,Ridge Regression,Months,29.5686,16.2219,49.6356,-0.33,-0.191,-0.1390,Evaluated
-Time Regression 6M,HistGradientBoosting,Months,31.2969,17.2761,51.0981,-0.4095,-0.191,-0.2185,Evaluated
-Time Regression 6M,XGBoost (MSE),Months,33.3421,20.4087,53.3213,-0.5348,-0.191,-0.3438,Evaluated
-Time Regression 6M,XGBoost (Pseudo-Huber Loss),Months,22.3382,3.4796,47.6419,-0.2253,-0.191,-0.0343,Evaluated

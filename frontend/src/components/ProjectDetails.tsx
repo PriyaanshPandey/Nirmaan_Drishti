@@ -195,13 +195,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   // Real ML Prediction & SHAP Explainability state
   const [mlPrediction, setMlPrediction] = useState<RiskPredictionData | null>(null);
   const [pred3m, setPred3m] = useState<RiskPredictionData | null>(null);
-  const [pred6m, setPred6m] = useState<RiskPredictionData | null>(null);
 
-  // Extended Dual-Horizon ML Model Predictions & Explanations from AI Engine
+  // 3-Month ML Model Predictions & Explanations from AI Engine
   const [fullPrediction, setFullPrediction] = useState<FullProjectPredictionResponse | null>(null);
   const [shaps, setShaps] = useState<Record<string, ShapExplanationResponse>>({});
   const [costDrivers, setCostDrivers] = useState<CostDriverAnalysisResponse | null>(null);
-  const [costDriverHorizon, setCostDriverHorizon] = useState<'horizon_3m' | 'horizon_6m'>('horizon_3m');
   const [aiSummary, setAiSummary] = useState<AISummaryResponse | null>(null);
   const [modelExplanations, setModelExplanations] = useState<Record<string, ModelExplanationItem> | null>(null);
   const [earlyWarnings, setEarlyWarnings] = useState<ProjectEarlyWarningsResponse | null>(null);
@@ -267,10 +265,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     return () => document.removeEventListener('keydown', handleEscape);
   }, [aiAssistantOpen]);
 
-  // Tab selections & Horizon Filters
-  const [forecastHorizonFilter, setForecastHorizonFilter] = useState<'all' | '3m' | '6m'>('all');
-  const [shapTab, setShapTab] = useState<'cost3m' | 'cost6m' | 'sched3m' | 'sched6m'>('cost3m');
-  const [nlpTab, setNlpTab] = useState<'sched3m' | 'sched6m' | 'cost3m' | 'cost6m'>('sched3m');
+  // Tab selections
+  const [shapTab, setShapTab] = useState<'cost3m' | 'sched3m'>('cost3m');
+  const [nlpTab, setNlpTab] = useState<'sched3m' | 'cost3m'>('sched3m');
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -334,20 +331,15 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         setPred3m(res);
       }
     });
-    api.getProjectRisk(projectId, 6).then(res => isMounted && res && setPred6m(res));
 
     Promise.allSettled([
       api.getProjectShap(projectId, 'cost_3m'),
-      api.getProjectShap(projectId, 'cost_6m'),
-      api.getProjectShap(projectId, 'time_3m'),
-      api.getProjectShap(projectId, 'time_6m')
-    ]).then(([sCost3m, sCost6m, sTime3m, sTime6m]) => {
+      api.getProjectShap(projectId, 'time_3m')
+    ]).then(([sCost3m, sTime3m]) => {
       if (!isMounted) return;
       const shapMap: Record<string, ShapExplanationResponse> = {};
       if (sCost3m.status === 'fulfilled' && sCost3m.value) shapMap['cost_3m'] = sCost3m.value;
-      if (sCost6m.status === 'fulfilled' && sCost6m.value) shapMap['cost_6m'] = sCost6m.value;
       if (sTime3m.status === 'fulfilled' && sTime3m.value) shapMap['time_3m'] = sTime3m.value;
-      if (sTime6m.status === 'fulfilled' && sTime6m.value) shapMap['time_6m'] = sTime6m.value;
       setShaps(shapMap);
       setLoadingBriefing(false);
     }).catch((err) => {
@@ -850,7 +842,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       {/* AI ML Multi-Horizon Forecast Engine Section */}
       {(() => {
-        // Real AI/ML Dual-Horizon Model Predictions from Backend AIEngine
+        // Real AI/ML 3-Month Model Predictions from Backend AIEngine
         const numericApprovedCost = parseFloat(project.costApproved?.replace(/[^0-9.]/g, '') || '0') || 1000;
         const numericRevisedCost = parseFloat(project.costRevised?.replace(/[^0-9.]/g, '') || '0') || numericApprovedCost;
         const currentOverrunPct = parseFloat(project.costOverrunPct?.replace(/[^0-9.-]/g, '') || '0');
@@ -860,9 +852,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const tRisk = mlPrediction?.time_overrun_probability !== undefined ? mlPrediction.time_overrun_probability * 100 : project.timeRisk;
 
         const predC3 = fullPrediction?.cost_prediction?.['3_month'];
-        const predC6 = fullPrediction?.cost_prediction?.['6_month'];
         const predT3 = fullPrediction?.time_prediction?.['3_month'];
-        const predT6 = fullPrediction?.time_prediction?.['6_month'];
 
         // 3M Cost Metrics
         const c3mProb = predC3?.additional_escalation_probability !== undefined && predC3?.additional_escalation_probability !== null
@@ -886,29 +876,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           : pred3m?.predicted_final_revised_cost_crore !== undefined ? pred3m.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : (numericRevisedCost + parseFloat(c3mDeltaCr)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
         const c3mBadge = predC3?.risk_tier ? `${predC3.risk_tier} RISK` : parseFloat(c3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(c3mProb) >= 50 ? 'HIGH RISK' : parseFloat(c3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-
-        // 6M Cost Metrics
-        const c6mProb = predC6?.additional_escalation_probability !== undefined && predC6?.additional_escalation_probability !== null
-          ? (predC6.additional_escalation_probability * 100).toFixed(1)
-          : pred6m?.cost_overrun_probability !== undefined ? (pred6m.cost_overrun_probability * 100).toFixed(1) : Math.min(99, cRisk * 1.15).toFixed(1);
-
-        const c6mDeltaPct = predC6?.predicted_additional_overrun_pct !== undefined && predC6?.predicted_additional_overrun_pct !== null
-          ? predC6.predicted_additional_overrun_pct.toFixed(2)
-          : pred6m?.predicted_additional_overrun_pct !== undefined ? pred6m.predicted_additional_overrun_pct.toFixed(2) : ((cRisk / 100) * 5.8).toFixed(2);
-
-        const c6mDeltaCr = predC6?.predicted_additional_cost_crore !== undefined && predC6?.predicted_additional_cost_crore !== null
-          ? predC6.predicted_additional_cost_crore.toFixed(2)
-          : pred6m?.predicted_additional_cost_crore !== undefined ? pred6m.predicted_additional_cost_crore.toFixed(2) : ((numericRevisedCost * (parseFloat(c6mDeltaPct) / 100))).toFixed(2);
-
-        const c6mFinalPct = predC6?.predicted_final_cost_overrun_pct !== undefined && predC6?.predicted_final_cost_overrun_pct !== null
-          ? predC6.predicted_final_cost_overrun_pct.toFixed(1)
-          : pred6m?.predicted_final_cost_overrun_pct !== undefined ? pred6m.predicted_final_cost_overrun_pct.toFixed(1) : (currentOverrunPct + parseFloat(c6mDeltaPct)).toFixed(1);
-
-        const c6mFinalCost = predC6?.predicted_final_revised_cost_crore !== undefined && predC6?.predicted_final_revised_cost_crore !== null
-          ? predC6.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 })
-          : pred6m?.predicted_final_revised_cost_crore !== undefined ? pred6m.predicted_final_revised_cost_crore.toLocaleString('en-IN', { maximumFractionDigits: 2 }) : (numericRevisedCost + parseFloat(c6mDeltaCr)).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-
-        const c6mBadge = predC6?.risk_tier ? `${predC6.risk_tier} RISK` : parseFloat(c6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(c6mProb) >= 50 ? 'HIGH RISK' : parseFloat(c6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
 
         // 3M Schedule Metrics
         const t3mProb = predT3?.additional_delay_probability !== undefined && predT3?.additional_delay_probability !== null
@@ -952,415 +919,210 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
         const t3mBadge = predT3?.risk_tier ? `${predT3.risk_tier} RISK` : parseFloat(t3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t3mProb) >= 50 ? 'HIGH RISK' : parseFloat(t3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
 
-        // 6M Schedule Metrics
-        const t6mProb = predT6?.additional_delay_probability !== undefined && predT6?.additional_delay_probability !== null
-          ? (predT6.additional_delay_probability * 100).toFixed(1)
-          : pred6m?.time_overrun_probability !== undefined ? (pred6m.time_overrun_probability * 100).toFixed(1) : tRisk.toFixed(1);
-
-        const t6mDelayMo = predT6?.predicted_additional_delay_months !== undefined && predT6?.predicted_additional_delay_months !== null
-          ? predT6.predicted_additional_delay_months.toFixed(1)
-          : pred6m?.predicted_additional_delay_months !== undefined ? pred6m.predicted_additional_delay_months.toFixed(1) : '0.0';
-
-        const t6mNeeded = predT6?.estimated_time_needed_completion || pred6m?.estimated_time_needed || (project.scheduleExtensionMonths ? `${project.scheduleExtensionMonths} months` : 'On Schedule');
-
-        const t6mTotalExt = predT6?.predicted_total_schedule_extension_months !== undefined && predT6?.predicted_total_schedule_extension_months !== null
-          ? predT6.predicted_total_schedule_extension_months.toFixed(1)
-          : pred6m?.predicted_total_schedule_extension_months !== undefined ? pred6m.predicted_total_schedule_extension_months.toFixed(1) : (currentExtMonths + parseFloat(t6mDelayMo)).toFixed(1);
-
-        const t6mTentative = (predT6?.tentative_completion_date && predT6.tentative_completion_date !== 'N/A')
-          ? predT6.tentative_completion_date
-          : (pred6m?.tentative_completion_date && pred6m.tentative_completion_date !== 'N/A')
-          ? pred6m.tentative_completion_date
-          : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t6mDelayMo)) ? parseFloat(t6mDelayMo) : 0);
-
-        const t6mBadge = predT6?.risk_tier ? `${predT6.risk_tier} RISK` : parseFloat(t6mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t6mProb) >= 50 ? 'HIGH RISK' : parseFloat(t6mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
-
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px', marginBottom: '12px' }}>
             
-            {/* Horizon Switcher Header Bar */}
+            {/* 3-Month Forecast Header Bar */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Cpu size={18} color="#03045E" />
                 <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
-                  AI Cost & Schedule Forecast Engine
+                  3-Month AI Cost & Schedule Forecast Engine
                 </h2>
                 <InfoButton
-                  title="Forecast Engine"
-                  summary="Predicts if this project will face extra costs or extra months of delay in the next 3 to 6 months."
+                  title="3-Month Forecast Engine"
+                  summary="Predicts if this project will face extra costs or extra months of delay in the next 3 months."
                   dataSummary={{
                     items: [
                       { label: '3-month cost', value: `${c3mBadge}, ${c3mProb}% probability, +${c3mDeltaPct}% overrun` },
-                      { label: '6-month cost', value: `${c6mBadge}, ${c6mProb}% probability, +${c6mDeltaPct}% overrun` },
-                      { label: '3-month schedule', value: `${t3mProb}% additional-delay probability` },
-                      { label: '6-month schedule', value: `${t6mProb}% additional-delay probability` }
+                      { label: '3-month schedule', value: `${t3mProb}% additional-delay probability, +${t3mDelayMo} mo delay` }
                     ],
-                    insight: `The forecast indicates ${c6mBadge.toLowerCase()} cost risk over six months and ${t6mProb}% additional-delay probability over three months.`
+                    insight: `The forecast indicates ${c3mBadge.toLowerCase()} cost risk and ${t3mProb}% additional-delay probability over the 3-month horizon.`
                   }}
                   size="sm"
                 />
                 <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, backgroundColor: '#F1F5F9', padding: '3px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                  PAIMANA Calibrated XGBoost
+                  PAIMANA Calibrated XGBoost (3-Month Horizon)
                 </span>
-              </div>
-
-              {/* Horizon Toggle Switcher */}
-              <div style={{ display: 'flex', gap: '6px', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                <button 
-                  className={`horizon-toggle-btn ${forecastHorizonFilter === 'all' ? 'active' : ''}`}
-                  onClick={() => setForecastHorizonFilter('all')}
-                  aria-selected={forecastHorizonFilter === 'all'}
-                  role="tab"
-                >
-                  All Horizons (Combined)
-                </button>
-                <button 
-                  className={`horizon-toggle-btn ${forecastHorizonFilter === '3m' ? 'active' : ''}`}
-                  onClick={() => setForecastHorizonFilter('3m')}
-                  aria-selected={forecastHorizonFilter === '3m'}
-                  role="tab"
-                >
-                  3-Month Horizon
-                </button>
-                <button 
-                  className={`horizon-toggle-btn ${forecastHorizonFilter === '6m' ? 'active' : ''}`}
-                  onClick={() => setForecastHorizonFilter('6m')}
-                  aria-selected={forecastHorizonFilter === '6m'}
-                  role="tab"
-                >
-                  6-Month Horizon
-                </button>
               </div>
             </div>
 
-            {/* 4 Distinct Horizon Cards Grid */}
+            {/* 2 Dedicated 3-Month Forecast Cards: Cost & Schedule */}
             <div className="forecast-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               
-              {/* Left Column: COST FORECAST */}
-              {(forecastHorizonFilter === 'all' || forecastHorizonFilter === '3m' || forecastHorizonFilter === '6m') && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 4px 0 4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ backgroundColor: '#DBEAFE', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <DollarSign size={16} color="#03045E" />
-                      </div>
-                      <h3 style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        COST FORECAST
-                      </h3>
+              {/* Left Column: 3-MONTH COST FORECAST */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 4px 0 4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ backgroundColor: '#DBEAFE', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <DollarSign size={16} color="#03045E" />
                     </div>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#03045E', backgroundColor: '#EFF6FF', padding: '3px 8px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
-                      INR Crores
-                    </span>
+                    <h3 style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      3-MONTH COST FORECAST
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#03045E', backgroundColor: '#EFF6FF', padding: '3px 8px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+                    INR Crores
+                  </span>
+                </div>
+
+                {/* COST 3M CARD */}
+                <div className="forecast-horizon-card forecast-card-blue">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
+                      3-MONTH HORIZON
+                    </div>
+                    <StatusIndicator
+                      kind={c3mBadge.includes('CRITICAL') ? 'critical' : c3mBadge.includes('HIGH') ? 'high' : c3mBadge.includes('LOW') ? 'low' : 'medium'}
+                      label={c3mBadge}
+                      className="forecast-status-indicator"
+                    />
                   </div>
 
-                  {/* COST 3M CARD */}
-                  {(forecastHorizonFilter === 'all' || forecastHorizonFilter === '3m') && (
-                    <div className="forecast-horizon-card forecast-card-blue">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
-                          3-MONTH HORIZON
-                        </div>
-                        <StatusIndicator
-                          kind={c3mBadge.includes('CRITICAL') ? 'critical' : c3mBadge.includes('HIGH') ? 'high' : c3mBadge.includes('LOW') ? 'low' : 'medium'}
-                          label={c3mBadge}
-                          className="forecast-status-indicator"
-                        />
-                      </div>
-
-                      {/* 2x2 Metrics Grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Escalation Probability</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(c3mProb)} suffix="%" decimals={1} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Overrun Delta</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: parseFloat(c3mDeltaPct) > 0 ? '#DC2626' : '#166534' }}>
-                            <AnimatedCounter value={parseFloat(c3mDeltaPct)} prefix={parseFloat(c3mDeltaPct) > 0 ? '+' : ''} suffix="%" decimals={2} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Amount Delta</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(c3mDeltaCr)} prefix={parseFloat(c3mDeltaCr) >= 0 ? '+₹' : '₹'} suffix=" Cr" decimals={2} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Final Overrun %</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(c3mFinalPct)} prefix="+" suffix="%" decimals={1} />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visual Trajectory Sparkline Graph */}
-                      <div className="sparkline-graph-box">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                          <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Cost Trajectory Trend</span>
-                          <span style={{ fontWeight: 800, color: '#03045E' }}>
-                            <AnimatedCounter value={parseFloat(c3mProb)} suffix="%" decimals={1} /> Escalation Probability
-                          </span>
-                        </div>
-                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
-                          <defs>
-                            <linearGradient id="cost3mGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
-                              <stop offset="100%" stopColor="#03045E" stopOpacity="0.0" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 28 Q 40 24, 80 16 T 160 6 L 160 32 L 0 32 Z" fill="url(#cost3mGrad)" />
-                          <path d="M 0 28 Q 40 24, 80 16 T 160 6" fill="none" stroke="#03045E" strokeWidth="2.5" strokeLinecap="round" />
-                          <circle cx="160" cy="6" r="3.5" fill="#03045E" stroke="#FFFFFF" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-
-                      {/* Forecasted Final Revised Cost Highlight Box */}
-                      <div style={{ backgroundColor: '#EBF3FF', border: '1px solid #BFDBFE', padding: '10px 14px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#1E40AF' }}>Forecasted Final Revised Cost:</span>
-                        <span style={{ fontSize: '14px', fontWeight: 850, color: '#03045E' }}>
-                          <AnimatedCounter prefix="₹" value={parseFloat(String(c3mFinalCost).replace(/[^0-9.]/g, ''))} suffix=" Cr" decimals={2} />
-                        </span>
+                  {/* 2x2 Metrics Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Escalation Probability</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
+                        <AnimatedCounter value={parseFloat(c3mProb)} suffix="%" decimals={1} />
                       </div>
                     </div>
-                  )}
-
-                  {/* COST 6M CARD */}
-                  {(forecastHorizonFilter === 'all' || forecastHorizonFilter === '6m') && (
-                    <div className="forecast-horizon-card forecast-card-purple">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
-                          6-MONTH HORIZON
-                        </div>
-                        <StatusIndicator
-                          kind={c6mBadge.includes('CRITICAL') ? 'critical' : c6mBadge.includes('HIGH') ? 'high' : c6mBadge.includes('LOW') ? 'low' : 'medium'}
-                          label={c6mBadge}
-                          className="forecast-status-indicator"
-                        />
-                      </div>
-
-                      {/* 2x2 Metrics Grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Escalation Probability</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(c6mProb)} suffix="%" decimals={1} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Overrun Delta</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: parseFloat(c6mDeltaPct) > 0 ? '#DC2626' : '#166534' }}>
-                            <AnimatedCounter value={parseFloat(c6mDeltaPct)} prefix={parseFloat(c6mDeltaPct) > 0 ? '+' : ''} suffix="%" decimals={2} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Amount Delta</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(c6mDeltaCr)} prefix={parseFloat(c6mDeltaCr) >= 0 ? '+₹' : '₹'} suffix=" Cr" decimals={2} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Final Overrun %</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(c6mFinalPct)} prefix="+" suffix="%" decimals={1} />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visual Trajectory Sparkline Graph */}
-                      <div className="sparkline-graph-box">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                          <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Cost Trajectory Trend</span>
-                          <span style={{ fontWeight: 800, color: '#03045E' }}>
-                            <AnimatedCounter value={parseFloat(c6mProb)} suffix="%" decimals={1} /> Escalation Probability
-                          </span>
-                        </div>
-                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
-                          <defs>
-                            <linearGradient id="cost6mGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
-                              <stop offset="100%" stopColor="#03045E" stopOpacity="0.0" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 28 Q 40 20, 80 12 T 160 4 L 160 32 L 0 32 Z" fill="url(#cost6mGrad)" />
-                          <path d="M 0 28 Q 40 20, 80 12 T 160 4" fill="none" stroke="#03045E" strokeWidth="2.5" strokeLinecap="round" />
-                          <circle cx="160" cy="4" r="3.5" fill="#03045E" stroke="#FFFFFF" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-
-                      {/* Forecasted Final Revised Cost Highlight Box */}
-                      <div style={{ backgroundColor: '#EEF2FF', border: '1px solid #C7D2FE', padding: '10px 14px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#3730A3' }}>Forecasted Final Revised Cost:</span>
-                        <span style={{ fontSize: '14px', fontWeight: 850, color: '#03045E' }}>
-                          <AnimatedCounter prefix="₹" value={parseFloat(String(c6mFinalCost).replace(/[^0-9.]/g, ''))} suffix=" Cr" decimals={2} />
-                        </span>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Overrun Delta</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: parseFloat(c3mDeltaPct) > 0 ? '#DC2626' : '#166534' }}>
+                        <AnimatedCounter value={parseFloat(c3mDeltaPct)} prefix={parseFloat(c3mDeltaPct) > 0 ? '+' : ''} suffix="%" decimals={2} />
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* Right Column: SCHEDULE FORECAST */}
-              {(forecastHorizonFilter === 'all' || forecastHorizonFilter === '3m' || forecastHorizonFilter === '6m') && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 4px 0 4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ backgroundColor: '#FEF3C7', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Clock size={16} color="#03045E" />
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Amount Delta</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
+                        <AnimatedCounter value={parseFloat(c3mDeltaCr)} prefix={parseFloat(c3mDeltaCr) >= 0 ? '+₹' : '₹'} suffix=" Cr" decimals={2} />
                       </div>
-                      <h3 style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        SCHEDULE FORECAST
-                      </h3>
                     </div>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#03045E', backgroundColor: '#FEF3C7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #FDE68A' }}>
-                      Timeline Target
-                    </span>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Final Overrun %</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
+                        <AnimatedCounter value={parseFloat(c3mFinalPct)} prefix="+" suffix="%" decimals={1} />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* SCHEDULE 3M CARD */}
-                  {(forecastHorizonFilter === 'all' || forecastHorizonFilter === '3m') && (
-                    <div className="forecast-horizon-card forecast-card-amber">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
-                          3-MONTH HORIZON
-                        </div>
-                        <StatusIndicator
-                          kind={t3mBadge.includes('CRITICAL') ? 'critical' : t3mBadge.includes('HIGH') ? 'high' : t3mBadge.includes('LOW') ? 'low' : 'medium'}
-                          label={t3mBadge}
-                          className="forecast-status-indicator"
-                        />
-                      </div>
-
-                      {/* 2x2 Metrics Grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Delay Probability</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(t3mProb)} suffix="%" decimals={1} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Additional Delay</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: parseFloat(t3mDelayMo) > 0 ? '#03045E' : '#166534' }}>
-                            <AnimatedCounter value={parseFloat(t3mDelayMo)} prefix={parseFloat(t3mDelayMo) > 0 ? '+' : ''} suffix=" months" decimals={1} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Time Needed</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>{t3mNeeded}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Total Extension</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(t3mTotalExt)} prefix="+" suffix=" months" decimals={1} />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visual Trajectory Sparkline Graph */}
-                      <div className="sparkline-graph-box">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                          <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Timeline Slippage Trajectory</span>
-                          <span style={{ fontWeight: 800, color: '#03045E' }}>
-                            <AnimatedCounter value={parseFloat(t3mProb)} suffix="%" decimals={1} /> Delay Probability
-                          </span>
-                        </div>
-                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
-                          <defs>
-                            <linearGradient id="sched3mGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
-                              <stop offset="100%" stopColor="#03045E" stopOpacity="0.0" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 28 Q 40 22, 80 14 T 160 5 L 160 32 L 0 32 Z" fill="url(#sched3mGrad)" />
-                          <path d="M 0 28 Q 40 22, 80 14 T 160 5" fill="none" stroke="#03045E" strokeWidth="2.5" strokeLinecap="round" />
-                          <circle cx="160" cy="5" r="3.5" fill="#03045E" stroke="#FFFFFF" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-
-                      {/* Tentative Target Completion Highlight Box */}
-                      <div style={{ backgroundColor: '#F0F7FF', border: '1px solid #BFDBFE', padding: '10px 14px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#1E40AF' }}>Tentative Target Completion:</span>
-                        <span style={{ fontSize: '14px', fontWeight: 850, color: '#03045E' }}>{t3mTentative}</span>
-                      </div>
+                  {/* Visual Trajectory Sparkline Graph */}
+                  <div className="sparkline-graph-box">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Cost Trajectory Trend</span>
+                      <span style={{ fontWeight: 800, color: '#03045E' }}>
+                        <AnimatedCounter value={parseFloat(c3mProb)} suffix="%" decimals={1} /> Escalation Probability
+                      </span>
                     </div>
-                  )}
+                    <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                      <defs>
+                        <linearGradient id="cost3mGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#03045E" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M 0 28 Q 40 24, 80 16 T 160 6 L 160 32 L 0 32 Z" fill="url(#cost3mGrad)" />
+                      <path d="M 0 28 Q 40 24, 80 16 T 160 6" fill="none" stroke="#03045E" strokeWidth="2.5" strokeLinecap="round" />
+                      <circle cx="160" cy="6" r="3.5" fill="#03045E" stroke="#FFFFFF" strokeWidth="1.5" />
+                    </svg>
+                  </div>
 
-                  {/* SCHEDULE 6M CARD */}
-                  {(forecastHorizonFilter === 'all' || forecastHorizonFilter === '6m') && (
-                    <div className="forecast-horizon-card forecast-card-red">
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
-                          6-MONTH HORIZON
-                        </div>
-                        <StatusIndicator
-                          kind={t6mBadge.includes('CRITICAL') ? 'critical' : t6mBadge.includes('HIGH') ? 'high' : t6mBadge.includes('LOW') ? 'low' : 'medium'}
-                          label={t6mBadge}
-                          className="forecast-status-indicator"
-                        />
-                      </div>
-
-                      {/* 2x2 Metrics Grid */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Delay Probability</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(t6mProb)} suffix="%" decimals={1} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Additional Delay</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: parseFloat(t6mDelayMo) > 0 ? '#03045E' : '#166534' }}>
-                            <AnimatedCounter value={parseFloat(t6mDelayMo)} prefix={parseFloat(t6mDelayMo) > 0 ? '+' : ''} suffix=" months" decimals={1} />
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Time Needed</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>{t6mNeeded}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Total Extension</div>
-                          <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
-                            <AnimatedCounter value={parseFloat(t6mTotalExt)} prefix="+" suffix=" months" decimals={1} />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Visual Trajectory Sparkline Graph */}
-                      <div className="sparkline-graph-box">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
-                          <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Timeline Slippage Trajectory</span>
-                          <span style={{ fontWeight: 800, color: '#03045E' }}>
-                            <AnimatedCounter value={parseFloat(t6mProb)} suffix="%" decimals={1} /> Delay Probability
-                          </span>
-                        </div>
-                        <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
-                          <defs>
-                            <linearGradient id="sched6mGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
-                              <stop offset="100%" stopColor="#03045E" stopOpacity="0.0" />
-                            </linearGradient>
-                          </defs>
-                          <path d="M 0 28 Q 40 18, 80 10 T 160 2 L 160 32 L 0 32 Z" fill="url(#sched6mGrad)" />
-                          <path d="M 0 28 Q 40 18, 80 10 T 160 2" fill="none" stroke="#03045E" strokeWidth="2.5" strokeLinecap="round" />
-                          <circle cx="160" cy="2" r="3.5" fill="#03045E" stroke="#FFFFFF" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-
-                      {/* Tentative Target Completion Highlight Box */}
-                      <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', padding: '10px 14px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#991B1B' }}>Tentative Target Completion:</span>
-                        <span style={{ fontSize: '14px', fontWeight: 850, color: '#03045E' }}>{t6mTentative}</span>
-                      </div>
-                    </div>
-                  )}
+                  {/* Forecasted Final Revised Cost Highlight Box */}
+                  <div style={{ backgroundColor: '#EBF3FF', border: '1px solid #BFDBFE', padding: '10px 14px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#1E40AF' }}>Forecasted Final Revised Cost:</span>
+                    <span style={{ fontSize: '14px', fontWeight: 850, color: '#03045E' }}>
+                      <AnimatedCounter prefix="₹" value={parseFloat(String(c3mFinalCost).replace(/[^0-9.]/g, ''))} suffix=" Cr" decimals={2} />
+                    </span>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Right Column: 3-MONTH SCHEDULE FORECAST */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 4px 0 4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ backgroundColor: '#FEF3C7', padding: '6px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Clock size={16} color="#03045E" />
+                    </div>
+                    <h3 style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      3-MONTH SCHEDULE FORECAST
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#03045E', backgroundColor: '#FEF3C7', padding: '3px 8px', borderRadius: '6px', border: '1px solid #FDE68A' }}>
+                    Timeline Target
+                  </span>
+                </div>
+
+                {/* SCHEDULE 3M CARD */}
+                <div className="forecast-horizon-card forecast-card-amber">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 850, color: '#1E293B', textTransform: 'uppercase' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
+                      3-MONTH HORIZON
+                    </div>
+                    <StatusIndicator
+                      kind={t3mBadge.includes('CRITICAL') ? 'critical' : t3mBadge.includes('HIGH') ? 'high' : t3mBadge.includes('LOW') ? 'low' : 'medium'}
+                      label={t3mBadge}
+                      className="forecast-status-indicator"
+                    />
+                  </div>
+
+                  {/* 2x2 Metrics Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Delay Probability</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
+                        <AnimatedCounter value={parseFloat(t3mProb)} suffix="%" decimals={1} />
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Predicted Additional Delay</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: parseFloat(t3mDelayMo) > 0 ? '#03045E' : '#166534' }}>
+                        <AnimatedCounter value={parseFloat(t3mDelayMo)} prefix={parseFloat(t3mDelayMo) > 0 ? '+' : ''} suffix=" months" decimals={1} />
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Time Needed</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>{t3mNeeded}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Total Extension</div>
+                      <div style={{ fontSize: '14px', fontWeight: 850, color: '#0F172A' }}>
+                        <AnimatedCounter value={parseFloat(t3mTotalExt)} prefix="+" suffix=" months" decimals={1} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Visual Trajectory Sparkline Graph */}
+                  <div className="sparkline-graph-box">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Timeline Slippage Trajectory</span>
+                      <span style={{ fontWeight: 800, color: '#03045E' }}>
+                        <AnimatedCounter value={parseFloat(t3mProb)} suffix="%" decimals={1} /> Delay Probability
+                      </span>
+                    </div>
+                    <svg aria-hidden="true" viewBox="0 0 160 32" style={{ width: '100%', height: '32px' }}>
+                      <defs>
+                        <linearGradient id="sched3mGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#03045E" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#03045E" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M 0 28 Q 40 22, 80 14 T 160 5 L 160 32 L 0 32 Z" fill="url(#sched3mGrad)" />
+                      <path d="M 0 28 Q 40 22, 80 14 T 160 5" fill="none" stroke="#03045E" strokeWidth="2.5" strokeLinecap="round" />
+                      <circle cx="160" cy="5" r="3.5" fill="#03045E" stroke="#FFFFFF" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+
+                  {/* Tentative Target Completion Highlight Box */}
+                  <div style={{ backgroundColor: '#F0F7FF', border: '1px solid #BFDBFE', padding: '10px 14px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#1E40AF' }}>Tentative Target Completion:</span>
+                    <span style={{ fontSize: '14px', fontWeight: 850, color: '#03045E' }}>{t3mTentative}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -1378,7 +1140,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       {/* Explainable AI Analysis Section (TreeSHAP Feature Attributions) */}
       {(() => {
         // Dynamic TreeSHAP Feature Attribution Calculations per Project and Tab
-        const getShapAttributions = (proj: Project, tab: 'cost3m' | 'cost6m' | 'sched3m' | 'sched6m') => {
+        const getShapAttributions = (proj: Project, tab: 'cost3m' | 'sched3m') => {
           const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
           const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
           const progPhys = proj.progressPhysical || 50;
@@ -1388,8 +1150,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore;
           const extMo = parseFloat(String(proj.scheduleExtensionMonths || 12));
 
-          const mult = tab.includes('6m') ? 1.35 : 1.0;
-          const isCost = tab.includes('cost');
+          const mult = 1.0;
+          const isCost = tab === 'cost3m';
 
           if (isCost) {
             const upwardDrivers = [
@@ -1431,7 +1193,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           }
         };
 
-        const shapKey = shapTab === 'cost3m' ? 'cost_3m' : shapTab === 'cost6m' ? 'cost_6m' : shapTab === 'sched3m' ? 'time_3m' : 'time_6m';
+        const shapKey = shapTab === 'cost3m' ? 'cost_3m' : 'time_3m';
         const shapData = shaps[shapKey];
         let upwardDrivers: Array<{ label: string; value: number }>;
         let protectiveFactors: Array<{ label: string; value: number }>;
@@ -1476,7 +1238,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                   />
                 </div>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, marginTop: '2px', display: 'block' }}>
-                  TreeSHAP feature attributions, model-specific natural language explanations, and cost escalation drivers
+                  TreeSHAP feature attributions, model-specific natural language explanations, and cost escalation drivers (3-Month Horizon)
                 </span>
               </div>
 
@@ -1497,9 +1259,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
               {[
                 { id: 'cost3m', label: '3M Cost SHAP', Icon: DollarSign },
-                { id: 'cost6m', label: '6M Cost SHAP', Icon: DollarSign },
-                { id: 'sched3m', label: '3M Schedule SHAP', Icon: Clock },
-                { id: 'sched6m', label: '6M Schedule SHAP', Icon: Clock }
+                { id: 'sched3m', label: '3M Schedule SHAP', Icon: Clock }
               ].map(t => (
                 <button
                   key={t.id}
@@ -1654,22 +1414,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                   </p>
                 </div>
 
-                {/* Horizon Switcher */}
-                <div style={{ display: 'flex', gap: '6px', background: '#F1F5F9', padding: '3px', borderRadius: '10px' }}>
-                  <button
-                    className={`nlp-tab-btn ${costDriverHorizon === 'horizon_3m' ? 'active' : ''}`}
-                    onClick={() => setCostDriverHorizon('horizon_3m')}
-                    style={{ fontSize: '11.5px', padding: '6px 12px' }}
-                  >
-                    3-Month Horizon
-                  </button>
-                  <button
-                    className={`nlp-tab-btn ${costDriverHorizon === 'horizon_6m' ? 'active' : ''}`}
-                    onClick={() => setCostDriverHorizon('horizon_6m')}
-                    style={{ fontSize: '11.5px', padding: '6px 12px' }}
-                  >
-                    6-Month Horizon
-                  </button>
+                {/* 3-Month Horizon Badge */}
+                <div style={{ display: 'flex', gap: '6px', background: '#F1F5F9', padding: '4px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '11.5px', fontWeight: 700, color: '#03045E' }}>
+                  3-Month Horizon
                 </div>
               </div>
 
@@ -1681,7 +1428,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#D62F39' }}></span>
                     Top Cost Escalation Drivers
                   </div>
-                  {(costDrivers?.[costDriverHorizon]?.top_cost_escalation_drivers || []).slice(0, 4).map((item, idx) => (
+                  {(costDrivers?.horizon_3m?.top_cost_escalation_drivers || []).slice(0, 4).map((item, idx) => (
                     <div key={idx} className="cost-driver-item cost-driver-item-increasing">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                         <div>
@@ -1709,7 +1456,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#166534' }}></span>
                     Mitigating Protective Factors
                   </div>
-                  {(costDrivers?.[costDriverHorizon]?.mitigating_factors || []).slice(0, 4).map((item, idx) => (
+                  {(costDrivers?.horizon_3m?.mitigating_factors || []).slice(0, 4).map((item, idx) => (
                     <div key={idx} className="cost-driver-item cost-driver-item-mitigating">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
                         <div>
@@ -1739,7 +1486,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       {/* AI Natural Language Explanation (QWEN3-8B) Section */}
       {(() => {
-        const getNaturalLanguageExplanation = (proj: Project, tab: 'sched3m' | 'sched6m' | 'cost3m' | 'cost6m') => {
+        const getNaturalLanguageExplanation = (proj: Project, tab: 'sched3m' | 'cost3m') => {
           const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
           const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
           const progPhys = proj.progressPhysical || 0;
@@ -1792,44 +1539,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 `Active execution velocity supports milestone stabilization.`
               ]
             };
-          } else if (tab === 'sched6m') {
-            const prob = isComp ? '0.0' : Math.min(99, tRisk * 1.20).toFixed(1);
-            const badge = isComp ? 'COMPLETED' : tRisk >= 60 ? 'HIGH RISK' : 'MODERATE RISK';
-            const badgeColor = isComp ? '#15803D' : tRisk >= 60 ? '#D62F39' : '#D97706';
-            const badgeBg = isComp ? '#DCFCE7' : tRisk >= 60 ? '#FEE2E2' : '#FEF3C7';
-
-            if (isComp) {
-              return {
-                tabTitle: '6M SCHEDULE',
-                badge, badgeColor, badgeBg, prob,
-                summary: `${proj.name} is fully commissioned; long-term timeline risk is completely resolved.`,
-                upward: [
-                  `Historical completion achieved on ${proj.actualCompletion || proj.expectedCompletion}.`
-                ],
-                protective: [
-                  `All major civil and structural milestone handovers are complete.`
-                ]
-              };
-            }
-
-            return {
-              tabTitle: '6M SCHEDULE',
-              badge, badgeColor, badgeBg, prob,
-              summary: `${proj.name} exhibits a ${badge} (${prob}% probability) of compounding schedule delay over the 6-month forecast horizon.`,
-              upward: [
-                extMo > 0
-                  ? `Cumulative schedule extension reaching ${extMo % 1 === 0 ? Math.round(extMo) : extMo.toFixed(1)} months elevates long-term timeline risk.`
-                  : `Sustained milestone pace required to maintain on-time commissioning.`,
-                `Physical progress gap (${Math.max(0, (proj.progressPhysicalTarget || 85) - progPhys)}% behind target) compounds delay probability.`,
-                `High revised budget scale (${formatCurrencyClean(costRev)}) requires rigorous supply-chain pacing.`
-              ],
-              protective: [
-                `Active site deployment velocity mitigates catastrophic schedule overrun.`,
-                `Inter-agency coordination supports active clearance resolution.`,
-                `EPC contractor mobilization capability helps stabilize long-term target completion.`
-              ]
-            };
-          } else if (tab === 'cost3m') {
+          } else {
             const prob = (cRisk * 0.85).toFixed(1);
             const badge = cRisk >= 70 ? 'CRITICAL RISK' : cRisk >= 40 ? 'HIGH RISK' : 'LOW RISK';
             const badgeColor = cRisk >= 70 ? '#D62F39' : cRisk >= 40 ? '#D97706' : '#03045E';
@@ -1849,30 +1559,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 `High fund deployment velocity ensures active contractor liquidity.`
               ]
             };
-          } else {
-            const prob = Math.min(99, cRisk * 1.15).toFixed(1);
-            const badge = cRisk >= 60 ? 'CRITICAL RISK' : 'HIGH RISK';
-            const badgeColor = cRisk >= 60 ? '#D62F39' : '#D97706';
-            const badgeBg = cRisk >= 60 ? '#FEE2E2' : '#FEF3C7';
-
-            return {
-              tabTitle: '6M COST',
-              badge, badgeColor, badgeBg, prob,
-              summary: `${proj.name} shows a ${badge} (${prob}% probability) of secondary budget expansion over the 6-month forecast horizon.`,
-              upward: [
-                `Extended project duration increases exposure to commodity price inflation and wage escalation.`,
-                `Unresolved contractor claims and revised administrative sanctions drive secondary cost growth.`,
-                `Financial drawdown rate exceeding physical completion velocity.`
-              ],
-              protective: [
-                `Ministry financial audit controls limit unauthorized expenditure expansion.`,
-                `High physical completion baseline (${progPhys}%) reduces remaining financial uncertainty.`
-              ]
-            };
           }
         };
 
-        const modelKey = nlpTab === 'sched3m' ? 'schedule_3m' : nlpTab === 'sched6m' ? 'schedule_6m' : nlpTab === 'cost3m' ? 'cost_3m' : 'cost_6m';
+        const modelKey = nlpTab === 'sched3m' ? 'schedule_3m' : 'cost_3m';
         const liveModelExp = modelExplanations?.[modelKey];
         const nlpData = getNaturalLanguageExplanation(project, nlpTab);
 
@@ -1899,7 +1589,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                   </h2>
                 </div>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, marginTop: '2px', display: 'block' }}>
-                  Model-specific natural language reasoning explaining "Why did the model predict this?"
+                  Model-specific natural language reasoning explaining "Why did the model predict this?" (3-Month Horizon)
                 </span>
               </div>
             </div>
@@ -1908,9 +1598,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
               {[
                 { id: 'sched3m', label: '3M Schedule', Icon: Clock },
-                { id: 'sched6m', label: '6M Schedule', Icon: Clock },
-                { id: 'cost3m', label: '3M Cost', Icon: DollarSign },
-                { id: 'cost6m', label: '6M Cost', Icon: DollarSign }
+                { id: 'cost3m', label: '3M Cost', Icon: DollarSign }
               ].map(t => (
                 <button
                   key={t.id}
@@ -2389,7 +2077,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 {[
                   "Why is this project at risk?",
                   "What drives cost escalation?",
-                  "Why does 6M forecast differ from 3M?",
+                  "What are the key 3M risk drivers?",
                   "What factors reduce schedule delay?",
                   "Recommended intervention plan"
                 ].map((pText, i) => (

@@ -574,6 +574,12 @@
   border: 1px solid #CBD5E1;
 }
 
+.status-inactive {
+  background-color: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+
 /* Action Buttons */
 .portfolio-actions-group {
   display: flex;

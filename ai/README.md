@@ -29,7 +29,7 @@
 
 **Nirmaan Dristi** is an end-to-end machine learning and explainable AI system designed to predict future risk, additional cost escalations, and schedule delays for ongoing infrastructure projects.
 
-Unlike standard static models that attempt to predict cumulative project outcomes from inception, Nirmaan Dristi focuses on **incremental forecasting**: predicting the expected **marginal change ($\Delta$)** from the project's current operational status over defined horizons ($h = 3$ and $h = 6$ months).
+Unlike standard static models that attempt to predict cumulative project outcomes from inception, Nirmaan Dristi focuses on **incremental forecasting**: predicting the expected **marginal change ($\Delta$)** from the project's current operational status over a defined horizon ($h = 3$ months).
 
 ---
 
@@ -38,7 +38,7 @@ Unlike standard static models that attempt to predict cumulative project outcome
 - 📈 **Incremental Target Formulation**: Predicts future *additional* cost escalation and schedule extension beyond the current state rather than re-estimating past historical overruns.
 - 📐 **Strict Mathematical Consistency**: Guarantees that all forecasted totals (final cost, total delay, tentative completion dates) are derived by adding predicted deltas directly to verified baseline figures.
 - ⏱️ **Walk-Forward Temporal Validation**: Evaluates models across chronological expanding windows, completely eliminating temporal data leakage.
-- 🎯 **Calibrated Multi-Horizon Modeling**: Provides dual-stage models (Classifiers calibrated with Platt scaling + Regressors) for both 3-month and 6-month forecasting horizons.
+- 🎯 **Calibrated 3-Month Modeling**: Provides dual-stage models (Classifiers calibrated with Platt scaling + Regressors) for the 3-month forecasting horizon.
 - 🧠 **Explainable AI (TreeSHAP)**: Computes local and global feature attributions to highlight specific risk drivers and risk-mitigating factors.
 - 🤖 **Qwen3-8B Natural Language Engine**: Translates complex ML and SHAP outputs into executive summaries and interactive project Q&A, backed by a deterministic rule-based fallback when offline.
 - 🖥️ **Interactive Web Application**: Full-featured Streamlit UI with project trajectory visualization, scenario analysis, risk heatmaps, timeline breakdown, and an AI chat assistant.
@@ -109,7 +109,7 @@ PAIMANA Monthly Reports (CSV)
 [ Quality Validation Engine ] ────────────► (Schema, range checks, null-rate verification)
         │
         ▼
-[ Multi-Horizon Target Builder ] ─────────► (3-month & 6-month delta calculations)
+[ 3-Month Target Builder ] ───────────────► (3-month delta calculations)
         │
         ▼
 [ Walk-Forward Splitter ] ────────────────► (Temporal windowing with zero leakage)
@@ -138,7 +138,7 @@ paimana_ml/
 │   ├── data_loader.py            # CSV ingestion and temporal feature engineering
 │   ├── validation.py             # Data sanity checks and schema enforcement
 │   ├── feature_selection.py      # Feature definitions and categorical/numerical splitting
-│   ├── target_generation.py      # Delta target calculation for 3m & 6m horizons
+│   ├── target_generation.py      # Delta target calculation for 3-month horizon
 │   ├── preprocessing.py          # Missing value imputation & OneHotEncoder pipeline
 │   ├── walk_forward.py           # Chronological expanding window cross-validation
 │   ├── train_cost.py             # Cost model training and probability calibration
@@ -235,7 +235,7 @@ streamlit run app/streamlit_app.py
 ```
 Open **[http://localhost:8501](http://localhost:8501)** in your browser to access:
 - **Project Selection & Health Cards**: Immediate view of budget, elapsed time, and status.
-- **3-Month & 6-Month Incremental Forecasts**: Risk probabilities and predicted deltas.
+- **3-Month Incremental Forecasts**: Risk probabilities and predicted deltas.
 - **Derived Final Outcomes**: Forecasted final cost, cost overruns, and revised completion dates.
 - **AI Executive Summary & Interactive Q&A**: Real-time project question answering.
 - **SHAP Importance Charts**: Waterfall and bar charts showing positive and negative drivers.
@@ -257,7 +257,7 @@ schedule:
   major_delay_threshold_months: 3.0          # Major delay flag
 
 prediction:
-  horizons: [3, 6]                           # Forecast horizons in months
+  horizons: [3]                              # Forecast horizon in months
 
 models:
   xgboost:

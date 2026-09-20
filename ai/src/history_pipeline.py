@@ -237,9 +237,9 @@ def engineer_project_history_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def generate_forward_targets(df: pd.DataFrame, horizons: List[int] = [3, 6]) -> pd.DataFrame:
+def generate_forward_targets(df: pd.DataFrame, horizons: List[int] = [3]) -> pd.DataFrame:
     """
-    Constructs forward-looking targets strictly at T+H.
+    Constructs forward-looking targets strictly at T+3M.
     Generates both cumulative state targets and incremental delta/risk targets.
     """
     df = df.sort_values(["project_id", "report_month"]).reset_index(drop=True)

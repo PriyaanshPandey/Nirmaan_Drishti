@@ -31,12 +31,12 @@ ML_DIR = WORKSPACE_ROOT / "data" / "05_ml_features"
 ML_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def generate_forward_targets(df: pd.DataFrame, horizons: List[int] = [3, 6]) -> pd.DataFrame:
+def generate_forward_targets(df: pd.DataFrame, horizons: List[int] = [3]) -> pd.DataFrame:
     """
-    Construct forward-looking targets strictly at T+h using future lookup.
+    Construct forward-looking targets strictly at T+3M using future lookup.
     Never exposes target information to features.
     """
-    print("Generating forward targets (3M and 6M horizons)...")
+    print("Generating forward targets (3M horizon)...")
     df = df.sort_values(["effective_project_key", "report_month"]).reset_index(drop=True)
 
     for h in horizons:

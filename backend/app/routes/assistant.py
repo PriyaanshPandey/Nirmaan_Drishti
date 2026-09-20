@@ -333,8 +333,8 @@ def answer_portfolio_question(query: str, db: Session) -> AssistantQueryResponse
         ]
         return AssistantQueryResponse(query=query, answer=answer, referenced_projects=[], insights=insights, confidence=0.96)
 
-    # Intent B: Critical Delays over next 6 months / Horizons / How many projects
-    if any(k in q for k in ["critical delay", "next 6 months", "6-month", "how many projects", "facing delay", "overdue count"]):
+    # Intent B: Critical Delays over next 3 months / Horizons / How many projects
+    if any(k in q for k in ["critical delay", "next 3 months", "3-month", "how many projects", "facing delay", "overdue count"]):
         crit_count = db.query(Project).filter(or_(Project.schedule_status.in_(["OVERDUE", "CRITICAL"]), Project.risk_level == "Critical")).count()
         ext_count = db.query(Project).filter(Project.schedule_status == "EXTENDED").count()
         high_risk_count = db.query(Project).filter(Project.risk_score >= 70).count()
@@ -343,16 +343,16 @@ def answer_portfolio_question(query: str, db: Session) -> AssistantQueryResponse
         top_names = "\n".join([f"  • **{p.name}**: ₹{p.cost_escalation_crore:,.0f} Cr escalation ({p.schedule_extension_months:.0f} mo delay)" for p in top_overdue])
 
         answer = (
-            f"**Critical Delay Horizon Forecast (Next 6 Months):**\n\n"
+            f"**Critical Delay Horizon Forecast (Next 3 Months):**\n\n"
             f"Across the national database of 3,361 projects, **{crit_count:,} projects** are currently classified in **Critical Delay / Overdue** status, with an additional **{ext_count:,} projects** operating under formal schedule extensions.\n\n"
             f"**Predictive Horizon Modeling (XGBoost Regressors):**\n"
-            f"- **Acute Pipeline Risk**: **{high_risk_count} projects** have a risk score ≥ 70/100, indicating high probability of triggering secondary milestone slippages over the next 6-month horizon.\n"
+            f"- **Acute Pipeline Risk**: **{high_risk_count} projects** have a risk score ≥ 70/100, indicating high probability of triggering secondary milestone slippages over the next 3-month horizon.\n"
             f"- **Expected Additional Compound Delay**: **8.4 months average delay** across vulnerable linear assets if statutory clearances are not unblocked within 60 days.\n\n"
             f"**Top Critical Projects by Capital Exposure:**\n{top_names}"
         )
         insights = [
             f"{crit_count:,} projects currently Overdue across national monitoring registries.",
-            f"{high_risk_count} projects flagged in the acute 6-month risk pipeline (Risk Score ≥ 70).",
+            f"{high_risk_count} projects flagged in the acute 3-month risk pipeline (Risk Score ≥ 70).",
             "Targeted PMG intervention recommended to prevent an average 8.4-month secondary delay cascade."
         ]
         ref_ids = [p.id for p in top_overdue]

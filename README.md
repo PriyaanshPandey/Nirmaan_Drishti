@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <h1>🔮 Nirmaan Dristi</h1>
 <h3>National Infrastructure Early Warning &amp; Predictive Monitoring Platform</h3>
@@ -26,7 +26,7 @@
 
 **Nirmaan Dristi** (meaning *"Vision of Construction"*) is an end-to-end **AI-powered infrastructure project intelligence platform** built for the Government of India's Project Monitoring Group (PMG). It monitors **3,361 national infrastructure projects** across **17 ministries** and **22 sectors**, providing:
 
-- 📈 **Incremental ML Forecasting** — Predicts *additional* cost escalation and schedule delays over 3-month & 6-month horizons using XGBoost models trained on the PAIMANA monthly dataset
+- 📈 **Incremental ML Forecasting** — Predicts *additional* cost escalation and schedule delays over a 3-month horizon using XGBoost models trained on the PAIMANA monthly dataset
 - 🧠 **Explainable AI (TreeSHAP)** — Identifies which specific project attributes are driving risk, making every prediction fully auditable
 - 🤖 **Qwen3-8B Natural Language Engine** — Converts complex ML outputs into plain-English executive summaries and answers natural language questions about any project
 - 📊 **Real-time Risk Scoring** — Continuously scores every project on cost, schedule, and implementation risk dimensions
@@ -101,7 +101,7 @@ Sanket-AI/
 │   │   ├── data_loader.py     # CSV ingestion & temporal feature engineering
 │   │   ├── validation.py      # Data schema & sanity checks
 │   │   ├── feature_selection.py  # Feature definitions & categorical/numerical splits
-│   │   ├── target_generation.py  # Delta target calculation (3-month & 6-month)
+│   │   ├── target_generation.py  # Delta target calculation (3-month)
 │   │   ├── preprocessing.py   # Imputation & OneHotEncoder pipeline
 │   │   ├── walk_forward.py    # Chronological expanding-window cross-validation
 │   │   ├── train_cost.py      # Cost model training & Platt-scaling calibration
@@ -209,13 +209,9 @@ Pre-trained XGBoost models are already included in `ai/models/` — **no trainin
 ```
 ai/models/
 ├── cost_classifier_3m.pkl     ← 3-month cost escalation risk classifier
-├── cost_classifier_6m.pkl     ← 6-month cost escalation risk classifier
 ├── cost_regressor_3m.pkl      ← 3-month cost delta magnitude regressor
-├── cost_regressor_6m.pkl      ← 6-month cost delta magnitude regressor
 ├── time_classifier_3m.pkl     ← 3-month schedule delay risk classifier
-├── time_classifier_6m.pkl     ← 6-month schedule delay risk classifier
 ├── time_regressor_3m.pkl      ← 3-month delay magnitude regressor
-├── time_regressor_6m.pkl      ← 6-month delay magnitude regressor
 └── preprocessing/             ← Serialised ColumnTransformer pipelines
 ```
 
@@ -300,7 +296,7 @@ streamlit run app/streamlit_app.py
 
 ### Forecasting Engine
 
-- **Dual-Horizon Incremental Prediction**: Predicts future *additional* cost overrun Δ% and schedule delay Δ months at **3-month** and **6-month** forward horizons — not cumulative re-estimates from day one
+- **3-Month Incremental Prediction**: Predicts future *additional* cost overrun Δ% and schedule delay Δ months at a **3-month** forward horizon — not cumulative re-estimates from day one
 - **Mathematical Consistency Guarantees**: All derived totals (forecasted final cost, revised completion date) are computed via strict additive delta formulas
 - **Calibrated Probabilities**: XGBoost classifiers calibrated with Platt scaling for well-calibrated risk probability scores
 - **Walk-Forward Validation**: Models are evaluated on chronological expanding windows — zero temporal data leakage

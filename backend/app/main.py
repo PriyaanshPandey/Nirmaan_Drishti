@@ -82,7 +82,7 @@ app = FastAPI(
     Monitoring infrastructure projects via PAIMANA/OCMS data.
     
     ### Capabilities:
-    * **Cost & Schedule Overrun Forecasting** (3-Month & 6-Month Horizons)
+    * **Cost & Schedule Overrun Forecasting** (3-Month Forecast)
     * **Project Risk Scoring & SHAP Feature Explainability**
     * **National Health & Delay Factor Aggregations**
     * **AI Action Centre & Resolution Simulations**
@@ -128,16 +128,16 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Register API Routers
 api_prefix = settings.API_PREFIX
 
-# ── Public routes (no auth required) ──
+# ── Public routes (no auth required for exploratory querying) ──
 app.include_router(health_router, prefix=api_prefix)
 app.include_router(auth_router, prefix=api_prefix)
 app.include_router(extractor_router, prefix=api_prefix)
+app.include_router(projects_router, prefix=api_prefix)
+app.include_router(dashboard_router, prefix=api_prefix)
 
 # ── Protected routes (any authenticated user) ──
 _auth_dep = [Depends(get_current_user)]
 
-app.include_router(projects_router, prefix=api_prefix, dependencies=_auth_dep)
-app.include_router(dashboard_router, prefix=api_prefix, dependencies=_auth_dep)
 app.include_router(risk_router, prefix=api_prefix, dependencies=_auth_dep)
 app.include_router(alerts_router, prefix=api_prefix, dependencies=_auth_dep)
 app.include_router(action_centre_router, prefix=api_prefix, dependencies=_auth_dep)

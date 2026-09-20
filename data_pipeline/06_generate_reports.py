@@ -72,7 +72,7 @@ This document establishes the end-to-end data lineage for the Nirmaan Drishti in
           │
           ▼
 06_ml_feature_generator (05_ml_feature_generator.py)
-  ├── Forward Targets: 3M, 6M Anticipated Cost, Schedule Delay, Risk Tiers, and deltas
+  ├── Forward Targets: 3M Anticipated Cost, Schedule Delay, Risk Tiers, and deltas
   ├── Time-Aware Sector Statistics: Historical sector delay and cost overrun strictly from past completed projects
   ├── Strict Temporal Split:
   │     ├── Train: 2001-04 to 2022-12 (159,016 snapshots, 3,559 projects)
