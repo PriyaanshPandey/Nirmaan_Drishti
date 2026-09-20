@@ -873,13 +873,9 @@ def generate_feature_importance_and_shap(df: pd.DataFrame):
     explain_rows = []
     task_models = [
         ("Cost Regression 3M", "cost_regressor_3m.pkl", "Regression"),
-        ("Cost Regression 6M", "cost_regressor_6m.pkl", "Regression"),
         ("Cost Classification 3M", "cost_classifier_3m.pkl", "Classification"),
-        ("Cost Classification 6M", "cost_classifier_6m.pkl", "Classification"),
         ("Time Regression 3M", "time_regressor_3m.pkl", "Regression"),
-        ("Time Regression 6M", "time_regressor_6m.pkl", "Regression"),
         ("Time Classification 3M", "time_classifier_3m.pkl", "Classification"),
-        ("Time Classification 6M", "time_classifier_6m.pkl", "Classification"),
     ]
 
     for task_name, model_file, task_type in task_models:
@@ -937,13 +933,9 @@ def run_unseen_demonstration(df: pd.DataFrame):
     # Load trained models
     preprocessor = joblib.load(MODELS_DIR / "preprocessing" / "master_preprocessor.pkl")
     cost_cls_3m = joblib.load(MODELS_DIR / "cost_classifier_3m.pkl")
-    cost_cls_6m = joblib.load(MODELS_DIR / "cost_classifier_6m.pkl")
     cost_reg_3m = joblib.load(MODELS_DIR / "cost_regressor_3m.pkl")
-    cost_reg_6m = joblib.load(MODELS_DIR / "cost_regressor_6m.pkl")
     time_cls_3m = joblib.load(MODELS_DIR / "time_classifier_3m.pkl")
-    time_cls_6m = joblib.load(MODELS_DIR / "time_classifier_6m.pkl")
     time_reg_3m = joblib.load(MODELS_DIR / "time_regressor_3m.pkl")
-    time_reg_6m = joblib.load(MODELS_DIR / "time_regressor_6m.pkl")
 
     avail_cat, avail_num = get_feature_matrix(df)
     feature_cols = avail_cat + avail_num
@@ -959,14 +951,10 @@ def run_unseen_demonstration(df: pd.DataFrame):
 
     # Generate predictions
     prob_c3 = cost_cls_3m.predict_proba(X_sample)[:, 1]
-    prob_c6 = cost_cls_6m.predict_proba(X_sample)[:, 1]
     pred_c3 = np.clip(cost_reg_3m.predict(X_sample), 0, 100)
-    pred_c6 = np.clip(cost_reg_6m.predict(X_sample), 0, 150)
 
     prob_t3 = time_cls_3m.predict_proba(X_sample)[:, 1]
-    prob_t6 = time_cls_6m.predict_proba(X_sample)[:, 1]
     pred_t3 = np.clip(time_reg_3m.predict(X_sample), 0, 48)
-    pred_t6 = np.clip(time_reg_6m.predict(X_sample), 0, 72)
 
     demo_rows = []
     for i, (_, row) in enumerate(sample_projects.iterrows()):
@@ -998,13 +986,9 @@ def run_unseen_demonstration(df: pd.DataFrame):
             "Sanction Cost (Cr)": row.get("original_cost_crore", 0),
             "Progress (%)": round(row.get("physical_progress_pct", 0), 1),
             "Time-Risk Prob (3M)": f"{prob_t3[i]*100:.1f}%",
-            "Time-Risk Prob (6M)": f"{prob_t6[i]*100:.1f}%",
             "Predicted Delay (3M)": f"{pred_t3[i]:.1f} mo",
-            "Predicted Delay (6M)": f"{pred_t6[i]:.1f} mo",
             "Cost-Risk Prob (3M)": f"{prob_c3[i]*100:.1f}%",
-            "Cost-Risk Prob (6M)": f"{prob_c6[i]*100:.1f}%",
             "Predicted Cost Escalation (3M)": f"+{pred_c3[i]:.2f}%",
-            "Predicted Cost Escalation (6M)": f"+{pred_c6[i]:.2f}%",
             "Risk Category": risk_cat,
             "Top Contributing Signal": "Progress-Expenditure Divergence" if row.get("physical_financial_gap", 0) > 10 else "Consecutive Schedule Revisions",
             "AI Actionable Recommendation": rec

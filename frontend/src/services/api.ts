@@ -290,13 +290,9 @@ export interface TimeHorizonPrediction {
 
 export interface ModelRiskMetrics {
   cost_escalation_risk_3m_pct?: number | null;
-  cost_escalation_risk_6m_pct?: number | null;
   schedule_delay_risk_3m_pct?: number | null;
-  schedule_delay_risk_6m_pct?: number | null;
   cost_risk_tier_3m?: string | null;
-  cost_risk_tier_6m?: string | null;
   delay_risk_tier_3m?: string | null;
-  delay_risk_tier_6m?: string | null;
 }
 
 export interface FullProjectPredictionResponse {
@@ -309,12 +305,10 @@ export interface FullProjectPredictionResponse {
   timeline: any;
   cost_prediction: {
     '3_month'?: CostHorizonPrediction;
-    '6_month'?: CostHorizonPrediction;
     [key: string]: CostHorizonPrediction | undefined;
   };
   time_prediction: {
     '3_month'?: TimeHorizonPrediction;
-    '6_month'?: TimeHorizonPrediction;
     [key: string]: TimeHorizonPrediction | undefined;
   };
   risk_metrics: ModelRiskMetrics;
@@ -354,7 +348,6 @@ export interface CostDriverAnalysisResponse {
   project_id: string;
   project_name: string;
   horizon_3m: CostDriverHorizon;
-  horizon_6m: CostDriverHorizon;
 }
 
 export interface AISummaryResponse {
@@ -926,19 +919,32 @@ export const api = {
       if (sector && sector !== 'All') params.append('sector', sector);
       if (scheduleStatus && scheduleStatus !== 'All') params.append('schedule_status', scheduleStatus);
       if (riskLevel && riskLevel !== 'All') params.append('risk_level', riskLevel);
-      if (projectStatus && projectStatus !== 'ALL') params.append('project_status', projectStatus);
+      if (projectStatus && projectStatus !== 'ALL') {
+        params.append('status', projectStatus.toLowerCase());
+        params.append('project_status', projectStatus);
+      }
 
       const res = await apiFetch(`${API_BASE_URL}/projects?${params.toString()}`);
       if (!res.ok) throw new Error('Projects fetch failed');
       const data = await res.json();
 
-      const mapped: Project[] = (data.items || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        legacyOcmsCode: p.legacy_ocms_code || null,
-        legacy_ocms_code: p.legacy_ocms_code || null,
-        projectStatus: p.project_status || (p.isCompleted ? 'COMPLETED' : 'ACTIVE'),
-        isCompleted: p.isCompleted || false,
+      const mapped: Project[] = (data.items || []).map((p: any) => {
+        const rawStatus = (p.status || '').toLowerCase();
+        const canonicalStatus: 'ongoing' | 'inactive' | 'completed' =
+          rawStatus === 'completed' || p.project_status === 'COMPLETED' ? 'completed'
+          : rawStatus === 'inactive' || p.project_status === 'INACTIVE' || p.project_status === 'STOPPED' ? 'inactive'
+          : 'ongoing';
+
+        const isCompleted = canonicalStatus === 'completed';
+
+        return {
+          id: p.id,
+          name: p.name,
+          legacyOcmsCode: p.legacy_ocms_code || null,
+          legacy_ocms_code: p.legacy_ocms_code || null,
+          status: canonicalStatus,
+          projectStatus: p.project_status || (canonicalStatus === 'completed' ? 'COMPLETED' : canonicalStatus === 'inactive' ? 'INACTIVE' : 'ONGOING'),
+          isCompleted: isCompleted,
         ministry: p.ministry?.name || 'Ministry of Infrastructure',
         sector: p.sector?.name || 'Infrastructure',
         location: p.location || p.state || 'India',
@@ -971,7 +977,8 @@ export const api = {
         timeRisk: p.time_risk || 20,
         implRisk: p.impl_risk || 20,
         overallRisk: p.overall_risk || 20,
-      }));
+      };
+    });
 
       const resObj = { items: mapped, total: data.total ?? mapped.length };
       cacheSet(cacheKey, resObj);
@@ -1053,15 +1060,15 @@ export const api = {
         }
       }
 
-      // Filter by lifecycle category in offline fallback
+      // Filter by lifecycle category in offline fallback (mutually exclusive)
       if (projectStatus && projectStatus !== 'ALL') {
         const ps = projectStatus.toUpperCase();
         if (ps === 'ONGOING') {
-          filtered = filtered.filter(p => p.projectStatus === 'ONGOING' || (p.projectStatus !== 'COMPLETED' && p.projectStatus !== 'INACTIVE' && (p.progressPhysical ?? 0) < 100));
+          filtered = filtered.filter(p => p.status === 'ongoing' || p.projectStatus === 'ONGOING' || p.projectStatus === 'ACTIVE' || (!p.status && !p.projectStatus && p.phase !== 'Completed' && !p.phase?.includes('Non-Active') && !p.phase?.includes('Stalled')));
         } else if (ps === 'COMPLETED') {
-          filtered = filtered.filter(p => p.projectStatus === 'COMPLETED' || p.isCompleted || (p.progressPhysical ?? 0) >= 100);
+          filtered = filtered.filter(p => p.status === 'completed' || p.projectStatus === 'COMPLETED' || (!p.status && !p.projectStatus && (p.phase === 'Completed' || (p.scheduleStatus && p.scheduleStatus.includes('COMPLET')))));
         } else if (ps === 'INACTIVE') {
-          filtered = filtered.filter(p => p.projectStatus === 'INACTIVE' || (p.phase && p.phase.includes('Non-Active')));
+          filtered = filtered.filter(p => p.status === 'inactive' || p.projectStatus === 'INACTIVE' || p.projectStatus === 'STOPPED' || (!p.status && !p.projectStatus && (p.phase?.includes('Non-Active') || p.phase?.includes('Stalled'))));
         }
       }
 
@@ -1080,8 +1087,8 @@ export const api = {
   /**
    * Fetch Real-Time Project Counts by Segregated Lifecycle Status
    */
-  async getProjectStatusCounts(): Promise<{ ongoing: number; completed: number; inactive: number; total: number }> {
-    const cached = cacheGet<{ ongoing: number; completed: number; inactive: number; total: number }>('project_status_counts');
+  async getProjectStatusCounts(): Promise<{ ongoing: number; inactive: number; completed: number; total: number }> {
+    const cached = cacheGet<{ ongoing: number; inactive: number; completed: number; total: number }>('project_status_counts');
     if (cached) return cached;
     try {
       const res = await apiFetch(`${API_BASE_URL}/projects/status-counts`);
@@ -1090,7 +1097,7 @@ export const api = {
       cacheSet('project_status_counts', data);
       return data;
     } catch {
-      return { ongoing: 1379, completed: 1442, inactive: 2328, total: 5149 };
+      return { ongoing: 1379, inactive: 2328, completed: 1442, total: 5149 };
     }
   },
 
@@ -1106,13 +1113,22 @@ export const api = {
       const res = await apiFetch(`${API_BASE_URL}/projects/${projectId}`);
       if (!res.ok) throw new Error('Project details failed');
       const p = await res.json();
+      const rawStatus = (p.status || '').toLowerCase();
+      const canonicalStatus: 'ongoing' | 'inactive' | 'completed' =
+        rawStatus === 'completed' || p.project_status === 'COMPLETED' ? 'completed'
+        : rawStatus === 'inactive' || p.project_status === 'INACTIVE' || p.project_status === 'STOPPED' ? 'inactive'
+        : 'ongoing';
+
+      const isCompleted = canonicalStatus === 'completed';
+
       const projItem: Project = {
         id: p.id,
         name: p.name,
         legacyOcmsCode: p.legacy_ocms_code || null,
         legacy_ocms_code: p.legacy_ocms_code || null,
-        projectStatus: p.project_status || (p.isCompleted ? 'COMPLETED' : 'ACTIVE'),
-        isCompleted: p.isCompleted || false,
+        status: canonicalStatus,
+        projectStatus: p.project_status || (canonicalStatus === 'completed' ? 'COMPLETED' : canonicalStatus === 'inactive' ? 'INACTIVE' : 'ONGOING'),
+        isCompleted: isCompleted,
         ministry: p.ministry?.name || 'Ministry of Infrastructure',
         sector: p.sector?.name || 'Infrastructure',
         location: p.location || p.state || 'India',
@@ -1521,15 +1537,15 @@ export const api = {
   },
 
   /**
-   * Execute real XGBoost ML model prediction for a project
+   * Execute real XGBoost ML model prediction for a project (Strictly 3-Month Forecast)
    */
   async getProjectRisk(projectId: string, horizon = 3): Promise<RiskPredictionData | null> {
-    const cacheKey = `risk_predict_${projectId}_${horizon}`;
+    const cacheKey = `risk_predict_${projectId}_3`;
     const cached = cacheGet<RiskPredictionData>(cacheKey);
     if (cached) return cached;
 
     try {
-      const res = await apiFetch(`${API_BASE_URL}/risk/projects/${projectId}/predict?horizon=${horizon}`, {
+      const res = await apiFetch(`${API_BASE_URL}/risk/projects/${projectId}/predict`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -1552,16 +1568,15 @@ export const api = {
     const cRisk = proj.costRisk !== undefined ? proj.costRisk : proj.riskScore;
     const tRisk = proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore;
 
-    const is6M = horizon === 6;
-    const costOverrunProb = Math.min(0.98, Math.max(0.08, (cRisk / 100) * (is6M ? 1.15 : 0.85)));
-    const timeOverrunProb = Math.min(0.98, Math.max(0.12, (tRisk / 100) * (is6M ? 1.20 : 0.88)));
+    const costOverrunProb = Math.min(0.98, Math.max(0.08, (cRisk / 100) * 0.85));
+    const timeOverrunProb = Math.min(0.98, Math.max(0.12, (tRisk / 100) * 0.88));
 
-    const addOverrunPct = parseFloat(((cRisk / 100) * (is6M ? 5.8 : 2.6)).toFixed(2));
+    const addOverrunPct = parseFloat(((cRisk / 100) * 2.6).toFixed(2));
     const addCostCr = parseFloat(((costRev * (addOverrunPct / 100))).toFixed(2));
     const finalOverrunPct = parseFloat((currOverrunPct + addOverrunPct).toFixed(1));
     const finalCostCr = parseFloat((costRev + addCostCr).toFixed(2));
 
-    const addDelayMo = parseFloat(((tRisk / 100) * (is6M ? 7.2 : 3.4)).toFixed(1));
+    const addDelayMo = parseFloat(((tRisk / 100) * 3.4).toFixed(1));
     const totalExtMo = parseFloat((currExtMo + addDelayMo).toFixed(1));
 
     // Dynamic Tentative Target Date Calculation
@@ -1749,13 +1764,11 @@ export const api = {
     const proj = (await findProjectByIdOrOcms(projectId)) || (await getLocalProjects())[0];
     const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
     const costRev = parseFloat(String(proj.costRevised).replace(/[^0-9.]/g, '')) || costApp;
-    const currOverrunPct = parseFloat(proj.costOverrunPct || '0');
     const extMo = parseFloat(String(proj.scheduleExtensionMonths || 14));
     const cRisk = (proj.costRisk !== undefined ? proj.costRisk : proj.riskScore) / 100;
     const tRisk = (proj.timeRisk !== undefined ? proj.timeRisk : proj.riskScore) / 100;
 
     const addDelayMo3M = parseFloat(((tRisk / 100) * 3.4).toFixed(1));
-    const addDelayMo6M = parseFloat(((tRisk / 100) * 7.2).toFixed(1));
 
     const computeTentativeDate = (delayMonths: number) => {
       try {
@@ -1778,7 +1791,6 @@ export const api = {
     };
 
     const tentativeDate3M = computeTentativeDate(addDelayMo3M);
-    const tentativeDate6M = computeTentativeDate(addDelayMo6M);
 
     return {
       project_id: String(proj.id),
@@ -1805,14 +1817,6 @@ export const api = {
           predicted_final_cost_overrun_pct: parseFloat(proj.costOverrunPct || '0') + (cRisk * 2.6),
           predicted_final_revised_cost_crore: costRev + (costRev * (cRisk * 0.026)),
           risk_tier: cRisk >= 0.7 ? 'CRITICAL' : cRisk >= 0.5 ? 'HIGH' : cRisk >= 0.25 ? 'MODERATE' : 'LOW'
-        },
-        '6_month': {
-          additional_escalation_probability: Math.min(0.99, cRisk * 1.15),
-          predicted_additional_overrun_pct: cRisk * 5.8,
-          predicted_additional_cost_crore: costRev * (cRisk * 0.058),
-          predicted_final_cost_overrun_pct: currOverrunPct + (cRisk * 5.8),
-          predicted_final_revised_cost_crore: costRev + (costRev * (cRisk * 0.058)),
-          risk_tier: cRisk >= 0.6 ? 'CRITICAL' : cRisk >= 0.45 ? 'HIGH' : 'MODERATE'
         }
       },
       time_prediction: {
@@ -1824,26 +1828,13 @@ export const api = {
           tentative_completion_date: tentativeDate3M,
           estimated_time_needed_completion: tRisk >= 0.7 ? '1 year 10 months' : '1 year 4 months',
           risk_tier: tRisk >= 0.7 ? 'CRITICAL' : tRisk >= 0.5 ? 'HIGH' : tRisk >= 0.25 ? 'MODERATE' : 'LOW'
-        },
-        '6_month': {
-          additional_delay_probability: Math.min(0.99, tRisk * 1.20),
-          predicted_additional_delay_months: addDelayMo6M,
-          predicted_total_schedule_extension_months: extMo + addDelayMo6M,
-          predicted_additional_delay: `+${addDelayMo6M.toFixed(1)} months`,
-          tentative_completion_date: tentativeDate6M,
-          estimated_time_needed_completion: tRisk >= 0.7 ? '2 years 4 months' : '1 year 9 months',
-          risk_tier: tRisk >= 0.6 ? 'CRITICAL' : tRisk >= 0.45 ? 'HIGH' : 'MODERATE'
         }
       },
       risk_metrics: {
         cost_escalation_risk_3m_pct: Number((cRisk * 85).toFixed(1)),
-        cost_escalation_risk_6m_pct: Number((Math.min(99, cRisk * 115)).toFixed(1)),
         schedule_delay_risk_3m_pct: Number((tRisk * 88).toFixed(1)),
-        schedule_delay_risk_6m_pct: Number((Math.min(99, tRisk * 120)).toFixed(1)),
         cost_risk_tier_3m: cRisk >= 0.7 ? 'CRITICAL' : cRisk >= 0.5 ? 'HIGH' : 'MODERATE',
-        cost_risk_tier_6m: cRisk >= 0.6 ? 'CRITICAL' : 'HIGH',
         delay_risk_tier_3m: tRisk >= 0.7 ? 'CRITICAL' : tRisk >= 0.5 ? 'HIGH' : 'MODERATE',
-        delay_risk_tier_6m: tRisk >= 0.6 ? 'CRITICAL' : 'HIGH',
       },
       project_info: {
         ministry: proj.ministry,
@@ -1874,8 +1865,7 @@ export const api = {
     }
 
     const isCost = modelName.includes('cost');
-    const is6m = modelName.includes('6m');
-    const mult = is6m ? 1.35 : 1.0;
+    const mult = 1.0;
 
     return {
       model_name: modelName,
@@ -2009,40 +1999,6 @@ export const api = {
           }
         ],
         base_value: 0.5230
-      },
-      horizon_6m: {
-        top_cost_escalation_drivers: [
-          {
-            feature_col: 'cost_escalation_crore',
-            display_name: 'Cumulative Cost Escalation',
-            shap_value: 0.6521,
-            direction: 'INCREASING_RISK',
-            actual_value: fmtCr(costRev - costApp),
-            unit: '₹ Cr',
-            description: 'Compounding escalation exposure across multi-quarter financial commitment windows.'
-          },
-          {
-            feature_col: 'remaining_budget_crore',
-            display_name: 'Remaining Unspent Allocation',
-            shap_value: 0.4120,
-            direction: 'INCREASING_RISK',
-            actual_value: fmtCr(costRev * 0.3),
-            unit: '₹ Cr',
-            description: 'Pending contract variations and vendor escalation claims under review.'
-          }
-        ],
-        mitigating_factors: [
-          {
-            feature_col: 'original_cost_crore',
-            display_name: 'Original Approved Cost Baseline',
-            shap_value: -0.7120,
-            direction: 'MITIGATING_RISK',
-            actual_value: fmtCr(costApp),
-            unit: '₹ Cr',
-            description: 'Substantial structural budget framework stabilizes long-term expenditure ceilings.'
-          }
-        ],
-        base_value: 0.5890
       }
     };
   },
@@ -2207,30 +2163,6 @@ export const api = {
           ],
           provider: 'Qwen3-8B / Grounded AI Engine'
         },
-        schedule_6m: {
-          model_key: 'schedule_6m',
-          model_label: '6M Schedule',
-          forecast_type: 'schedule',
-          horizon: '6_month',
-          risk_level: tRisk >= 60 ? 'CRITICAL RISK' : 'HIGH RISK',
-          probability_pct: +(Math.min(99, tRisk * 1.20)).toFixed(1),
-          predicted_incremental_change: `+${(tRisk * 0.072).toFixed(1)} months`,
-          summary: `${proj.name} exhibits a ${(Math.min(99, tRisk * 1.20)).toFixed(1)}% probability of compounded timeline slippage over the 6-month horizon if clearance bottlenecks remain unaddressed.`,
-          primary_reasons: [
-            `Cumulative schedule slippage reaching ${extMo} months creates compounding delays in structural commissioning.`,
-            `Remaining physical scope (${100 - proj.progressPhysical}%) requires accelerated contractor deployment.`,
-            `High overall project scale (₹${costRev.toLocaleString('en-IN')} Cr) lengthens administrative approval cycles.`
-          ],
-          supporting_factors: [
-            `State nodal authority clearances pending for utility relocation.`,
-            `Seasonal monsoon and site access constraints anticipated in upcoming quarters.`
-          ],
-          risk_reducing_factors: [
-            `Nodal ministry review frequency provides early intervention escalation.`,
-            `Mobilized engineering workforce maintains steady foundation package execution.`
-          ],
-          provider: 'Qwen3-8B / Grounded AI Engine'
-        },
         cost_3m: {
           model_key: 'cost_3m',
           model_label: '3M Cost',
@@ -2252,30 +2184,6 @@ export const api = {
           risk_reducing_factors: [
             `Substantial sanctioned original allocation (₹${costApp.toLocaleString('en-IN')} Cr) provides strong baseline anchoring.`,
             `Routine financial expenditure audits restrict unauthorized outlays.`
-          ],
-          provider: 'Qwen3-8B / Grounded AI Engine'
-        },
-        cost_6m: {
-          model_key: 'cost_6m',
-          model_label: '6M Cost',
-          forecast_type: 'cost',
-          horizon: '6_month',
-          risk_level: cRisk >= 60 ? 'CRITICAL RISK' : 'HIGH RISK',
-          probability_pct: +(Math.min(99, cRisk * 1.15)).toFixed(1),
-          predicted_incremental_change: `+${(cRisk * 0.058).toFixed(2)}% (+₹${(costRev * cRisk * 0.00058).toFixed(2)} Cr)`,
-          summary: `${proj.name} shows a ${(Math.min(99, cRisk * 1.15)).toFixed(1)}% probability of secondary cost escalation over the 6-month horizon as contracts approach final closeout.`,
-          primary_reasons: [
-            `Extended timeline exposure compounds labor and material escalation clauses.`,
-            `Pending final contract amendments and variation claims under scrutiny.`,
-            `Disbursement rate consistently tracking above physical output rate.`
-          ],
-          supporting_factors: [
-            `Procurement lead times on specialized mechanical/electrical equipment packages.`,
-            `Market commodity fluctuations in cement, steel, and fuel components.`
-          ],
-          risk_reducing_factors: [
-            `Ministry expenditure sanctions enforce strict cap ceilings.`,
-            `Majority of structural civil work packages already committed.`
           ],
           provider: 'Qwen3-8B / Grounded AI Engine'
         }

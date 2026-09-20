@@ -85,7 +85,18 @@ def format_project_response(p: Project) -> dict:
     overrun_pct = round(float(p.cost_overrun_pct), 1) if p.cost_overrun_pct is not None else 0.0
     phys_prog = round(float(p.physical_progress), 1) if p.physical_progress is not None else 0.0
 
-    is_completed = (p.project_status == "COMPLETED") or ("COMPLETED" in (p.schedule_status or "").upper()) or (phys_prog >= 100.0)
+    # Authoritative status classification: strictly from database project_status
+    # Do NOT infer completion from physical progress or schedule text!
+    raw_status = (p.project_status or "").upper().strip()
+    if raw_status == "COMPLETED":
+        canonical_status = "completed"
+        is_completed = True
+    elif raw_status in ("INACTIVE", "STOPPED"):
+        canonical_status = "inactive"
+        is_completed = False
+    else:
+        canonical_status = "ongoing"
+        is_completed = False
 
     actual_d = p.actual_completion_date
     if is_completed and not actual_d:
@@ -141,7 +152,8 @@ def format_project_response(p: Project) -> dict:
         "contractor": p.contractor,
         "phase": p.phase,
         "type": p.type,
-        "project_status": "COMPLETED" if is_completed else p.project_status,
+        "status": canonical_status,
+        "project_status": p.project_status,
         "schedule_status": p.schedule_status,
         "start_date": p.start_date,
         "original_completion_date": p.original_completion_date,
@@ -202,7 +214,8 @@ def get_projects(
     schedule_status: Optional[str] = Query(None, description="Filter by status (ON TRACK, DELAYED, CRITICAL, EXTENDED)"),
     risk_level: Optional[str] = Query(None, description="Filter by risk level (Low, Medium, High, Critical)"),
     state: Optional[str] = Query(None, description="Filter by State"),
-    project_status: Optional[str] = Query(None, description="Filter by lifecycle status ('ONGOING', 'COMPLETED', 'INACTIVE')"),
+    status: Optional[str] = Query(None, description="Filter by status ('ongoing', 'inactive', 'completed', 'all')"),
+    project_status: Optional[str] = Query(None, description="Filter by status ('ongoing', 'inactive', 'completed', 'all')"),
     sort_by: str = Query("risk_score", description="Field to sort by"),
     sort_order: str = Query("desc", description="Sort direction (asc, desc)"),
     db: Session = Depends(get_db)
@@ -212,19 +225,19 @@ def get_projects(
     """
     query = db.query(Project).options(joinedload(Project.ministry), joinedload(Project.sector))
 
-    # Apply lifecycle status filter (ONGOING, COMPLETED, INACTIVE)
-    if project_status and project_status.strip() and project_status.strip().upper() != "ALL":
-        p_stat = project_status.strip().upper()
-        if "INACT" in p_stat or "STOP" in p_stat:
+    # Apply mutually exclusive status filter: ongoing (1,379), inactive (2,328), completed (1,442)
+    stat_param = (status or project_status or "").strip().upper()
+    if stat_param and stat_param != "ALL":
+        if "INACT" in stat_param or "STOP" in stat_param:
             query = query.filter(Project.project_status.in_(['INACTIVE', 'STOPPED']))
-        elif "COMPLET" in p_stat:
+        elif "COMPLET" in stat_param:
             query = query.filter(Project.project_status == 'COMPLETED')
-        elif "ONGOING" in p_stat or p_stat == "ACTIVE":
+        elif "ONGOING" in stat_param or stat_param == "ACTIVE":
             query = query.filter(Project.project_status.in_(['ONGOING', 'ACTIVE']))
         else:
-            query = query.filter(Project.project_status.ilike(f"%{p_stat}%"))
+            query = query.filter(Project.project_status.ilike(f"%{stat_param}%"))
     else:
-        # Exclude internal archived legacy records by default
+        # Exclude internal archived legacy records by default: 1,379 + 2,328 + 1,442 = 5,149
         query = query.filter(Project.project_status.in_(['ONGOING', 'ACTIVE', 'COMPLETED', 'INACTIVE', 'STOPPED']))
 
     # Apply search filter across name, ID, agency, state, location, and project code
@@ -332,9 +345,9 @@ def get_project_status_counts(db: Session = Depends(get_db)):
     inactive = db.query(Project).filter(Project.project_status.in_(['INACTIVE', 'STOPPED'])).count()
     return {
         "ongoing": ongoing,
-        "completed": completed,
         "inactive": inactive,
-        "total": ongoing + completed + inactive
+        "completed": completed,
+        "total": ongoing + inactive + completed
     }
 
 
@@ -604,7 +617,7 @@ def _calculate_risk_tier(prob: Optional[float]) -> str:
 @router.get("/{project_id}/prediction", response_model=FullProjectPredictionResponse, summary="Get Full Project Predictions")
 def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
-    Run multi-horizon (3M & 6M) incremental cost and schedule predictions.
+    Run 3-Month incremental cost and schedule predictions.
     Derived final totals maintain strict mathematical consistency.
     """
     canonical_id = _resolve_project_id(project_id, db)
@@ -615,6 +628,8 @@ def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_d
 
     cost_pred_dict = {}
     for h, data in raw_pred.get("cost_prediction", {}).items():
+        if h != "3_month":
+            continue
         prob = data.get("additional_escalation_probability")
         cost_pred_dict[h] = CostHorizonPrediction(
             additional_escalation_probability=prob,
@@ -628,6 +643,8 @@ def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_d
 
     time_pred_dict = {}
     for h, data in raw_pred.get("time_prediction", {}).items():
+        if h != "3_month":
+            continue
         prob = data.get("additional_delay_probability")
         time_pred_dict[h] = TimeHorizonPrediction(
             additional_delay_probability=prob,
@@ -641,19 +658,13 @@ def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_d
         )
 
     c3m_prob = cost_pred_dict.get("3_month", CostHorizonPrediction()).additional_escalation_probability
-    c6m_prob = cost_pred_dict.get("6_month", CostHorizonPrediction()).additional_escalation_probability
     t3m_prob = time_pred_dict.get("3_month", TimeHorizonPrediction()).additional_delay_probability
-    t6m_prob = time_pred_dict.get("6_month", TimeHorizonPrediction()).additional_delay_probability
 
     risk_metrics = ModelRiskMetrics(
         cost_escalation_risk_3m_pct=round(c3m_prob * 100, 1) if c3m_prob is not None else None,
-        cost_escalation_risk_6m_pct=round(c6m_prob * 100, 1) if c6m_prob is not None else None,
         schedule_delay_risk_3m_pct=round(t3m_prob * 100, 1) if t3m_prob is not None else None,
-        schedule_delay_risk_6m_pct=round(t6m_prob * 100, 1) if t6m_prob is not None else None,
         cost_risk_tier_3m=_calculate_risk_tier(c3m_prob) if c3m_prob is not None else None,
-        cost_risk_tier_6m=_calculate_risk_tier(c6m_prob) if c6m_prob is not None else None,
         delay_risk_tier_3m=_calculate_risk_tier(t3m_prob) if t3m_prob is not None else None,
-        delay_risk_tier_6m=_calculate_risk_tier(t6m_prob) if t6m_prob is not None else None,
     )
 
     return FullProjectPredictionResponse(
@@ -674,11 +685,11 @@ def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_d
 @router.get("/{project_id}/shap", response_model=ShapExplanationResponse, summary="Get Project TreeSHAP Explanation")
 def get_project_shap_endpoint(
     project_id: str,
-    model_name: str = Query("cost_3m", description="One of: cost_3m, cost_6m, time_3m, time_6m"),
+    model_name: str = Query("cost_3m", description="One of: cost_3m, time_3m"),
     db: Session = Depends(get_db)
 ):
     """
-    Retrieve TreeSHAP additive feature contributions for a specific model & horizon.
+    Retrieve TreeSHAP additive feature contributions for a specific 3-Month model.
     """
     canonical_id = _resolve_project_id(project_id, db)
     try:
@@ -702,7 +713,7 @@ def get_project_shap_endpoint(
 @router.get("/{project_id}/cost-drivers", response_model=CostDriverAnalysisResponse, summary="Cost Escalation Driver Analysis")
 def get_cost_driver_analysis_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
-    Dedicated Cost Escalation Driver Analysis module.
+    Dedicated Cost Escalation Driver Analysis module for 3-Month horizon.
     Translates technical TreeSHAP attributions into domain-meaningful financial drivers.
     """
     canonical_id = _resolve_project_id(project_id, db)
@@ -712,7 +723,6 @@ def get_cost_driver_analysis_endpoint(project_id: str, db: Session = Depends(get
         raise HTTPException(status_code=500, detail=f"Cost driver analysis error: {e}")
 
     h3m = data.get("horizon_3m", {})
-    h6m = data.get("horizon_6m", {})
 
     return CostDriverAnalysisResponse(
         project_id=data["project_id"],
@@ -721,11 +731,6 @@ def get_cost_driver_analysis_endpoint(project_id: str, db: Session = Depends(get
             top_cost_escalation_drivers=[EnrichedCostDriver(**d) for d in h3m.get("top_cost_escalation_drivers", [])],
             mitigating_factors=[EnrichedCostDriver(**d) for d in h3m.get("mitigating_factors", [])],
             base_value=h3m.get("base_value", 0.0)
-        ),
-        horizon_6m=CostDriverHorizon(
-            top_cost_escalation_drivers=[EnrichedCostDriver(**d) for d in h6m.get("top_cost_escalation_drivers", [])],
-            mitigating_factors=[EnrichedCostDriver(**d) for d in h6m.get("mitigating_factors", [])],
-            base_value=h6m.get("base_value", 0.0)
         )
     )
 
@@ -782,7 +787,7 @@ def get_project_ai_summary_endpoint(project_id: str, db: Session = Depends(get_d
 def get_project_model_explanations_endpoint(project_id: str, db: Session = Depends(get_db)):
     """
     Generate model-specific natural language explanations using Qwen3-8B / fallback engine.
-    Answers: 'Why did the model predict this?' across 3M/6M Schedule and 3M/6M Cost.
+    Answers: 'Why did the model predict this?' across 3M Schedule and 3M Cost.
     """
     canonical_id = _resolve_project_id(project_id, db)
     db_proj = db.query(Project).filter(Project.id == canonical_id).first()

@@ -181,12 +181,31 @@ class TestRiskEngineCore:
 class TestRiskAPIIntegration:
     """Integration tests verifying API endpoints return dynamic risk fields."""
 
+    @pytest.fixture(autouse=True)
+    def setup_mock_auth(self):
+        """Mock authentication dependency to allow API testing."""
+        from app.auth.dependencies import get_current_user
+        from app.models.user import User
+
+        dummy_user = User(
+            id="test-user-id",
+            username="testuser",
+            email="test@example.com",
+            role="impd_officer",
+            is_active=True,
+        )
+        app.dependency_overrides[get_current_user] = lambda: dummy_user
+        yield
+        app.dependency_overrides.pop(get_current_user, None)
+
     @pytest.fixture
     def sample_project_id(self):
-        """Get an active project ID from database."""
+        """Get an active project ID with ML trajectory from database."""
         db = SessionLocal()
         try:
-            proj = db.query(Project).first()
+            proj = db.query(Project).filter(Project.id == "020100044").first()
+            if not proj:
+                proj = db.query(Project).first()
             assert proj is not None, "At least one project must exist in DB for testing"
             return proj.id
         finally:
@@ -208,12 +227,12 @@ class TestRiskAPIIntegration:
         assert data["risk_level"] in ["Low", "Medium", "High", "Critical"]
 
     def test_predict_endpoint_returns_centralized_risk_response(self, sample_project_id):
-        """Verify POST /api/risk/projects/{id}/predict returns all 6 required fields."""
-        response = client.post(f"/api/risk/projects/{sample_project_id}/predict?horizon=3")
+        """Verify POST /api/risk/projects/{id}/predict returns strictly 3-month risk fields and no 6M outputs."""
+        response = client.post(f"/api/risk/projects/{sample_project_id}/predict")
         assert response.status_code == 200
         data = response.json()
 
-        # Check all 6 required fields specified by user
+        # Check all required 3M fields
         assert "predicted_cost_overrun" in data
         assert "predicted_schedule_delay" in data
         assert "risk_score" in data
@@ -230,6 +249,64 @@ class TestRiskAPIIntegration:
         assert data["schedule_risk_component"] is not None
         assert 0 <= data["schedule_risk_component"] <= 100
 
+        # Verify 6-month risk outputs are strictly absent
+        assert "cost_escalation_risk_6m_pct" not in data
+        assert "schedule_delay_risk_6m_pct" not in data
+        assert "cost_risk_tier_6m" not in data
+        assert "delay_risk_tier_6m" not in data
+        assert "horizon_6m" not in data
+        assert "risk_forecast_6m" not in data
+
+    def test_project_prediction_is_strictly_3m(self, sample_project_id):
+        """Verify GET /api/projects/{id}/prediction returns strictly 3-month forecasts and no 6-month forecasts."""
+        response = client.get(f"/api/projects/{sample_project_id}/prediction")
+        assert response.status_code == 200
+        data = response.json()
+
+        # Check cost prediction contains only 3_month
+        cost_pred = data.get("cost_prediction", {})
+        assert "3_month" in cost_pred
+        assert "6_month" not in cost_pred
+
+        # Check time prediction contains only 3_month
+        time_pred = data.get("time_prediction", {})
+        assert "3_month" in time_pred
+        assert "6_month" not in time_pred
+
+        # Check model risk metrics do not have 6m outputs
+        metrics = data.get("risk_metrics", {})
+        assert "cost_escalation_risk_3m_pct" in metrics
+        assert "schedule_delay_risk_3m_pct" in metrics
+        assert "cost_escalation_risk_6m_pct" not in metrics
+        assert "schedule_delay_risk_6m_pct" not in metrics
+        assert "cost_risk_tier_6m" not in metrics
+        assert "delay_risk_tier_6m" not in metrics
+
+    def test_project_shap_is_strictly_3m(self, sample_project_id):
+        """Verify GET /api/projects/{id}/shap provides 3M SHAP explanations."""
+        # 3M Cost SHAP
+        res_cost = client.get(f"/api/projects/{sample_project_id}/shap?model_name=cost_3m")
+        assert res_cost.status_code == 200
+        cost_data = res_cost.json()
+        assert cost_data["model_name"] == "cost_3m"
+        assert len(cost_data.get("all_contributions", [])) > 0
+
+        # 3M Schedule SHAP
+        res_time = client.get(f"/api/projects/{sample_project_id}/shap?model_name=time_3m")
+        assert res_time.status_code == 200
+        time_data = res_time.json()
+        assert time_data["model_name"] == "time_3m"
+        assert len(time_data.get("all_contributions", [])) > 0
+
+    def test_cost_drivers_is_strictly_3m(self, sample_project_id):
+        """Verify GET /api/projects/{id}/cost-drivers contains horizon_3m and not horizon_6m."""
+        response = client.get(f"/api/projects/{sample_project_id}/cost-drivers")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert "horizon_3m" in data
+        assert "horizon_6m" not in data
+
     def test_risk_summary_endpoint(self):
         """Verify GET /api/risk/summary returns aligned categories."""
         response = client.get("/api/risk/summary")
@@ -240,3 +317,4 @@ class TestRiskAPIIntegration:
         assert "high_risk_count" in data
         assert "distribution_categories" in data
         assert len(data["distribution_categories"]) == 4
+

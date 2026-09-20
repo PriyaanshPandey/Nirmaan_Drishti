@@ -1,9 +1,9 @@
 """
 AI Engine Service Layer for Nirmaan Drishti.
 
-Loads and caches all 8 ML models and preprocessors in memory at application startup.
+Loads and caches ML models and preprocessors in memory at application startup.
 Interfaces directly with AI predictor modules (predict, explain, project_service, qwen_service).
-Does NOT fabricate generic 0-100 scores; provides model-grounded 3M/6M Cost and Delay probabilities.
+Does NOT fabricate generic 0-100 scores; provides model-grounded 3M Cost and Delay probabilities.
 """
 
 import sys
@@ -224,12 +224,14 @@ class AIEngine:
 
     def get_project_shap_explanation(self, project_id: str, model_key: str = "cost_3m") -> Dict[str, Any]:
         """
-        Get detailed SHAP explanation for a specific model key (e.g. 'cost_3m', 'time_3m', 'cost_6m', 'time_6m').
+        Get detailed SHAP explanation for a specific model key ('cost_3m' or 'time_3m').
         Enriched with plain-English domain feature names and project actuals.
         """
         pid_str = str(project_id).strip()
         pred = self.get_full_project_prediction(pid_str)
         explanations = pred.get("explanations", {})
+        if model_key not in ["cost_3m", "time_3m"]:
+            model_key = "cost_3m"
         exp = explanations.get(model_key, explanations.get("cost_3m", {}))
 
         history = load_project_history(pid_str, self.df_cache)
@@ -258,8 +260,8 @@ class AIEngine:
 
     def get_cost_driver_analysis(self, project_id: str) -> Dict[str, Any]:
         """
-        Dedicated Cost Escalation Driver Analysis module.
-        Combines 3M and 6M cost SHAP drivers with plain-English feature translations and impact assessments.
+        Dedicated Cost Escalation Driver Analysis module for 3-Month horizon.
+        Combines 3M cost SHAP drivers with plain-English feature translations and impact assessments.
         """
         self._ensure_initialized()
         pid_str = str(project_id).strip()
@@ -268,7 +270,6 @@ class AIEngine:
         latest_row = history.iloc[-1] if not history.empty else None
 
         cost_3m_shap = pred.get("explanations", {}).get("cost_3m", {})
-        cost_6m_shap = pred.get("explanations", {}).get("cost_6m", {})
 
         def _enrich_drivers(drivers_list: List[Dict[str, Any]], is_positive: bool):
             enriched = []
@@ -292,9 +293,6 @@ class AIEngine:
         drivers_3m = _enrich_drivers(cost_3m_shap.get("top_risk_drivers", []), is_positive=True)
         mitigating_3m = _enrich_drivers(cost_3m_shap.get("top_protective_factors", []), is_positive=False)
 
-        drivers_6m = _enrich_drivers(cost_6m_shap.get("top_risk_drivers", []), is_positive=True)
-        mitigating_6m = _enrich_drivers(cost_6m_shap.get("top_protective_factors", []), is_positive=False)
-
         return {
             "project_id": pid_str,
             "project_name": pred.get("project_name", ""),
@@ -302,11 +300,6 @@ class AIEngine:
                 "top_cost_escalation_drivers": drivers_3m,
                 "mitigating_factors": mitigating_3m,
                 "base_value": cost_3m_shap.get("base_value", 0.0)
-            },
-            "horizon_6m": {
-                "top_cost_escalation_drivers": drivers_6m,
-                "mitigating_factors": mitigating_6m,
-                "base_value": cost_6m_shap.get("base_value", 0.0)
             }
         }
 
@@ -326,7 +319,7 @@ class AIEngine:
     def get_ai_model_explanations(self, project_id: str) -> Dict[str, Any]:
         """
         Generate model-specific natural language explanations via Qwen3-8B / fallback.
-        Answers: 'Why did the model predict this?' across 3M/6M Schedule and 3M/6M Cost.
+        Answers: 'Why did the model predict this?' across 3M Schedule and 3M Cost.
         """
         self._ensure_initialized()
         pid_str = str(project_id).strip()
@@ -334,9 +327,7 @@ class AIEngine:
 
         configs = [
             ("schedule_3m", "3M Schedule", "schedule", "3_month"),
-            ("schedule_6m", "6M Schedule", "schedule", "6_month"),
             ("cost_3m", "3M Cost", "cost", "3_month"),
-            ("cost_6m", "6M Cost", "cost", "6_month"),
         ]
 
         explanations = {}

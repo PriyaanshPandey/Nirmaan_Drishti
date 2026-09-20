@@ -31,7 +31,7 @@ const SECTIONS = [
     id: "forecasts" as SidebarSection,
     icon: TrendingUp,
     label: "Forecasts",
-    desc: "AI 3M & 6M predictions",
+    desc: "AI 3M predictions",
     num: "02",
   },
   {

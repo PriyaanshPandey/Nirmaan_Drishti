@@ -262,7 +262,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
         <div className="metric-strip-card">
           <div className="strip-icon"><Cpu size={20} color="#7C3AED" aria-hidden="true" /></div>
           <div className="strip-info">
-            <span className="strip-val">3 &amp; 6 Months</span>
+            <span className="strip-val">3 Months</span>
             <span className="strip-lbl">Forecast Horizon</span>
           </div>
         </div>

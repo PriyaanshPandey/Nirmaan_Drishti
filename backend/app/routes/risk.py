@@ -88,11 +88,11 @@ def get_high_risk_projects(limit: int = Query(20, ge=1, le=100), db: Session = D
 
 
 @router.get("/projects/{project_id}", response_model=Optional[RiskPredictionResponse], summary="Get Latest Project Risk Prediction")
-def get_project_risk(project_id: str, horizon: int = Query(3, description="Forecast horizon (3 or 6 months)"), db: Session = Depends(get_db)):
-    """Get stored or latest risk prediction for a project."""
+def get_project_risk(project_id: str, db: Session = Depends(get_db)):
+    """Get stored or latest 3-month risk prediction for a project."""
     pred = db.query(RiskPrediction).filter(
         RiskPrediction.project_id == project_id,
-        RiskPrediction.horizon_months == horizon
+        RiskPrediction.horizon_months == 3
     ).order_by(desc(RiskPrediction.prediction_date)).first()
 
     if pred:
@@ -110,13 +110,14 @@ def get_project_risk(project_id: str, horizon: int = Query(3, description="Forec
         return pred
 
     # If not stored yet, trigger on-the-fly prediction
-    return predict_project_risk(project_id=project_id, horizon=horizon, db=db)
+    return predict_project_risk(project_id=project_id, db=db)
 
 
 @router.post("/projects/{project_id}/predict", response_model=RiskPredictionResponse, summary="Execute ML Prediction for Project")
-def predict_project_risk(project_id: str, horizon: int = Query(3, description="Forecast horizon (3 or 6)"), db: Session = Depends(get_db)):
+def predict_project_risk(project_id: str, db: Session = Depends(get_db)):
     """
     Trigger real XGBoost ML model prediction for a project, compute dynamic risk score via centralized engine, store in database, and return results.
+    Strictly 3-month forecast.
     """
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
@@ -128,11 +129,11 @@ def predict_project_risk(project_id: str, horizon: int = Query(3, description="F
     ml_client = get_ml_client()
     try:
         res = ml_client.predict_project(project_id=project_id)
-        cost_p = res.get("cost_prediction", {}).get(f"{horizon}_month", {})
-        time_p = res.get("time_prediction", {}).get(f"{horizon}_month", {})
+        cost_p = res.get("cost_prediction", {}).get("3_month", {})
+        time_p = res.get("time_prediction", {}).get("3_month", {})
         explanations = res.get("explanations", {})
-        cost_expl = explanations.get(f"cost_{horizon}m", {})
-        time_expl = explanations.get(f"time_{horizon}m", {})
+        cost_expl = explanations.get("cost_3m", {})
+        time_expl = explanations.get("time_3m", {})
         
         from src.qwen_service import get_feature_readable_info
         raw_drivers = cost_expl.get("top_risk_drivers", []) or time_expl.get("top_risk_drivers", [])
@@ -188,7 +189,7 @@ def predict_project_risk(project_id: str, horizon: int = Query(3, description="F
         pred_record = RiskPrediction(
             project_id=project_id,
             prediction_date=datetime.utcnow(),
-            horizon_months=horizon,
+            horizon_months=3,
             risk_score=risk_result.risk_score,
             risk_level=risk_result.risk_level,
             cost_risk_component=risk_result.cost_risk_component,
@@ -207,7 +208,7 @@ def predict_project_risk(project_id: str, horizon: int = Query(3, description="F
             estimated_time_needed=time_p.get("estimated_time_needed_completion"),
             top_risk_drivers=top_drivers,
             top_protective_factors=top_protective,
-            explanation=f"Live XGBoost {horizon}M model forecast with SHAP explainability.",
+            explanation="Live XGBoost 3M model forecast with SHAP explainability.",
             model_version="2.0.0"
         )
         db.add(pred_record)
@@ -219,7 +220,7 @@ def predict_project_risk(project_id: str, horizon: int = Query(3, description="F
             action="GENERATE_PREDICTION",
             entity_type="risk_prediction",
             entity_id=str(pred_record.id),
-            new_value={"project_id": project_id, "horizon": horizon}
+            new_value={"project_id": project_id, "horizon": 3}
         )
 
         return pred_record

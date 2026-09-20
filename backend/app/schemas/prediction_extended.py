@@ -32,13 +32,9 @@ class TimeHorizonPrediction(BaseModel):
 
 class ModelRiskMetrics(BaseModel):
     cost_escalation_risk_3m_pct: Optional[float] = None
-    cost_escalation_risk_6m_pct: Optional[float] = None
     schedule_delay_risk_3m_pct: Optional[float] = None
-    schedule_delay_risk_6m_pct: Optional[float] = None
     cost_risk_tier_3m: Optional[str] = None
-    cost_risk_tier_6m: Optional[str] = None
     delay_risk_tier_3m: Optional[str] = None
-    delay_risk_tier_6m: Optional[str] = None
 
 
 class FullProjectPredictionResponse(BaseModel):
@@ -88,7 +84,6 @@ class CostDriverAnalysisResponse(BaseModel):
     project_id: str
     project_name: str
     horizon_3m: CostDriverHorizon
-    horizon_6m: CostDriverHorizon
 
 
 class AISummaryResponse(BaseModel):

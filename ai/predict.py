@@ -143,7 +143,7 @@ def main():
         print(f"----------------------------------------------------------------------")
         
         for ftype in ["schedule", "cost"]:
-            for h in ["3_month", "6_month"]:
+            for h in ["3_month"]:
                 try:
                     payload = build_explanation_payload(args.project_id, df, result, ftype, h)
                     exp = explainer.generate_explanation(payload)

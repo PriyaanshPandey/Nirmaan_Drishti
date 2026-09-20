@@ -249,7 +249,7 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
     Main API endpoint function.
     """
     if horizons is None:
-        horizons = [3, 6]
+        horizons = [3]
 
     info = get_project_info(project_id, df)
     current = get_current_status(project_id, df)
@@ -277,8 +277,8 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
     features_df = prepare_prediction_features(project_id, df)
     cold_flag = is_cold_start(features_df).iloc[0] if len(features_df) > 0 else False
 
-    cost_pred = predict_cost(features_df, models, current, horizons, is_cold=cold_flag)
-    time_pred = predict_time(features_df, models, current, horizons, is_cold=cold_flag)
+    cost_pred = predict_cost(features_df, models, current, [3], is_cold=cold_flag)
+    time_pred = predict_time(features_df, models, current, [3], is_cold=cold_flag)
 
     confidence_level = "LIMITED HISTORICAL DATA" if cold_flag else "HIGH CONFIDENCE"
 
@@ -306,51 +306,49 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
         elif as_of is not None:
             planned_doc = as_of
 
-    # Enrich time_prediction with application-level completion forecast fields
-    for h in horizons:
-        h_key = f"{h}_month"
-        if h_key in time_pred:
-            pred_h = time_pred[h_key]
-            delay_months = pred_h.get("predicted_additional_delay_months")
-            delay_val = float(delay_months) if delay_months is not None else 0.0
+    # Enrich time_prediction with application-level completion forecast fields (3-Month Only)
+    h_key = "3_month"
+    if h_key in time_pred:
+        pred_h = time_pred[h_key]
+        delay_months = pred_h.get("predicted_additional_delay_months")
+        delay_val = float(delay_months) if delay_months is not None else 0.0
 
-            # 1. Predicted Additional Delay formatted
-            pred_h["predicted_additional_delay"] = f"{delay_val:+.2f} months"
+        # 1. Predicted Additional Delay formatted
+        pred_h["predicted_additional_delay"] = f"{delay_val:+.2f} months"
 
-            # 2. Tentative Completion Date
-            if planned_doc and as_of:
-                base_date = max(planned_doc, as_of)
-                tentative_doc = add_months_to_date(base_date, delay_val)
-            elif as_of:
-                tentative_doc = add_months_to_date(as_of, delay_val)
-            else:
-                tentative_doc = None
+        # 2. Tentative Completion Date
+        if planned_doc and as_of:
+            base_date = max(planned_doc, as_of)
+            tentative_doc = add_months_to_date(base_date, delay_val)
+        elif as_of:
+            tentative_doc = add_months_to_date(as_of, delay_val)
+        else:
+            tentative_doc = None
 
-            if tentative_doc:
-                pred_h["tentative_completion_date"] = tentative_doc.strftime("%d %B %Y")
-                pred_h["tentative_completion_date_iso"] = tentative_doc.strftime("%Y-%m-%d")
-            else:
-                pred_h["tentative_completion_date"] = "N/A"
+        if tentative_doc:
+            pred_h["tentative_completion_date"] = tentative_doc.strftime("%d %B %Y")
+            pred_h["tentative_completion_date_iso"] = tentative_doc.strftime("%Y-%m-%d")
+        else:
+            pred_h["tentative_completion_date"] = "N/A"
 
-            # 3. Estimated Time Needed for Completion (from latest report/current date to tentative completion date)
-            if as_of and tentative_doc:
-                pred_h["estimated_time_needed_completion"] = format_calendar_duration(as_of, tentative_doc)
-            else:
-                pred_h["estimated_time_needed_completion"] = "N/A"
+        # 3. Estimated Time Needed for Completion (from latest report/current date to tentative completion date)
+        if as_of and tentative_doc:
+            pred_h["estimated_time_needed_completion"] = format_calendar_duration(as_of, tentative_doc)
+        else:
+            pred_h["estimated_time_needed_completion"] = "N/A"
 
-    # Generate SHAP explanations
+    # Generate SHAP explanations for 3-Month models only
     explanations = {}
     for model_type in ["cost", "time"]:
-        for h in reversed(horizons):
-            cls_key = f"{model_type}_classifier_{h}m"
-            prep_key = f"{model_type}_cls_{h}m_preprocessor"
-            if cls_key in models and prep_key in models:
-                X = models[prep_key].transform(features_df)
-                feature_names = get_feature_names(models[prep_key])
-                explanation = get_shap_explanation(
-                    models[cls_key], X, feature_names
-                )
-                explanations[f"{model_type}_{h}m"] = explanation
+        cls_key = f"{model_type}_classifier_3m"
+        prep_key = f"{model_type}_cls_3m_preprocessor"
+        if cls_key in models and prep_key in models:
+            X = models[prep_key].transform(features_df)
+            feature_names = get_feature_names(models[prep_key])
+            explanation = get_shap_explanation(
+                models[cls_key], X, feature_names
+            )
+            explanations[f"{model_type}_3m"] = explanation
 
     return {
         "project_id": str(project_id),

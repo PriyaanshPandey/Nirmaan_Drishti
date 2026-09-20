@@ -2,7 +2,7 @@
 Schedule Delay Model Training for PAIMANA ML.
 
 Trains baseline (LogisticRegression/Ridge) and XGBoost models
-for incremental schedule delay classification and regression at 3M and 6M horizons,
+for incremental schedule delay classification and regression at 3M horizon,
 using expanding-window walk-forward cross-validation with zero temporal leakage.
 Trains separate Mature Project and Cold-Start Project models.
 """

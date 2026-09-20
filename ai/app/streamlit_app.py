@@ -3,7 +3,7 @@ Streamlit Temporary Demo UI for Nirmaan Dristi ML Prediction Engine.
 
 Features:
 - Project health & status cards
-- Forecasts for 3-month & 6-month horizons (Cost & Schedule)
+- Forecasts for 3-month horizon (Cost & Schedule)
 - Exact timeline calculations (Time Elapsed, Time Remaining, Tentative Completion Date)
 - Natural language explanations via Qwen3-8B (with deterministic SHAP fallback)
 - Interactive grounded Q&A Project Assistant
@@ -340,7 +340,7 @@ if current.get("is_completed", False):
     with c_cols[3]:
         st.metric("Final Cost Overrun", f"{completed_summary.get('actual_cost_overrun_pct', 0.0)}% (₹{completed_summary.get('actual_cost_escalation_crore', 0.0)} Cr)")
 
-    st.info("ℹ️ **Completed Project Outcome**: Future 3-month and 6-month forecasting is discontinued for completed assets. The recorded outcomes above reflect the final reported project metrics.")
+    st.info("ℹ️ **Completed Project Outcome**: Future 3-month forecasting is discontinued for completed assets. The recorded outcomes above reflect the final reported project metrics.")
 
 else:
     # --- 1. Current Reported Status ---
@@ -471,13 +471,11 @@ else:
             st.subheader("🔍 3. Explainability — AI Insights & Risk Drivers")
 
             st.markdown("#### 🤖 AI Natural Language Explanation (Qwen3-8B)")
-            exp_tabs = st.tabs(["⏱️ 3M Schedule", "⏱️ 6M Schedule", "💰 3M Cost", "💰 6M Cost"])
+            exp_tabs = st.tabs(["⏱️ 3M Schedule", "💰 3M Cost"])
 
             tab_configs = [
                 ("schedule", "3_month"),
-                ("schedule", "6_month"),
                 ("cost", "3_month"),
-                ("cost", "6_month"),
             ]
 
             for tab, (ftype, horizon) in zip(exp_tabs, tab_configs):
@@ -549,8 +547,8 @@ else:
                 "Why is this project at high risk?",
                 "What is the biggest factor affecting the prediction?",
                 "Which factors are reducing the risk?",
-                "Why is the 6-month forecast different from 3-month?",
-                "Explain the cost forecast."
+                "Explain the 3-month schedule delay forecast.",
+                "Explain the 3-month cost forecast."
             ]
             selected_quick_prompt = None
             for i, qp in enumerate(quick_prompts):
