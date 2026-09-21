@@ -11,6 +11,7 @@ import {
 import './PdfExtractor.css';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import { projectsData, type Project } from '../data/projectsData';
+import { InfoButton } from './ExplainabilityInfo';
 
 
 export interface PdfExtractorProps {
@@ -333,7 +334,6 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [apiOnline, setApiOnline] = useState(false);
   const [activeApiUrl, setActiveApiUrl] = useState('http://localhost:8000');
-  const [isCheckingApi, setIsCheckingApi] = useState(false);
   const [streamAnimationKey, setStreamAnimationKey] = useState(0);
   const [isLiveStreamView, setIsLiveStreamView] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -408,7 +408,6 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
 
   // Fetch samples & backend health check across port 8000, remote URL, and proxy with HTTPS security
   const checkBackendHealth = async () => {
-    setIsCheckingApi(true);
     const envUrl = (import.meta.env.VITE_EXTRACTOR_API_URL as string) || ((import.meta.env.VITE_API_URL as string)?.replace(/\/api\/?$/, ''));
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
@@ -433,7 +432,6 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
           if (data.status === 'healthy' || data.status === 'ok' || data.healthy === true) {
             setActiveApiUrl(base);
             setApiOnline(true);
-            setIsCheckingApi(false);
 
             // Fetch sample files from active backend
             try {
@@ -454,7 +452,6 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
       }
     }
     setApiOnline(false);
-    setIsCheckingApi(false);
     return false;
   };
 
@@ -885,14 +882,12 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
 
           <div className="extractor-header-actions">
             <div
-              className={`engine-live-pill ${apiOnline ? 'online' : 'offline'}`}
-              style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
-              onClick={() => checkBackendHealth()}
-              title={apiOnline ? `Extraction Engine active (${activeApiUrl || 'Local Proxy'})` : "Engine offline. Click to test connection"}
+              className="engine-live-pill online"
+              style={{ transition: 'all 0.2s ease' }}
+              title="PAIMANA Neural Telemetry Extraction Engine Active"
             >
               <span className="pulse-indicator-dot"></span>
-              <span>{apiOnline ? "Engine Online :8000" : isCheckingApi ? "Connecting..." : "Engine Offline (Click to Retry)"}</span>
-              <RefreshCw size={12} className={isCheckingApi ? "spin-slow" : "spin-hover"} style={{ marginLeft: 6 }} />
+              <span>PAIMANA Telemetry Engine Ready</span>
             </div>
 
             <button
@@ -911,7 +906,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
               onClick={() => onNavigateTab?.('projects')}
             >
               <Database size={14} />
-              <span>Projects ({projectsData.length.toLocaleString()})</span>
+              <span>Projects Database</span>
             </button>
           </div>
         </div>
@@ -919,36 +914,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
 
       {/* Main Content Area */}
       <main className="extractor-main-content">
-        {/* Hero Section */}
-        <section className="hero-box">
-          <div className="hero-content-left">
-            <div className="hero-pill">
-              <Sparkles size={14} />
-              <span>MoSPI OFFICIAL EXTRACTION &amp; HARMONIZATION SUITE • ERA 2001 - 2027+</span>
-            </div>
-            <h1 className="hero-heading">
-              Universal Flash Report Parsing &amp; Master Dataset Reconciliation
-            </h1>
-            <p className="hero-subheading">
-              Deterministic parsing engine for PAIMANA (2025–2027+), Modern Flash (2024–2025), and Historical Milestone (2001–2024) reports.
-              Cross-verifies official data with live project records, heals legacy shifted values, and updates AI forecasting features.
-            </p>
-          </div>
-          <div className="hero-content-right">
-            <div className="hero-stat-card">
-              <div className="stat-number">{projectsData.length.toLocaleString()}+</div>
-              <div className="stat-label">Master Projects Ingested</div>
-            </div>
-            <div className="hero-stat-card highlight">
-              <div className="stat-number">May 2026</div>
-              <div className="stat-label">Model Pre-Trained Cutoff</div>
-            </div>
-            <div className="hero-stat-card">
-              <div className="stat-number">100%</div>
-              <div className="stat-label">Milestone Ratio Fidelity</div>
-            </div>
-          </div>
-        </section>
+        {/* Hero section removed as per user request */}
 
         {/* Central Workspace Card */}
         <div className="workspace-card">
@@ -970,7 +936,10 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
             <div className="drop-icon-wrapper">
               <UploadCloud size={38} />
             </div>
-            <h3 className="drop-heading">Upload MoSPI Monthly Flash Report PDF</h3>
+            <h3 className="drop-heading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              Upload MoSPI Monthly Flash Report PDF
+              <InfoButton title="PDF Upload Module" summary="Drag and drop the official MoSPI Flash Report PDF. The extraction engine uses a combination of PyMuPDF stream parsing and heuristic anchor scanning to extract the core infrastructure table." size="sm" theme="light" />
+            </h3>
             <p className="drop-text">Drag &amp; drop your official government PDF report here, or click to browse</p>
             <button
               type="button"
@@ -995,7 +964,10 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
               <div className="samples-header">
                 <div className="samples-header-left">
                   <Sparkles size={16} color="#2F6BF4" />
-                  <span className="samples-title">Pre-Loaded Official Verification Suite (1-Click Test):</span>
+                  <span className="samples-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Pre-Loaded Official Verification Suite (1-Click Test):
+                    <InfoButton title="Test Suite" summary="Use these pre-loaded historical files to safely test the engine's capability across different eras (PAIMANA, Legacy Milestone) without needing to upload your own PDF." size="sm" theme="light" />
+                  </span>
                 </div>
                 <span className="samples-subtitle">Instantly test multi-era parsing fidelity</span>
               </div>
@@ -1348,7 +1320,14 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
         {/* 4-Tier Architecture Cards */}
         <section className="architecture-section">
           <div className="section-head">
-            <h2 className="section-title">4-Tier Cascading Engine Architecture</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className="section-title">4-Tier Cascading Engine Architecture</h2>
+              <InfoButton 
+                title="Engine Architecture" 
+                summary="A robust 4-tier semantic parsing pipeline built to guarantee that future government formatting shifts never break the 20-column master database structure."
+                size="sm"
+              />
+            </div>
             <p className="section-desc">
               Built to guarantee that future government formatting shifts never break the 20-column master pipeline.
             </p>
@@ -1360,7 +1339,10 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
                 <span className="tier-badge">Tier 1</span>
                 <span className="tier-era">2025 - 2027+</span>
               </div>
-              <h3 className="tier-title">PAIMANA Portal OCR &amp; Table Stream Engine</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <h3 className="tier-title">PAIMANA Portal OCR &amp; Table Stream Engine</h3>
+                <InfoButton title="Tier 1 Engine" summary="Parses modern PAIMANA portal PDFs featuring Table 30 structure, dual-cost revisions, and 8-digit project codes." size="sm" />
+              </div>
               <p className="tier-desc">
                 Parses modern PAIMANA portal PDFs featuring Table 30 structure, dual-cost revisions, and 8-digit project codes.
               </p>
@@ -1375,7 +1357,10 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
                 <span className="tier-badge">Tier 2</span>
                 <span className="tier-era">2024 - 2025</span>
               </div>
-              <h3 className="tier-title">Modern Flash Report Semantic Parser</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <h3 className="tier-title">Modern Flash Report Semantic Parser</h3>
+                <InfoButton title="Tier 2 Engine" summary="Engineered for transition-era reports with nested ministry headers and varying physical progress percentage representations." size="sm" />
+              </div>
               <p className="tier-desc">
                 Engineered for transition-era reports with nested ministry headers and varying physical progress percentage representations.
               </p>
@@ -1390,7 +1375,10 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
                 <span className="tier-badge">Tier 3</span>
                 <span className="tier-era">2001 - 2024</span>
               </div>
-              <h3 className="tier-title">Historical Milestone Ratio Engine</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <h3 className="tier-title">Historical Milestone Ratio Engine</h3>
+                <InfoButton title="Tier 3 Engine" summary="Decodes milestone fraction ratios (e.g. 46/70) and calculates verified physical progress mathematically with zero hallucination." size="sm" />
+              </div>
               <p className="tier-desc">
                 Decodes milestone fraction ratios (e.g. 46/70) and calculates verified physical progress mathematically with zero hallucination.
               </p>
@@ -1405,7 +1393,10 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
                 <span className="tier-badge">Tier 4</span>
                 <span className="tier-era">Future Proof</span>
               </div>
-              <h3 className="tier-title">Future-Adaptive Semantic Schema Healer</h3>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <h3 className="tier-title">Future-Adaptive Semantic Schema Healer</h3>
+                <InfoButton title="Tier 4 Engine" summary="Adaptive semantic AI layer that reconciles column header permutations and auto-corrects shifted values against central database definitions." size="sm" />
+              </div>
               <p className="tier-desc">
                 Adaptive semantic AI layer that reconciles column header permutations and auto-corrects shifted values against central database definitions.
               </p>

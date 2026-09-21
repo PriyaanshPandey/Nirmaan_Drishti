@@ -3,6 +3,8 @@ import { TrendingUp, Clock } from 'lucide-react';
 import './GlobalOverrunGraphs.css';
 import { api } from '../services/api';
 import { AnimatedCounter } from './AnimatedCounter';
+import { InfoButton } from './ExplainabilityInfo';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface SectorOverrun {
   sector_name: string;
@@ -166,6 +168,7 @@ interface GlobalOverrunGraphsProps {
 }
 
 export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ activeTab }) => {
+  const { t } = useLanguage();
   const [sectors, setSectors] = useState<SectorOverrun[]>(DEFAULT_SECTORS);
   const [mounted, setMounted] = useState<boolean>(false);
   const [hoveredCostIndex, setHoveredCostIndex] = useState<number | null>(null);
@@ -174,7 +177,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
   useEffect(() => {
     let isMounted = true;
     setMounted(false);
-    const t = setTimeout(() => setMounted(true), 100);
+    const tTimer = setTimeout(() => setMounted(true), 100);
 
     api.getDashboardSummary().then((res) => {
       if (!isMounted) return;
@@ -188,7 +191,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
 
     return () => {
       isMounted = false;
-      clearTimeout(t);
+      clearTimeout(tTimer);
     };
   }, [activeTab]);
 
@@ -201,7 +204,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
 
   return (
     <div className="global-overruns-grid-2">
-      {/* Card 1 (Left): Global Cost Escalation */}
+      {/* Card 1 (Left): National Cost Escalation */}
       <div className="card overrun-card-col">
         <div className="overrun-card-header">
           <div className="overrun-header-left">
@@ -209,7 +212,15 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <TrendingUp size={18} color="#0284C7" />
             </div>
             <div>
-              <h2 className="card-title" style={{ margin: 0 }}>Global Cost Escalation</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 className="card-title" style={{ margin: 0 }}>{t('cost_overrun', 'National Cost Escalation')}</h2>
+                <InfoButton
+                  title="National Cost Escalation by Sector"
+                  summary="Displays total financial outlay drift (revised cost minus original cost) aggregated by major infrastructure sectors across all 1,981 central sector projects."
+                  theme="light"
+                  size="sm"
+                />
+              </div>
               <p className="card-subtitle">Real cost drift by sector (Crore)</p>
             </div>
           </div>
@@ -254,7 +265,7 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
         </div>
       </div>
 
-      {/* Card 2 (Right): Global Schedule Delays */}
+      {/* Card 2 (Right): National Schedule Delays */}
       <div className="card overrun-card-col">
         <div className="overrun-card-header">
           <div className="overrun-header-left">
@@ -262,7 +273,15 @@ export const GlobalOverrunGraphs: React.FC<GlobalOverrunGraphsProps> = ({ active
               <Clock size={18} color="#D97706" />
             </div>
             <div>
-              <h2 className="card-title" style={{ margin: 0 }}>Global Schedule Delays</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 className="card-title" style={{ margin: 0 }}>{t('schedule_overrun', 'National Schedule Delays')}</h2>
+                <InfoButton
+                  title="National Schedule Delays by Sector"
+                  summary="Displays average schedule completion delay in months per sector, highlighting systemic execution bottlenecks across railways, roads, power, and water infrastructure."
+                  theme="light"
+                  size="sm"
+                />
+              </div>
               <p className="card-subtitle">Average delay extension by sector (Months)</p>
             </div>
           </div>

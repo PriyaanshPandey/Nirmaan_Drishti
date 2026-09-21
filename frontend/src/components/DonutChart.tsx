@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import './DonutChart.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ChartSegment {
   id: string;
@@ -12,10 +14,10 @@ interface ChartSegment {
 }
 
 const DEFAULT_HEALTH_DIST: ChartSegment[] = [
-  { id: 'on_track', name: 'On Track', count: 2081, color: '#22C55E', percentage: 31.7 },
-  { id: 'monitoring', name: 'Needs Attention', count: 839, color: '#3B82F6', percentage: 12.8 },
-  { id: 'at_risk', name: 'High Risk', count: 1707, color: '#EAB308', percentage: 26.0 },
-  { id: 'critical_delay', name: 'Critical Delay', count: 1941, color: '#EF4444', percentage: 29.6 }
+  { id: 'on_track', name: 'On Track', count: 681, color: '#22C55E', percentage: 34.4 },
+  { id: 'monitoring', name: 'Medium Risk', count: 420, color: '#3B82F6', percentage: 21.2 },
+  { id: 'at_risk', name: 'High Risk', count: 480, color: '#EAB308', percentage: 24.2 },
+  { id: 'critical_delay', name: 'Critical Risk', count: 400, color: '#EF4444', percentage: 20.2 }
 ];
 
 interface DonutChartProps {
@@ -24,6 +26,7 @@ interface DonutChartProps {
 }
 
 export const DonutChart: React.FC<DonutChartProps> = ({ activeTab, onSelectHealthStatus }) => {
+  const { t } = useLanguage();
   const [data, setData] = useState<ChartSegment[]>(DEFAULT_HEALTH_DIST);
   const [hoveredSegment, setHoveredSegment] = useState<ChartSegment | null>(null);
   const [selectedSegment, setSelectedSegment] = useState<ChartSegment | null>(null);
@@ -49,10 +52,9 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab, onSelectHealt
   const getSegmentColor = (segment: ChartSegment | { id?: string; name?: string; color?: string }) => {
     const sId = (segment.id || '').toLowerCase().replace(/_/g, '-');
     const sName = (segment.name || '').toLowerCase();
-    if (sId.includes('crit') || sId.includes('delay') || sName.includes('crit') || sName.includes('delay')) return '#EF4444';
-    if (sId.includes('risk') || sName.includes('risk')) return '#EAB308';
-    if (sId.includes('monitor') || sName.includes('monitor') || sId.includes('attention') || sName.includes('attention')) return '#3B82F6';
-    if (sId.includes('track') || sId.includes('low') || sName.includes('track') || sName.includes('low')) return '#22C55E';
+    if (sId.includes('critical') || sName.includes('critical')) return '#EF4444';
+    if (sId.includes('risk') || sName.includes('high')) return '#EAB308';
+    if (sId.includes('monitor') || sName.includes('medium')) return '#3B82F6';
     return segment.color || '#22C55E';
   };
 
@@ -150,9 +152,24 @@ export const DonutChart: React.FC<DonutChartProps> = ({ activeTab, onSelectHealt
     >
       <div className="card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="card-title" style={{ margin: 0 }}>Project Health Distribution</h2>
-          <p className="card-subtitle">By project status</p>
+          <h2 className="card-title" style={{ margin: 0 }}>{t('project_health', 'Project Health Distribution')}</h2>
+          <p className="card-subtitle">By project execution status &amp; risk rating</p>
         </div>
+        <InfoButton
+          title="Project Health Index Breakdown"
+          summary="Categorizes active projects by execution progress velocity vs milestone targets: On Track, Medium Risk, High Risk, and Critical Risk."
+          dataSummary={{
+            items: [
+              { label: 'On Track', value: 'Physical execution aligned with target schedule' },
+              { label: 'Medium Risk', value: '3-6 months schedule slippage or minor RoW delay' },
+              { label: 'High Risk', value: '6-12 months delay or financial outlay lag' },
+              { label: 'Critical Risk', value: '> 12 months delay or cost escalation' }
+            ],
+            insight: 'Clicking any health segment filters the project portfolio down to that specific execution category.'
+          }}
+          theme="light"
+          size="sm"
+        />
       </div>
 
       <div className="donut-chart-container">

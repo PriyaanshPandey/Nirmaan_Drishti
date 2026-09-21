@@ -1,15 +1,15 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import {
   ShieldAlert, ArrowLeft, ArrowRight, Building2, MapPin,
   ChevronDown, Sliders, CheckCircle2, FileText, Send, Sparkles,
-  Info, Landmark, ChevronRight, ChevronLeft, ArrowUp, Search,
-  TrendingUp, Clock, ExternalLink, RotateCcw, Play, AlertCircle, Loader2
+  Info, Landmark, Search,
+  TrendingUp, Clock, ExternalLink, RotateCcw, Play, Loader2
 } from 'lucide-react';
 import './ActionCenter.css';
 import { projectsData } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
 import { api, type WhatIfResponse } from '../services/api';
+import { generateTicketPDF, generateMemoPDF, type TicketData } from '../utils/pdfGenerator';
 
 export interface ActionCenterProps {
   activeTab?: string;
@@ -18,29 +18,33 @@ export interface ActionCenterProps {
   onNavigateTab?: (tab: string) => void;
   onTakeAction?: (projectId: string) => void;
   onClearSelectedProject?: () => void;
+  onCreateTicket?: (ticket: TicketData) => void;
+  targetMinistry?: string;
+  targetAgency?: string;
 }
 
 type ActionSidebarSection = 'actions' | 'simulator' | 'routing';
 
 export const ActionCenter: React.FC<ActionCenterProps> = ({
-  activeTab,
   selectedProjectId,
   onSelectProject,
-  onClearSelectedProject
+  onClearSelectedProject,
+  onCreateTicket,
+  targetMinistry,
+  targetAgency
 }) => {
   // State A: Filters & Controls
   const [countLimit, setCountLimit] = useState<5 | 10 | 999>(5);
-  const [selectedMinistry, setSelectedMinistry] = useState<string>('All');
+  const [selectedMinistry, setSelectedMinistry] = useState<string>(targetMinistry || 'All');
   const [selectedSector, setSelectedSector] = useState<string>('All');
-  const [selectedAgency, setSelectedAgency] = useState<string>('All');
+  const [selectedAgency, setSelectedAgency] = useState<string>(targetAgency || 'All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // State B: Active Action Target Project
   const [internalTargetId, setInternalTargetId] = useState<string | null>(null);
   const activeProjectId = selectedProjectId || internalTargetId;
 
-  // State B Sidebar Navigation
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
+  // State B Navigation Section
   const [activeSection, setActiveSection] = useState<ActionSidebarSection>('actions');
 
   // ML-Driven What-If Simulator State (3 Counterfactual Inputs)
@@ -50,7 +54,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
 
   // What-If Backend API State
   const [simLoading, setSimLoading] = useState<boolean>(false);
-  const [simError, setSimError] = useState<string | null>(null);
   const [whatIfData, setWhatIfData] = useState<WhatIfResponse | null>(null);
   const [baselineData, setBaselineData] = useState<WhatIfResponse | null>(null);
 
@@ -67,7 +70,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
     setAdditionalCost(0);
     setAdditionalDelayMonths(0);
     setWhatIfData(null);
-    setSimError(null);
 
     if (!activeProjectId) {
       setBaselineData(null);
@@ -85,11 +87,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
         if (!isMounted) return;
         setBaselineData(res);
         setMonthlyExpenditure(res.baseline.monthly_expenditure);
-        setSimError(null);
       })
       .catch((err) => {
         if (!isMounted) return;
-        setSimError(err.message || 'Failed to load project baseline for simulation');
+        console.warn('Failed to load baseline for simulation:', err);
       })
       .finally(() => {
         if (isMounted) setSimLoading(false);
@@ -104,7 +105,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
   const handleRunSimulation = async () => {
     if (!activeProjectId) return;
     setSimLoading(true);
-    setSimError(null);
     try {
       const res = await api.simulateWhatIf(activeProjectId, {
         additional_cost: Math.max(0, Number(additionalCost) || 0),
@@ -113,7 +113,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
       });
       setWhatIfData(res);
     } catch (err: any) {
-      setSimError(err.message || 'Simulation failed. Please check backend connection.');
+      console.warn('Simulation error:', err);
     } finally {
       setSimLoading(false);
     }
@@ -127,7 +127,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
       setMonthlyExpenditure(baselineData.baseline.monthly_expenditure);
     }
     setWhatIfData(null);
-    setSimError(null);
   };
 
   // Extract unique Ministries, Sectors, and Agencies
@@ -352,93 +351,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
       {/* ── STATE B: SINGLE PROJECT ACTION WORKSPACE ── */}
       {activeProj ? (
         <div className="ac-workspace-container">
-          {/* Portaled Navigation Sidebar for Action Center State B */}
-          {activeTab === 'action-centre' && typeof document !== 'undefined' && createPortal(
-            <aside className={`pnav ${sidebarCollapsed ? 'pnav--collapsed' : ''}`} aria-label="Action Navigation">
-              <div className="pnav__card">
-                {/* Header */}
-                <div className="pnav__brand">
-                  {!sidebarCollapsed && (
-                    <div className="pnav__brand-text">
-                      <ShieldAlert size={14} className="pnav__brand-icon" />
-                      <span>Action Navigation</span>
-                    </div>
-                  )}
-                  <button
-                    className="pnav__toggle"
-                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    title={sidebarCollapsed ? "Expand Navigation" : "Collapse Navigation"}
-                  >
-                    {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-                  </button>
-                </div>
-
-                {/* Risk score gauge */}
-                {!sidebarCollapsed && (
-                  <div className="pnav__gauge">
-                    <div className="pnav__gauge-row">
-                      <span className="pnav__gauge-label">ML Risk Score</span>
-                      <span className="pnav__gauge-val" style={{ color: activeProj.riskScore >= 75 ? '#DC2626' : '#D97706' }}>
-                        {activeProj.riskScore >= 75 ? 'Critical' : 'High'}
-                      </span>
-                    </div>
-                    <div className="pnav__gauge-num" style={{ color: activeProj.riskScore >= 75 ? '#DC2626' : '#D97706' }}>
-                      {activeProj.riskScore}
-                      <span className="pnav__gauge-denom">/100</span>
-                    </div>
-                    <div className="pnav__gauge-track">
-                      <div className="pnav__gauge-fill" style={{ width: `${activeProj.riskScore}%`, background: activeProj.riskScore >= 75 ? '#DC2626' : '#D97706' }} />
-                    </div>
-                  </div>
-                )}
-
-                <div className="pnav__sep" />
-
-                {/* Nav Items */}
-                <nav className="pnav__nav">
-                  {[
-                    { id: 'actions' as ActionSidebarSection, label: 'Recommended Actions', desc: 'AI Interventions', num: '01', icon: ShieldAlert },
-                    { id: 'simulator' as ActionSidebarSection, label: 'What-If Simulator', desc: 'Counterfactual Model', num: '02', icon: Sliders },
-                    { id: 'routing' as ActionSidebarSection, label: 'Authority Routing', desc: 'Govt Governance Matrix', num: '03', icon: Landmark }
-                  ].map((sec) => {
-                    const isActive = activeSection === sec.id;
-                    const Icon = sec.icon;
-                    return (
-                      <button
-                        key={sec.id}
-                        className={`pnav__item ${isActive ? 'pnav__item--active' : ''}`}
-                        onClick={() => scrollToSection(sec.id)}
-                        title={sidebarCollapsed ? sec.label : undefined}
-                      >
-                        <span className="pnav__pill" />
-                        {!sidebarCollapsed && <span className="pnav__num">{sec.num}</span>}
-                        <span className={`pnav__icon ${isActive ? 'pnav__icon--active' : ''}`}>
-                          <Icon size={15} strokeWidth={isActive ? 2.5 : 1.75} />
-                        </span>
-                        {!sidebarCollapsed && (
-                          <span className="pnav__text">
-                            <span className="pnav__label">{sec.label}</span>
-                            {isActive && <span className="pnav__desc pnav__desc--in">{sec.desc}</span>}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
-
-                <div className="pnav__sep" style={{ marginTop: 'auto' }} />
-
-                {/* Footer */}
-                <div className="pnav__footer">
-                  <button className="pnav__ftr-btn" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Back to Top">
-                    <ArrowUp size={13} />
-                    {!sidebarCollapsed && <span>Top</span>}
-                  </button>
-                </div>
-              </div>
-            </aside>,
-            document.body
-          )}
 
           {/* Top Back & Action Target Banner */}
           <div className="ac-target-header-banner">
@@ -480,13 +392,61 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
             </div>
           </div>
 
+          {/* ── Horizontal Navigation Bar ── */}
+          <div className="ac-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center', marginBottom: '24px' }}>
+            {[
+              { id: 'actions' as ActionSidebarSection, label: 'Recommended Actions', icon: ShieldAlert },
+              { id: 'simulator' as ActionSidebarSection, label: 'What-If Simulator', icon: Sliders },
+              { id: 'routing' as ActionSidebarSection, label: 'Authority Routing', icon: Landmark }
+            ].map((sec) => {
+              const isActive = activeSection === sec.id;
+              const Icon = sec.icon;
+              return (
+                <button 
+                  key={sec.id}
+                  className={`ac-nav-tab ${isActive ? 'active' : ''}`}
+                  onClick={() => scrollToSection(sec.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid',
+                    borderColor: isActive ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
+                    background: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                    color: isActive ? '#38bdf8' : '#cbd5e1',
+                    fontSize: '14px',
+                    fontWeight: isActive ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.color = '#ffffff';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.color = '#cbd5e1';
+                    }
+                  }}
+                >
+                  <Icon size={16} />
+                  <span>{sec.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* ════════════════════════════════════════════════════════════════
              SECTION 1: RECOMMENDED ACTIONS FOR SELECTED ASSET
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-actions" className="ac-section">
-            <div className="ac-section-header header-red">
-              <span className="ac-section-tag tag-red">01</span>
-              <span className="ac-section-name">Recommended Interventions &amp; Fast-Track Actions</span>
+            <div className="pd-section-header pd-section-header--escalation" style={{ marginTop: '24px' }}>
+              <span className="pd-section-tag">01</span>
+              <span className="pd-section-name">Recommended Interventions &amp; Fast-Track Actions</span>
+              <InfoButton title="Recommended Interventions" summary="AI-generated operational actions tailored to halt cost escalation and schedule slippage based on identified root causes." size="sm" theme="light" />
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
@@ -522,14 +482,63 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     </div>
                     <h3 className="action-card-title">{rec.title}</h3>
                     <p className="action-card-desc">{rec.desc}</p>
-                    <div className="action-card-footer">
+
+                    <div className="action-card-footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '10.5px', fontWeight: 600, color: '#64748B' }}>Assign Ticket To:</label>
+                        <select
+                          id={`assignee-${rec.id}`}
+                          style={{ fontSize: '11px', padding: '6px', borderRadius: '6px', border: '1px solid #CBD5E1', background: '#F8FAFC', color: '#0F172A', outline: 'none' }}
+                          defaultValue={authorityRouting.title}
+                        >
+                          <option value={authorityRouting.title}>{authorityRouting.title} (Routed Authority)</option>
+                          <option value="Project Director (PIU)">Project Director (PIU)</option>
+                          <option value="Secretary (Administrative Ministry)">Secretary (Administrative Ministry)</option>
+                          <option value="Cabinet Secretary">Cabinet Secretary</option>
+                        </select>
+                      </div>
+
                       <button
                         type="button"
                         className="action-dispatch-btn"
-                        onClick={() => triggerToast(rec.toastMsg)}
+                        onClick={() => {
+                          const assignee = (document.getElementById(`assignee-${rec.id}`) as HTMLSelectElement)?.value || authorityRouting.title;
+                          const ticket: TicketData = {
+                            id: `TCK-${Date.now().toString().slice(-6)}`,
+                            projectName: activeProj.name,
+                            projectId: activeProj.id,
+                            actionTitle: rec.title,
+                            routedOfficer: assignee,
+                            status: 'OPEN',
+                            priority: activeProj.riskScore >= 75 ? 'Critical' : 'High',
+                            dateCreated: new Date().toLocaleDateString('en-IN'),
+                            ministry: activeProj.ministry,
+                            agency: activeProj.agency || 'Executing Agency',
+                            description: rec.desc,
+                          };
+                          if (onCreateTicket) {
+                            onCreateTicket(ticket);
+                          }
+                          generateTicketPDF(ticket);
+                          triggerToast(`Action Ticket ${ticket.id} generated as PDF & assigned to ${assignee}!`);
+                        }}
+                        style={{ width: '100%', background: '#2563EB', color: '#ffffff', fontWeight: 'bold' }}
                       >
                         <Send size={13} />
-                        <span>{rec.btnLabel}</span>
+                        <span>Generate Ticket (PDF)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        className="action-dispatch-btn"
+                        onClick={() => {
+                          const assignee = (document.getElementById(`assignee-${rec.id}`) as HTMLSelectElement)?.value || authorityRouting.title;
+                          generateMemoPDF(activeProj.name, activeProj.id, rec.title, assignee);
+                        }}
+                        style={{ width: '100%', background: 'rgba(37, 99, 235, 0.08)', border: '1px solid rgba(37, 99, 235, 0.3)', color: '#1D4ED8', fontWeight: 600 }}
+                      >
+                        <FileText size={13} />
+                        <span>Generate Memo / Direct Order (PDF)</span>
                       </button>
                     </div>
                   </div>
@@ -542,9 +551,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
              SECTION 2: IMPACT SECTION (REAL ML-DRIVEN WHAT-IF SIMULATOR)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-simulator" className="ac-section">
-            <div className="ac-section-header header-blue">
-              <span className="ac-section-tag tag-blue">02</span>
-              <span className="ac-section-name">What-If Counterfactual Policy Simulator</span>
+            <div className="pd-section-header pd-section-header--forecasts" style={{ marginTop: '32px' }}>
+              <span className="pd-section-tag">02</span>
+              <span className="pd-section-name">What-If Counterfactual Policy Simulator</span>
+              <InfoButton title="What-If Simulator" summary="Predictive policy simulator testing counterfactual scenarios via ML to understand the resulting impact on project risk, time, and cost." size="sm" theme="light" />
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
@@ -556,9 +566,6 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     Active Project: <strong style={{ color: '#0F172A' }}>{activeProj?.name}</strong> (ID: {activeProj?.id})
                   </div>
                 </div>
-                <span className="ac-head-pill pill-ai">
-                  <Sparkles size={13} /> ML Counterfactual Engine
-                </span>
               </div>
 
               {/* CUF Telemetry Note */}
@@ -569,20 +576,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 </span>
               </div>
 
-              {/* API Error Notification */}
-              {simError && (
-                <div className="ac-sim-error-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '8px', margin: '12px 0' }}>
-                  <AlertCircle size={16} style={{ color: '#DC2626', flexShrink: 0 }} />
-                  <span style={{ fontSize: '12px', color: '#B91C1C', flex: 1 }}>{simError}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRunSimulation()}
-                    style={{ background: '#DC2626', color: '#FFF', border: 'none', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }}
-                  >
-                    Retry
-                  </button>
-                </div>
-              )}
+
 
               {/* Simulator Main Body (3 Sliders Left, Dynamic Comparison Table Right) */}
               <div className="ac-simulator-body">
@@ -662,16 +656,16 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     <div className="slider-label-row">
                       <span className="slider-lbl">3. Monthly Expenditure Velocity</span>
                       <span className="slider-val text-blue">
-                        ₹{Number(monthlyExpenditure).toFixed(1)} Cr/mo
+                        ₹{Number(monthlyExpenditure || baselineData?.baseline?.monthly_expenditure || 0).toFixed(1)} Cr/mo
                       </span>
                     </div>
                     <div className="slider-controls-row">
                       <input
                         type="range"
                         min="0"
-                        max={Math.max(100, Math.round((baselineData?.baseline.monthly_expenditure || 25) * 3))}
+                        max={Math.max(100, Math.round((baselineData?.baseline?.monthly_expenditure || 25) * 3))}
                         step="1"
-                        value={monthlyExpenditure}
+                        value={monthlyExpenditure || 0}
                         onChange={(e) => setMonthlyExpenditure(Math.max(0, parseFloat(e.target.value) || 0))}
                         className="ac-range-input"
                       />
@@ -680,7 +674,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                           type="number"
                           min="0"
                           step="0.5"
-                          value={monthlyExpenditure}
+                          value={monthlyExpenditure || 0}
                           onChange={(e) => setMonthlyExpenditure(Math.max(0, parseFloat(e.target.value) || 0))}
                           className="ac-num-input"
                         />
@@ -689,8 +683,8 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     </div>
                     <div className="slider-minmax">
                       <span>₹0 Cr/mo</span>
-                      <span>Baseline: ₹{(baselineData?.baseline.monthly_expenditure || 0).toFixed(1)} Cr/mo</span>
-                      <span>₹{Math.max(100, Math.round((baselineData?.baseline.monthly_expenditure || 25) * 3))} Cr/mo</span>
+                      <span>Baseline: ₹{(baselineData?.baseline?.monthly_expenditure || 0).toFixed(1)} Cr/mo</span>
+                      <span>₹{Math.max(100, Math.round((baselineData?.baseline?.monthly_expenditure || 25) * 3))} Cr/mo</span>
                     </div>
                   </div>
 
@@ -747,13 +741,13 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                             </div>
                           </td>
                           <td className="ac-table-base">
-                            ₹{(baselineData?.baseline.cost ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr
+                            ₹{(baselineData?.baseline?.cost ?? 0).toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr
                           </td>
                           <td className="ac-table-scen">
-                            {whatIfData ? `₹${whatIfData.scenario.cost.toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr` : '—'}
+                            {whatIfData?.scenario?.cost != null ? `₹${whatIfData.scenario.cost.toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr` : '—'}
                           </td>
                           <td>
-                            {whatIfData ? (
+                            {whatIfData?.impact?.cost_change != null ? (
                               <span className={`ac-table-delta ${whatIfData.impact.cost_change > 0 ? 'delta-bad' : whatIfData.impact.cost_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
                                 {whatIfData.impact.cost_change >= 0 ? '+' : ''}₹{whatIfData.impact.cost_change.toLocaleString('en-IN', { maximumFractionDigits: 1 })} Cr
                               </span>
@@ -771,13 +765,13 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                             </div>
                           </td>
                           <td className="ac-table-base">
-                            {baselineData?.baseline.remaining_months ?? 0} mo
+                            {baselineData?.baseline?.remaining_months ?? 0} mo
                           </td>
                           <td className="ac-table-scen">
-                            {whatIfData ? `${whatIfData.scenario.remaining_months} mo` : '—'}
+                            {whatIfData?.scenario?.remaining_months != null ? `${whatIfData.scenario.remaining_months} mo` : '—'}
                           </td>
                           <td>
-                            {whatIfData ? (
+                            {whatIfData?.impact?.remaining_months_change != null ? (
                               <span className={`ac-table-delta ${whatIfData.impact.remaining_months_change > 0 ? 'delta-bad' : whatIfData.impact.remaining_months_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
                                 {whatIfData.impact.remaining_months_change >= 0 ? '+' : ''}{whatIfData.impact.remaining_months_change} mo
                               </span>
@@ -795,13 +789,13 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                             </div>
                           </td>
                           <td className="ac-table-base">
-                            ₹{(baselineData?.baseline.monthly_expenditure ?? 0).toFixed(1)} Cr/mo
+                            ₹{(baselineData?.baseline?.monthly_expenditure ?? 0).toFixed(1)} Cr/mo
                           </td>
                           <td className="ac-table-scen">
-                            {whatIfData ? `₹${whatIfData.scenario.monthly_expenditure.toFixed(1)} Cr/mo` : '—'}
+                            {whatIfData?.scenario?.monthly_expenditure != null ? `₹${whatIfData.scenario.monthly_expenditure.toFixed(1)} Cr/mo` : '—'}
                           </td>
                           <td>
-                            {whatIfData ? (
+                            {whatIfData?.impact?.expenditure_change != null ? (
                               <span className="ac-table-delta delta-neutral">
                                 {whatIfData.impact.expenditure_change >= 0 ? '+' : ''}₹{whatIfData.impact.expenditure_change.toFixed(1)} Cr/mo
                               </span>
@@ -819,13 +813,13 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                             </div>
                           </td>
                           <td className="ac-table-base">
-                            {(baselineData?.baseline.predicted_cost_overrun ?? 0).toFixed(1)}%
+                            {(baselineData?.baseline?.predicted_cost_overrun ?? 0).toFixed(1)}%
                           </td>
                           <td className="ac-table-scen">
-                            {whatIfData ? `${whatIfData.scenario.predicted_cost_overrun.toFixed(1)}%` : '—'}
+                            {whatIfData?.scenario?.predicted_cost_overrun != null ? `${whatIfData.scenario.predicted_cost_overrun.toFixed(1)}%` : '—'}
                           </td>
                           <td>
-                            {whatIfData ? (
+                            {whatIfData?.impact?.cost_overrun_change != null ? (
                               <span className={`ac-table-delta ${whatIfData.impact.cost_overrun_change > 0 ? 'delta-bad' : whatIfData.impact.cost_overrun_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
                                 {whatIfData.impact.cost_overrun_change >= 0 ? '+' : ''}{whatIfData.impact.cost_overrun_change.toFixed(1)} pp
                               </span>
@@ -843,13 +837,13 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                             </div>
                           </td>
                           <td className="ac-table-base">
-                            {(baselineData?.baseline.predicted_schedule_delay ?? 0).toFixed(1)} mo
+                            {(baselineData?.baseline?.predicted_schedule_delay ?? 0).toFixed(1)} mo
                           </td>
                           <td className="ac-table-scen">
-                            {whatIfData ? `${whatIfData.scenario.predicted_schedule_delay.toFixed(1)} mo` : '—'}
+                            {whatIfData?.scenario?.predicted_schedule_delay != null ? `${whatIfData.scenario.predicted_schedule_delay.toFixed(1)} mo` : '—'}
                           </td>
                           <td>
-                            {whatIfData ? (
+                            {whatIfData?.impact?.schedule_delay_change != null ? (
                               <span className={`ac-table-delta ${whatIfData.impact.schedule_delay_change > 0 ? 'delta-bad' : whatIfData.impact.schedule_delay_change < 0 ? 'delta-good' : 'delta-neutral'}`}>
                                 {whatIfData.impact.schedule_delay_change >= 0 ? '+' : ''}{whatIfData.impact.schedule_delay_change.toFixed(1)} mo
                               </span>
@@ -867,13 +861,13 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                             </div>
                           </td>
                           <td className="ac-table-base" style={{ fontWeight: 800 }}>
-                            {baselineData?.baseline.risk_score ?? 0}/100 ({baselineData?.baseline.risk_level ?? '—'})
+                            {baselineData?.baseline?.risk_score ?? 0}/100 ({baselineData?.baseline?.risk_level ?? '—'})
                           </td>
                           <td className="ac-table-scen" style={{ fontWeight: 850, color: '#1E3A8A' }}>
-                            {whatIfData ? `${whatIfData.scenario.risk_score}/100 (${whatIfData.scenario.risk_level})` : '—'}
+                            {whatIfData?.scenario?.risk_score != null ? `${whatIfData.scenario.risk_score}/100 (${whatIfData.scenario.risk_level || 'Medium'})` : '—'}
                           </td>
                           <td>
-                            {whatIfData ? (
+                            {whatIfData?.impact?.risk_score_change != null ? (
                               <span className={`ac-table-delta ${whatIfData.impact.risk_score_change > 0 ? 'delta-bad' : whatIfData.impact.risk_score_change < 0 ? 'delta-good' : 'delta-neutral'}`} style={{ fontSize: '13px' }}>
                                 {whatIfData.impact.risk_score_change >= 0 ? '+' : ''}{whatIfData.impact.risk_score_change} pts
                               </span>
@@ -893,7 +887,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 {/* PDP Chart 1: Cost Overrun Sensitivity */}
                 <div className="pdp-chart-card">
                   <div className="pdp-chart-head">
-                    <span className="pdp-chart-title">Cost Overrun Sensitivity (PDP)</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="pdp-chart-title">Cost Overrun Sensitivity (PDP)</span>
+                      <InfoButton title="Partial Dependence Plot (PDP)" summary="PDP shows how changing the Additional Cost affects the ML model's predicted Cost Overrun Risk. The line represents the model's learned relationship, while the dots show your specific scenario." size="sm" theme="light" />
+                    </div>
                     <span className="pdp-chart-sub">Trained XGBoost Cost Regressor | Feature: cost_escalation_crore</span>
                   </div>
                   {(() => {
@@ -911,16 +908,16 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     const plotW = width - padding.left - padding.right;
                     const plotH = height - padding.top - padding.bottom;
 
-                    const allX = curve.points.map(p => p.x);
-                    allX.push(curve.baseline_point.x);
-                    if (whatIfData && curve.scenario_point) allX.push(curve.scenario_point.x);
+                    const allX = (curve.points || []).map(p => p.x);
+                    if (curve.baseline_point?.x != null) allX.push(curve.baseline_point.x);
+                    if (whatIfData && curve.scenario_point?.x != null) allX.push(curve.scenario_point.x);
                     let minX = Math.min(...allX);
                     let maxX = Math.max(...allX);
                     if (minX === maxX) maxX = minX + 10;
 
-                    const allY = curve.points.map(p => p.y);
-                    allY.push(curve.baseline_point.y);
-                    if (whatIfData && curve.scenario_point) allY.push(curve.scenario_point.y);
+                    const allY = (curve.points || []).map(p => p.y);
+                    if (curve.baseline_point?.y != null) allY.push(curve.baseline_point.y);
+                    if (whatIfData && curve.scenario_point?.y != null) allY.push(curve.scenario_point.y);
                     let minY = Math.min(...allY);
                     let maxY = Math.max(...allY);
                     if (minY === maxY) maxY = minY + 5;
@@ -931,12 +928,12 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     const scaleX = (x: number) => padding.left + ((x - minX) / (maxX - minX)) * plotW;
                     const scaleY = (y: number) => padding.top + plotH - ((y - minY) / (maxY - minY)) * plotH;
 
-                    const poly = curve.points.map(p => `${scaleX(p.x).toFixed(1)},${scaleY(p.y).toFixed(1)}`).join(' ');
-                    const bX = scaleX(curve.baseline_point.x);
-                    const bY = scaleY(curve.baseline_point.y);
+                    const poly = (curve.points || []).map(p => `${scaleX(p.x).toFixed(1)},${scaleY(p.y).toFixed(1)}`).join(' ');
+                    const bX = scaleX(curve.baseline_point?.x ?? minX);
+                    const bY = scaleY(curve.baseline_point?.y ?? minY);
                     const hasScen = Boolean(whatIfData && curve.scenario_point);
-                    const sX = hasScen ? scaleX(curve.scenario_point.x) : 0;
-                    const sY = hasScen ? scaleY(curve.scenario_point.y) : 0;
+                    const sX = hasScen ? scaleX(curve.scenario_point!.x) : 0;
+                    const sY = hasScen ? scaleY(curve.scenario_point!.y) : 0;
 
                     return (
                       <div>
@@ -946,9 +943,17 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                           <line x1={padding.left} y1={scaleY(maxY - yPad)} x2={width - padding.right} y2={scaleY(maxY - yPad)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
                           <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
                           <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
-                          <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={poly} />
-                          <circle cx={bX} cy={bY} r={6} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} />
-                          {hasScen && <circle cx={sX} cy={sY} r={6.5} fill="#DC2626" stroke="#FFFFFF" strokeWidth={2} />}
+                          <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={poly}>
+                            <title>Predicted Model Response Curve</title>
+                          </polyline>
+                          <circle cx={bX} cy={bY} r={6} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} style={{ cursor: 'pointer' }}>
+                            <title>Baseline: ₹{curve.baseline_point?.x?.toFixed(0)} Cr, {curve.baseline_point?.y?.toFixed(1)}%</title>
+                          </circle>
+                          {hasScen && (
+                            <circle cx={sX} cy={sY} r={6.5} fill="#DC2626" stroke="#FFFFFF" strokeWidth={2} style={{ cursor: 'pointer' }}>
+                              <title>Scenario: ₹{curve.scenario_point?.x?.toFixed(0)} Cr, {curve.scenario_point?.y?.toFixed(1)}%</title>
+                            </circle>
+                          )}
                           <text x={padding.left} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="start">₹{minX.toFixed(0)} Cr</text>
                           <text x={width - padding.right} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="end">₹{maxX.toFixed(0)} Cr</text>
                           <text x={padding.left - 6} y={padding.top + 8} fontSize="9.5" fill="#64748B" textAnchor="end">{maxY.toFixed(1)}%</text>
@@ -961,12 +966,12 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                           </div>
                           <div className="pdp-legend-item">
                             <span className="pdp-dot dot-base"></span>
-                            <span>Baseline ({curve.baseline_point.x.toFixed(0)} Cr, {curve.baseline_point.y.toFixed(1)}%)</span>
+                            <span>Baseline ({curve.baseline_point?.x != null ? curve.baseline_point.x.toFixed(0) : '0'} Cr, {curve.baseline_point?.y != null ? curve.baseline_point.y.toFixed(1) : '0'}%)</span>
                           </div>
                           {hasScen && (
                             <div className="pdp-legend-item">
                               <span className="pdp-dot dot-scen"></span>
-                              <span>Scenario ({curve.scenario_point.x.toFixed(0)} Cr, {curve.scenario_point.y.toFixed(1)}%)</span>
+                              <span>Scenario ({curve.scenario_point?.x != null ? curve.scenario_point.x.toFixed(0) : '0'} Cr, {curve.scenario_point?.y != null ? curve.scenario_point.y.toFixed(1) : '0'}%)</span>
                             </div>
                           )}
                         </div>
@@ -978,7 +983,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 {/* PDP Chart 2: Schedule Delay Sensitivity */}
                 <div className="pdp-chart-card">
                   <div className="pdp-chart-head">
-                    <span className="pdp-chart-title">Schedule Delay Sensitivity (PDP)</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="pdp-chart-title">Schedule Delay Sensitivity (PDP)</span>
+                      <InfoButton title="Partial Dependence Plot (PDP)" summary="PDP shows how adding Schedule Delays impacts the ML model's predicted Time Overrun Risk. Compare the red dot (your scenario) to the blue dot (current baseline)." size="sm" theme="light" />
+                    </div>
                     <span className="pdp-chart-sub">Trained XGBoost Schedule Regressor | Feature: schedule_extension_months</span>
                   </div>
                   {(() => {
@@ -996,16 +1004,16 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     const plotW = width - padding.left - padding.right;
                     const plotH = height - padding.top - padding.bottom;
 
-                    const allX = curve.points.map(p => p.x);
-                    allX.push(curve.baseline_point.x);
-                    if (whatIfData && curve.scenario_point) allX.push(curve.scenario_point.x);
+                    const allX = (curve.points || []).map(p => p.x);
+                    if (curve.baseline_point?.x != null) allX.push(curve.baseline_point.x);
+                    if (whatIfData && curve.scenario_point?.x != null) allX.push(curve.scenario_point.x);
                     let minX = Math.min(...allX);
                     let maxX = Math.max(...allX);
                     if (minX === maxX) maxX = minX + 10;
 
-                    const allY = curve.points.map(p => p.y);
-                    allY.push(curve.baseline_point.y);
-                    if (whatIfData && curve.scenario_point) allY.push(curve.scenario_point.y);
+                    const allY = (curve.points || []).map(p => p.y);
+                    if (curve.baseline_point?.y != null) allY.push(curve.baseline_point.y);
+                    if (whatIfData && curve.scenario_point?.y != null) allY.push(curve.scenario_point.y);
                     let minY = Math.min(...allY);
                     let maxY = Math.max(...allY);
                     if (minY === maxY) maxY = minY + 5;
@@ -1016,12 +1024,12 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     const scaleX = (x: number) => padding.left + ((x - minX) / (maxX - minX)) * plotW;
                     const scaleY = (y: number) => padding.top + plotH - ((y - minY) / (maxY - minY)) * plotH;
 
-                    const poly = curve.points.map(p => `${scaleX(p.x).toFixed(1)},${scaleY(p.y).toFixed(1)}`).join(' ');
-                    const bX = scaleX(curve.baseline_point.x);
-                    const bY = scaleY(curve.baseline_point.y);
+                    const poly = (curve.points || []).map(p => `${scaleX(p.x).toFixed(1)},${scaleY(p.y).toFixed(1)}`).join(' ');
+                    const bX = scaleX(curve.baseline_point?.x ?? minX);
+                    const bY = scaleY(curve.baseline_point?.y ?? minY);
                     const hasScen = Boolean(whatIfData && curve.scenario_point);
-                    const sX = hasScen ? scaleX(curve.scenario_point.x) : 0;
-                    const sY = hasScen ? scaleY(curve.scenario_point.y) : 0;
+                    const sX = hasScen ? scaleX(curve.scenario_point!.x) : 0;
+                    const sY = hasScen ? scaleY(curve.scenario_point!.y) : 0;
 
                     return (
                       <div>
@@ -1031,9 +1039,17 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                           <line x1={padding.left} y1={scaleY(maxY - yPad)} x2={width - padding.right} y2={scaleY(maxY - yPad)} stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
                           <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
                           <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#CBD5E1" strokeWidth="1.5" />
-                          <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={poly} />
-                          <circle cx={bX} cy={bY} r={6} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} />
-                          {hasScen && <circle cx={sX} cy={sY} r={6.5} fill="#DC2626" stroke="#FFFFFF" strokeWidth={2} />}
+                          <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={poly}>
+                            <title>Predicted Model Response Curve</title>
+                          </polyline>
+                          <circle cx={bX} cy={bY} r={6} fill="#2563EB" stroke="#FFFFFF" strokeWidth={2} style={{ cursor: 'pointer' }}>
+                            <title>Baseline: {curve.baseline_point?.x?.toFixed(0)} Mo, {curve.baseline_point?.y?.toFixed(1)}m</title>
+                          </circle>
+                          {hasScen && (
+                            <circle cx={sX} cy={sY} r={6.5} fill="#DC2626" stroke="#FFFFFF" strokeWidth={2} style={{ cursor: 'pointer' }}>
+                              <title>Scenario: {curve.scenario_point?.x?.toFixed(0)} Mo, {curve.scenario_point?.y?.toFixed(1)}m</title>
+                            </circle>
+                          )}
                           <text x={padding.left} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="start">{minX.toFixed(0)} Mo</text>
                           <text x={width - padding.right} y={height - 12} fontSize="9.5" fill="#64748B" textAnchor="end">{maxX.toFixed(0)} Mo</text>
                           <text x={padding.left - 6} y={padding.top + 8} fontSize="9.5" fill="#64748B" textAnchor="end">{maxY.toFixed(1)}m</text>
@@ -1046,12 +1062,12 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                           </div>
                           <div className="pdp-legend-item">
                             <span className="pdp-dot dot-base"></span>
-                            <span>Baseline ({curve.baseline_point.x.toFixed(0)} Mo, {curve.baseline_point.y.toFixed(1)}m)</span>
+                            <span>Baseline ({curve.baseline_point?.x != null ? curve.baseline_point.x.toFixed(0) : '0'} Mo, {curve.baseline_point?.y != null ? curve.baseline_point.y.toFixed(1) : '0'}m)</span>
                           </div>
                           {hasScen && (
                             <div className="pdp-legend-item">
                               <span className="pdp-dot dot-scen"></span>
-                              <span>Scenario ({curve.scenario_point.x.toFixed(0)} Mo, {curve.scenario_point.y.toFixed(1)}m)</span>
+                              <span>Scenario ({curve.scenario_point?.x != null ? curve.scenario_point.x.toFixed(0) : '0'} Mo, {curve.scenario_point?.y != null ? curve.scenario_point.y.toFixed(1) : '0'}m)</span>
                             </div>
                           )}
                         </div>
@@ -1065,7 +1081,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
               {whatIfData ? (
                 <div className="ac-narrative-box">
                   <div className="ac-narrative-title">
-                    <Sparkles size={14} /> ML Model Counterfactual Evaluation
+                    <Sparkles size={14} /> Counterfactual Evaluation
                   </div>
                   <p style={{ margin: 0 }}>{whatIfData.narrative_insight}</p>
                 </div>
@@ -1086,9 +1102,10 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
              SECTION 3: POLICY-AWARE AUTHORITY ROUTING (OFFICIAL GOVT FRAMEWORK)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-routing" className="ac-section">
-            <div className="ac-section-header header-purple">
-              <span className="ac-section-tag tag-purple">03</span>
-              <span className="ac-section-name">Policy-Aware Authority Routing Matrix</span>
+            <div className="pd-section-header pd-section-header--warnings" style={{ marginTop: '32px' }}>
+              <span className="pd-section-tag">03</span>
+              <span className="pd-section-name">Policy-Aware Authority Routing Matrix</span>
+              <InfoButton title="Authority Routing Matrix" summary="Official Government Infrastructure Framework (MoSPI, PAIMANA, PIB/EFC & CCEA Guidelines)." size="sm" theme="light" />
             </div>
             <div className="ac-panel-card">
               <div className="ac-panel-head">
@@ -1167,20 +1184,44 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className="routing-btn-group">
                   <button
                     type="button"
-                    className="ac-gov-btn btn-cabinet"
-                    onClick={() => triggerToast(`Official Cabinet Escalation Memo generated for #${activeProj.id}`)}
+                    className="ac-gov-btn btn-scoc"
+                    style={{ background: '#2563EB', color: '#ffffff', border: 'none' }}
+                    onClick={() => {
+                      const ticket: TicketData = {
+                        id: `TCK-${Date.now().toString().slice(-6)}`,
+                        projectName: activeProj.name,
+                        projectId: activeProj.id,
+                        actionTitle: authorityRouting.mandate,
+                        routedOfficer: authorityRouting.title,
+                        status: 'OPEN',
+                        priority: activeProj.riskScore >= 75 ? 'Critical' : 'High',
+                        dateCreated: new Date().toLocaleDateString('en-IN'),
+                        ministry: activeProj.ministry,
+                        agency: activeProj.agency || 'Executing Agency',
+                        description: `Official Escalation requested for ${activeProj.name} to ${authorityRouting.title}. Reason: Cost/Time overrun limits exceeded active threshold.`,
+                      };
+                      if (onCreateTicket) {
+                        onCreateTicket(ticket);
+                      }
+                      generateTicketPDF(ticket);
+                      triggerToast(`Official ${authorityRouting.title} Action Ticket generated & routed!`);
+                    }}
                   >
-                    <Landmark size={14} />
-                    <span>Generate Cabinet Memo</span>
+                    <Send size={14} />
+                    <span>Generate Ticket (PDF)</span>
                   </button>
 
                   <button
                     type="button"
-                    className="ac-gov-btn btn-scoc"
-                    onClick={() => triggerToast(`SCOC Direct Administrative Order drafted for #${activeProj.id}`)}
+                    className="ac-gov-btn btn-cabinet"
+                    style={{ background: 'rgba(37, 99, 235, 0.08)', color: '#1D4ED8', border: '1px solid rgba(37, 99, 235, 0.3)' }}
+                    onClick={() => {
+                      generateMemoPDF(activeProj.name, activeProj.id, authorityRouting.mandate, authorityRouting.title);
+                      triggerToast(`Official ${authorityRouting.title} Memo drafted for #${activeProj.id}`);
+                    }}
                   >
                     <FileText size={14} />
-                    <span>Issue SCOC Direct Order</span>
+                    <span>Generate Memo (PDF)</span>
                   </button>
                 </div>
               </div>

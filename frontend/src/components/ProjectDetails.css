@@ -10,10 +10,10 @@
 .pd-layout-wrapper,
 .pd-layout-wrapper--sidebar-collapsed {
   display: flex;
+  flex-direction: column;
   gap: 0;
-  align-items: flex-start;
-  /* Mathematically aligned to 275px from screen edge — tight ~25px gap from 250px sidebar, stable on toggle */
-  padding-left: max(16px, calc(275px - (100vw - 1360px) / 2 - 48px));
+  align-items: stretch;
+  padding: 0;
 }
 
 .pd-main-content {

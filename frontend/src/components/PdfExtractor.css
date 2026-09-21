@@ -1060,6 +1060,13 @@
   flex-direction: column;
   gap: 10px;
   box-shadow: 0 4px 12px rgba(9, 11, 46, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tier-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(9, 11, 46, 0.08);
+  border-color: #BFDBFE;
 }
 
 .tier-header {

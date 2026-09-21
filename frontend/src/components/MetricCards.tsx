@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import './MetricCards.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api, type DashboardSummaryData } from '../services/api';
+import { InfoButton } from './ExplainabilityInfo';
 
 const DEFAULT_METRICS: DashboardSummaryData['metrics'] = {
-  total_projects: 6568,
-  total_projects_subtext: 'Active Infrastructure Projects',
-  total_original_cost: 9435085,
-  total_original_cost_formatted: '₹94.35 L Cr',
-  total_revised_cost: 10651916,
-  total_revised_cost_formatted: '₹106.52 L Cr',
-  cost_overrun_percentage: 12.9,
-  cost_overrun_formatted: '+12.9% overrun'
+  total_projects: 1981,
+  total_projects_subtext: 'Ongoing Infrastructure Projects',
+  total_original_cost: 3713000,
+  total_original_cost_formatted: '₹37.13 L Cr',
+  total_revised_cost: 4278000,
+  total_revised_cost_formatted: '₹42.78 L Cr',
+  cost_overrun_percentage: 15.2,
+  cost_overrun_formatted: '+15.2% overrun'
 };
 
 interface MetricCardsProps {
@@ -28,7 +29,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
       if (res && res.metrics && res.metrics.total_projects > 0) {
         setMetrics({
           ...res.metrics,
-          total_projects_subtext: 'Active Infrastructure Projects'
+          total_projects_subtext: 'Ongoing Infrastructure Projects'
         });
       }
     }).catch(() => {
@@ -40,10 +41,10 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
     };
   }, []);
 
-  const origCostCr = metrics.total_original_cost || 9435085;
-  const revCostCr = metrics.total_revised_cost || 10651916;
-  const overrunPct = metrics.cost_overrun_percentage ?? 12.9;
-  const totalProjects = metrics.total_projects || 6568;
+  const origCostCr = metrics.total_original_cost || 3713000;
+  const revCostCr = metrics.total_revised_cost || 4278000;
+  const overrunPct = metrics.cost_overrun_percentage ?? 15.2;
+  const totalProjects = metrics.total_projects || 1981;
 
   return (
     <div className="metrics-column">
@@ -57,11 +58,17 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
           <h3 className="metric-title" style={{ margin: 0 }}>TOTAL PROJECTS</h3>
+          <InfoButton
+            title="Total Ongoing Central Infrastructure Projects"
+            summary="This total counts central infrastructure projects costing ₹150 Crore and above being actively monitored under MoSPI PAIMANA system across 28 states."
+            theme="light"
+            size="sm"
+          />
         </div>
         <div className="metric-value">
           <AnimatedCounter value={totalProjects} resetKey={activeTab} />
         </div>
-        <div className="metric-subtext">{metrics.total_projects_subtext || 'Active Infrastructure Projects'}</div>
+        <div className="metric-subtext">{metrics.total_projects_subtext || 'Ongoing Infrastructure Projects'}</div>
       </div>
 
       {/* Total Cost Card - Light Theme */}
@@ -72,7 +79,13 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
           </svg>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
-          <h3 className="metric-title" style={{ margin: 0 }}>TOTAL COST</h3>
+          <h3 className="metric-title" style={{ margin: 0 }}>ORIGINAL OUTLAY</h3>
+          <InfoButton
+            title="Original Sanctioned Capital Outlay"
+            summary="Original cumulative approved financial outlay sanctioned at Cabinet / CCEA approval before execution delays or inflation adjustments."
+            theme="light"
+            size="sm"
+          />
         </div>
         <div className="metric-value">
           <AnimatedCounter 
@@ -81,7 +94,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             formatter={(val) => val >= 100000 ? `₹${(val / 100000).toFixed(2)} L Cr` : `₹${Math.round(val).toLocaleString()} Cr`} 
           />
         </div>
-        <div className="metric-subtext">Original Estimate</div>
+        <div className="metric-subtext">Sanctioned Estimate</div>
       </div>
 
       {/* Revised Cost Card - Light Theme with Overrun Warning */}
@@ -93,7 +106,13 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
           </svg>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
-          <h3 className="metric-title" style={{ margin: 0 }}>REVISED COST</h3>
+          <h3 className="metric-title" style={{ margin: 0 }}>REVISED OUTLAY</h3>
+          <InfoButton
+            title="Revised Outlay & Escalation"
+            summary="Current cumulative projected outlay including scope additions, land acquisition inflation, and time overrun cost escalations."
+            theme="light"
+            size="sm"
+          />
         </div>
         <div className="metric-value text-red">
           <AnimatedCounter 
@@ -102,9 +121,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
             formatter={(val) => val >= 100000 ? `₹${(val / 100000).toFixed(2)} L Cr` : `₹${Math.round(val).toLocaleString()} Cr`} 
           />
         </div>
-        <div className="metric-footer-badge">
-          <span className="badge-pulse-dot" />
-          <span>+<AnimatedCounter value={Math.round(overrunPct * 10)} resetKey={activeTab} formatter={(val) => (val / 10).toFixed(1)} />% overrun</span>
+        <div className="metric-subtext alert-text">
+          <span>+{overrunPct.toFixed(1)}% Cost Escalation</span>
         </div>
       </div>
     </div>

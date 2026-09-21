@@ -10,14 +10,18 @@ import { ProjectDetails } from './components/ProjectDetails';
 import { ActionCenter } from './components/ActionCenter';
 import { ProjectDistribution } from './components/ProjectDistribution';
 import { PdfExtractor } from './components/PdfExtractor';
+import { AlertsPage } from './components/AlertsPage';
+import type { TicketData } from './utils/pdfGenerator';
 import { PageSlot } from './components/PageTransition';
 import { Home } from './components/Home';
 import { Footer } from './components/Footer';
 import { LoginPage } from './components/LoginPage';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
-// ── Inner app: renders only when authenticated ─────────────────────────────
-function AuthenticatedApp() {
+// ── Inner app: handles authenticated and public views ─────────────────────────────
+function MainApp() {
+  const { user } = useAuth();
+
   type NavigationState = { tab: string; projectId: string | null };
   const initialNavigation = (window.history.state as NavigationState | null) || { tab: 'home', projectId: null };
   const [activeTab, setActiveTab] = useState(initialNavigation.tab);
@@ -28,6 +32,51 @@ function AuthenticatedApp() {
   const [statusFilterNonce, setStatusFilterNonce] = useState<number>(0);
   const [projectRiskFilter, setProjectRiskFilter] = useState<string>('All');
   const [riskFilterNonce, setRiskFilterNonce] = useState<number>(0);
+  const [stateFilter, setStateFilter] = useState<string>('All');
+  const [stateFilterNonce, setStateFilterNonce] = useState<number>(0);
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+
+  const isPublic = !user || user.role === 'public';
+  const targetMinistry = user?.targetMinistry;
+  const targetAgency = user?.targetAgency;
+
+  const [ticketsList, setTicketsList] = useState<TicketData[]>(() => {
+    try {
+      const saved = localStorage.getItem('nirmaan_tickets');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse saved tickets:', e);
+    }
+    return [{
+      id: 'TCK-902145',
+      projectName: 'Four Laning of Ramban to Banihal Section of NH-44',
+      projectId: 'NHAI-JK-4402',
+      actionTitle: 'Fast-track Right-of-Way (RoW) Clearance & Tunnel Support',
+      routedOfficer: 'Member (Technical) - NHAI',
+      status: 'OPEN',
+      priority: 'Critical',
+      dateCreated: '20/09/2026',
+      ministry: 'Ministry of Road Transport and Highways',
+      agency: 'National Highways Authority of India (NHAI)',
+      description: 'Expedite statutory forest clearance for 4.2 km mountain tunnel bypass and deploy emergency slope stabilization equipment.'
+    }];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nirmaan_tickets', JSON.stringify(ticketsList));
+    } catch (e) {
+      console.error('Failed to save tickets:', e);
+    }
+  }, [ticketsList]);
+
+  const handleCreateTicket = (ticket: TicketData) => {
+    setTicketsList(prev => [ticket, ...prev]);
+  };
+
+  const handleUpdateTicketStatus = (ticketId: string, newStatus: string) => {
+    setTicketsList(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
+  };
 
   const updateHistory = (navigation: NavigationState) => {
     window.history.pushState(navigation, '', window.location.href);
@@ -55,7 +104,7 @@ function AuthenticatedApp() {
       dashboard: 'Dashboard',
       projects: selectedProjectId ? `Project Details — ${selectedProjectId}` : 'Projects',
       'action-centre': 'Action Center',
-      distribution: 'Distribution',
+      distribution: 'Benchmark Analytics',
       extractor: 'PDF Telemetry Extractor',
     };
     document.title = `Nirmaan Drishti — ${titles[activeTab] || 'Home'}`;
@@ -73,6 +122,10 @@ function AuthenticatedApp() {
   };
 
   const handleSelectProject = (id: string, initialSection?: string) => {
+    if (isPublic) {
+      setShowLoginModal(true);
+      return;
+    }
     setPreviousTab(activeTab);
     setSelectedProjectId(id);
     setActiveTab('projects');
@@ -91,6 +144,10 @@ function AuthenticatedApp() {
   };
 
   const handleTakeAction = (id: string) => {
+    if (isPublic) {
+      setShowLoginModal(true);
+      return;
+    }
     setPreviousTab(activeTab);
     setSelectedProjectId(id);
     setActiveTab('action-centre');
@@ -100,6 +157,7 @@ function AuthenticatedApp() {
   const handleFilterStatus = (status: string) => {
     setProjectStatusFilter(status);
     setProjectRiskFilter('All');
+    setStateFilter('All');
     setStatusFilterNonce(prev => prev + 1);
     setSelectedProjectId(null);
     setActiveTab('projects');
@@ -108,13 +166,25 @@ function AuthenticatedApp() {
 
   const handleFilterRisk = (risk: string) => {
     let mappedRisk = risk;
-    if (risk.includes('High') || risk.includes('Critical')) mappedRisk = 'High';
+    if (risk.includes('Critical') || risk.toLowerCase().includes('crit')) mappedRisk = 'Critical';
+    else if (risk.includes('High') || risk.toLowerCase().includes('high')) mappedRisk = 'High';
     else if (risk.includes('Med')) mappedRisk = 'Medium';
     else if (risk.includes('Low')) mappedRisk = 'Low';
 
     setProjectRiskFilter(mappedRisk);
     setProjectStatusFilter('All');
+    setStateFilter('All');
     setRiskFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: null });
+  };
+
+  const handleFilterState = (stateName: string) => {
+    setStateFilter(stateName);
+    setProjectStatusFilter('All');
+    setProjectRiskFilter('All');
+    setStateFilterNonce(prev => prev + 1);
     setSelectedProjectId(null);
     setActiveTab('projects');
     updateHistory({ tab: 'projects', projectId: null });
@@ -139,6 +209,7 @@ function AuthenticatedApp() {
         onSelectProject={handleSelectProject}
         onFilterStatus={handleFilterStatus}
         currentStatusFilter={projectStatusFilter}
+        onOpenLoginModal={() => setShowLoginModal(true)}
       />
 
       {/* ── Main Application Content (Unified container) ── */}
@@ -149,7 +220,10 @@ function AuthenticatedApp() {
           <Home
             activeTab={activeTab}
             onNavigateTab={handleTabChange}
+            onFilterState={handleFilterState}
+            onOpenLoginModal={() => setShowLoginModal(true)}
             homeClickNonce={homeClickNonce}
+            isPublic={isPublic}
           />
         </PageSlot>
 
@@ -164,7 +238,7 @@ function AuthenticatedApp() {
               </div>
               <div className="dashboard-period-badge">
                 <span className="period-badge-dot" />
-                <span>July 2025 – May 2026</span>
+                <span>As of May 2026 — PAIMANA Portal</span>
               </div>
             </div>
 
@@ -213,6 +287,11 @@ function AuthenticatedApp() {
                 statusFilterNonce={statusFilterNonce}
                 initialRisk={projectRiskFilter}
                 riskFilterNonce={riskFilterNonce}
+                initialState={stateFilter}
+                stateFilterNonce={stateFilterNonce}
+                targetMinistry={targetMinistry}
+                targetAgency={targetAgency}
+                isPublic={isPublic}
               />
             )}
           </main>
@@ -228,11 +307,28 @@ function AuthenticatedApp() {
               onNavigateTab={handleTabChange}
               onTakeAction={handleTakeAction}
               onClearSelectedProject={() => setSelectedProjectId(null)}
+              onCreateTicket={handleCreateTicket}
+              targetMinistry={targetMinistry}
+              targetAgency={targetAgency}
             />
           </main>
         </PageSlot>
 
-        {/* ── Distribution ── */}
+        {/* ── Alerts & Signals ── */}
+        <PageSlot id="alerts" activeTab={activeTab}>
+          <main className="alerts-content">
+            <AlertsPage
+              onSelectProject={handleSelectProject}
+              onTakeAction={handleTakeAction}
+              ticketsList={ticketsList}
+              onUpdateTicketStatus={handleUpdateTicketStatus}
+              targetMinistry={targetMinistry}
+              targetAgency={targetAgency}
+            />
+          </main>
+        </PageSlot>
+
+        {/* ── Distribution (Benchmark) ── */}
         <PageSlot id="distribution" activeTab={activeTab}>
           <main className="distribution-content">
             <ProjectDistribution
@@ -241,11 +337,12 @@ function AuthenticatedApp() {
               onNavigateTab={handleTabChange}
               onFilterStatus={handleFilterStatus}
               onFilterRisk={handleFilterRisk}
+              targetMinistry={targetMinistry}
             />
           </main>
         </PageSlot>
 
-        {/* ── PDF Extractor (impd_officer only — nav item already hidden for ministry_officer) ── */}
+        {/* ── PDF Extractor (mospi_officer only) ── */}
         <PageSlot id="extractor" activeTab={activeTab}>
           <main className="extractor-content" style={{ padding: '24px 32px' }}>
             <PdfExtractor
@@ -256,98 +353,44 @@ function AuthenticatedApp() {
         </PageSlot>
       </div>
 
-      {/* Official Government MoSPI & PAIMANA Footer ending the page cleanly with 0 whitespace */}
+      {/* Official Government MoSPI & PAIMANA Footer ending the page cleanly */}
       <Footer activeTab={activeTab} onNavigateTab={handleTabChange} />
+
+      {/* Officer Sign-In Modal Overlay */}
+      {showLoginModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10000 }}>
+            <button
+              onClick={() => setShowLoginModal(false)}
+              style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              ✕ Close Modal
+            </button>
+          </div>
+          <LoginPage onSuccess={() => setShowLoginModal(false)} />
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Root app: handles the animation → login → app gate ────────────────────
+// ── Root app: Public users always see MainApp immediately — no video intro gate ──
 function AppGate() {
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  const { isLoading, logout } = useAuth();
 
-  const [animationDone, setAnimationDone] = useState<boolean>(false);
-  const [showApp, setShowApp] = useState<boolean>(false);
-
-  // When auth finishes loading and user is already authenticated, skip the intro
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      setAnimationDone(true);
-      setShowApp(true);
-    }
-  }, [isLoading, isAuthenticated]);
-
-  // Listen for token-expiry events fired by apiFetch() in api.ts
-  useEffect(() => {
-    const handleExpired = () => {
-      logout();
-      setShowApp(false);
-      setAnimationDone(true); // Don't replay animation on token expiry
-    };
+    const handleExpired = () => { logout(); };
     window.addEventListener('nd:auth:expired', handleExpired);
     return () => window.removeEventListener('nd:auth:expired', handleExpired);
   }, [logout]);
 
-  const handleLoginSuccess = () => {
-    setShowApp(true);
-  };
+  if (isLoading) return null;
 
-  if (isLoading) {
-    return null;
-  }
-
-  if (showApp && isAuthenticated) {
-    return <AuthenticatedApp />;
-  }
-
-  return (
-    <PreLoginShell
-      animationDone={animationDone}
-      onAnimationDone={() => setAnimationDone(true)}
-      onLoginSuccess={handleLoginSuccess}
-    />
-  );
+  // Always render MainApp — public users get public role via AuthContext.setPublicAccess()
+  return <MainApp />;
 }
 
-// ── Pre-login shell: runs the intro video then shows the login page ────────
-import { VideoHero } from './components/VideoHero';
 
-interface PreLoginShellProps {
-  animationDone: boolean;
-  onAnimationDone: () => void;
-  onLoginSuccess: () => void;
-}
-
-function PreLoginShell({ animationDone, onAnimationDone, onLoginSuccess }: PreLoginShellProps) {
-  return (
-    <>
-      {/* Run the intro video overlay exactly as before.
-          onFinished() now transitions to Login instead of the home page. */}
-      {!animationDone && (
-        <VideoHero onFinished={onAnimationDone} />
-      )}
-
-      {/* Show Login after animation finishes */}
-      {animationDone && (
-        <LoginPage onSuccess={onLoginSuccess} />
-      )}
-
-      {/* Invisible background — same dark bg as the video overlay
-          so there's no flash when the video ends */}
-      {!animationDone && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: '#06090f',
-            zIndex: -1,
-          }}
-        />
-      )}
-    </>
-  );
-}
 
 // ── Main export ────────────────────────────────────────────────────────────
 function App() {

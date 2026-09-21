@@ -3,12 +3,14 @@ import { createPortal } from 'react-dom';
 import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
   SlidersHorizontal, CornerDownLeft, Home, LayoutDashboard,
-  Database, Layers, ShieldAlert, FileSpreadsheet, LogOut
+  Database, Layers, ShieldAlert, FileSpreadsheet, LogOut,
+  Accessibility, Type, ZoomIn, ZoomOut, Link2, Eye, RotateCcw
 } from 'lucide-react';
-import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import type { Project } from '../data/projectsData';
 import './Header.css';
 import { useAuth } from '../auth/AuthContext';
+
+import { useLanguage } from '../context/LanguageContext';
 
 interface HeaderProps {
   activeTab?: string;
@@ -16,6 +18,7 @@ interface HeaderProps {
   onSelectProject?: (projectId: string) => void;
   onFilterStatus?: (status: string) => void;
   currentStatusFilter?: string;
+  onOpenLoginModal?: () => void;
 }
 
 interface StatusItem {
@@ -30,16 +33,68 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab = 'home',
   onNavigateTab,
   onSelectProject,
-  onFilterStatus,
-  currentStatusFilter = 'All'
+  onFilterStatus: _onFilterStatus,
+  currentStatusFilter: _currentStatusFilter = 'All',
+  onOpenLoginModal
 }) => {
   const { user, logout } = useAuth();
-  const isIMPD = user?.role === 'impd_officer';
+  const { language, toggleLanguage, t } = useLanguage();
+  const isIMPD = user?.role === 'mospi_officer' || user?.role === ('impd_officer' as any);
+  const isPublic = !user || user.role === 'public';
   const [projectsList, setProjectsList] = useState<Project[]>([]);
+
+  // Accessibility state
+  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
+  const [fontSize, setFontSize] = useState(100);
+  const [isHighContrast, setIsHighContrast] = useState(false);
+  const [isLinksHighlighted, setIsLinksHighlighted] = useState(false);
+  const accessibilityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     import('../data/projectsData').then(mod => setProjectsList(mod.projectsData));
   }, []);
+
+  // Close accessibility panel on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (accessibilityRef.current && !accessibilityRef.current.contains(e.target as Node)) {
+        setIsAccessibilityOpen(false);
+      }
+    };
+    if (isAccessibilityOpen) {
+      document.addEventListener('mousedown', handleClick);
+    }
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [isAccessibilityOpen]);
+
+  // Apply font size changes
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}%`;
+  }, [fontSize]);
+
+  // Apply high contrast
+  useEffect(() => {
+    if (isHighContrast) {
+      document.body.classList.add('high-contrast-mode');
+    } else {
+      document.body.classList.remove('high-contrast-mode');
+    }
+  }, [isHighContrast]);
+
+  // Apply link highlighting
+  useEffect(() => {
+    if (isLinksHighlighted) {
+      document.body.classList.add('highlight-links-mode');
+    } else {
+      document.body.classList.remove('highlight-links-mode');
+    }
+  }, [isLinksHighlighted]);
+
+  const resetAccessibility = () => {
+    setFontSize(100);
+    setIsHighContrast(false);
+    setIsLinksHighlighted(false);
+  };
 
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -50,17 +105,26 @@ export const Header: React.FC<HeaderProps> = ({
   const cardRef = useRef<HTMLDivElement | null>(null);
   const resultsContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Exact nav items — PDF Extractor only shown to impd_officer
+  // Exact nav items — Restricted to Home & Projects in Public Mode
   const allNavItems = [
-    { id: 'home', label: 'Home', icon: <Home size={15} /> },
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
-    { id: 'projects', label: 'Projects', icon: <Database size={15} /> },
-    { id: 'distribution', label: 'Distribution', icon: <Layers size={15} /> },
-    { id: 'action-centre', label: 'Action Center', icon: <ShieldAlert size={15} /> },
-    { id: 'extractor', label: 'PDF Extractor', icon: <FileSpreadsheet size={15} />, impdOnly: true },
+    { id: 'home', label: t('nav_home', 'Home'), icon: <Home size={15} /> },
+    { id: 'dashboard', label: t('nav_dashboard', 'Dashboard'), icon: <LayoutDashboard size={15} /> },
+    { id: 'projects', label: t('nav_projects', 'Projects'), icon: <Database size={15} /> },
+    { id: 'distribution', label: t('nav_benchmark', 'Benchmark'), icon: <Layers size={15} /> },
+    { id: 'alerts', label: t('nav_alerts', 'Alerts'), icon: <ShieldAlert size={15} /> },
+    { id: 'action-centre', label: t('nav_actions', 'Action Center'), icon: <ShieldAlert size={15} /> },
+    { id: 'extractor', label: t('nav_extractor', 'PDF Extractor'), icon: <FileSpreadsheet size={15} />, impdOnly: true },
   ];
 
-  const navItems = allNavItems.filter(item => !item.impdOnly || isIMPD);
+  const navItems = useMemo(() => {
+    if (isPublic) {
+      return [
+        { id: 'home', label: t('nav_home', 'Home'), icon: <Home size={15} /> },
+        { id: 'projects', label: t('nav_projects', 'Projects'), icon: <Database size={15} /> },
+      ];
+    }
+    return allNavItems.filter(item => !item.impdOnly || isIMPD);
+  }, [isPublic, isIMPD, language]);
 
   // Compute exact counts from 6,568 master dataset
   const statusItems: StatusItem[] = useMemo(() => {
@@ -87,12 +151,12 @@ export const Header: React.FC<HeaderProps> = ({
     }
 
     return [
-      { id: 'on-track', label: 'On Track', dotColor: '#16A34A', count: onTrack, statusCode: 'ON TRACK' },
-      { id: 'in-progress', label: 'In Progress', dotColor: '#2563EB', count: inProgress, statusCode: 'IN REVIEW' },
-      { id: 'delayed', label: 'Delayed', dotColor: '#F59E0B', count: delayed, statusCode: 'DELAYED' },
-      { id: 'critical', label: 'Critical', dotColor: '#DC2626', count: critical, statusCode: 'CRITICAL' }
+      { id: 'on-track', label: t('status_on_track', 'On Track'), dotColor: '#16A34A', count: onTrack, statusCode: 'ON TRACK' },
+      { id: 'in-progress', label: t('status_in_progress', 'In Progress'), dotColor: '#2563EB', count: inProgress, statusCode: 'IN REVIEW' },
+      { id: 'delayed', label: t('status_delayed', 'Delayed'), dotColor: '#F59E0B', count: delayed, statusCode: 'DELAYED' },
+      { id: 'critical', label: t('status_critical', 'Critical'), dotColor: '#DC2626', count: critical, statusCode: 'CRITICAL' }
     ];
-  }, [projectsList]);
+  }, [projectsList, language]);
 
   // Global hotkey Ctrl+K or Cmd+K or "/" to toggle Spotlight Search
   useEffect(() => {
@@ -215,18 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const handleStatusClick = (item: StatusItem) => {
-    if (onFilterStatus) {
-      if (activeTab === 'projects' && (currentStatusFilter === item.statusCode || currentStatusFilter?.toUpperCase() === item.statusCode)) {
-        onFilterStatus('All');
-      } else {
-        onFilterStatus(item.statusCode);
-      }
-    }
-    if (onNavigateTab) {
-      onNavigateTab('projects');
-    }
-  };
+
 
   const handleBrandClick = () => {
     if (onNavigateTab) {
@@ -241,85 +294,206 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <div className="nirmaan-header-wrapper">
-      {/* ── 1. Top Pristine White Brand & Status Banner ── */}
+      {/* ── 1. Official Government Top Bar (MoSPI-style) ── */}
       <header className="nirmaan-header-bar">
         <div className="nirmaan-header-inner">
-          {/* Left: Brand Group with Emblem, Bold Title & Cyan Subtitle */}
+          {/* Left: Ashoka Emblem + GoI / MoSPI Text + Nirmaan Drishti Logo */}
           <div
             className="header-brand-group"
             onClick={handleBrandClick}
             role="button"
             tabIndex={0}
-            title="Return to Home Overview"
+            title={t('nav_home', 'Return to Home')}
           >
+            {/* Ashoka Emblem */}
             <div className="header-emblem-container">
               <img
-                src={nirmaanEmblem}
-                alt="Nirmaan Drishti Emblem"
+                src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg"
+                alt="Ashoka Emblem — Satyameva Jayate"
                 className="header-emblem-img"
+                onError={(e) => {
+                  // Fallback if CDN fails
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             </div>
 
+            {/* GoI + MoSPI Bilingual Text */}
             <div className="header-text-cluster">
-              <h1 className="header-brand-title">Nirmaan Drishti</h1>
-              <p className="header-brand-subtitle">
-                National Infrastructure Intelligence Dashboard
-              </p>
+              <span className="header-goi-title">
+                {language === 'hi' ? 'भारत सरकार' : 'Government of India'}
+              </span>
+              <span className="header-mospi-title">
+                {language === 'hi' ? 'सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय' : 'Ministry of Statistics & Programme Implementation'}
+              </span>
+              <span className="header-mospi-hindi">
+                {language === 'hi' ? 'Ministry of Statistics & Programme Implementation' : 'सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय'}
+              </span>
+            </div>
+
+            {/* Separator */}
+            <div className="header-brand-separator" />
+
+            {/* Nirmaan Drishti Logo */}
+            <div className="header-app-identity" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <img
+                src="/nirmaan_drishti_logo.png"
+                alt="Nirmaan Drishti Logo"
+                className="header-app-logo"
+              />
+              <span style={{ 
+                fontWeight: 800, 
+                fontSize: '20px', 
+                color: '#FFFFFF',
+                letterSpacing: '-0.01em',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+              }}>
+                Nirmaan Drishti
+              </span>
             </div>
           </div>
 
-          {/* Right: Live Status Indicators & Frameless Search Trigger */}
+          {/* Right: Utility Icons (MoSPI-style) */}
           <div className="header-right-cluster">
-            <div className="header-status-indicators" role="region" aria-label="Project Status Breakdown">
-              {statusItems.map((item) => {
-                const isActive = Boolean(
-                  activeTab === 'projects' && (
-                    currentStatusFilter === item.statusCode ||
-                    (currentStatusFilter && currentStatusFilter.toUpperCase() === item.statusCode)
-                  )
-                );
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`status-pill-btn ${isActive ? 'active' : ''}`}
-                    onClick={() => handleStatusClick(item)}
-                    title={`${item.label}: ${item.count.toLocaleString()} Projects (Click to filter)`}
-                    aria-pressed={isActive}
-                  >
-                    <span
-                      className="status-dot-bullet"
-                      style={{ backgroundColor: item.dotColor }}
-                    />
-                    <span className="status-pill-label">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Standalone Minimalist Search Action Button */}
+            {/* Search */}
             <button
               type="button"
-              className="header-search-icon-btn"
+              className="header-utility-btn"
               onClick={() => setIsSearchOpen(true)}
-              title="Search 6,568 Infrastructure Projects (Ctrl+K or /)"
+              title={t('search_projects', 'Search Projects') + ' (Ctrl+K)'}
               aria-label="Search projects"
             >
-              <Search size={19} strokeWidth={2} className="search-icon-svg" />
+              <Search size={18} strokeWidth={2} />
             </button>
 
-            {/* Logout Button — minimal, matching search button style */}
-            {user && (
+            <span className="header-utility-divider" />
+
+            {/* Screen Reader Access */}
+            <button
+              type="button"
+              className="header-utility-btn"
+              onClick={() => {
+                const main = document.querySelector('main') || document.querySelector('.app-content') || document.getElementById('root');
+                if (main) (main as HTMLElement).focus();
+              }}
+              title={t('screen_reader', 'Screen Reader Access')}
+              aria-label="Screen Reader Access"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+                <path d="M7 8h10M7 12h6" />
+              </svg>
+            </button>
+
+            <span className="header-utility-divider" />
+
+            {/* Language Toggle (Hindi / English) */}
+            <button
+              type="button"
+              className="header-utility-btn header-lang-btn"
+              onClick={toggleLanguage}
+              title={`Switch to ${language === 'en' ? 'Hindi (हिंदी)' : 'English'}`}
+              aria-label="Toggle language"
+            >
+              <span className="lang-icon-text">अ</span>
+              <span className="lang-icon-slash">/</span>
+              <span className="lang-icon-text">A</span>
+            </button>
+
+            <span className="header-utility-divider" />
+
+            {/* Accessibility Tools */}
+            <div className="header-accessibility-wrapper" ref={accessibilityRef}>
+              <button
+                type="button"
+                className="header-utility-btn"
+                onClick={() => setIsAccessibilityOpen(prev => !prev)}
+                title={t('accessibility', 'Accessibility Tools')}
+                aria-label="Accessibility Tools"
+              >
+                <Accessibility size={18} strokeWidth={2} />
+              </button>
+
+              {/* Accessibility Panel Dropdown */}
+              {isAccessibilityOpen && (
+                <div className="accessibility-panel">
+                  <div className="accessibility-panel-header">
+                    <h3>{t('accessibility', 'Accessibility Tools')}</h3>
+                    <button
+                      type="button"
+                      className="accessibility-reset-btn"
+                      onClick={resetAccessibility}
+                    >
+                      <RotateCcw size={13} />
+                      <span>{t('reset_all', 'Reset All')}</span>
+                    </button>
+                  </div>
+                  <div className="accessibility-grid">
+                    <button
+                      type="button"
+                      className={`accessibility-tool-btn ${isHighContrast ? 'active' : ''}`}
+                      onClick={() => setIsHighContrast(prev => !prev)}
+                    >
+                      <Eye size={20} />
+                      <span>{t('dark_contrast', 'Dark Contrast')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="accessibility-tool-btn"
+                      onClick={() => setFontSize(prev => Math.min(prev + 10, 150))}
+                    >
+                      <ZoomIn size={20} />
+                      <span>{t('text_increase', 'Text Size +')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="accessibility-tool-btn"
+                      onClick={() => setFontSize(prev => Math.max(prev - 10, 80))}
+                    >
+                      <ZoomOut size={20} />
+                      <span>{t('text_decrease', 'Text Size −')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`accessibility-tool-btn ${isLinksHighlighted ? 'active' : ''}`}
+                      onClick={() => setIsLinksHighlighted(prev => !prev)}
+                    >
+                      <Link2 size={20} />
+                      <span>{t('highlight_links', 'Highlight Links')}</span>
+                    </button>
+                  </div>
+                  <div className="accessibility-font-indicator">
+                    <Type size={14} />
+                    <span>{language === 'hi' ? `पाठ आकार: ${fontSize}%` : `Font Size: ${fontSize}%`}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <span className="header-utility-divider" />
+
+            {/* Officer Sign In / Sign Out */}
+            {isPublic ? (
+              <button
+                type="button"
+                className="header-officer-signin-btn"
+                onClick={onOpenLoginModal}
+              >
+                <LogOut size={14} style={{ transform: 'rotate(180deg)' }} />
+                <span>{t('officer_sign_in', 'Officer Sign In')}</span>
+              </button>
+            ) : (
               <button
                 type="button"
                 id="header-logout-btn"
-                className="header-search-icon-btn"
+                className="header-utility-btn"
                 onClick={logout}
-                title={`Sign out (${user.full_name || user.username})`}
+                title={`${t('sign_out', 'Sign out')} (${user?.full_name || user?.username})`}
                 aria-label="Sign out"
-                style={{ marginLeft: '4px' }}
               >
-                <LogOut size={17} strokeWidth={2} className="search-icon-svg" />
+                <LogOut size={17} strokeWidth={2} />
               </button>
             )}
           </div>
@@ -341,7 +515,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => {
                     onNavigateTab?.(item.id);
                   }}
-                  title={item.id === 'extractor' ? "Open MoSPI PDF Extractor Workspace" : undefined}
+                  title={item.id === 'extractor' ? t('nav_extractor', 'PDF Extractor') : undefined}
                 >
                   <span className="nav-tab-icon">{item.icon}</span>
                   <span className="nav-tab-label">{item.label}</span>
@@ -374,7 +548,7 @@ export const Header: React.FC<HeaderProps> = ({
                 ref={searchInputRef}
                 type="text"
                 className="spotlight-input-field"
-                placeholder="Search 6,568 projects by name, sector, ministry, or ID..."
+                placeholder={t('search_placeholder', 'Search projects by name, sector, ministry, or ID...')}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -409,7 +583,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="spotlight-chips-row">
               <span className="spotlight-chips-label">
                 <SlidersHorizontal size={13} />
-                <span>Filter status:</span>
+                <span>{t('filter_status', 'Filter status')}:</span>
               </span>
               {statusItems.map((item) => {
                 const isChipActive = selectedFilterStatus === item.statusCode;
@@ -436,10 +610,12 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="spotlight-results-header">
                 <span>
                   {searchQuery.trim() || selectedFilterStatus
-                    ? `Matching Projects (${searchResults.length})`
-                    : 'Priority Central Infrastructure Projects'}
+                    ? `${language === 'hi' ? 'मिलान परियोजनाएं' : 'Matching Projects'} (${searchResults.length})`
+                    : language === 'hi' ? 'प्राथमिकता केंद्रीय बुनियादी ढांचा परियोजनाएं' : 'Priority Central Infrastructure Projects'}
                 </span>
-                <span className="spotlight-nav-hint">Use ↑ ↓ arrows to navigate • Enter to view</span>
+                <span className="spotlight-nav-hint">
+                  {language === 'hi' ? '↑ ↓ तीर कुंजी • Enter चयन करें' : 'Use ↑ ↓ arrows to navigate • Enter to view'}
+                </span>
               </div>
 
               {searchResults.length === 0 ? (
@@ -447,9 +623,13 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="spotlight-no-results-icon">
                     <Search size={32} color="#94A3B8" />
                   </div>
-                  <p className="no-results-text">No infrastructure projects found</p>
+                  <p className="no-results-text">
+                    {language === 'hi' ? 'कोई बुनियादी ढांचा परियोजना नहीं मिली' : 'No infrastructure projects found'}
+                  </p>
                   <p className="no-results-sub">
-                    No matches for "{searchQuery || selectedFilterStatus}". Try searching by project code, ministry, or state.
+                    {language === 'hi'
+                      ? `"${searchQuery || selectedFilterStatus}" के लिए कोई मिलान नहीं।`
+                      : `No matches for "${searchQuery || selectedFilterStatus}". Try searching by project code, ministry, or state.`}
                   </p>
                   <button
                     type="button"
@@ -459,7 +639,7 @@ export const Header: React.FC<HeaderProps> = ({
                       setSelectedFilterStatus(null);
                     }}
                   >
-                    Reset Search & Filters
+                    {language === 'hi' ? 'खोज और फ़िल्टर रीसेट करें' : 'Reset Search & Filters'}
                   </button>
                 </div>
               ) : (
@@ -481,7 +661,7 @@ export const Header: React.FC<HeaderProps> = ({
                         <div
                           className="spotlight-status-bullet"
                           style={{ backgroundColor: statusColor }}
-                          title={`Schedule: ${displayStatus}`}
+                          title={`${t('schedule_status', 'Schedule')}: ${displayStatus}`}
                         />
                         <div className="spotlight-item-info">
                           <div className="spotlight-item-name-row">
@@ -493,7 +673,7 @@ export const Header: React.FC<HeaderProps> = ({
                               <Building2 size={12} /> {proj.sector}
                             </span>
                             <span className="spotlight-meta-pill">
-                              <MapPin size={12} /> {proj.location.split('\r\n')[0].replace('Multi-States', 'All-India')}
+                              <MapPin size={12} /> {proj.location.split('\r\n')[0].replace('Multi-States', language === 'hi' ? 'अखिल भारतीय' : 'All-India')}
                             </span>
                             <span
                               className="spotlight-meta-status"
@@ -511,8 +691,8 @@ export const Header: React.FC<HeaderProps> = ({
 
                       <div className="spotlight-item-right">
                         <div className="spotlight-cost-group">
-                          <span className="spotlight-cost-label">Cost</span>
-                          <span className="spotlight-item-cost">₹{proj.costRevised} Cr</span>
+                          <span className="spotlight-cost-label">{t('total_cost', 'Cost')}</span>
+                          <span className="spotlight-item-cost">₹{proj.costRevised} {t('crore', 'Cr')}</span>
                         </div>
                         <div className="spotlight-action-icon">
                           {isSelected ? (
@@ -533,11 +713,11 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="spotlight-footer-keys">
                 <span className="spotlight-key-badge">↑</span>
                 <span className="spotlight-key-badge">↓</span>
-                <span className="spotlight-key-label">Navigate</span>
+                <span className="spotlight-key-label">{language === 'hi' ? 'नेविगेट' : 'Navigate'}</span>
                 <span className="spotlight-key-badge">↵</span>
-                <span className="spotlight-key-label">Select</span>
+                <span className="spotlight-key-label">{language === 'hi' ? 'चुनें' : 'Select'}</span>
                 <span className="spotlight-key-badge">ESC</span>
-                <span className="spotlight-key-label">Close</span>
+                <span className="spotlight-key-label">{language === 'hi' ? 'बंद करें' : 'Close'}</span>
               </div>
               <button
                 type="button"
@@ -547,7 +727,7 @@ export const Header: React.FC<HeaderProps> = ({
                   if (onNavigateTab) onNavigateTab('projects');
                 }}
               >
-                <span>View All 6,568 Projects</span>
+                <span>{language === 'hi' ? 'सभी चल रही परियोजनाएं देखें' : 'View All Ongoing Projects'}</span>
                 <ArrowRight size={14} />
               </button>
             </div>

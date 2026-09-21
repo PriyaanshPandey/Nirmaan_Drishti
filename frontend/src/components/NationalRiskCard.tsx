@@ -4,6 +4,8 @@ import './NationalRiskCard.css';
 import { AnimatedCounter } from './AnimatedCounter';
 import { api } from '../services/api';
 
+import { InfoButton } from './ExplainabilityInfo';
+
 interface RiskSegment {
   id: string;
   name: string;
@@ -141,9 +143,29 @@ export const NationalRiskCard: React.FC<NationalRiskCardProps> = ({ activeTab, o
     >
       <div className="card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="card-title" style={{ margin: 0 }}>National Risk Distribution</h2>
-          <p className="card-subtitle">By AI &amp; XGBoost risk index</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 className="card-title" style={{ margin: 0 }}>National Risk Distribution</h2>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+            <p className="card-subtitle" style={{ margin: 0 }}>By AI &amp; XGBoost risk index</p>
+          </div>
         </div>
+        <InfoButton
+          title="National Risk Score & Categorization Criteria"
+          summary="Categorizes all ongoing infrastructure projects into Critical, Medium, and Low risk buckets based on PAIMANA XGBoost predictive models evaluating cost overruns, time delays, and physical progress velocity."
+          dataSummary={{
+            items: [
+              { label: 'Critical Risk (>= 75%)', value: 'Cost drift > 20% or delay > 12 mos' },
+              { label: 'Medium Risk (30–74%)', value: 'Minor delay (3–12 mos)' },
+              { label: 'Low Risk (< 30%)', value: 'On track with expenditure' }
+            ],
+            insight: 'Projects with critical risk require immediate policy-aware officer directives to clear land/approval bottlenecks.'
+          }}
+          theme="light"
+          size="sm"
+        />
       </div>
 
       <div className="donut-chart-container">

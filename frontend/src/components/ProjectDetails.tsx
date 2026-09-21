@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ArrowRight, ChevronDown, ShieldAlert, Award,
-  AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X
+  AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X, LayoutDashboard, Flame
 } from 'lucide-react';
 import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
@@ -11,7 +11,6 @@ import {
   type RiskPredictionData,
   type FullProjectPredictionResponse,
   type ShapExplanationResponse,
-  type CostDriverAnalysisResponse,
   type AISummaryResponse,
   type ProjectEarlyWarningsResponse,
   type ProjectRecommendationsResponse,
@@ -20,7 +19,8 @@ import {
 import './ProjectDetails.css';
 import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
-import { ProjectNavSidebar, type SidebarSection } from './ProjectNavSidebar';
+import { HistoricalTimelineChart } from './HistoricalTimelineChart';
+import { type SidebarSection } from './ProjectNavSidebar';
 
 interface ProjectDetailsProps {
   projectId: string;
@@ -199,7 +199,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   // 3-Month ML Model Predictions & Explanations from AI Engine
   const [fullPrediction, setFullPrediction] = useState<FullProjectPredictionResponse | null>(null);
   const [shaps, setShaps] = useState<Record<string, ShapExplanationResponse>>({});
-  const [costDrivers, setCostDrivers] = useState<CostDriverAnalysisResponse | null>(null);
   const [aiSummary, setAiSummary] = useState<AISummaryResponse | null>(null);
   const [modelExplanations, setModelExplanations] = useState<Record<string, ModelExplanationItem> | null>(null);
   const [earlyWarnings, setEarlyWarnings] = useState<ProjectEarlyWarningsResponse | null>(null);
@@ -215,9 +214,8 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
-  // Sidebar navigation state — closed by default on page load
+  // Sidebar navigation state
   const [sidebarSection, setSidebarSection] = useState<SidebarSection>('basic');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   const scrollToSection = useCallback((sectionId: SidebarSection) => {
@@ -283,7 +281,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         {
           id: 'welcome-1',
           sender: 'ai',
-          text: `Hello! I am your AI Intelligence Assistant for **${project.name}**. Ask me anything about risk drivers, delay predictions, or cost overruns.`,
+          text: `Namaste! 🙏 I am your PAIMANA Infrastructure Intelligence Assistant for **${project.name}**. How can I help you analyze risk factors, schedule forecasts, or administrative action directives today?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -320,7 +318,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     setLoadingBriefing(true);
 
     api.getProjectPrediction(projectId).then(res => isMounted && res && setFullPrediction(res));
-    api.getProjectCostDrivers(projectId).then(res => isMounted && res && setCostDrivers(res));
     api.getProjectAISummary(projectId).then(res => isMounted && res && setAiSummary(res));
     api.getProjectModelExplanations(projectId).then(res => isMounted && res?.explanations && setModelExplanations(res.explanations));
     api.getProjectEarlyWarnings(projectId).then(res => isMounted && res && setEarlyWarnings(res));
@@ -432,9 +429,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     );
   }
 
-
-  const warningsCount = earlyWarnings?.warnings?.length ?? 2;
-
   return (
     <div className="details-container animation-fade-in">
       {/* Top Filter Buttons bar & Date info */}
@@ -482,25 +476,65 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         </div>
       </div>
 
-      {/* ─── Main layout: Sidebar + Content ─── */}
-      <div className={`pd-layout-wrapper ${sidebarCollapsed ? 'pd-layout-wrapper--sidebar-collapsed' : ''}`}>
-        {/* Left Sidebar portaled to document.body to remain strictly fixed at extreme left viewport on scroll */}
-        {createPortal(
-          <ProjectNavSidebar
-            activeSection={sidebarSection}
-            onSelectSection={scrollToSection}
-            warningsCount={warningsCount}
-            riskScore={project.riskScore}
-            collapsed={sidebarCollapsed}
-            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            onScrollToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            onOpenAIChat={() => setAiAssistantOpen(true)}
-          />,
-          document.body
-        )}
+      {/* ─── Main layout ─── */}
+      <div className="pd-layout-wrapper">
+        <div className="pd-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center' }}>
+          {[
+            { id: 'basic', label: 'Basic Information', icon: LayoutDashboard },
+            { id: 'forecasts', label: 'Forecasts', icon: TrendingUp },
+            { id: 'escalation', label: 'Escalation Drivers', icon: Flame },
+            { id: 'warnings', label: 'Early Warnings', icon: ShieldAlert }
+          ].map(sec => (
+            <button 
+              key={sec.id}
+              className={`pd-nav-tab ${sidebarSection === sec.id ? 'active' : ''}`}
+              onClick={() => scrollToSection(sec.id as SidebarSection)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                border: '1px solid',
+                borderColor: sidebarSection === sec.id ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
+                background: sidebarSection === sec.id ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: sidebarSection === sec.id ? '#38bdf8' : '#94a3b8',
+                fontWeight: sidebarSection === sec.id ? 700 : 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: sidebarSection === sec.id ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (sidebarSection !== sec.id) {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.color = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (sidebarSection !== sec.id) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#94a3b8';
+                }
+              }}
+            >
+              <sec.icon size={16} />
+              <span>{sec.label}</span>
+            </button>
+          ))}
+          <div style={{ flex: 1 }} />
+          <button 
+            onClick={() => setAiAssistantOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%)', color: '#FFF', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(29,78,216,0.25)', transition: 'transform 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+          >
+            <Bot size={18} />
+            AI Copilot
+          </button>
+        </div>
 
         {/* Right scrollable main content */}
-        <div className="pd-main-content" ref={mainContentRef}>
+        <div className="pd-main-content pd-main-content-fullwidth" ref={mainContentRef}>
 
       {/* ─── SECTION: Basic Information ─── */}
       <div id="pd-section-basic" className="pd-section-anchor">
@@ -533,15 +567,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             {project.id}
           </span>
         </div>
-        {(project.legacyOcmsCode || (project as any).legacy_ocms_code) && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
-            <span style={{ color: '#94A3B8' }}>|</span>
-            <span style={{ color: '#64748B', fontWeight: 500 }}>Legacy OCMS:</span>
-            <span style={{ fontFamily: 'monospace', background: '#FEF3C7', padding: '2px 8px', borderRadius: '4px', border: '1px solid #FDE68A', color: '#92400E', fontWeight: 700 }}>
-              {project.legacyOcmsCode || (project as any).legacy_ocms_code}
-            </span>
-          </div>
-        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#64748B' }}>
           <span>•</span>
           <span>{project.sector}</span>
@@ -571,7 +596,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
             <InfoButton
               title="Updated Cost"
               summary="The current expected total cost. The percentage shows how much costs have grown above the starting plan."
-              theme="dark"
+              theme="light"
               size="sm"
             />
           </div>
@@ -732,13 +757,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         };
 
         const activeSummaryText = aiSummary?.summary || getDefaultAISummary(project);
-        const stageBadge = aiSummary?.stage_case || (
-          (project.isCompleted || project.projectStatus === 'COMPLETED' || (project.progressPhysical || 0) >= 100) ? 'CASE 1 – COMPLETED PROJECT' :
-          (project.progressPhysical || 0) >= 99 ? 'CASE 2 – ALMOST COMPLETED PROJECT' :
-          parseFloat(String(project.timeOverrunMonths ?? project.scheduleExtensionMonths ?? 0)) >= 24 ? 'CASE 5 – CRITICAL DELAY INTERVENTION' :
-          parseFloat(String(project.timeOverrunMonths ?? project.scheduleExtensionMonths ?? 0)) > 0 ? 'CASE 5 – DELAYED ACTIVE PROJECT' :
-          'CASE 5 – NORMAL ACTIVE PROJECT'
-        );
 
         return (
           <div className="card" style={{
@@ -761,33 +779,18 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 850, color: '#3730A3', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                      Executive Synthesis
-                    </span>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontSize: '10px',
-                      fontWeight: 800,
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase',
-                      backgroundColor: '#EFF6FF',
-                      color: '#1D4ED8',
-                      border: '1px solid #BFDBFE'
-                    }}>
-                      {stageBadge}
+                    <span style={{ fontSize: '13px', fontWeight: 850, color: '#3730A3', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Project Recap
                     </span>
                   </div>
 
                   <span style={{ fontSize: '11px', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,255,255,0.85)', padding: '2px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
                     <InfoButton
-                      title="Executive Synthesis"
-                      summary="Natural language executive synthesis generated from project telemetry, TreeSHAP feature attributions, and dual-horizon ML forecasts."
+                      title="Project Recap"
+                      summary="Plain English project recap generated from project telemetry, expenditure pacing, and physical milestone progress."
                       size="sm"
                     />
-                    Grounded on verified ML & SHAP evidence
+                    AI Project Recap
                   </span>
                 </div>
 
@@ -830,6 +833,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         );
       })()}
+
+      {/* Historical Project Timeline Charts */}
+      <HistoricalTimelineChart project={project} />
 
       </div>{/* /pd-section-basic */}
 
@@ -917,7 +923,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           ? pred3m.tentative_completion_date
           : shiftDateByMonths(project.expectedCompletion, !isNaN(parseFloat(t3mDelayMo)) ? parseFloat(t3mDelayMo) : 0);
 
-        const t3mBadge = predT3?.risk_tier ? `${predT3.risk_tier} RISK` : parseFloat(t3mProb) >= 70 ? 'CRITICAL RISK' : parseFloat(t3mProb) >= 50 ? 'HIGH RISK' : parseFloat(t3mProb) >= 25 ? 'MODERATE RISK' : 'LOW RISK';
+
 
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px', marginBottom: '12px' }}>
@@ -931,7 +937,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 </h2>
                 <InfoButton
                   title="3-Month Forecast Engine"
-                  summary="Predicts if this project will face extra costs or extra months of delay in the next 3 months."
+                  summary="These forecasts predict what will happen to this project in the NEXT 3 MONTHS if current trends continue. Left card = cost escalation risk (will costs rise further?). Right card = schedule delay risk (will it be delayed further?). The probability tells you how confident the AI is. To understand WHY these forecasts are what they are, scroll down to the Escalation Drivers Analysis section — it breaks down each contributing factor."
                   dataSummary={{
                     items: [
                       { label: '3-month cost', value: `${c3mBadge}, ${c3mProb}% probability, +${c3mDeltaPct}% overrun` },
@@ -973,11 +979,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                       3-MONTH HORIZON
                     </div>
-                    <StatusIndicator
-                      kind={c3mBadge.includes('CRITICAL') ? 'critical' : c3mBadge.includes('HIGH') ? 'high' : c3mBadge.includes('LOW') ? 'low' : 'medium'}
-                      label={c3mBadge}
-                      className="forecast-status-indicator"
-                    />
                   </div>
 
                   {/* 2x2 Metrics Grid */}
@@ -1062,11 +1063,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#03045E' }}></span>
                       3-MONTH HORIZON
                     </div>
-                    <StatusIndicator
-                      kind={t3mBadge.includes('CRITICAL') ? 'critical' : t3mBadge.includes('HIGH') ? 'high' : t3mBadge.includes('LOW') ? 'low' : 'medium'}
-                      label={t3mBadge}
-                      className="forecast-status-indicator"
-                    />
                   </div>
 
                   {/* 2x2 Metrics Grid */}
@@ -1222,7 +1218,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Cpu size={20} color="#03045E" />
                   <h2 style={{ fontSize: '18px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, letterSpacing: '-0.02em' }}>
-                    Explainable AI Analysis
+                    Escalation Drivers Analysis
                   </h2>
                   <InfoButton
                     title="Why It Is Delayed"
@@ -1394,97 +1390,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
             </div>
 
-            {/* Cost Escalation Driver Analysis Module (from Nirmaan Drishti) */}
-            <div className="cost-driver-container">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <DollarSign size={18} color="#03045E" />
-                    <h3 style={{ fontSize: '16px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0 }}>
-                      Cost Escalation Driver Analysis
-                    </h3>
-                    <InfoButton
-                      title="Cost Driver Analysis"
-                      summary="Translates complex mathematical TreeSHAP attributions into domain financial factors and expenditure bottlenecks."
-                      size="sm"
-                    />
-                  </div>
-                  <p style={{ fontSize: '12px', color: '#64748B', margin: '4px 0 0 0' }}>
-                    Feature attribution breakdown explaining cost overrun drivers in plain domain terminology.
-                  </p>
-                </div>
-
-                {/* 3-Month Horizon Badge */}
-                <div style={{ display: 'flex', gap: '6px', background: '#F1F5F9', padding: '4px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '11.5px', fontWeight: 700, color: '#03045E' }}>
-                  3-Month Horizon
-                </div>
-              </div>
-
-              {/* Drivers Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px', marginTop: '6px' }}>
-                {/* Cost Escalation Drivers (Upward) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#D62F39', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#D62F39' }}></span>
-                    Top Cost Escalation Drivers
-                  </div>
-                  {(costDrivers?.horizon_3m?.top_cost_escalation_drivers || []).slice(0, 4).map((item, idx) => (
-                    <div key={idx} className="cost-driver-item cost-driver-item-increasing">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A' }}>
-                            {item.display_name}
-                          </div>
-                          <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>
-                            {item.description}
-                          </div>
-                        </div>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#DC2626', backgroundColor: '#FEE2E2', padding: '2px 8px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
-                          +{item.shap_value.toFixed(4)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '11px', color: '#475569' }}>
-                        <span>Project Value: <strong>{formatActualValueClean(item.actual_value)}</strong></span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mitigating Factors (Protective) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#166534' }}></span>
-                    Mitigating Protective Factors
-                  </div>
-                  {(costDrivers?.horizon_3m?.mitigating_factors || []).slice(0, 4).map((item, idx) => (
-                    <div key={idx} className="cost-driver-item cost-driver-item-mitigating">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                        <div>
-                          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0F172A' }}>
-                            {item.display_name}
-                          </div>
-                          <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>
-                            {item.description}
-                          </div>
-                        </div>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#166534', backgroundColor: '#DCFCE7', padding: '2px 8px', borderRadius: '6px', whiteSpace: 'nowrap' }}>
-                          {item.shap_value.toFixed(4)}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '11px', color: '#475569' }}>
-                        <span>Project Value: <strong>{formatActualValueClean(item.actual_value)}</strong></span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-          </div>
-        );
-      })()}
-
-      {/* AI Natural Language Explanation (QWEN3-8B) Section */}
+            {/* AI Natural Language Explanation (QWEN3-8B) Section */}
       {(() => {
         const getNaturalLanguageExplanation = (proj: Project, tab: 'sched3m' | 'cost3m') => {
           const costApp = parseFloat(String(proj.costApproved).replace(/[^0-9.]/g, '')) || 1000;
@@ -1570,14 +1476,10 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
         const activeUpward = (liveModelExp && liveModelExp.primary_reasons && liveModelExp.primary_reasons.length > 0)
           ? [...liveModelExp.primary_reasons, ...(liveModelExp.supporting_factors || [])]
           : nlpData.upward;
-        const activeProtective = (liveModelExp && liveModelExp.risk_reducing_factors && liveModelExp.risk_reducing_factors.length > 0)
-          ? liveModelExp.risk_reducing_factors
-          : nlpData.protective;
-        const activeBadge = liveModelExp?.risk_level || nlpData.badge;
         const activeProvider = liveModelExp?.provider || 'Qwen3-8B / Grounded AI Engine';
 
         return (
-          <div className="card nlp-explanation-card" style={{ padding: '24px', borderRadius: '16px', marginTop: '12px', marginBottom: '16px' }}>
+          <div className="nlp-explanation-inner" style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #E2E8F0' }}>
             
             {/* Section Header & Subtitle */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
@@ -1585,52 +1487,18 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Sparkles size={20} color="#7C3AED" />
                   <h2 style={{ fontSize: '17px', fontWeight: 850, color: 'var(--navy-dark)', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
-                    AI NATURAL LANGUAGE EXPLANATION
+                    AI ESCALATION DRIVERS ANALYSIS (NARRATIVE)
                   </h2>
                 </div>
                 <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 500, marginTop: '2px', display: 'block' }}>
-                  Model-specific natural language reasoning explaining "Why did the model predict this?" (3-Month Horizon)
+                  Model-specific natural language reasoning explaining the primary escalation drivers.
                 </span>
               </div>
             </div>
 
-            {/* Tab Switcher Pills */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-              {[
-                { id: 'sched3m', label: '3M Schedule', Icon: Clock },
-                { id: 'cost3m', label: '3M Cost', Icon: DollarSign }
-              ].map(t => (
-                <button
-                  key={t.id}
-                  className={`nlp-tab-btn ${nlpTab === t.id ? 'active' : ''}`}
-                  onClick={() => setNlpTab(t.id as any)}
-                >
-                  <t.Icon size={14} color={nlpTab === t.id ? '#FFFFFF' : 'var(--navy-dark)'} />
-                  <span>{t.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Model Prediction Reasoning Banner Card */}
-            <div className="nlp-reasoning-banner">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                <span style={{ fontSize: '11.5px', fontWeight: 850, color: 'var(--navy-dark)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  MODEL PREDICTION REASONING ({nlpData.tabTitle})
-                </span>
-                <span style={{ fontSize: '10px', fontWeight: 800, color: nlpData.badgeColor, backgroundColor: nlpData.badgeBg, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${nlpData.badgeColor}40` }}>
-                  {activeBadge}
-                </span>
-              </div>
-              <p style={{ fontSize: '13px', color: '#334155', margin: 0, lineHeight: '1.5', fontWeight: 500 }}>
-                {activeSummary}
-              </p>
-            </div>
-
-            {/* Two Column Split: Key Contributing Factors vs Risk-Reducing Factors */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '18px' }}>
-              
-              {/* Left Column: Key Contributing Factors (Red) */}
-              <div className="nlp-factor-card nlp-factor-card-red">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '18px' }}>
+              {/* Left Column: Upward Forces */}
+              <div className="nlp-factor-card nlp-factor-card-red" style={{ height: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                   <span style={{ fontSize: '14px', color: 'var(--color-accent-red)', fontWeight: 900 }}>↗</span>
                   <h3 style={{ fontSize: '13.5px', fontWeight: 850, color: '#991B1B', margin: 0 }}>
@@ -1648,25 +1516,37 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                 </ul>
               </div>
 
-              {/* Right Column: Risk-Reducing Factors (Green) */}
-              <div className="nlp-factor-card nlp-factor-card-green">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '14px', color: '#166534', fontWeight: 900 }}>↘</span>
-                  <h3 style={{ fontSize: '13.5px', fontWeight: 850, color: '#166534', margin: 0 }}>
-                    Risk-Reducing / Protective Forces
-                  </h3>
-                  <span style={{ fontSize: '10px', backgroundColor: '#166534', color: '#FFFFFF', padding: '2px 6px', borderRadius: '4px', fontWeight: 800 }}>⬇</span>
+              {/* Right Column: Narrative & Tabs */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Tabs */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'sched3m', label: '3M Schedule', Icon: Clock },
+                    { id: 'cost3m', label: '3M Cost', Icon: DollarSign }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      className={`nlp-tab-btn ${nlpTab === t.id ? 'active' : ''}`}
+                      onClick={() => setNlpTab(t.id as any)}
+                    >
+                      <t.Icon size={14} color={nlpTab === t.id ? '#FFFFFF' : 'var(--navy-dark)'} />
+                      <span>{t.label}</span>
+                    </button>
+                  ))}
                 </div>
 
-                <ul style={{ margin: 0, paddingLeft: '0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {activeProtective.map((item, idx) => (
-                    <li key={idx} className="nlp-bullet-item nlp-bullet-item-green" style={{ fontSize: '12px', color: '#475569', lineHeight: '1.55', fontWeight: 500 }}>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                {/* Narrative Reasoning */}
+                <div className="nlp-reasoning-banner" style={{ flex: 1, margin: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 850, color: 'var(--navy-dark)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      NARRATIVE REASONING ({nlpData.tabTitle})
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '13px', color: '#334155', margin: 0, lineHeight: '1.5', fontWeight: 500 }}>
+                    {activeSummary}
+                  </p>
+                </div>
               </div>
-
             </div>
 
             {/* Footer Bar */}
@@ -1683,7 +1563,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
           </div>
         );
       })()}
-
+          </div>
+        );
+      })()}
       </div>{/* /pd-section-escalation */}
 
       {/* ─── SECTION: Early Warnings ─── */}
@@ -1950,35 +1832,37 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       </div>{/* /pd-section-warnings */}
 
-        {/* ─── END OF PAGE: TAKE ACTION CTA BANNER ─── */}
-        <div className="pd-take-action-bottom-card">
-          <div className="take-action-content">
-            <div className="take-action-badge-tag">
-              <ShieldAlert size={14} color="#DC2626" />
-              <span>EXECUTIVE INTERVENTION WORKSPACE</span>
-            </div>
-            <h2 className="take-action-title">Ready to Take Executive Action on {project.name}?</h2>
-            <p className="take-action-desc">
-              Open the Action Center to launch AI-recommended fast-track directives, execute What-If policy simulations, and route official administrative memos to designated governing authorities ({project.ministry}).
-            </p>
-            <div className="take-action-metrics-summary">
-              <span className="summary-chip chip-red">ML Risk Index: {project.riskScore}/100</span>
-              <span className="summary-chip chip-amber">Schedule Slippage: +{project.timeOverrunMonths || 0} Months</span>
-              <span className="summary-chip chip-blue">Revised Outlay: ₹{project.costRevised}</span>
-            </div>
-          </div>
 
+        {/* ─── END OF PAGE: TAKE ACTION CTA BANNER ─── */}
+        <div id="pd-section-actions" style={{ display: 'flex', justifyContent: 'center', margin: '40px 0 60px 0' }}>
           <button
             type="button"
             className="take-action-cta-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              padding: '14px 40px',
+              borderRadius: '100px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%)',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              fontSize: '16px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: '0 8px 20px rgba(29, 78, 216, 0.3)',
+            }}
             onClick={() => {
               if (onTakeAction) {
                 onTakeAction(project.id);
               }
             }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
           >
-            <ShieldAlert size={18} />
-            <span>Take Action in Action Center</span>
+            <span>Take Action</span>
             <ArrowRight size={18} />
           </button>
         </div>
@@ -2004,9 +1888,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
                     <h3 id="project-ai-assistant-title" style={{ fontSize: '14px', fontWeight: 850, margin: 0, color: '#FFFFFF' }}>
                       Project AI Intelligence Assistant
                     </h3>
-                    <span style={{ fontSize: '11px', color: '#93C5FD', display: 'block', marginTop: '1px' }}>
-                      Online | {project.name}
-                    </span>
                   </div>
                 </div>
                 <button
@@ -2075,11 +1956,11 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               {/* Quick Prompts Selector */}
               <div style={{ backgroundColor: '#FFFFFF', padding: '8px 12px', borderTop: '1px solid #E2E8F0', overflowX: 'auto', display: 'flex', gap: '6px', scrollbarWidth: 'none' }}>
                 {[
-                  "Why is this project at risk?",
-                  "What drives cost escalation?",
-                  "What are the key 3M risk drivers?",
-                  "What factors reduce schedule delay?",
-                  "Recommended intervention plan"
+                  "Why is this project delayed?",
+                  "What does the 3-month cost forecast mean?",
+                  "Explain the escalation drivers in simple terms",
+                  "What are the top recommended actions?",
+                  "How does physical progress compare to money spent?"
                 ].map((pText, i) => (
                   <button
                     key={i}

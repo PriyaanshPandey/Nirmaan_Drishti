@@ -1,36 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ArrowRight, Cpu, TrendingUp, BarChart3, Globe, Play
+  ArrowRight, Cpu, TrendingUp, BarChart3, Globe
 } from 'lucide-react';
 import './Home.css';
-import { VideoHero } from './VideoHero';
+import { InfoButton } from './ExplainabilityInfo';
 import { IndiaMap } from './IndiaMap';
 import { AnimatedCounter } from './AnimatedCounter';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
-import heroIllustrationBase from '../assets/hero_illustration_base.png';
 
 import { api } from '../services/api';
-
-const initialProjectsCount = 6568;
-const initialLakhCrores = 35.8;
-const initialStatesCount = 28;
 
 interface HomeProps {
   activeTab?: string;
   onNavigateTab: (tab: string) => void;
+  onFilterState?: (stateName: string) => void;
+  onOpenLoginModal?: () => void;
   homeClickNonce?: number;
+  isPublic?: boolean;
 }
 
-export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickNonce }) => {
-  const [playIntro, setPlayIntro] = useState<boolean>(false);
-  const [replayCount, setReplayCount] = useState<number>(0);
-  const [isDotsAnimating, setIsDotsAnimating] = useState<boolean>(false);
-  const [animIteration, setAnimIteration] = useState<number>(0);
+const initialProjectsCount = 1981;
+const initialLakhCrores = 42.78;
 
+export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterState, onOpenLoginModal, homeClickNonce: _homeClickNonce, isPublic: _isPublic }) => {
   const [totalProjects, setTotalProjects] = useState<number>(initialProjectsCount);
   const [portfolioCostLakhCr, setPortfolioCostLakhCr] = useState<number>(initialLakhCrores);
-  const statesCount = initialStatesCount;
 
   useEffect(() => {
     let isMounted = true;
@@ -53,37 +48,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
     };
   }, []);
 
-  // Trigger convergence animation on home load or after video intro dismisses or whenever home is clicked
-  useEffect(() => {
-    if (!playIntro && activeTab === 'home') {
-      setIsDotsAnimating(false);
-      const timer = setTimeout(() => {
-        setIsDotsAnimating(true);
-        setAnimIteration(prev => prev + 1);
-      }, 120);
-      return () => clearTimeout(timer);
-    }
-  }, [playIntro, activeTab, homeClickNonce]);
-
-  // Turn off isDotsAnimating state after animation cycle completes (~3.5s)
-  useEffect(() => {
-    if (isDotsAnimating) {
-      const timer = setTimeout(() => {
-        setIsDotsAnimating(false);
-      }, 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [isDotsAnimating, animIteration]);
-
-  // Manual replay trigger (on clicking illustration directly)
-  const handleTriggerAnimation = () => {
-    setIsDotsAnimating(false);
-    setTimeout(() => {
-      setIsDotsAnimating(true);
-      setAnimIteration(prev => prev + 1);
-    }, 40);
-  };
-
   const modules = [
     {
       tab: 'dashboard',
@@ -96,7 +60,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
       tab: 'projects',
       tag: 'Master Portfolio',
       title: 'Projects',
-      desc: 'Telemetry, risk diagnostics, and milestone tracking across 6,568 assets.',
+      desc: 'Telemetry, risk diagnostics, and milestone tracking across 1,981 central sector projects.',
       color: 'green'
     },
     {
@@ -117,14 +81,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
 
   return (
     <div className="home-container animation-fade-in">
-      {/* ── Fullscreen Video Intro Overlay (Plays on load for 3s, blurs out, dissolves without scrolling) ── */}
-      {playIntro && (
-        <VideoHero
-          key={replayCount}
-          onFinished={() => setPlayIntro(false)}
-        />
-      )}
-
       {/* ── 1. Hero Banner Section ── */}
       <section className="home-hero">
         <div className="hero-content-wrapper">
@@ -161,79 +117,25 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
                 <button
                   type="button"
                   className="hero-btn-replay-intro"
-                  onClick={() => {
-                    setPlayIntro(true);
-                    setReplayCount(prev => prev + 1);
-                  }}
-                  title="Watch Video Intro"
+                  onClick={() => onNavigateTab('projects')}
+                  title="Browse All Projects"
                 >
-                  <Play size={14} aria-hidden="true" />
-                  <span>Watch Intro</span>
+                  <span>Browse Projects</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right-side Infrastructure Illustration with 4-Dots Convergence & Blur Animation */}
-        <div
-          className={`hero-infra-stage ${isDotsAnimating ? 'is-animating' : ''}`}
-          key={`anim-stage-${animIteration}`}
-          onClick={handleTriggerAnimation}
-          role="button"
-          tabIndex={0}
-          title="Click to replay convergence animation"
-        >
-          {/* Base illustration that blurs when dots converge */}
-          <img
-            src={heroIllustrationBase}
-            alt="National Infrastructure Illustration"
-            className="hero-infra-img"
-          />
-
-          {/* Pristine original illustration (active when not animating) */}
+        {/* Right-side Infrastructure Illustration — Clean professional government view */}
+        <div className="hero-infra-stage">
+          {/* Main infrastructure illustration */}
           <img
             src={heroIllustration}
-            alt=""
-            aria-hidden="true"
+            alt="National Infrastructure — India's Central Sector Projects"
             className="hero-infra-img-original"
+            style={{ opacity: 1 }}
           />
-
-          {/* Central AI Synthesis / Radar Pulse Wave */}
-          <div className="hero-center-cluster" aria-hidden="true">
-            <div className="hero-center-pulse ring-1" />
-            <div className="hero-center-pulse ring-2" />
-            <div className="hero-center-core-glow" />
-          </div>
-
-          {/* 4 Animated High-Precision Dots */}
-          {/* 1. Blue Dot */}
-          <div className="hero-dot hero-dot-blue" aria-label="Blue Intelligence Node">
-            <div className="hero-dot-core" />
-            <div className="hero-dot-glow" />
-            <div className="hero-dot-ping" />
-          </div>
-
-          {/* 2. Green Dot */}
-          <div className="hero-dot hero-dot-green" aria-label="Green Intelligence Node">
-            <div className="hero-dot-core" />
-            <div className="hero-dot-glow" />
-            <div className="hero-dot-ping" />
-          </div>
-
-          {/* 3. Yellow Dot */}
-          <div className="hero-dot hero-dot-yellow" aria-label="Yellow Intelligence Node">
-            <div className="hero-dot-core" />
-            <div className="hero-dot-glow" />
-            <div className="hero-dot-ping" />
-          </div>
-
-          {/* 4. Red Dot */}
-          <div className="hero-dot hero-dot-red" aria-label="Red Intelligence Node">
-            <div className="hero-dot-core" />
-            <div className="hero-dot-glow" />
-            <div className="hero-dot-ping" />
-          </div>
         </div>
       </section>
 
@@ -245,7 +147,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
             <span className="strip-val">
               <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
             </span>
-            <span className="strip-lbl">Projects Monitored</span>
+            <span className="strip-lbl">Ongoing Projects Monitored</span>
           </div>
         </div>
 
@@ -255,36 +157,71 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
             <span className="strip-val">
               ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
             </span>
-            <span className="strip-lbl">Total Portfolio</span>
+            <span className="strip-lbl">Revised Portfolio Outlay</span>
           </div>
         </div>
 
-        <div className="metric-strip-card">
-          <div className="strip-icon"><Cpu size={20} color="#7C3AED" aria-hidden="true" /></div>
+        <div className="metric-strip-card" style={{ position: 'relative' }}>
+          <div className="strip-icon"><Cpu size={20} color="#DC2626" aria-hidden="true" /></div>
           <div className="strip-info">
-            <span className="strip-val">3 Months</span>
-            <span className="strip-lbl">Forecast Horizon</span>
+            <span className="strip-val" style={{ color: '#ef4444' }}>+15.2% Cr</span>
+            <span className="strip-lbl">
+              Cost Overrun Forecast
+              <span style={{ marginLeft: '6px', verticalAlign: 'middle', display: 'inline-flex' }}>
+                <InfoButton 
+                  title="Cost Overrun Forecast" 
+                  summary="AI-driven aggregate forecast of anticipated cost escalations across the portfolio if current execution trends continue." 
+                  size="sm" 
+                />
+              </span>
+            </span>
           </div>
         </div>
 
-        <div className="metric-strip-card">
+        <div className="metric-strip-card" style={{ position: 'relative' }}>
           <div className="strip-icon"><Globe size={20} color="#D97706" aria-hidden="true" /></div>
           <div className="strip-info">
-            <span className="strip-val">
-              <AnimatedCounter value={statesCount} duration={800} resetKey={activeTab} />+
+            <span className="strip-val" style={{ color: '#f59e0b' }}>+18.4 Mos</span>
+            <span className="strip-lbl">
+              Schedule Overrun Forecast
+              <span style={{ marginLeft: '6px', verticalAlign: 'middle', display: 'inline-flex' }}>
+                <InfoButton 
+                  title="Schedule Overrun Forecast" 
+                  summary="Anticipated average schedule slippage based on predictive milestone trajectory models." 
+                  size="sm" 
+                />
+              </span>
             </span>
-            <span className="strip-lbl">States Covered</span>
           </div>
         </div>
       </section>
 
       {/* ── 3. Interactive India Map ── */}
-      <IndiaMap activeTab={activeTab} />
+      <section className="home-india-map">
+        <div className="modules-header-row" style={{ padding: '0 24px', marginBottom: '-10px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h2 className="modules-title">State-wise Infrastructure Health</h2>
+            <InfoButton
+              title="Interactive State Map"
+              summary="Visualizes the distribution and health of central infrastructure projects across Indian states and union territories. Click on any state to filter the dashboard and view localized metrics."
+              size="sm"
+            />
+          </div>
+        </div>
+        <IndiaMap activeTab={activeTab} onSelectStateFilter={onFilterState} />
+      </section>
 
       {/* ── 4. Platform Modules Grid (Rectangular Cards) ── */}
       <section className="home-modules">
         <div className="modules-header-row">
-          <h2 className="modules-title">Platform Modules</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h2 className="modules-title">Platform Modules</h2>
+            <InfoButton
+              title="Platform Intelligence Modules"
+              summary="Navigate between core analytical engines: Dashboard for executive metrics, Projects for master portfolio telemetry, Distribution for resource allocation, and Action Center for generating policy directives."
+              size="sm"
+            />
+          </div>
           <span className="modules-subtitle">Core analytical engines &amp; intelligence layers</span>
         </div>
         <div className="modules-grid">
@@ -316,6 +253,29 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, homeClickN
           ))}
         </div>
       </section>
+
+      {/* ── 5. Officer Sign-In Banner CTA at end of Home page ── */}
+      {_isPublic && (
+        <section className="home-officer-cta" style={{ marginTop: '40px', padding: '32px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.2rem' }}>🏛️</span>
+              <h3 style={{ margin: 0, color: '#0F172A', fontSize: '1.25rem', fontWeight: 'bold' }}>MoSPI &amp; Executing Agency Officer Access</h3>
+            </div>
+            <p style={{ margin: 0, color: '#475569', fontSize: '0.88rem', maxWidth: '650px' }}>
+              Authorized officials from MoSPI, Ministry of Road Transport, Railways, Power, and Executing Agencies (NHAI) can sign in to access full predictive PDP telemetry, counterfactual simulators, automated ticket routing, and PDF Memorandum generators.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="officer-auth-btn"
+            onClick={onOpenLoginModal}
+          >
+            <span>Officer Authentication</span>
+            <ArrowRight size={16} />
+          </button>
+        </section>
+      )}
     </div>
   );
 };

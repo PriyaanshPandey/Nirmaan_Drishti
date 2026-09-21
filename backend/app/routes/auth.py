@@ -61,21 +61,25 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
     clean_password = request.password.strip() if request.password else ""
 
     allowed_users = {
-        "ipmd001": ("ipmd123", "impd_officer", "IMPD Senior Officer (Full Access)"),
-        "goi001": ("goi123", "ministry_officer", "Ministry Nodal Officer (Restricted)"),
+        "mospi001": ("mospi123", "mospi_officer", "MoSPI Superadmin (Full Access)"),
+        "ipmd001": ("ipmd123", "mospi_officer", "MoSPI Superadmin (Full Access)"),
+        "agn001": ("agn123", "agency_officer", "Agency Nodal Officer (NHAI Focus)"),
+        "min001": ("min123", "ministry_officer", "Ministry Nodal Officer (MoRTH Focus)"),
+        "goi001": ("goi123", "ministry_officer", "Ministry Nodal Officer (MoRTH Focus)"),
     }
 
     if clean_username in allowed_users:
         expected_pass, role, full_name = allowed_users[clean_username]
         if clean_password == expected_pass:
+            user_id = 1 if role == "mospi_officer" else (2 if role == "agency_officer" else 3)
             token = create_access_token(
                 data={
                     "sub": clean_username,
                     "role": role,
-                    "user_id": 1 if clean_username == "ipmd001" else 2,
+                    "user_id": user_id,
                 }
             )
-            logger.info(f"Successful demo login: username={clean_username} role={role}")
+            logger.info(f"Successful login: username={clean_username} role={role}")
             return TokenResponse(
                 access_token=token,
                 token_type="bearer",

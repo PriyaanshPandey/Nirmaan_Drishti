@@ -302,12 +302,14 @@ def get_projects(
 
     if risk_level and risk_level.strip() and risk_level.strip().upper() != "ALL":
         r_clean = risk_level.strip().upper()
-        if "CRIT" in r_clean or "HIGH" in r_clean:
-            query = query.filter(Project.risk_level.in_(["High", "Critical"]))
+        if "CRIT" in r_clean:
+            query = query.filter(or_(Project.risk_level == "Critical", Project.risk_score >= 75))
+        elif "HIGH" in r_clean:
+            query = query.filter(or_(Project.risk_level == "High", and_(Project.risk_score >= 60, Project.risk_score < 75)))
         elif "MED" in r_clean:
-            query = query.filter(Project.risk_level.ilike("%Medium%"))
+            query = query.filter(or_(Project.risk_level == "Medium", and_(Project.risk_score >= 35, Project.risk_score < 60)))
         elif "LOW" in r_clean:
-            query = query.filter(Project.risk_level.ilike("%Low%"))
+            query = query.filter(or_(Project.risk_level == "Low", and_(Project.risk_score < 35, Project.risk_score.is_(None))))
         else:
             query = query.filter(Project.risk_level.ilike(risk_level.strip()))
     if state and state.strip() and state.strip().upper() != "ALL":

@@ -51,3 +51,36 @@ export function getStatusThemeColor(status: ProjectStatusType): string {
   }
 }
 
+export type RiskCategoryType = 'Critical' | 'High' | 'Medium' | 'Low';
+
+export function getProjectRiskCategory(p: {
+  riskScore?: number | null;
+  risk_score?: number | null;
+  riskLevel?: string | null;
+  risk_level?: string | null;
+  scheduleStatus?: string | null;
+  schedule_status?: string | null;
+  costOverrunPct?: string | null;
+  cost_overrun_pct?: number | null;
+  timeOverrunMonths?: number | null;
+  time_overrun_months?: number | null;
+}): RiskCategoryType {
+  const score = p.riskScore ?? p.risk_score ?? (
+    (p.scheduleStatus || p.schedule_status) === 'CRITICAL' ? 82 :
+    (p.scheduleStatus || p.schedule_status) === 'DELAYED' ? 68 :
+    (p.scheduleStatus || p.schedule_status) === 'IN REVIEW' ? 48 : 22
+  );
+
+  const rLvl = (p.riskLevel || p.risk_level || '').trim();
+  if (rLvl === 'Critical' || score >= 75) {
+    return 'Critical';
+  }
+  if (rLvl === 'High' || (score >= 60 && score < 75)) {
+    return 'High';
+  }
+  if (rLvl === 'Medium' || (score >= 35 && score < 60)) {
+    return 'Medium';
+  }
+  return 'Low';
+}
+

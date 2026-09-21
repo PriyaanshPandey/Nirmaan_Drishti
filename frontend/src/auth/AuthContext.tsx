@@ -19,13 +19,15 @@ const API_BASE = rawApiUrl.replace(/\/+$/, '');
 const TOKEN_KEY = 'nd_auth_token';
 const USER_KEY = 'nd_auth_user';
 
-export type UserRole = 'impd_officer' | 'ministry_officer';
+export type UserRole = 'mospi_officer' | 'agency_officer' | 'ministry_officer' | 'public';
 
 export interface AuthUser {
   id: number;
   username: string;
   role: UserRole;
   full_name: string;
+  targetMinistry?: string;
+  targetAgency?: string;
 }
 
 export interface LoginCredentials {
@@ -40,6 +42,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
+  setPublicAccess: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -66,26 +69,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   }, []);
 
+  const setPublicAccess = useCallback(() => {
+    const publicUser: AuthUser = {
+      id: 0,
+      username: 'public_visitor',
+      role: 'public',
+      full_name: 'Public Guest Visitor',
+    };
+    setUser(publicUser);
+    setToken('public_guest_token');
+    localStorage.setItem(USER_KEY, JSON.stringify(publicUser));
+    localStorage.setItem(TOKEN_KEY, 'public_guest_token');
+  }, []);
+
   // On mount: restore token from localStorage and validate it
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_KEY);
     const storedUser = localStorage.getItem(USER_KEY);
-
     if (!storedToken) {
+      setPublicAccess();
       setIsLoading(false);
       return;
     }
 
-    // Optimistically restore from storage
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser) as AuthUser);
+        const parsed = JSON.parse(storedUser) as AuthUser;
+        setUser(parsed);
         setToken(storedToken);
       } catch {
         clearAuth();
         setIsLoading(false);
         return;
       }
+    }
+
+    if (storedToken.startsWith('demo_token_') || storedToken === 'public_guest_token') {
+      setIsLoading(false);
+      return;
     }
 
     // Validate against backend
@@ -104,10 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setToken(storedToken);
         localStorage.setItem(USER_KEY, JSON.stringify(data));
       })
-      .catch(() => {
-        // Network error — keep existing token optimistically
-        // (don't log out just because backend is temporarily unreachable)
-      })
+      .catch(() => {})
       .finally(() => {
         setIsLoading(false);
       });
@@ -117,7 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const cleanUsername = credentials.username.trim().toLowerCase();
     const cleanPassword = credentials.password.trim();
 
-    // 1. Attempt official backend authentication (issues signed JWT access token)
+    // 1. Attempt official backend authentication
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
@@ -127,16 +145,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (res.ok) {
         const data = await res.json();
+        let targetMinistry: string | undefined = undefined;
+        let targetAgency: string | undefined = undefined;
+
+        if (data.role === 'agency_officer' || cleanUsername === 'agn001') {
+          targetAgency = 'National Highways Authority of India (NHAI)';
+        }
+        if (data.role === 'ministry_officer' || cleanUsername === 'min001') {
+          targetMinistry = 'Ministry of Road Transport and Highways';
+        }
+
         const authUser: AuthUser = {
-          id: cleanUsername === 'ipmd001' ? 1 : 2,
+          id: data.role === 'mospi_officer' ? 1 : (data.role === 'agency_officer' ? 2 : 3),
           username: data.username || cleanUsername,
-          role: (data.role || (cleanUsername === 'ipmd001' ? 'impd_officer' : 'ministry_officer')) as UserRole,
-          full_name: data.full_name || (cleanUsername === 'ipmd001' ? 'IMPD Senior Officer (Full Access)' : 'Ministry Nodal Officer (Restricted)'),
+          role: (data.role || 'mospi_officer') as UserRole,
+          full_name: data.full_name || 'MoSPI Officer',
+          targetMinistry,
+          targetAgency,
         };
-        const token: string = data.access_token;
-        localStorage.setItem(TOKEN_KEY, token);
+        const tokenStr: string = data.access_token;
+        localStorage.setItem(TOKEN_KEY, tokenStr);
         localStorage.setItem(USER_KEY, JSON.stringify(authUser));
-        setToken(token);
+        setToken(tokenStr);
         setUser(authUser);
         return;
       } else if (res.status === 401) {
@@ -146,19 +176,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (networkOrAuthErr instanceof Error && networkOrAuthErr.message === 'Invalid username or password.') {
         throw networkOrAuthErr;
       }
-      // If backend is offline or unreachable, fall back to demo accounts
       console.warn('Backend /auth/login unreachable, falling back to local demo authentication:', networkOrAuthErr);
     }
 
-    // 2. Resilient demo fallback when backend is unreachable
-    if (cleanUsername === 'ipmd001' && cleanPassword === 'ipmd123') {
+    // 2. Demo fallback
+    if ((cleanUsername === 'mospi001' || cleanUsername === 'ipmd001') && (cleanPassword === 'mospi123' || cleanPassword === 'ipmd123')) {
       const demoUser: AuthUser = {
         id: 1,
-        username: 'ipmd001',
-        role: 'impd_officer',
-        full_name: 'IMPD Senior Officer (Full Access)',
+        username: 'mospi001',
+        role: 'mospi_officer',
+        full_name: 'MoSPI Superadmin (Full Access)',
       };
-      const demoToken = `demo_token_impd_${Date.now()}`;
+      const demoToken = `demo_token_mospi_${Date.now()}`;
       localStorage.setItem(TOKEN_KEY, demoToken);
       localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
       setToken(demoToken);
@@ -166,14 +195,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    if (cleanUsername === 'goi001' && cleanPassword === 'goi123') {
+    if (cleanUsername === 'agn001' && cleanPassword === 'agn123') {
       const demoUser: AuthUser = {
         id: 2,
-        username: 'goi001',
-        role: 'ministry_officer',
-        full_name: 'Ministry Nodal Officer (Restricted)',
+        username: 'agn001',
+        role: 'agency_officer',
+        full_name: 'Agency Nodal Officer (NHAI Focus)',
+        targetAgency: 'National Highways Authority of India (NHAI)',
       };
-      const demoToken = `demo_token_goi_${Date.now()}`;
+      const demoToken = `demo_token_agn_${Date.now()}`;
+      localStorage.setItem(TOKEN_KEY, demoToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
+      setToken(demoToken);
+      setUser(demoUser);
+      return;
+    }
+
+    if ((cleanUsername === 'min001' || cleanUsername === 'goi001') && (cleanPassword === 'min123' || cleanPassword === 'goi123')) {
+      const demoUser: AuthUser = {
+        id: 3,
+        username: 'min001',
+        role: 'ministry_officer',
+        full_name: 'Ministry Nodal Officer (MoRTH Focus)',
+        targetMinistry: 'Ministry of Road Transport and Highways',
+      };
+      const demoToken = `demo_token_min_${Date.now()}`;
       localStorage.setItem(TOKEN_KEY, demoToken);
       localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
       setToken(demoToken);
@@ -190,15 +236,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(() => {
     const currentToken = localStorage.getItem(TOKEN_KEY);
-    if (currentToken) {
+    if (currentToken && !currentToken.startsWith('demo_token_') && currentToken !== 'public_guest_token') {
       // Fire-and-forget logout acknowledgement
       fetch(`${API_BASE}/auth/logout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${currentToken}` },
       }).catch(() => {});
     }
-    clearAuth();
-  }, [clearAuth]);
+    setPublicAccess();
+  }, [setPublicAccess]);
 
   const value: AuthContextType = {
     user,
@@ -207,6 +253,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     login,
     logout,
+    setPublicAccess,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

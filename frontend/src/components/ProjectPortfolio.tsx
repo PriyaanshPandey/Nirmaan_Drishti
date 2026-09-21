@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown, Activity, CheckCircle2, PauseCircle } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X, ChevronDown, Activity, CheckCircle2, PauseCircle } from 'lucide-react';
 import type { Project } from '../data/projectsData';
-import { getProjectDisplayStatus } from '../utils/projectStatus';
+import { getProjectRiskCategory } from '../utils/projectStatus';
 import { api } from '../services/api';
 import './ProjectPortfolio.css';
 import { StatusIndicator } from './StatusIndicator';
+import { InfoButton } from './ExplainabilityInfo';
 
 export type ProjectCategoryTab = 'ONGOING' | 'COMPLETED' | 'INACTIVE';
 
@@ -15,6 +16,11 @@ interface ProjectPortfolioProps {
   statusFilterNonce?: number;
   initialRisk?: string;
   riskFilterNonce?: number;
+  initialState?: string;
+  stateFilterNonce?: number;
+  targetMinistry?: string;
+  targetAgency?: string;
+  isPublic?: boolean;
 }
 
 export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({ 
@@ -23,7 +29,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   initialStatus, 
   statusFilterNonce,
   initialRisk,
-  riskFilterNonce
+  riskFilterNonce,
+  initialState,
+  stateFilterNonce,
+  targetMinistry,
+  targetAgency,
+  isPublic: _isPublic
 }) => {
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [totalProjects, setTotalProjects] = useState<number>(0);
@@ -44,14 +55,15 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const [searchType, setSearchType] = useState<'all' | 'name' | 'id'>('all');
   const [selectedMinistry, setSelectedMinistry] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
+  const [selectedState, setSelectedState] = useState(initialState || 'All');
   const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
   const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
   const [activeCategory, setActiveCategory] = useState<ProjectCategoryTab>('ONGOING');
   const [statusCounts, setStatusCounts] = useState<{ ongoing: number; inactive: number; completed: number; total: number }>({
-    ongoing: 1379,
+    ongoing: 1981,
     inactive: 2328,
     completed: 1442,
-    total: 5149
+    total: 5751
   });
 
   // Fetch status counts on mount
@@ -86,7 +98,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       selectedSector !== 'All' ? selectedSector : undefined,
       selectedRisk !== 'All' ? selectedRisk : undefined,
       searchType,
-      activeCategory
+      activeCategory,
+      selectedState !== 'All' ? selectedState : undefined
     )
       .then((res) => {
         setProjectsList(res.items);
@@ -151,6 +164,13 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     }
   }, [initialRisk, riskFilterNonce]);
 
+  useEffect(() => {
+    if (initialState !== undefined) {
+      setSelectedState(initialState || 'All');
+      setPage(1);
+    }
+  }, [initialState, stateFilterNonce]);
+
   const [ministries, setMinistries] = useState<string[]>(['All']);
   const [sectors, setSectors] = useState<string[]>(['All']);
 
@@ -193,6 +213,14 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     setPage(1);
   };
 
+  const indianStates = [
+    'All', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+    'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu & Kashmir',
+    'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+    'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim',
+    'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+  ];
+
   const handleMinistryChange = (val: string) => {
     setSelectedMinistry(val);
     setPage(1);
@@ -200,6 +228,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
 
   const handleSectorChange = (val: string) => {
     setSelectedSector(val);
+    setPage(1);
+  };
+
+  const handleStateChange = (val: string) => {
+    setSelectedState(val);
     setPage(1);
   };
 
@@ -218,6 +251,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     setSelectedRisk('All');
     setSelectedMinistry('All');
     setSelectedSector('All');
+    setSelectedState('All');
     setSearchQuery('');
     setSearchType('all');
     setPage(1);
@@ -229,6 +263,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     setLoading(true);
     setError(false);
 
+    // Apply role-based ministry/agency filter on top of user selection
+    const effectiveMinistry = targetMinistry || (selectedMinistry !== 'All' ? selectedMinistry : undefined);
+    const effectiveAgency = targetAgency || undefined;
+
     api.getProjects(
       page, 
       pageSize, 
@@ -236,11 +274,13 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       undefined, 
       undefined, 
       selectedStatus !== 'All' ? selectedStatus : undefined,
-      selectedMinistry !== 'All' ? selectedMinistry : undefined,
+      effectiveMinistry,
       selectedSector !== 'All' ? selectedSector : undefined,
       selectedRisk !== 'All' ? selectedRisk : undefined,
       searchType,
-      activeCategory
+      activeCategory,
+      selectedState !== 'All' ? selectedState : undefined,
+      effectiveAgency
     )
       .then((res) => {
         if (!isMounted) return;
@@ -258,11 +298,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [page, searchQuery, searchType, selectedMinistry, selectedSector, selectedStatus, selectedRisk, activeCategory]);
+  }, [page, searchQuery, searchType, selectedMinistry, selectedSector, selectedState, selectedStatus, selectedRisk, activeCategory]);
 
   const filteredProjects = projectsList;
 
-  const getStatusBadge = (status: Project['scheduleStatus'] | string, project?: Project) => {
+  const getStatusBadge = (_status: Project['scheduleStatus'] | string, project?: Project) => {
     // Authoritative check based strictly on project status: ongoing | inactive | completed
     const projectCat = project?.status
       ? project.status
@@ -286,17 +326,18 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
         </span>
       );
     }
-    const dispStatus = project ? getProjectDisplayStatus(project) : getProjectDisplayStatus({ scheduleStatus: status });
-    if (dispStatus === 'CRITICAL') {
-      return <StatusIndicator kind="critical" label="CRITICAL" className="status-badge-pill status-critical" />;
+    const riskCat = project ? getProjectRiskCategory(project) : 'Low';
+
+    if (riskCat === 'Critical') {
+      return <StatusIndicator kind="critical" label="CRITICAL RISK" className="status-badge-pill status-critical" />;
     }
-    if (dispStatus === 'DELAYED') {
-      return <StatusIndicator kind="delayed" label="DELAYED" className="status-badge-pill status-delayed" />;
+    if (riskCat === 'High') {
+      return <StatusIndicator kind="delayed" label="HIGH RISK" className="status-badge-pill status-delayed" />;
     }
-    if (dispStatus === 'IN REVIEW') {
-      return <StatusIndicator kind="medium" label="IN REVIEW" className="status-badge-pill status-in-review" />;
+    if (riskCat === 'Medium') {
+      return <StatusIndicator kind="medium" label="MEDIUM RISK" className="status-badge-pill status-in-review" />;
     }
-    return <StatusIndicator kind="on-track" label="ON TRACK" className="status-badge-pill status-on-track" />;
+    return <StatusIndicator kind="on-track" label="LOW RISK" className="status-badge-pill status-on-track" />;
   };
 
   const totalPages = Math.ceil(totalProjects / pageSize) || 1;
@@ -322,56 +363,71 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       <div className="portfolio-top-bar">
         <div className="portfolio-title-section">
           <h1 className="portfolio-main-title">Project Portfolio</h1>
-          <span className="portfolio-total-badge">
-            {isFiltered ? `${totalProjects.toLocaleString()} Filtered Results` : `${categoryTotal.toLocaleString()} Projects`}
-          </span>
         </div>
-        <div className="portfolio-action-buttons">
-          <button className="portfolio-btn btn-export" onClick={() => api.exportActionPlan()}>
-            <Download size={15} />
-            <span>Export View</span>
-          </button>
+        <div className="portfolio-header-actions">
+          {/* Export View removed per user request */}
         </div>
       </div>
 
       {/* Top Lifecycle Segregation Selector: Mutually Exclusive Categories */}
       <div className="portfolio-lifecycle-segregation-bar">
         <div className="portfolio-lifecycle-tabs" role="tablist" aria-label="Project Status Segregation">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeCategory === 'ONGOING'}
-            className={`lifecycle-tab-btn ${activeCategory === 'ONGOING' ? 'active-tab tab-ongoing' : ''}`}
-            onClick={() => handleCategoryChange('ONGOING')}
-          >
-            <Activity size={16} className="tab-icon" />
-            <span className="tab-text">Ongoing Projects</span>
-            <span className="tab-badge">{statusCounts.ongoing.toLocaleString()}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === 'ONGOING'}
+              className={`lifecycle-tab-btn ${activeCategory === 'ONGOING' ? 'active-tab tab-ongoing' : ''}`}
+              onClick={() => handleCategoryChange('ONGOING')}
+            >
+              <Activity size={16} className="tab-icon" />
+              <span className="tab-text">Ongoing Projects</span>
+            </button>
+            <InfoButton
+              title="Ongoing Projects"
+              summary="Currently active projects under execution and monitoring."
+              theme="light"
+              size="sm"
+            />
+          </div>
 
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeCategory === 'INACTIVE'}
-            className={`lifecycle-tab-btn ${activeCategory === 'INACTIVE' ? 'active-tab tab-inactive' : ''}`}
-            onClick={() => handleCategoryChange('INACTIVE')}
-          >
-            <PauseCircle size={16} className="tab-icon" />
-            <span className="tab-text">Inactive Projects</span>
-            <span className="tab-badge">{statusCounts.inactive.toLocaleString()}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === 'INACTIVE'}
+              className={`lifecycle-tab-btn ${activeCategory === 'INACTIVE' ? 'active-tab tab-inactive' : ''}`}
+              onClick={() => handleCategoryChange('INACTIVE')}
+            >
+              <PauseCircle size={16} className="tab-icon" />
+              <span className="tab-text">Inactive Projects</span>
+            </button>
+            <InfoButton
+              title="Inactive & Historical Projects Role in AI Accuracy"
+              summary="Inactive, stalled, or dropped historical projects are retained in the database to train machine learning models on historical failure modes. Including these past projects prevents survival bias and ensures highly accurate risk predictions."
+              theme="light"
+              size="sm"
+            />
+          </div>
 
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeCategory === 'COMPLETED'}
-            className={`lifecycle-tab-btn ${activeCategory === 'COMPLETED' ? 'active-tab tab-completed' : ''}`}
-            onClick={() => handleCategoryChange('COMPLETED')}
-          >
-            <CheckCircle2 size={16} className="tab-icon" />
-            <span className="tab-text">Completed Projects</span>
-            <span className="tab-badge">{statusCounts.completed.toLocaleString()}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === 'COMPLETED'}
+              className={`lifecycle-tab-btn ${activeCategory === 'COMPLETED' ? 'active-tab tab-completed' : ''}`}
+              onClick={() => handleCategoryChange('COMPLETED')}
+            >
+              <CheckCircle2 size={16} className="tab-icon" />
+              <span className="tab-text">Completed Projects</span>
+            </button>
+            <InfoButton
+              title="Completed Projects"
+              summary="Historical infrastructure projects that have been officially commissioned. Used as baseline for AI training."
+              theme="light"
+              size="sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -454,35 +510,50 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
 
           <div className="portfolio-filter-select-wrapper">
             <select
-              value={selectedStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
+              value={selectedState}
+              onChange={(e) => handleStateChange(e.target.value)}
               className="portfolio-filter-select"
             >
-              <option value="All">All Schedule Statuses</option>
-              <option value="ON TRACK">On Track</option>
-              <option value="Needs Attention">Needs Attention</option>
-              <option value="DELAYED">Delayed</option>
-              <option value="High Risk">High Risk</option>
-              <option value="CRITICAL">Critical Delay</option>
+              {indianStates.map((st, idx) => (
+                <option key={idx} value={st}>
+                  {st === 'All' ? 'All States / UTs' : st}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="portfolio-filter-select-wrapper">
+          <div className="portfolio-filter-select-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <select
               value={selectedRisk}
               onChange={(e) => handleRiskChange(e.target.value)}
               className="portfolio-filter-select"
             >
               <option value="All">All Risk Levels</option>
-              <option value="Critical">Critical Risk</option>
-              <option value="High">High Risk</option>
-              <option value="Medium">Medium Risk</option>
-              <option value="Low">Low Risk</option>
+              <option value="Critical">🔴 Critical Risk — Score ≥ 75</option>
+              <option value="High">🟠 High Risk — Score 60–74</option>
+              <option value="Medium">🟡 Medium Risk — Score 35–59</option>
+              <option value="Low">🟢 Low Risk — Score &lt; 35</option>
             </select>
+
+            <InfoButton
+              title="Risk-Based Project Classification"
+              summary="Projects in India's PAIMANA system are classified into 4 risk tiers based on AI-scored cost and schedule indicators. This replaces subjective status tags with objective, data-driven monitoring."
+              dataSummary={{
+                items: [
+                  { label: '🔴 Critical Risk (Score ≥ 75)', value: 'Cost drift >20% OR delay >12 months — Needs immediate MoSPI escalation' },
+                  { label: '🟠 High Risk (Score 60–74)', value: 'Significant cost or schedule pressure — Proactive intervention required' },
+                  { label: '🟡 Medium Risk (Score 35–59)', value: 'Delay 3–12 months or milestone lag — Monitor closely' },
+                  { label: '🟢 Low Risk (Score < 35)', value: 'On track, within budget and schedule parameters' }
+                ],
+                insight: 'Risk scores are recomputed from MIS data each reporting cycle. Officers should prioritise Critical and High risk projects for field visits and directive action.'
+              }}
+              theme="light"
+              size="sm"
+            />
           </div>
         </div>
 
-        {(selectedStatus !== 'All' || selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || searchQuery || searchType !== 'all') && (
+        {(selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || selectedState !== 'All' || searchQuery || searchType !== 'all') && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Active Filters:</span>
             {searchQuery && (
@@ -555,8 +626,8 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                   <th className="th-cost-revised">REVISED</th>
                   <th className="th-cost-overrun">OVERRUN</th>
                   <th className="th-physical-progress">PROGRESS</th>
-                  <th className="th-schedule-status">STATUS</th>
-                  <th className="th-actions">ACTION</th>
+                  <th className="th-schedule-status">RISK</th>
+                  {!_isPublic && <th className="th-actions">ACTION</th>}
                 </tr>
               </thead>
               <tbody>
@@ -618,26 +689,28 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                       <td className="td-schedule-status">
                         {getStatusBadge(project.scheduleStatus, project)}
                       </td>
-                      <td className="td-actions" onClick={(e) => e.stopPropagation()}>
-                        <div className="portfolio-actions-group">
-                          <button 
-                            className="view-project-details-btn action-btn-details"
-                            onClick={() => onSelectProject(project.id)}
-                            title="View project details"
-                          >
-                            View Details
-                          </button>
-                          {onTakeAction && (
-                            <button
-                              className="view-project-details-btn action-btn-take-action"
-                              onClick={() => onTakeAction(project.id)}
-                              title="Take intervention action"
+                      {!_isPublic && (
+                        <td className="td-actions" onClick={(e) => e.stopPropagation()}>
+                          <div className="portfolio-actions-group">
+                            <button 
+                              className="view-project-details-btn action-btn-details"
+                              onClick={() => onSelectProject(project.id)}
+                              title="View project details"
                             >
-                              Take Action
+                              View Details
                             </button>
-                          )}
-                        </div>
-                      </td>
+                            {onTakeAction && (
+                              <button
+                                className="view-project-details-btn action-btn-take-action"
+                                onClick={() => onTakeAction(project.id)}
+                                title="Take intervention action"
+                              >
+                                Take Action
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

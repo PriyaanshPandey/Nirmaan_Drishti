@@ -13,8 +13,6 @@
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   box-sizing: border-box;
-  /* Mathematically aligned to 275px from screen edge — tight ~25px gap from 250px sidebar, stable on toggle */
-  padding-left: max(0px, calc(275px - (100vw - 1360px) / 2 - 48px));
 }
 
 /* ─────────────────────────────────────────────
@@ -887,4 +885,21 @@
     font-size: 11.5px;
     padding: 10px 12px;
   }
+}
+
+/* Hover Effects for Cards */
+.dist-donut-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dist-donut-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.1);
+}
+
+.dist-panel-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.dist-panel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.08);
 }

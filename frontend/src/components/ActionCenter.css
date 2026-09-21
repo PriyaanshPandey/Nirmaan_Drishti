@@ -13,7 +13,8 @@
   width: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   box-sizing: border-box;
-  padding-left: max(0px, calc(275px - (100vw - 1360px) / 2 - 48px));
+  padding: 0;
+  margin: 0;
 }
 
 /* Toast Banner */

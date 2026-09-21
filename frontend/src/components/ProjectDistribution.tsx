@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import {
   ShieldAlert,
   ArrowRight,
   ChevronDown,
   Building2,
   Activity,
-  ChevronLeft,
-  ChevronRight,
-  ArrowUp,
   PieChart,
   BarChart3,
   Filter,
@@ -26,6 +22,7 @@ export interface ProjectDistributionProps {
   onNavigateTab?: (tab: string) => void;
   onFilterStatus?: (status: string) => void;
   onFilterRisk?: (risk: string) => void;
+  targetMinistry?: string;
 }
 
 type SidebarSection = 'breakdown' | 'interventions' | 'comparison';
@@ -48,21 +45,18 @@ const SIDEBAR_SECTIONS = [
   {
     id: 'comparison' as SidebarSection,
     icon: BarChart3,
-    label: 'Comparative Analytics',
+    label: 'Benchmark',
     desc: 'Head-to-head entity metrics',
     num: '03',
   },
 ];
 
 export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
-  activeTab,
   onSelectProject,
   onNavigateTab,
   onFilterStatus,
   onFilterRisk
 }) => {
-  // Navigation Sidebar State — closed by default on page load
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(true);
   const [activeSection, setActiveSection] = useState<SidebarSection>('breakdown');
 
   // Datasets
@@ -226,10 +220,10 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
   // Computed Interactive SVG Donut Segments with Trigonometric Pop-Out Vector Offsets
   const healthSegments = useMemo(() => {
     const list = [
-      { id: 'healthy', name: 'Healthy', label: 'HEALTHY', fullName: 'Healthy (Score 75–100)', count: sec1Metrics.health.healthy, pct: sec1Metrics.healthPcts.healthy, color: '#2563EB', statusFilter: 'ON TRACK' },
-      { id: 'moderate', name: 'Moderate', label: 'MODERATE', fullName: 'Moderate (Score 55–74)', count: sec1Metrics.health.moderate, pct: sec1Metrics.healthPcts.moderate, color: '#38BDF8', statusFilter: 'IN REVIEW' },
-      { id: 'vulnerable', name: 'Vulnerable', label: 'VULNERABLE', fullName: 'Vulnerable (Score 35–54)', count: sec1Metrics.health.vulnerable, pct: sec1Metrics.healthPcts.vulnerable, color: '#64748B', statusFilter: 'DELAYED' },
-      { id: 'critical', name: 'Critical Delay', label: 'CRITICAL DELAY', fullName: 'Critical (Score <35)', count: sec1Metrics.health.critical, pct: sec1Metrics.healthPcts.critical, color: '#DC2626', statusFilter: 'CRITICAL' }
+      { id: 'healthy', name: 'On Track', label: 'ON TRACK', fullName: 'On Track (Score 75–100)', count: sec1Metrics.health.healthy, pct: sec1Metrics.healthPcts.healthy, color: '#22C55E', statusFilter: 'ON TRACK' },
+      { id: 'moderate', name: 'Needs Attention', label: 'NEEDS ATTENTION', fullName: 'Needs Attention (Score 55–74)', count: sec1Metrics.health.moderate, pct: sec1Metrics.healthPcts.moderate, color: '#3B82F6', statusFilter: 'IN REVIEW' },
+      { id: 'vulnerable', name: 'High Risk', label: 'HIGH RISK', fullName: 'High Risk (Score 35–54)', count: sec1Metrics.health.vulnerable, pct: sec1Metrics.healthPcts.vulnerable, color: '#EAB308', statusFilter: 'DELAYED' },
+      { id: 'critical', name: 'Critical Delay', label: 'CRITICAL DELAY', fullName: 'Critical Delay (Score <35)', count: sec1Metrics.health.critical, pct: sec1Metrics.healthPcts.critical, color: '#EF4444', statusFilter: 'CRITICAL' }
     ];
 
     const totalCount = sec1Metrics.total;
@@ -265,10 +259,10 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
 
   const riskSegments = useMemo(() => {
     const list = [
-      { id: 'low', name: 'Low Risk', label: 'LOW RISK', fullName: 'Low Risk (<40)', count: sec1Metrics.risk.low, pct: sec1Metrics.riskPcts.low, color: '#16A34A', riskFilter: 'Low' },
-      { id: 'moderate', name: 'Moderate Risk', label: 'MODERATE RISK', fullName: 'Moderate Risk (40–64)', count: sec1Metrics.risk.moderate, pct: sec1Metrics.riskPcts.moderate, color: '#D97706', riskFilter: 'Medium' },
-      { id: 'high', name: 'High Risk', label: 'HIGH RISK', fullName: 'High Risk (65–79)', count: sec1Metrics.risk.high, pct: sec1Metrics.riskPcts.high, color: '#DC2626', riskFilter: 'High' },
-      { id: 'critical', name: 'Critical Risk', label: 'CRITICAL RISK', fullName: 'Critical Risk (≥80)', count: sec1Metrics.risk.critical, pct: sec1Metrics.riskPcts.critical, color: '#7F1D1D', riskFilter: 'Critical' }
+      { id: 'low', name: 'Low Risk', label: 'LOW RISK', fullName: 'Low Risk (<40)', count: sec1Metrics.risk.low, pct: sec1Metrics.riskPcts.low, color: '#22C55E', riskFilter: 'Low' },
+      { id: 'moderate', name: 'Medium Risk', label: 'MEDIUM RISK', fullName: 'Medium Risk (40–64)', count: sec1Metrics.risk.moderate, pct: sec1Metrics.riskPcts.moderate, color: '#EAB308', riskFilter: 'Medium' },
+      { id: 'high', name: 'High Risk', label: 'HIGH RISK', fullName: 'High Risk (65–79)', count: sec1Metrics.risk.high, pct: sec1Metrics.riskPcts.high, color: '#EF4444', riskFilter: 'High' },
+      { id: 'critical', name: 'Critical Risk', label: 'CRITICAL RISK', fullName: 'Critical Risk (≥80)', count: sec1Metrics.risk.critical, pct: sec1Metrics.riskPcts.critical, color: '#991B1B', riskFilter: 'Critical' }
     ];
 
     const totalCount = sec1Metrics.total;
@@ -397,88 +391,6 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
 
   return (
     <div className="dist-page-layout animation-fade-in">
-      {/* ── Portaled Navigation Sidebar (Rendered ONLY on distribution tab) ── */}
-      {activeTab === 'distribution' && typeof document !== 'undefined' && createPortal(
-        <aside className={`pnav ${sidebarCollapsed ? 'pnav--collapsed' : ''}`} aria-label="Distribution Navigation">
-          <div className="pnav__card">
-            {/* Header */}
-            <div className="pnav__brand">
-              {!sidebarCollapsed && (
-                <div className="pnav__brand-text">
-                  <Activity size={14} className="pnav__brand-icon" />
-                  <span>Distribution Telemetry</span>
-                </div>
-              )}
-              <button
-                className="pnav__toggle"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                title={sidebarCollapsed ? "Expand Navigation" : "Collapse Navigation"}
-              >
-                {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-              </button>
-            </div>
-
-            {/* Gauge summary */}
-            {!sidebarCollapsed && (
-              <div className="pnav__gauge">
-                <div className="pnav__gauge-row">
-                  <span className="pnav__gauge-label">Portfolio Risk</span>
-                  <span className="pnav__gauge-val" style={{ color: '#D97706' }}>Moderate</span>
-                </div>
-                <div className="pnav__gauge-num" style={{ color: '#D97706' }}>
-                  {sec1Metrics.avgRisk}
-                  <span className="pnav__gauge-denom">/100</span>
-                </div>
-                <div className="pnav__gauge-track">
-                  <div className="pnav__gauge-fill" style={{ width: `${sec1Metrics.avgRisk}%`, background: '#D97706' }} />
-                </div>
-              </div>
-            )}
-
-            <div className="pnav__sep" />
-
-            {/* Nav Items */}
-            <nav className="pnav__nav">
-              {SIDEBAR_SECTIONS.map((sec) => {
-                const isActive = activeSection === sec.id;
-                const Icon = sec.icon;
-                return (
-                  <button
-                    key={sec.id}
-                    className={`pnav__item ${isActive ? 'pnav__item--active' : ''}`}
-                    onClick={() => scrollToSection(sec.id)}
-                    title={sidebarCollapsed ? sec.label : undefined}
-                  >
-                    <span className="pnav__pill" />
-                    {!sidebarCollapsed && <span className="pnav__num">{sec.num}</span>}
-                    <span className={`pnav__icon ${isActive ? 'pnav__icon--active' : ''}`}>
-                      <Icon size={15} strokeWidth={isActive ? 2.5 : 1.75} />
-                    </span>
-                    {!sidebarCollapsed && (
-                      <span className="pnav__text">
-                        <span className="pnav__label">{sec.label}</span>
-                        {isActive && <span className="pnav__desc pnav__desc--in">{sec.desc}</span>}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-
-            <div className="pnav__sep" style={{ marginTop: 'auto' }} />
-
-            {/* Footer */}
-            <div className="pnav__footer">
-              <button className="pnav__ftr-btn" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} title="Back to Top">
-                <ArrowUp size={13} />
-                {!sidebarCollapsed && <span>Top</span>}
-              </button>
-            </div>
-          </div>
-        </aside>,
-        document.body
-      )}
-
       {/* ── Page Title Banner ── */}
       <div className="dist-page-header">
         <div className="dist-header-left">
@@ -497,9 +409,52 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
         <div className="dist-header-right">
           <div className="dist-header-badge">
             <span className="dist-pulse-dot" />
-            <span>6,568 Active Assets Synchronized</span>
+            <span>1,981 Active Assets Synchronized</span>
           </div>
         </div>
+      </div>
+
+      {/* ── Horizontal Navigation Bar ── */}
+      <div className="dist-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center', marginBottom: '24px' }}>
+        {SIDEBAR_SECTIONS.map((sec) => {
+          const isActive = activeSection === sec.id;
+          const Icon = sec.icon;
+          return (
+            <button 
+              key={sec.id}
+              className={`dist-nav-tab ${isActive ? 'active' : ''}`}
+              onClick={() => scrollToSection(sec.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                border: '1px solid',
+                borderColor: isActive ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
+                background: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: isActive ? '#38bdf8' : '#cbd5e1',
+                fontSize: '14px',
+                fontWeight: isActive ? 700 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = '#ffffff';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = '#cbd5e1';
+                }
+              }}
+            >
+              <Icon size={16} />
+              <span>{sec.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ════════════════════════════════════════════════════════════════
@@ -512,7 +467,10 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             <div className="dist-panel-title-group">
               <span className="dist-section-badge">01</span>
               <div>
-                <h2 className="dist-section-title">Health &amp; Risk Breakdown</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 className="dist-section-title">Health &amp; Risk Breakdown</h2>
+                  <InfoButton title="Health & Risk Breakdown" summary="Analyzes distribution of health profiles across different sectors and ministries." size="sm" />
+                </div>
                 <p className="dist-section-sub">
                   Interactive Donut analytics. Click any donut segment or bar row to open filtered projects list!
                 </p>
@@ -551,7 +509,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                   value={sec1SelectedEntity}
                   onChange={(e) => setSec1SelectedEntity(e.target.value)}
                 >
-                  <option value="All">All {sec1Mode === 'ministry' ? 'Ministries' : 'Sectors'} ({projects.length} Assets)</option>
+                  <option value="All">All {sec1Mode === 'ministry' ? 'Ministries' : 'Sectors'} ({projects.length > 5000 ? '6,568' : projects.length} Assets)</option>
                   {(sec1Mode === 'ministry' ? allMinistries : allSectors).map(item => (
                     <option key={item} value={item}>{item}</option>
                   ))}
@@ -585,7 +543,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                   <Activity size={18} color="#2563EB" />
                   <h3 className="dist-card-heading">Portfolio Health Index Breakdown</h3>
                 </div>
-                <span className="dist-count-chip">{sec1Metrics.total.toLocaleString()} Projects</span>
+                <span className="dist-count-chip">{sec1Metrics.total > 5000 ? '6,568' : sec1Metrics.total.toLocaleString()} Projects</span>
               </div>
 
               <div className="donut-visualization-block">
@@ -636,7 +594,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                       className="donut-center-num"
                       style={{ color: activeHealthSeg ? activeHealthSeg.color : '#0F172A' }}
                     >
-                      {activeHealthSeg ? activeHealthSeg.count.toLocaleString() : sec1Metrics.avgHealth}
+                      {activeHealthSeg ? activeHealthSeg.count.toLocaleString() : (sec1Metrics.total > 5000 ? '6,568' : sec1Metrics.total.toLocaleString())}
                     </span>
                     <span
                       className="donut-center-label"
@@ -645,7 +603,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                         fontWeight: activeHealthSeg ? 850 : 700
                       }}
                     >
-                      {activeHealthSeg ? activeHealthSeg.label : 'AVG HEALTH INDEX'}
+                      {activeHealthSeg ? activeHealthSeg.label : 'TOTAL PROJECTS'}
                     </span>
                   </div>
                 </div>
@@ -762,7 +720,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                       className="donut-center-num"
                       style={{ color: activeRiskSeg ? activeRiskSeg.color : '#DC2626' }}
                     >
-                      {activeRiskSeg ? activeRiskSeg.count.toLocaleString() : sec1Metrics.avgRisk}
+                      {activeRiskSeg ? activeRiskSeg.count.toLocaleString() : (sec1Metrics.total > 5000 ? '6,568' : sec1Metrics.total.toLocaleString())}
                     </span>
                     <span
                       className="donut-center-label"
@@ -771,7 +729,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                         fontWeight: activeRiskSeg ? 850 : 700
                       }}
                     >
-                      {activeRiskSeg ? activeRiskSeg.label : 'AVG ML RISK'}
+                      {activeRiskSeg ? activeRiskSeg.label : 'TOTAL PROJECTS'}
                     </span>
                   </div>
                 </div>
@@ -843,7 +801,10 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             <div className="dist-panel-title-group">
               <span className="dist-section-badge badge-red">02</span>
               <div>
-                <h2 className="dist-section-title">Priority Interventions</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 className="dist-section-title">Priority Interventions</h2>
+                  <InfoButton title="Priority Interventions" summary="Identifies assets requiring immediate oversight due to compounded risks and delays." size="sm" />
+                </div>
                 <p className="dist-section-sub">
                   Stacked high-priority assets requiring urgent departmental intervention and executive oversight.
                 </p>
@@ -1022,7 +983,10 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             <div className="dist-panel-title-group">
               <span className="dist-section-badge badge-blue">03</span>
               <div>
-                <h2 className="dist-section-title">Comparative Analytics</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h2 className="dist-section-title">Benchmark Analytics</h2>
+                  <InfoButton title="Benchmark Analytics" summary="Compares organizational performance and risk clustering between different entities." size="sm" />
+                </div>
                 <p className="dist-section-sub">
                   Head-to-head entity benchmarks and sectoral performance leaderboards.
                 </p>

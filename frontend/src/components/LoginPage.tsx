@@ -73,8 +73,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
               className="login-emblem"
             />
           </div>
-          <h1 className="login-title">Nirmaan Drishti</h1>
-          <p className="login-subtitle">National Infrastructure Intelligence Portal</p>
+          <h1 className="login-title" style={{ fontSize: '24px' }}>MoSPI & Executing Agency Officer Access</h1>
+          <p className="login-subtitle">Nirmaan Drishti — National Infrastructure Intelligence Portal</p>
           <div className="login-divider" aria-hidden="true" />
         </div>
 
@@ -164,33 +164,36 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
 
         {/* Footer */}
         <footer className="login-footer">
+          {/* Demo Credentials Box */}
           <div style={{
-            marginBottom: '12px',
-            padding: '10px 12px',
-            borderRadius: '6px',
+            marginBottom: '16px',
+            padding: '12px 14px',
+            borderRadius: '8px',
             backgroundColor: 'rgba(245, 158, 11, 0.08)',
             border: '1px solid rgba(245, 158, 11, 0.25)',
             fontSize: '0.75rem',
             color: '#cbd5e1',
             textAlign: 'left',
-            lineHeight: '1.5'
+            lineHeight: '1.6'
           }}>
-            <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '4px' }}>
-              💡 DEMO CREDENTIALS:
+            <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={14} /> AUTHORISED OFFICER CREDENTIALS:
             </div>
             <div>
-              <strong>IMPD OFFICER DEMO:</strong> Username: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>ipmd001</code> | Pass: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>ipmd123</code> (Full Access)
+              • <strong>MoSPI Superadmin:</strong> <code style={{ color: '#38bdf8' }}>mospi001</code> / <code style={{ color: '#38bdf8' }}>mospi123</code> (Full Access)
             </div>
-            <div style={{ marginTop: '2px' }}>
-              <strong>MINISTRY OFFICER DEMO:</strong> Username: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>goi001</code> | Pass: <code style={{ color: '#38bdf8', fontWeight: 'bold' }}>goi123</code> (PDF Extractor Restricted)
+            <div>
+              • <strong>Agency Officer:</strong> <code style={{ color: '#38bdf8' }}>agn001</code> / <code style={{ color: '#38bdf8' }}>agn123</code> (NHAI Focused View)
+            </div>
+            <div>
+              • <strong>Ministry Officer:</strong> <code style={{ color: '#38bdf8' }}>min001</code> / <code style={{ color: '#38bdf8' }}>min123</code> (MoRTH Focused View)
             </div>
           </div>
 
-          <p className="login-footer-text">
-            <Shield size={10} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} aria-hidden="true" />
-            <strong>Restricted Access</strong> — Authorised personnel only.
+          <p className="login-footer-text" style={{ marginBottom: '12px' }}>
+            Ministry of Statistics &amp; Programme Implementation (MoSPI)
             <br />
-            Ministry of Statistics &amp; Programme Implementation
+            Government of India
           </p>
         </footer>
 

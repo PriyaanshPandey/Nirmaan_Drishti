@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, ArrowRight, ExternalLink, Building2, TrendingUp, Clock, Landmark, Filter } from 'lucide-react';
+import { InfoButton } from './ExplainabilityInfo';
 import './PriorityInterventions.css';
 import { api } from '../services/api';
 import { cleanProjectName, cleanProjectId } from '../utils/cleanProjectName';
@@ -101,7 +102,15 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
             <ShieldAlert size={20} color="#DC2626" />
           </div>
           <div>
-            <h2 className="priority-main-title">Priority Interventions &amp; Critical Projects</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 className="priority-main-title" style={{ margin: 0 }}>Priority Interventions &amp; Critical Projects</h2>
+              <InfoButton
+                title="Priority Interventions"
+                summary="Automatically curates the top critical infrastructure projects across the nation that require immediate executive action based on their cost and schedule risk profiles."
+                theme="light"
+                size="sm"
+              />
+            </div>
             <p className="priority-sub-title">
               {selectedMinistry === 'All'
                 ? 'Top 10 highest-risk national infrastructure assets flagged by Predictive AI'
