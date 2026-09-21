@@ -326,9 +326,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="header-mospi-title">
                 {language === 'hi' ? 'सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय' : 'Ministry of Statistics & Programme Implementation'}
               </span>
-              <span className="header-mospi-hindi">
-                {language === 'hi' ? 'Ministry of Statistics & Programme Implementation' : 'सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय'}
-              </span>
             </div>
 
             {/* Separator */}
@@ -344,9 +341,8 @@ export const Header: React.FC<HeaderProps> = ({
               <span style={{ 
                 fontWeight: 800, 
                 fontSize: '20px', 
-                color: '#FFFFFF',
-                letterSpacing: '-0.01em',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                color: '#0F172A',
+                letterSpacing: '-0.01em'
               }}>
                 Nirmaan Drishti
               </span>
