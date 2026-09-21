@@ -198,16 +198,6 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
 
       {/* ── 3. Interactive India Map ── */}
       <section className="home-india-map">
-        <div className="modules-header-row" style={{ padding: '0 24px', marginBottom: '-10px', marginTop: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <h2 className="modules-title">State-wise Infrastructure Health</h2>
-            <InfoButton
-              title="Interactive State Map"
-              summary="Visualizes the distribution and health of central infrastructure projects across Indian states and union territories. Click on any state to filter the dashboard and view localized metrics."
-              size="sm"
-            />
-          </div>
-        </div>
         <IndiaMap activeTab={activeTab} onSelectStateFilter={onFilterState} />
       </section>
 
