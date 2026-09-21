@@ -41,7 +41,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateTab, activeTab = 'home
             <div className="footer-logo-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <img src="/nirmaan_drishti_logo.png" alt="Nirmaan Drishti Logo" className="footer-brand-logo" />
               <span style={{ fontWeight: 800, fontSize: '16px', color: '#FFFFFF', letterSpacing: '-0.01em' }}>Nirmaan Drishti</span>
-              <img src="/navdrishti.png" alt="Team NavDrishti" className="footer-brand-logo" style={{ height: '16px', opacity: 0.8, marginLeft: '4px' }} />
             </div>
             <p className="footer-about-text">
               {t('footer_about_text', 'Nirmaan Drishti is the AI-powered national infrastructure monitoring portal under the Ministry of Statistics & Programme Implementation (MoSPI), Government of India.')}
