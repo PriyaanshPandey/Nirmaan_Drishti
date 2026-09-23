@@ -151,18 +151,18 @@
 }
 
 .lifecycle-tab-btn.active-tab.tab-ongoing {
-  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  background-color: #03045E;
+  box-shadow: 0 4px 14px rgba(3, 4, 94, 0.3);
 }
 
 .lifecycle-tab-btn.active-tab.tab-completed {
-  background: linear-gradient(135deg, #065F46 0%, #059669 100%);
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+  background-color: #065F46;
+  box-shadow: 0 4px 14px rgba(6, 95, 70, 0.3);
 }
 
 .lifecycle-tab-btn.active-tab.tab-inactive {
-  background: linear-gradient(135deg, #334155 0%, #64748B 100%);
-  box-shadow: 0 4px 14px rgba(71, 85, 105, 0.3);
+  background-color: #334155;
+  box-shadow: 0 4px 14px rgba(51, 65, 85, 0.3);
 }
 
 .lifecycle-tab-btn.active-tab .tab-icon {
@@ -613,14 +613,14 @@
 }
 
 .action-btn-take-action {
-  background-color: #2563EB;
-  border-color: #2563EB;
+  background-color: #03045E;
+  border-color: #03045E;
   color: #FFFFFF;
 }
 
 .action-btn-take-action:hover {
-  background-color: #1D4ED8;
-  border-color: #1D4ED8;
+  background-color: #001F54;
+  border-color: #001F54;
   color: #FFFFFF;
 }
 

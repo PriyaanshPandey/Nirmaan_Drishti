@@ -4,6 +4,7 @@ import { InfoButton } from './ExplainabilityInfo';
 import './PriorityInterventions.css';
 import { api } from '../services/api';
 import { cleanProjectName, cleanProjectId } from '../utils/cleanProjectName';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface CriticalProject {
   id: string;
@@ -27,6 +28,7 @@ interface PriorityInterventionsProps {
 }
 
 export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ onSelectProject, onTakeAction }) => {
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<CriticalProject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -103,7 +105,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h2 className="priority-main-title" style={{ margin: 0 }}>Priority Interventions &amp; Critical Projects</h2>
+              <h2 className="priority-main-title" style={{ margin: 0 }}>{t('priority_interventions', 'Priority Interventions')} &amp; {t('status_critical', 'Critical Projects')}</h2>
               <InfoButton
                 title="Priority Interventions"
                 summary="Automatically curates the top critical infrastructure projects across the nation that require immediate executive action based on their cost and schedule risk profiles."
@@ -113,8 +115,8 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
             </div>
             <p className="priority-sub-title">
               {selectedMinistry === 'All'
-                ? 'Top 10 highest-risk national infrastructure assets flagged by Predictive AI'
-                : `Top 10 highest-risk assets under ${selectedMinistry}`}
+                ? t('top10_national', 'Top 10 highest-risk national infrastructure assets flagged by Predictive AI')
+                : `${t('top10_ministry', 'Top 10 highest-risk assets under')} ${selectedMinistry}`}
             </p>
           </div>
         </div>
@@ -129,7 +131,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
               className="priority-ministry-select"
               aria-label="Filter by Ministry"
             >
-              <option value="All">All Ministries (National Top 10)</option>
+              <option value="All">{t('filter_all_ministries', 'All Ministries')} (National Top 10)</option>
               {ministriesList.map((m, idx) => (
                 <option key={idx} value={m}>
                   {m}
@@ -145,7 +147,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
               onClick={() => setShowAll(!showAll)}
               title={showAll ? 'Collapse to Top 5' : 'Expand to Top 10'}
             >
-              <span>{showAll ? 'Show Top 5' : `View All ${projects.length} Critical`}</span>
+              <span>{showAll ? t('show_top5', 'Show Top 5') : `${t('view_all', 'View All')} ${projects.length} ${t('status_critical', 'Critical')}`}</span>
               <ArrowRight size={13} className={`arrow-icon ${showAll ? 'arrow-up' : ''}`} />
             </button>
           )}
@@ -157,12 +159,12 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
         {loading ? (
           <div className="priority-loading-state">
             <div className="spinner-border" />
-            <span>Retrieving top risk-weighted assets from database...</span>
+            <span>{t('loading', 'Retrieving top risk-weighted assets from database...')}</span>
           </div>
         ) : error || projects.length === 0 ? (
           <div className="priority-empty-state">
             <Filter size={24} color="#94A3B8" />
-            <span>No critical projects found for {selectedMinistry === 'All' ? 'this selection' : selectedMinistry}.</span>
+            <span>{t('no_results', 'No critical projects found for')} {selectedMinistry === 'All' ? t('this_selection', 'this selection') : selectedMinistry}.</span>
           </div>
         ) : (
           <div className="critical-projects-list">
@@ -203,7 +205,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
 
                   <div className="img3-metrics-group">
                     <div className="img3-metric-item">
-                      <span className="img3-metric-lbl">COST OVERRUN</span>
+                      <span className="img3-metric-lbl">{t('col_cost_overrun', 'COST OVERRUN')}</span>
                       <div className="img3-metric-val-row text-red">
                         <TrendingUp size={13} />
                         <span className="img3-val-bold">+{p.costOverrunPct}%</span>
@@ -214,7 +216,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                     </div>
 
                     <div className="img3-metric-item">
-                      <span className="img3-metric-lbl">SCHEDULE SLIPPAGE</span>
+                      <span className="img3-metric-lbl">{t('schedule_slippage', 'SCHEDULE SLIPPAGE')}</span>
                       <div className="img3-metric-val-row text-amber">
                         <Clock size={13} />
                         <span className="img3-val-bold">+{p.delayMonths} mo delay</span>
@@ -222,11 +224,11 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                     </div>
 
                     <div className="img3-metric-item">
-                      <span className="img3-metric-lbl">RISK INDEX</span>
+                      <span className="img3-metric-lbl">{t('risk_score', 'RISK INDEX')}</span>
                       <div className="img3-risk-val-row">
                         <span className="img3-risk-num">{p.riskScore} <span className="img3-risk-denom">/100</span></span>
                         <span className={`img3-critical-badge ${isCritical ? 'badge-crit' : 'badge-high'}`}>
-                          {isCritical ? 'CRITICAL' : 'HIGH RISK'}
+                          {isCritical ? t('status_critical', 'CRITICAL') : t('status_high_risk', 'HIGH RISK')}
                         </span>
                       </div>
                     </div>
@@ -241,7 +243,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                         if (onSelectProject) onSelectProject(p.projectId || p.id);
                       }}
                     >
-                      <span>Inspect</span>
+                      <span>{t('inspect', 'Inspect')}</span>
                       <ExternalLink size={13} />
                     </button>
 
@@ -254,7 +256,7 @@ export const PriorityInterventions: React.FC<PriorityInterventionsProps> = ({ on
                       }}
                     >
                       <ShieldAlert size={13} />
-                      <span>Take Action</span>
+                      <span>{t('take_action', 'Take Action')}</span>
                     </button>
                   </div>
                 </div>

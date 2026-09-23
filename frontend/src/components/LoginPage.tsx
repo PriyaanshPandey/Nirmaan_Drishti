@@ -8,6 +8,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AlertCircle, LogIn, Shield } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import './LoginPage.css';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 
@@ -17,6 +18,7 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +41,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
     const trimmedPassword = password.trim();
 
     if (!trimmedUsername || !trimmedPassword) {
-      setError('Please enter both username and password.');
+      setError(t('error', 'Please enter both username and password.'));
       return;
     }
 
@@ -73,8 +75,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
               className="login-emblem"
             />
           </div>
-          <h1 className="login-title" style={{ fontSize: '24px' }}>MoSPI & Executing Agency Officer Access</h1>
-          <p className="login-subtitle">Nirmaan Drishti — National Infrastructure Intelligence Portal</p>
+          <h1 className="login-title" style={{ fontSize: '24px' }}>{t('officer_sign_in', 'MoSPI & Executing Agency Officer Access')}</h1>
+          <p className="login-subtitle">{t('portal_title', 'Nirmaan Drishti')} — {t('portal_subtitle', 'National Infrastructure Intelligence Portal')}</p>
           <div className="login-divider" aria-hidden="true" />
         </div>
 
@@ -83,7 +85,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
           {/* Username */}
           <div className="login-field">
             <label htmlFor="login-username" className="login-label">
-              Username
+              {t('username', 'Username')}
             </label>
             <div className="login-input-wrap">
               <input
@@ -91,7 +93,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
                 ref={usernameRef}
                 type="text"
                 className="login-input"
-                placeholder="Enter your username"
+                placeholder={t('username', 'Enter your username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
@@ -107,14 +109,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
           {/* Password */}
           <div className="login-field">
             <label htmlFor="login-password" className="login-label">
-              Password
+              {t('password', 'Password')}
             </label>
             <div className="login-input-wrap">
               <input
                 id="login-password"
                 type="password"
                 className="login-input"
-                placeholder="Enter your password"
+                placeholder={t('password', 'Enter your password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
@@ -144,18 +146,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
             type="submit"
             className="login-btn"
             disabled={isLoading}
-            aria-label={isLoading ? 'Signing in…' : 'Sign in'}
+            aria-label={isLoading ? t('loading', 'Signing in…') : t('sign_in', 'Sign in')}
           >
             <span className="login-btn-inner">
               {isLoading ? (
                 <>
                   <span className="login-spinner" aria-hidden="true" />
-                  <span>Authenticating…</span>
+                  <span>{t('loading', 'Authenticating…')}</span>
                 </>
               ) : (
                 <>
                   <LogIn size={16} aria-hidden="true" />
-                  <span>Sign In</span>
+                  <span>{t('sign_in', 'Sign In')}</span>
                 </>
               )}
             </span>
@@ -191,9 +193,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
           </div>
 
           <p className="login-footer-text" style={{ marginBottom: '12px' }}>
-            Ministry of Statistics &amp; Programme Implementation (MoSPI)
+            {t('mospi_title', 'Ministry of Statistics & Programme Implementation (MoSPI)')}
             <br />
-            Government of India
+            {t('goi_title', 'Government of India')}
           </p>
         </footer>
 

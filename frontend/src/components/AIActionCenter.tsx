@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, ArrowRight } from 'lucide-react';
 import './AIActionCenter.css';
+import { useLanguage } from '../context/LanguageContext';
 import { api, type DashboardSummaryData } from '../services/api';
 
 interface AIActionCenterProps {
@@ -8,6 +9,7 @@ interface AIActionCenterProps {
 }
 
 export const AIActionCenter: React.FC<AIActionCenterProps> = ({ onNavigateTab }) => {
+  const { t } = useLanguage();
   const [data, setData] = useState<DashboardSummaryData['ai_action_center'] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -40,16 +42,16 @@ export const AIActionCenter: React.FC<AIActionCenterProps> = ({ onNavigateTab })
       {/* Header section with icon */}
       <div className="ai-header">
         <Zap size={14} className="zap-icon" fill="var(--color-monitoring)" color="var(--color-monitoring)" />
-        <span className="ai-header-tag">AI Action Center</span>
+        <span className="ai-header-tag">{t('nav_actions', 'AI Action Center')}</span>
       </div>
 
       {loading ? (
         <div style={{ padding: '30px', textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>
-          Analyzing AI action priorities...
+          {t('loading', 'Analyzing AI action priorities...')}
         </div>
       ) : error || !data ? (
         <div style={{ padding: '30px', textAlign: 'center', color: '#EF4444', fontSize: '13px' }}>
-          Unable to load data from backend.
+          {t('error', 'Unable to load data from backend.')}
         </div>
       ) : (
         <>
@@ -61,15 +63,15 @@ export const AIActionCenter: React.FC<AIActionCenterProps> = ({ onNavigateTab })
           <div className="ai-status-summary">
             <div className="status-indicator">
               <span className="dot dot-critical"></span>
-              <span className="label">Critical ({data.critical_count})</span>
+              <span className="label">{t('status_critical', 'Critical')} ({data.critical_count})</span>
             </div>
             <div className="status-indicator">
               <span className="dot dot-high"></span>
-              <span className="label">High ({data.high_count})</span>
+              <span className="label">{t('status_high_risk', 'High')} ({data.high_count})</span>
             </div>
             <div className="status-indicator">
               <span className="dot dot-medium"></span>
-              <span className="label">Medium ({data.medium_count})</span>
+              <span className="label">{t('status_medium_risk', 'Medium')} ({data.medium_count})</span>
             </div>
           </div>
 
@@ -92,7 +94,7 @@ export const AIActionCenter: React.FC<AIActionCenterProps> = ({ onNavigateTab })
 
           {/* Bottom Action CTA */}
           <button className="ai-cta-btn" onClick={() => onNavigateTab ? onNavigateTab('action-centre') : undefined}>
-            <span>View All Priority Actions</span>
+            <span>{t('sec_recommended', 'View All Priority Actions')}</span>
             <ArrowRight size={14} />
           </button>
         </>

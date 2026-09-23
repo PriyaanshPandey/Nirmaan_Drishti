@@ -159,6 +159,7 @@ class ChatMessagePayload(BaseModel):
 class ChatRequest(BaseModel):
     question: str
     history: List[ChatMessagePayload] = []
+    language: str = "en"  # "en" for English, "hi" for Hindi
 
 
 class ChatResponse(BaseModel):
