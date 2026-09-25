@@ -297,7 +297,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* ── 1. Official Government Top Bar (MoSPI-style) ── */}
       <header className="nirmaan-header-bar">
         <div className="nirmaan-header-inner">
-          {/* Left: Ashoka Emblem + GoI / MoSPI Text + Nirmaan Drishti Logo */}
+          {/* Left: Government of India / MoSPI + Vertical Divider + Nirmaan Drishti */}
           <div
             className="header-brand-group"
             onClick={handleBrandClick}
@@ -312,13 +312,12 @@ export const Header: React.FC<HeaderProps> = ({
                 alt="Ashoka Emblem — Satyameva Jayate"
                 className="header-emblem-img"
                 onError={(e) => {
-                  // Fallback if CDN fails
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             </div>
 
-            {/* GoI + MoSPI Bilingual Text */}
+            {/* GoI + MoSPI Official Titles */}
             <div className="header-text-cluster">
               <span className="header-goi-title">
                 {language === 'hi' ? 'भारत सरकार' : 'Government of India'}
@@ -328,23 +327,18 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
 
-            {/* Separator */}
+            {/* Subtle Vertical Divider */}
             <div className="header-brand-separator" />
 
-            {/* Nirmaan Drishti Logo */}
-            <div className="header-app-identity" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Nirmaan Drishti Identity: Logo + Name */}
+            <div className="header-app-identity">
               <img
                 src="/nirmaan_drishti_logo.png"
                 alt="Nirmaan Drishti Logo"
                 className="header-app-logo"
               />
-              <span style={{ 
-                fontWeight: 800, 
-                fontSize: '20px', 
-                color: '#0F172A',
-                letterSpacing: '-0.01em'
-              }}>
-                Nirmaan Drishti
+              <span className="header-app-title">
+                {t('nirmaan_drishti', 'Nirmaan Drishti')}
               </span>
             </div>
           </div>

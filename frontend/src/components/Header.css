@@ -22,7 +22,7 @@
 
 .nirmaan-header-inner {
   max-width: 100%;
-  min-height: 72px;
+  min-height: 84px; /* Refined compact height */
   padding: 10px 40px;
   display: flex;
   align-items: center;
@@ -31,11 +31,10 @@
   box-sizing: border-box;
 }
 
-/* ── Brand Cluster (Emblem + Titles + App Logo) ── */
+/* ── Left Brand Group (Horizontal Balanced Lockup) ── */
 .header-brand-group {
   display: inline-flex;
   align-items: center;
-  gap: 16px;
   cursor: pointer;
   user-select: none;
   border-radius: 8px;
@@ -52,14 +51,15 @@
   outline-offset: 4px;
 }
 
-/* Ashoka Emblem */
+/* Ashoka Emblem — Sized to 48px and kept close to text */
 .header-emblem-container {
-  width: 54px;
-  height: 54px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-right: 12px; /* Close to government text */
 }
 
 .header-emblem-img {
@@ -73,26 +73,64 @@
   transform: scale(1.04);
 }
 
-/* GoI + MoSPI Bilingual Text */
+/* Government of India + MoSPI Bilingual Text (Compact & Official) */
 .header-text-cluster {
   display: flex;
   flex-direction: column;
   justify-content: center;
   line-height: 1.25;
+  gap: 1px;
 }
 
 .header-goi-title {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  color: #1B3A5C;
+  color: #334155;
   letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
 .header-mospi-title {
-  font-size: 0.92rem;
-  font-weight: 800;
+  font-size: 0.86rem; /* Slightly smaller so it doesn't dominate */
+  font-weight: 650;
   color: #0F172A;
   letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* Subtle Vertical Divider with Comfortable Spacing */
+.header-brand-separator {
+  width: 1px;
+  height: 40px;
+  background: #CBD5E1;
+  margin: 0 20px; /* Comfortable spacing: moves Nirmaan Drishti closer to center */
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Nirmaan Drishti Identity (Hero Brand Lockup) */
+.header-app-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-app-logo {
+  height: 44px;
+  width: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+}
+
+.header-app-title {
+  font-size: 1.50rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .header-mospi-hindi {
@@ -100,28 +138,6 @@
   font-weight: 500;
   color: #64748B;
   letter-spacing: 0;
-}
-
-/* Separator between GoI text and app logo */
-.header-brand-separator {
-  width: 1px;
-  height: 40px;
-  background: #CBD5E1;
-  margin: 0 4px;
-  flex-shrink: 0;
-}
-
-/* App Logo (Nirmaan Drishti) */
-.header-app-identity {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.header-app-logo {
-  height: 38px;
-  width: auto;
-  object-fit: contain;
 }
 
 /* ── Right Utility Cluster (MoSPI-style icons with dividers) ── */
@@ -193,7 +209,7 @@
   gap: 6px;
   padding: 7px 16px;
   border-radius: 6px;
-  background: #1B3A5C;
+  background: #090D3A;
   color: #FFFFFF;
   font-size: 0.78rem;
   font-weight: 700;
@@ -204,8 +220,8 @@
 }
 
 .header-officer-signin-btn:hover {
-  background: #0F2744;
-  box-shadow: 0 4px 12px rgba(15, 39, 68, 0.25);
+  background: #101654;
+  box-shadow: 0 4px 12px rgba(9, 13, 58, 0.35);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -339,7 +355,7 @@ body.highlight-links-mode button {
    ═══════════════════════════════════════════════════════════════════════════ */
 .nirmaan-navy-nav {
   width: 100%;
-  background: linear-gradient(180deg, #0a1154 0%, #0d1761 100%);
+  background: #090D3A;
   border-bottom: 3px solid #1e40af;
 }
 
@@ -364,8 +380,10 @@ body.highlight-links-mode button {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 13px 18px;
+  height: 48px;
+  padding: 0 18px;
   color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, sans-serif);
   font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
@@ -857,42 +875,94 @@ body.highlight-links-mode button {
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .nirmaan-header-inner {
-    padding: 10px 20px;
-  }
-
-  .header-mospi-hindi {
-    display: none;
+    padding: 10px 24px;
+    min-height: 82px;
   }
 
   .header-brand-separator {
-    display: none;
+    margin: 0 16px;
   }
 
-  .header-app-identity {
-    display: none;
+  .header-app-title {
+    font-size: 1.38rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .nirmaan-header-inner {
+    padding: 10px 20px;
+    min-height: 80px;
+  }
+
+  .header-emblem-container {
+    width: 42px;
+    height: 42px;
+    margin-right: 10px;
+  }
+
+  .header-goi-title {
+    font-size: 0.72rem;
+  }
+
+  .header-mospi-title {
+    font-size: 0.82rem;
+  }
+
+  .header-brand-separator {
+    height: 36px;
+    margin: 0 16px;
+  }
+
+  .header-app-logo {
+    height: 38px;
+    width: 38px;
+  }
+
+  .header-app-title {
+    font-size: 1.32rem;
   }
 }
 
 @media (max-width: 768px) {
   .nirmaan-header-inner {
     padding: 8px 16px;
-    min-height: 56px;
+    min-height: 72px;
     flex-wrap: wrap;
+    gap: 10px;
   }
 
   .header-emblem-container {
     width: 36px;
     height: 36px;
+    margin-right: 8px;
   }
 
   .header-goi-title {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   .header-mospi-title {
-    font-size: 0.75rem;
+    font-size: 0.74rem;
+  }
+
+  .header-brand-separator {
+    height: 32px;
+    margin: 0 12px;
+  }
+
+  .header-app-identity {
+    gap: 8px;
+  }
+
+  .header-app-logo {
+    height: 32px;
+    width: 32px;
+  }
+
+  .header-app-title {
+    font-size: 1.18rem;
   }
 
   .header-mospi-hindi {

@@ -33,20 +33,20 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #03045E 0%, #090B2E 100%);
+  background: #090D3A;
   color: #FFFFFF;
   border: none;
   border-radius: 12px;
   padding: 10px 8px;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba(3, 4, 94, 0.25);
+  box-shadow: 0 4px 12px rgba(9, 13, 58, 0.25);
 }
 
 .ai-rail-toggle-btn:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, #0A192F 0%, #1E40AF 100%);
-  box-shadow: 0 6px 16px rgba(3, 4, 94, 0.35);
+  background: #101654;
+  box-shadow: 0 6px 16px rgba(9, 13, 58, 0.35);
 }
 
 .rail-vertical-text {
@@ -205,11 +205,11 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #03045E 0%, #1E40AF 100%);
+  background: #090D3A;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 8px rgba(3, 4, 94, 0.25);
+  box-shadow: 0 3px 8px rgba(9, 13, 58, 0.25);
 }
 
 .ai-drawer-title-row {
@@ -333,7 +333,7 @@
 }
 
 .nav-card-active {
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--card-theme-bg, #EFF6FF) 100%) !important;
+  background: var(--card-theme-bg, #EFF6FF) !important;
   border-color: var(--card-theme-color, #2563EB) !important;
   box-shadow: 0 8px 20px -2px rgba(37, 99, 235, 0.15) !important;
 }
@@ -472,16 +472,16 @@
 }
 
 .ai-footer-chat-btn {
-  background: linear-gradient(135deg, #03045E 0%, #090B2E 100%);
-  border: 1px solid rgba(96, 165, 250, 0.4);
+  background: #090D3A;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(3, 4, 94, 0.2);
+  box-shadow: 0 4px 12px rgba(9, 13, 58, 0.2);
 }
 
 .ai-footer-chat-btn:hover {
   transform: translateY(-1px);
-  background: linear-gradient(135deg, #0A192F 0%, #1E40AF 100%);
-  box-shadow: 0 6px 16px rgba(3, 4, 94, 0.3);
+  background: #101654;
+  box-shadow: 0 6px 16px rgba(9, 13, 58, 0.3);
 }
 
 /* ── Target Section Spotlight Effect when navigated to ── */

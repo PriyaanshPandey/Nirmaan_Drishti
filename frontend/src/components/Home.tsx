@@ -127,14 +127,12 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
           </div>
         </div>
 
-        {/* Right-side Infrastructure Illustration — Clean professional government view */}
+        {/* Right-side Infrastructure Illustration */}
         <div className="hero-infra-stage">
-          {/* Main infrastructure illustration */}
           <img
             src={heroIllustration}
             alt="National Infrastructure — India's Central Sector Projects"
             className="hero-infra-img-original"
-            style={{ opacity: 1 }}
           />
         </div>
       </section>
