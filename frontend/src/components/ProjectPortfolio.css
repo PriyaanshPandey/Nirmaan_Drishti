@@ -363,17 +363,20 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .portfolio-table-responsive-container {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   min-height: 380px;
 }
 
 .portfolio-custom-table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   text-align: left;
   font-size: 12px;
@@ -385,23 +388,26 @@
 }
 
 .portfolio-custom-table th {
-  padding: 12px 16px;
-  font-size: 12px;
+  padding: 10px 8px;
+  font-size: 11px;
   font-weight: 750;
   color: #64748B;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
 }
 
 .portfolio-custom-table th:first-child,
 .portfolio-custom-table td:first-child {
-  padding-left: 24px;
+  padding-left: 14px;
 }
 
 .portfolio-custom-table th:last-child,
 .portfolio-custom-table td:last-child {
-  padding-right: 24px;
+  padding-right: 14px;
 }
 
 .portfolio-table-row {
@@ -415,89 +421,132 @@
 }
 
 .portfolio-custom-table td {
-  padding: 14px 16px;
+  padding: 10px 8px;
   color: var(--navy-dark);
   vertical-align: middle;
+  box-sizing: border-box;
 }
 
+/* ── Columns Widths & Alignment ── */
+.th-project-id,
 .td-project-id {
-  font-size: 13px;
-  white-space: nowrap;
+  width: 7.5%;
+  font-size: 11.5px;
 }
 
 .project-id-text {
   font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #475569;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ocms-pill-badge {
   display: inline-block;
   background: #FEF3C7;
   color: #92400E;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 4px;
   border: 1px solid #FDE68A;
   font-weight: 600;
-  font-size: 10px;
+  font-size: 9px;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
+.th-project-name,
 .td-project-name {
-  min-width: 130px;
+  width: 24.5%;
+  min-width: 0;
 }
 
 .project-primary-name {
   font-weight: 700;
   color: var(--navy-dark);
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 4px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  margin-bottom: 2px;
   white-space: normal;
   word-break: break-word;
   overflow-wrap: break-word;
 }
 
 .project-sub-meta {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748B;
   font-weight: 500;
   white-space: normal;
   word-break: break-word;
   overflow-wrap: break-word;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
-.td-agency,
-.td-location {
-  font-size: 13px;
+.th-agency,
+.td-agency {
+  width: 6.5%;
+  font-size: 12px;
   font-weight: 600;
   color: #334155;
   white-space: normal;
   word-break: break-word;
 }
 
-.td-cost-approved,
-.td-cost-revised {
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--navy-dark);
-  white-space: nowrap;
+.th-location,
+.td-location {
+  width: 7.5%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  white-space: normal;
+  word-break: break-word;
 }
 
-.td-cost-overrun {
-  font-weight: 750;
-  font-size: 13px;
+.th-cost-approved,
+.td-cost-approved {
+  width: 8.5%;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--navy-dark);
   white-space: nowrap;
+  text-align: right;
+}
+
+.th-cost-revised,
+.td-cost-revised {
+  width: 8.5%;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--navy-dark);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.th-cost-overrun,
+.td-cost-overrun {
+  width: 7.5%;
+  font-weight: 750;
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.th-physical-progress,
+.td-physical-progress {
+  width: 8.5%;
 }
 
 .progress-cell-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
-  max-width: 85px;
 }
 
 .progress-bar-track {
@@ -506,6 +555,7 @@
   background-color: #E2E8F0;
   border-radius: 99px;
   overflow: hidden;
+  min-width: 20px;
 }
 
 .progress-bar-fill {
@@ -516,7 +566,7 @@
 }
 
 .progress-text-pct {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: var(--navy-dark);
   width: 28px;
@@ -524,17 +574,32 @@
   flex-shrink: 0;
 }
 
+.th-schedule-status,
+.td-schedule-status {
+  width: 9.5%;
+  text-align: center;
+}
+
+.th-actions,
+.td-actions {
+  width: 11.5%;
+  text-align: right;
+}
+
 /* Status Badges */
 .status-badge-pill {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  justify-content: center;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .status-on-track {
@@ -574,31 +639,26 @@
   border: 1px solid #CBD5E1;
 }
 
-.status-inactive {
-  background-color: #F1F5F9;
-  color: #475569;
-  border: 1px solid #CBD5E1;
-}
-
 /* Action Buttons */
 .portfolio-actions-group {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
-  white-space: nowrap;
+  flex-wrap: wrap;
 }
 
 .view-project-details-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 8px;
-  border-radius: 6px;
+  padding: 4px 6px;
+  border-radius: 5px;
   border: 1px solid #CBD5E1;
   background-color: #FFFFFF;
   color: var(--navy-dark);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -700,18 +760,21 @@
     gap: 12px;
   }
 
+  .portfolio-search-input-wrapper {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 768px) {
   .portfolio-table-responsive-container {
     overflow-x: auto;
     max-width: 100%;
   }
 
   .portfolio-custom-table {
-    min-width: 760px;
-  }
-
-  .portfolio-search-input-wrapper {
-    min-width: 0;
-    flex: 1 1 100%;
+    table-layout: auto;
+    min-width: 700px;
   }
 }
 
