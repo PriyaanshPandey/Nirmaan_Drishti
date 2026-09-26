@@ -871,7 +871,7 @@ def chat_with_project_assistant_endpoint(project_id: str, req: ChatRequest, db: 
     canonical_id = _resolve_project_id(project_id, db)
     try:
         hist = [{"role": m.role, "content": m.content} for m in req.history] if req.history else []
-        ans = ai_engine.answer_project_chat(canonical_id, req.question, hist)
+        ans = ai_engine.answer_project_chat(canonical_id, req.question, hist, language=req.language)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat assistant error: {e}")
 

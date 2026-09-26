@@ -14,6 +14,7 @@ import {
   Activity
 } from 'lucide-react';
 import './AISectionsSidebar.css';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface AISectionsSidebarProps {
   activeSection: string | null;
@@ -43,6 +44,7 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
   onOpenAIChat,
   warningsCount = 2,
 }) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth >= 1480;
@@ -54,8 +56,8 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
     {
       id: 'forecast' as const,
       num: '01',
-      title: 'AI Cost & Schedule Forecast',
-      subtext: 'PAIMANA Calibrated 3M ML predictions',
+      title: t('sec_forecast', 'AI Cost & Schedule Forecast'),
+      subtext: t('sec_forecast_sub', 'PAIMANA Calibrated 3M ML predictions'),
       badge: 'XGBoost 3M Forecast',
       icon: Cpu,
       color: '#2563EB',
@@ -65,8 +67,8 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
     {
       id: 'shap' as const,
       num: '02',
-      title: 'Explainable AI Analysis',
-      subtext: 'TreeSHAP feature attributions & drivers',
+      title: t('sec_shap', 'Explainable AI Analysis'),
+      subtext: t('sec_shap_sub', 'TreeSHAP feature attributions & drivers'),
       badge: 'TreeSHAP Attributions',
       icon: Layers,
       color: '#03045E',
@@ -76,8 +78,8 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
     {
       id: 'nlp' as const,
       num: '03',
-      title: 'AI Natural Language Explanation',
-      subtext: 'Model-specific reasoning & delay dynamics',
+      title: t('sec_nlp', 'AI Natural Language Explanation'),
+      subtext: t('sec_nlp_sub', 'Model-specific reasoning & delay dynamics'),
       badge: 'Qwen Reasoner',
       icon: Sparkles,
       color: '#7C3AED',
@@ -87,9 +89,9 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
     {
       id: 'earlyWarnings' as const,
       num: '04',
-      title: 'Early Warnings & Recommendations',
-      subtext: 'Telemetry anomaly flags & mitigation matrix',
-      badge: `${warningsCount} Active Warnings`,
+      title: t('sec_early_warnings', 'Early Warnings & Recommendations'),
+      subtext: t('sec_early_warnings_sub', 'Telemetry anomaly flags & mitigation matrix'),
+      badge: `${warningsCount} ${t('active_warnings_badge', 'Active Warnings')}`,
       icon: AlertTriangle,
       color: '#D62F39',
       bgColor: '#FEF2F2',
@@ -109,11 +111,11 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
           <button
             className="ai-rail-toggle-btn"
             onClick={() => setIsExpanded(true)}
-            title="Open AI Sections Bar"
-            aria-label="Open AI Sections Bar"
+            title={t('ai_engine_bar', 'Open AI Sections Bar')}
+            aria-label={t('ai_engine_bar', 'Open AI Sections Bar')}
           >
             <Sparkles size={16} className="sparkle-spin-slow" />
-            <span className="rail-vertical-text">AI MODULES</span>
+            <span className="rail-vertical-text">{t('ai_modules', 'AI MODULES')}</span>
             <ChevronRight size={14} className="rail-chevron-icon" />
           </button>
 
@@ -142,8 +144,8 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
           <button
             className="ai-rail-icon-btn rail-top-btn"
             onClick={onScrollToTop}
-            title="Back to Top"
-            aria-label="Back to Top"
+            title={t('back_to_top', 'Back to Top')}
+            aria-label={t('back_to_top', 'Back to Top')}
           >
             <ArrowUp size={15} />
           </button>
@@ -159,10 +161,10 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
               </div>
               <div>
                 <div className="ai-drawer-title-row">
-                  <h3 className="ai-drawer-title">AI Engine Bar</h3>
-                  <span className="ai-drawer-badge">4 Modules</span>
+                  <h3 className="ai-drawer-title">{t('ai_engine_bar', 'AI Engine Bar')}</h3>
+                  <span className="ai-drawer-badge">{t('ai_modules_count', '4 Modules')}</span>
                 </div>
-                <p className="ai-drawer-subtitle">Click module to open & inspect</p>
+                <p className="ai-drawer-subtitle">{t('click_to_open', 'Click module to open & inspect')}</p>
               </div>
             </div>
 
@@ -181,18 +183,18 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
             <button 
               className="ai-bulk-btn"
               onClick={onExpandAll}
-              title="Expand all 4 AI sections"
+              title={t('expand_all', 'Expand all 4 AI sections')}
             >
               <Maximize2 size={12} />
-              <span>Expand All</span>
+              <span>{t('expand_all', 'Expand All')}</span>
             </button>
             <button 
               className="ai-bulk-btn"
               onClick={onCollapseAll}
-              title="Collapse all 4 AI sections"
+              title={t('collapse_all', 'Collapse all 4 AI sections')}
             >
               <Minimize2 size={12} />
-              <span>Collapse All</span>
+              <span>{t('collapse_all', 'Collapse All')}</span>
             </button>
           </div>
 
@@ -253,10 +255,10 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
                       {isOpen ? (
                         <>
                           <CheckCircle2 size={12} color="#16A34A" />
-                          <span>Open</span>
+                          <span>{t('section_open', 'Open')}</span>
                         </>
                       ) : (
-                        <span className="status-pill-collapsed">Collapsed</span>
+                        <span className="status-pill-collapsed">{t('section_collapsed', 'Collapsed')}</span>
                       )}
                     </span>
 
@@ -266,11 +268,11 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
                         e.stopPropagation();
                         onToggleSection(sec.id);
                       }}
-                      title={isOpen ? 'Collapse Section' : 'Open Section'}
-                      aria-label={`${isOpen ? 'Collapse' : 'Open'} ${sec.title}`}
+                      title={isOpen ? t('section_fold', 'Collapse Section') : t('section_open', 'Open Section')}
+                      aria-label={`${isOpen ? t('section_fold', 'Collapse') : t('section_open', 'Open')} ${sec.title}`}
                       aria-expanded={isOpen}
                     >
-                      {isOpen ? 'Fold' : 'Open'}
+                      {isOpen ? t('section_fold', 'Fold') : t('section_open', 'Open')}
                     </button>
                   </div>
                 </div>
@@ -283,20 +285,20 @@ export const AISectionsSidebar: React.FC<AISectionsSidebarProps> = ({
             <button
               className="ai-footer-btn ai-footer-top-btn"
               onClick={onScrollToTop}
-              title="Return to top of project dashboard"
+              title={t('back_to_top', 'Return to top of project dashboard')}
             >
               <ArrowUp size={14} />
-              <span>Back to Top</span>
+              <span>{t('back_to_top', 'Back to Top')}</span>
             </button>
 
             {onOpenAIChat && (
               <button
                 className="ai-footer-btn ai-footer-chat-btn"
                 onClick={onOpenAIChat}
-                title="Open AI Intelligence Assistant Copilot"
+                title={t('ai_copilot', 'Open AI Intelligence Assistant Copilot')}
               >
                 <Bot size={14} />
-                <span>AI Copilot</span>
+                <span>{t('ai_copilot', 'AI Copilot')}</span>
               </button>
             )}
           </div>

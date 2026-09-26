@@ -73,6 +73,10 @@ textarea::placeholder {
   border: 0;
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg-main);
@@ -93,6 +97,7 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
 }
 
 .app-layout {
@@ -100,17 +105,37 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow-x: clip;
 }
 
 .app-main-content {
   width: 100%;
-  max-width: 1360px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 16px 48px 40px 48px;
+  padding: 16px 28px 40px 28px;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  box-sizing: border-box;
+}
+
+.projects-content {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1200px) {
+  .app-main-content {
+    padding: 16px 20px 36px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-main-content {
+    padding: 12px 14px 28px 14px;
+  }
 }
 
 /* Typography Utility - Increased Sizes */
@@ -913,8 +938,8 @@ textarea {
   gap: 6px;
   padding: 7px 14px;
   border-radius: 8px;
-  background: #2563EB;
-  border: 1px solid #2563EB;
+  background: #03045E;
+  border: 1px solid #03045E;
   color: #FFFFFF;
   font-size: 12.5px;
   font-weight: 700;
@@ -924,9 +949,9 @@ textarea {
 }
 
 .img3-action-btn:hover {
-  background: #1D4ED8;
-  border-color: #1D4ED8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  background: #001F54;
+  border-color: #001F54;
+  box-shadow: 0 4px 12px rgba(3, 4, 94, 0.25);
   transform: translateY(-1px);
 }
 
@@ -944,7 +969,7 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  box-shadow: 0 10px 30px -4px rgba(37, 99, 235, 0.12), 0 2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 30px -4px rgba(3, 4, 94, 0.12), 0 2px 8px rgba(0, 0, 0, 0.03);
   position: relative;
   overflow: hidden;
 }
@@ -956,7 +981,7 @@ textarea {
   left: 0;
   width: 6px;
   height: 100%;
-  background: #2563EB;
+  background: #03045E;
 }
 
 .take-action-content {
@@ -1027,7 +1052,7 @@ textarea {
 
 .summary-chip.chip-blue {
   background: #EFF6FF;
-  color: #2563EB;
+  color: #03045E;
   border: 1px solid #BFDBFE;
 }
 
@@ -1038,22 +1063,22 @@ textarea {
   gap: 10px;
   padding: 14px 28px;
   border-radius: 12px;
-  background: #2563EB;
-  border: 1px solid #2563EB;
+  background: #03045E;
+  border: 1px solid #03045E;
   color: #FFFFFF;
   font-size: 14.5px;
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 14px rgba(3, 4, 94, 0.3);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .take-action-cta-btn:hover {
-  background: #1D4ED8;
-  border-color: #1D4ED8;
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4);
+  background: #001F54;
+  border-color: #001F54;
+  box-shadow: 0 8px 22px rgba(3, 4, 94, 0.4);
   transform: translateY(-2px);
 }
 

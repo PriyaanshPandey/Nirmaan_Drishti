@@ -23,6 +23,7 @@ import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
 import { HistoricalTimelineChart } from './HistoricalTimelineChart';
 import { type SidebarSection } from './ProjectNavSidebar';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ProjectDetailsProps {
   projectId: string;
@@ -358,7 +359,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
         {
           id: 'welcome-1',
           sender: 'ai',
-          text: `Namaste! 🙏 I am your PAIMANA Infrastructure Intelligence Assistant for **${project.name}**. How can I help you analyze risk factors, schedule forecasts, or administrative action directives today?`,
+          text: language === 'hi'
+            ? `नमस्ते! 🙏 मैं **${project.name}** के लिए आपका PAIMANA बुनियादी ढांचा सहायक हूं। आज मैं जोखिम कारकों, अनुसूची पूर्वानुमानों, या प्रशासनिक कार्रवाइयों के बारे में कैसे सहायता कर सकता हूं?`
+            : `Namaste! 🙏 I am your PAIMANA Infrastructure Intelligence Assistant for **${project.name}**. How can I help you analyze risk factors, schedule forecasts, or administrative action directives today?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
@@ -447,7 +450,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
         role: m.sender === 'ai' ? 'assistant' : 'user',
         content: m.text
       }));
-      const res = await api.askProjectAssistant(projectId, q, historyPayload);
+      const res = await api.askProjectAssistant(projectId, q, historyPayload, language);
       if (res && res.answer) {
         const aiMsg: ChatMessage = {
           id: `ai-${Date.now()}`,
@@ -2213,7 +2216,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                   </div>
                   <div>
                     <h3 id="project-ai-assistant-title" style={{ fontSize: '14px', fontWeight: 850, margin: 0, color: '#FFFFFF' }}>
-                      Project AI Intelligence Assistant
+                      {t('ai_chat_title', 'Project AI Intelligence Assistant')}
                     </h3>
                   </div>
                 </div>
@@ -2239,7 +2242,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                       <div className={isUser ? 'chat-bubble-user' : 'chat-bubble-ai'}>
                         {!isUser && (
                           <div style={{ fontSize: '10px', fontWeight: 850, color: '#03045E', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
-                            AI MODEL INTELLIGENCE
+                            {t('ai_model_intelligence', 'AI MODEL INTELLIGENCE')}
                           </div>
                         )}
                         <div style={{ margin: 0, fontWeight: 500 }}>
@@ -2272,7 +2275,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                       <div className="typing-dot" />
                       <div className="typing-dot" />
                       <div className="typing-dot" />
-                      <span style={{ fontSize: '11.5px', color: '#64748B', marginLeft: '6px', fontWeight: 600 }}>Analyzing telemetry...</span>
+                      <span style={{ fontSize: '11.5px', color: '#64748B', marginLeft: '6px', fontWeight: 600 }}>{t('analyzing_telemetry', 'Analyzing telemetry...')}</span>
                     </div>
                   </div>
                 )}
@@ -2282,13 +2285,19 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
               {/* Quick Prompts Selector */}
               <div style={{ backgroundColor: '#FFFFFF', padding: '8px 12px', borderTop: '1px solid #E2E8F0', overflowX: 'auto', display: 'flex', gap: '6px', scrollbarWidth: 'none' }}>
-                {[
+                {(language === 'hi' ? [
+                  "यह परियोजना विलंबित क्यों है?",
+                  "3 महीने का लागत पूर्वानुमान क्या है?",
+                  "वृद्धि कारकों को सरल भाषा में समझाएं",
+                  "शीर्ष अनुशंसित कार्रवाइयां क्या हैं?",
+                  "भौतिक प्रगति बनाम खर्च की तुलना करें"
+                ] : [
                   "Why is this project delayed?",
                   "What does the 3-month cost forecast mean?",
                   "Explain the escalation drivers in simple terms",
                   "What are the top recommended actions?",
                   "How does physical progress compare to money spent?"
-                ].map((pText, i) => (
+                ]).map((pText, i) => (
                   <button
                     key={i}
                     className="chat-prompt-pill"
@@ -2309,7 +2318,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                   value={aiQuery}
                   onChange={(e) => setAiQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAskAssistant()}
-                  placeholder="Ask AI about this project..."
+                  placeholder={t('ask_ai_placeholder', 'Ask AI about this project...')}
                   style={{
                     flex: 1,
                     padding: '9px 12px',
@@ -2351,7 +2360,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
                 className="ai-floating-pill-badge"
               >
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22C55E', boxShadow: '0 0 8px #22C55E', display: 'inline-block' }} />
-                <span>AI Copilot</span>
+                <span>{t('ai_copilot', 'AI Copilot')}</span>
                 <Sparkles size={13} color="#60A5FA" />
               </button>
             )}

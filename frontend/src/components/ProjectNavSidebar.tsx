@@ -5,6 +5,7 @@ import {
   Activity
 } from "lucide-react";
 import "./ProjectNavSidebar.css";
+import { useLanguage } from '../context/LanguageContext';
 
 export type SidebarSection = "basic" | "forecasts" | "escalation" | "warnings";
 
@@ -19,36 +20,6 @@ export interface ProjectNavSidebarProps {
   onOpenAIChat?: () => void;
 }
 
-const SECTIONS = [
-  {
-    id: "basic" as SidebarSection,
-    icon: LayoutDashboard,
-    label: "Basic Information",
-    desc: "Cost, schedule & metadata",
-    num: "01",
-  },
-  {
-    id: "forecasts" as SidebarSection,
-    icon: TrendingUp,
-    label: "Forecasts",
-    desc: "AI 3M predictions",
-    num: "02",
-  },
-  {
-    id: "escalation" as SidebarSection,
-    icon: Flame,
-    label: "Escalation Drivers",
-    desc: "SHAP attributions & NLP",
-    num: "03",
-  },
-  {
-    id: "warnings" as SidebarSection,
-    icon: ShieldAlert,
-    label: "Early Warnings",
-    desc: "Alerts & recommendations",
-    num: "04",
-  },
-];
 
 export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
   activeSection,
@@ -60,8 +31,40 @@ export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
   onScrollToTop,
   onOpenAIChat,
 }) => {
+  const { t } = useLanguage();
   const [internalCollapsed, setInternalCollapsed] = useState(true);
   const isCollapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+
+  const SECTIONS = [
+    {
+      id: "basic" as SidebarSection,
+      icon: LayoutDashboard,
+      label: t('sec_basic', 'Basic Information'),
+      desc: t('col_cost_approved', 'Cost, schedule & metadata'),
+      num: "01",
+    },
+    {
+      id: "forecasts" as SidebarSection,
+      icon: TrendingUp,
+      label: t('sec_forecasts', 'Forecasts'),
+      desc: t('ai_cost_forecast', 'AI 3M predictions'),
+      num: "02",
+    },
+    {
+      id: "escalation" as SidebarSection,
+      icon: Flame,
+      label: t('sec_escalation', 'Escalation Drivers'),
+      desc: t('shap_analysis', 'SHAP attributions & NLP'),
+      num: "03",
+    },
+    {
+      id: "warnings" as SidebarSection,
+      icon: ShieldAlert,
+      label: t('sec_warnings', 'Early Warnings'),
+      desc: t('early_warnings', 'Alerts & recommendations'),
+      num: "04",
+    },
+  ];
 
   const handleToggle = () => {
     if (onToggleCollapse) {
@@ -73,7 +76,7 @@ export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
 
   const riskPct = riskScore ?? 0;
   const riskColor = riskPct >= 70 ? "#EF4444" : riskPct >= 50 ? "#F59E0B" : "#22C55E";
-  const riskLabel = riskPct >= 70 ? "High Risk" : riskPct >= 50 ? "Moderate" : "On Track";
+  const riskLabel = riskPct >= 70 ? t('status_high_risk', 'High Risk') : riskPct >= 50 ? t('status_medium_risk', 'Moderate') : t('status_on_track', 'On Track');
 
   const activeIdx = SECTIONS.findIndex(s => s.id === activeSection);
 
@@ -86,7 +89,7 @@ export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
           {!isCollapsed && (
             <div className="pnav__brand-text">
               <Activity size={14} className="pnav__brand-icon" />
-              <span>Project Analysis</span>
+              <span>{t('project_overview', 'Project Analysis')}</span>
             </div>
           )}
           <button
@@ -106,7 +109,7 @@ export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
         {!isCollapsed && riskScore !== undefined && (
           <div className="pnav__gauge">
             <div className="pnav__gauge-row">
-              <span className="pnav__gauge-label">Risk Score</span>
+              <span className="pnav__gauge-label">{t('risk_score', 'Risk Score')}</span>
               <span className="pnav__gauge-val" style={{ color: riskColor }}>
                 {riskLabel}
               </span>
@@ -179,15 +182,15 @@ export const ProjectNavSidebar: React.FC<ProjectNavSidebarProps> = ({
         {/* ── Footer ── */}
         <div className="pnav__footer">
           {onScrollToTop && (
-            <button className="pnav__ftr-btn" onClick={onScrollToTop} title="Back to Top">
+            <button className="pnav__ftr-btn" onClick={onScrollToTop} title={t('back_to_top', 'Back to Top')}>
               <ArrowUp size={13} />
-              {!isCollapsed && <span>Top</span>}
+              {!isCollapsed && <span>{t('back_to_top', 'Top')}</span>}
             </button>
           )}
           {onOpenAIChat && (
-            <button className="pnav__ftr-btn pnav__ftr-btn--ai" onClick={onOpenAIChat} title="AI Copilot">
+            <button className="pnav__ftr-btn pnav__ftr-btn--ai" onClick={onOpenAIChat} title={t('ai_copilot', 'AI Copilot')}>
               <Bot size={13} />
-              {!isCollapsed && <span>AI Copilot</span>}
+              {!isCollapsed && <span>{t('ai_copilot', 'AI Copilot')}</span>}
             </button>
           )}
         </div>

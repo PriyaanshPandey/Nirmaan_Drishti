@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import './ProjectPortfolio.css';
 import { StatusIndicator } from './StatusIndicator';
 import { InfoButton } from './ExplainabilityInfo';
+import { useLanguage } from '../context/LanguageContext';
 
 export type ProjectCategoryTab = 'ONGOING' | 'COMPLETED' | 'INACTIVE';
 
@@ -48,6 +49,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   targetAgency,
   isPublic: _isPublic
 }) => {
+  const { t } = useLanguage();
   const [projectsList, setProjectsList] = useState<Project[]>([]);
   const [totalProjects, setTotalProjects] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -395,7 +397,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       {/* Top Header Controls */}
       <div className="portfolio-top-bar">
         <div className="portfolio-title-section">
-          <h1 className="portfolio-main-title">Project Portfolio</h1>
+          <h1 className="portfolio-main-title">{t('nav_projects', 'Project Portfolio')}</h1>
         </div>
         <div className="portfolio-header-actions">
           {/* Export View removed per user request */}
@@ -414,7 +416,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={() => handleCategoryChange('ONGOING')}
             >
               <Activity size={16} className="tab-icon" />
-              <span className="tab-text">Ongoing Projects</span>
+              <span className="tab-text">{t('status_ongoing', 'Ongoing Projects')}</span>
             </button>
             <InfoButton
               title="Ongoing Projects"
@@ -433,7 +435,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={() => handleCategoryChange('INACTIVE')}
             >
               <PauseCircle size={16} className="tab-icon" />
-              <span className="tab-text">Inactive Projects</span>
+              <span className="tab-text">{t('status_inactive', 'Inactive Projects')}</span>
             </button>
             <InfoButton
               title="Inactive & Historical Projects Role in AI Accuracy"
@@ -452,7 +454,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={() => handleCategoryChange('COMPLETED')}
             >
               <CheckCircle2 size={16} className="tab-icon" />
-              <span className="tab-text">Completed Projects</span>
+              <span className="tab-text">{t('status_completed', 'Completed Projects')}</span>
             </button>
             <InfoButton
               title="Completed Projects"
@@ -474,9 +476,9 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               className="portfolio-search-type-select"
               aria-label="Search filter criteria"
             >
-              <option value="all">All Fields</option>
-              <option value="name">Project Name</option>
-              <option value="id">Project ID</option>
+              <option value="all">{t('filter_all', 'All Fields')}</option>
+              <option value="name">{t('search_by_name', 'Project Name')}</option>
+              <option value="id">{t('search_by_id', 'Project ID')}</option>
             </select>
             <ChevronDown size={14} className="search-type-chevron" />
           </div>
@@ -487,10 +489,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               type="text"
               placeholder={
                 searchType === 'id'
-                  ? 'Search by Project ID or OCMS Code (e.g., 020100044)...'
+                  ? t('search_placeholder_id', 'Search by Project ID or OCMS Code (e.g., 020100044)...')
                   : searchType === 'name'
-                  ? 'Search by Project Name...'
-                  : 'Search projects by name, ID, agency or location...'
+                  ? t('search_placeholder_name', 'Search by Project Name...')
+                  : t('search_placeholder_all', 'Search projects by name, ID, agency or location...')
               }
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -521,7 +523,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
             >
               {ministries.map((m, idx) => (
                 <option key={idx} value={m}>
-                  {m === 'All' ? 'All Ministries' : m}
+                  {m === 'All' ? t('filter_all_ministries', 'All Ministries') : m}
                 </option>
               ))}
             </select>
@@ -535,7 +537,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
             >
               {sectors.map((s, idx) => (
                 <option key={idx} value={s}>
-                  {s === 'All' ? 'All Sectors' : s}
+                  {s === 'All' ? t('filter_all_sectors', 'All Infrastructure Sectors') : s}
                 </option>
               ))}
             </select>
@@ -549,7 +551,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
             >
               {indianStates.map((st, idx) => (
                 <option key={idx} value={st}>
-                  {st === 'All' ? 'All States / UTs' : st}
+                  {st === 'All' ? t('filter_all_states', 'All States / UTs') : st}
                 </option>
               ))}
             </select>
@@ -561,11 +563,11 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onChange={(e) => handleRiskChange(e.target.value)}
               className="portfolio-filter-select"
             >
-              <option value="All">All Risk Levels</option>
-              <option value="Critical">🔴 Critical Risk — Score ≥ 75</option>
-              <option value="High">🟠 High Risk — Score 60–74</option>
-              <option value="Medium">🟡 Medium Risk — Score 35–59</option>
-              <option value="Low">🟢 Low Risk — Score &lt; 35</option>
+              <option value="All">{t('filter_all_risk', 'All Risk Levels')}</option>
+              <option value="Critical">🔴 {t('status_critical', 'Critical Risk')} — Score ≥ 75</option>
+              <option value="High">🟠 {t('status_high_risk', 'High Risk')} — Score 60–74</option>
+              <option value="Medium">🟡 {t('status_medium_risk', 'Medium Risk')} — Score 35–59</option>
+              <option value="Low">🟢 {t('status_low_risk', 'Low Risk')} — Score &lt; 35</option>
             </select>
 
             <InfoButton
@@ -588,7 +590,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
 
         {(selectedRisk !== 'All' || selectedMinistry !== 'All' || selectedSector !== 'All' || selectedState !== 'All' || searchQuery || searchType !== 'all') && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Active Filters:</span>
+            <span style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>{t('filter_active', 'Active Filters')}:</span>
             {searchQuery && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#F1F5F9', color: '#1E293B', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
                 {searchType === 'id' ? 'ID: ' : searchType === 'name' ? 'Name: ' : 'Search: '} "{searchQuery}"
@@ -629,7 +631,7 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={handleClearFilters}
               style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '12px', textDecoration: 'underline', cursor: 'pointer', padding: '2px 6px' }}
             >
-              Reset all
+              {t('clear_filters', 'Reset all')}
             </button>
           </div>
         )}
@@ -640,27 +642,27 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px' }}>
             <div style={{ width: '36px', height: '36px', border: '3px solid #E2E8F0', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            <span style={{ color: '#64748B', fontSize: '14px' }}>Loading projects from database...</span>
+            <span style={{ color: '#64748B', fontSize: '14px' }}>{t('loading', 'Loading projects from database...')}</span>
           </div>
         ) : error ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#DC2626' }}>
-            Failed to load projects. Please ensure backend is running.
+            {t('error', 'Failed to load projects. Please ensure backend is running.')}
           </div>
         ) : (
           <div className="portfolio-table-responsive-container">
             <table className="portfolio-custom-table">
               <thead>
                 <tr>
-                  <th className="th-project-id">PROJECT ID</th>
-                  <th className="th-project-name">PROJECT NAME</th>
-                  <th className="th-agency">AGENCY</th>
-                  <th className="th-location">STATE</th>
-                  <th className="th-cost-approved">APPROVED</th>
-                  <th className="th-cost-revised">REVISED</th>
-                  <th className="th-cost-overrun">OVERRUN</th>
-                  <th className="th-physical-progress">PROGRESS</th>
-                  <th className="th-schedule-status">RISK</th>
-                  {!_isPublic && <th className="th-actions">ACTION</th>}
+                  <th className="th-project-id">{t('col_project_id', 'PROJECT ID')}</th>
+                  <th className="th-project-name">{t('col_project_name', 'PROJECT NAME')}</th>
+                  <th className="th-agency">{t('col_agency', 'AGENCY')}</th>
+                  <th className="th-location">{t('col_location', 'STATE')}</th>
+                  <th className="th-cost-approved">{t('col_cost_approved', 'APPROVED')}</th>
+                  <th className="th-cost-revised">{t('col_cost_revised', 'REVISED')}</th>
+                  <th className="th-cost-overrun">{t('col_cost_overrun', 'OVERRUN')}</th>
+                  <th className="th-physical-progress">{t('col_progress', 'PROGRESS')}</th>
+                  <th className="th-schedule-status">{t('col_risk', 'RISK')}</th>
+                  {!_isPublic && <th className="th-actions">{t('col_action', 'ACTION')}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -668,10 +670,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
                   <tr>
                     <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
                       {activeCategory === 'ONGOING'
-                        ? 'No ongoing infrastructure projects found matching the criteria.'
+                        ? t('no_ongoing_projects', 'No ongoing infrastructure projects found matching the criteria.')
                         : activeCategory === 'INACTIVE'
-                        ? 'No inactive infrastructure projects found matching the criteria.'
-                        : 'No completed infrastructure projects found matching the criteria.'}
+                        ? t('no_inactive_projects', 'No inactive infrastructure projects found matching the criteria.')
+                        : t('no_completed_projects', 'No completed infrastructure projects found matching the criteria.')}
                     </td>
                   </tr>
                 ) : (

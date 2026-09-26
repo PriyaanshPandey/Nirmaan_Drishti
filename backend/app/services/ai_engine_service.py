@@ -478,7 +478,7 @@ class AIEngine:
             "recommendations": recommendations
         }
 
-    def answer_project_chat(self, project_id: str, question: str, chat_history: Optional[List[Dict[str, str]]] = None) -> str:
+    def answer_project_chat(self, project_id: str, question: str, chat_history: Optional[List[Dict[str, str]]] = None, language: str = "en") -> str:
         """
         Interactive grounded Q&A with conversational context.
         """
@@ -486,7 +486,7 @@ class AIEngine:
         pid_str = str(project_id).strip()
         pred = self.get_full_project_prediction(pid_str)
         chat_ctx = build_project_chat_context(pid_str, self.df_cache, pred)
-        return self.explainer.answer_question(chat_ctx, question, chat_history or [])
+        return self.explainer.answer_question(chat_ctx, question, chat_history or [], language=language)
 
 
 # Singleton accessor

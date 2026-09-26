@@ -959,13 +959,24 @@ class QwenExplainer:
         self,
         project_context: Dict[str, Any],
         question: str,
-        chat_history: Optional[List[Dict[str, str]]] = None
+        chat_history: Optional[List[Dict[str, str]]] = None,
+        language: str = "en"
     ) -> str:
         """
         Interactive Q&A assistant strictly grounded in the project context & SHAP evidence.
         """
         if not self.api_key:
-            return self._answer_question_fallback(project_context, question)
+            return self._answer_question_fallback(project_context, question, language=language)
+
+        hindi_instruction = ""
+        if language == "hi":
+            hindi_instruction = (
+                "\n\nIMPORTANT LANGUAGE INSTRUCTION: The user has selected Hindi (हिंदी) as their preferred language. "
+                "You MUST respond entirely in Hindi (Devanagari script). "
+                "All section headers, bullet points, numbers, and recommendations must be written in Hindi. "
+                "Use natural, formal Hindi suitable for government officials. "
+                "Technical terms like 'XGBoost', 'SHAP', 'ML', project IDs, and numerical values may remain in English/digits."
+            )
 
         system_prompt = (
             "You are the Nirmaan Drishti Senior AI Advisor for Government Officers and Project Directors (Central Sector Infrastructure Monitoring).\n"
@@ -984,6 +995,7 @@ class QwenExplainer:
             "3. If the context does not contain enough data to answer a specific question, state clearly that the available PAIMANA report data does not contain that information.\n"
             "4. Keep answers professional, concise, and structured.\n"
             "5. Cite specific numbers (progress %, months, ₹ Cr, SHAP drivers) directly from the context."
+            + hindi_instruction
         )
 
         messages = [{"role": "system", "content": system_prompt}]
@@ -1013,14 +1025,24 @@ class QwenExplainer:
                 data = resp.json()
                 return data["choices"][0]["message"]["content"].strip()
             else:
-                return self._answer_question_fallback(project_context, question)
+                return self._answer_question_fallback(project_context, question, language=language)
         except Exception as e:
             logger.warning(f"Interactive Q&A API call failed: {e}")
-            return self._answer_question_fallback(project_context, question)
+            return self._answer_question_fallback(project_context, question, language=language)
 
-    def _answer_question_fallback(self, ctx: Dict[str, Any], question: str) -> str:
+    def _answer_question_fallback(self, ctx: Dict[str, Any], question: str, language: str = "en") -> str:
         """Deterministic, simplified, decision-oriented answers for government officers when offline."""
         q_lower = question.lower()
+
+        def _wrap_hindi(english_text: str) -> str:
+            """If Hindi is selected, prepend a Hindi preface to the English response."""
+            if language != "hi":
+                return english_text
+            return (
+                "**⚠️ नोट: AI सहायक इस समय ऑफ़लाइन मोड में है। नीचे परियोजना डेटा का सारांश दिया गया है:**\n\n"
+                + english_text
+                + "\n\n---\n*कृपया उपरोक्त विश्लेषण को हिंदी में समझने के लिए: यह परियोजना की वर्तमान स्थिति, जोखिम कारकों और अनुशंसित कार्रवाइयों का सारांश है। पूर्ण हिंदी में उत्तर के लिए कृपया इंटरनेट कनेक्शन जांचें।*"
+            )
 
         if "portfolio_summary" in ctx:
             psum = ctx["portfolio_summary"]
@@ -1030,7 +1052,7 @@ class QwenExplainer:
             crit = psum.get("critical_risk_count", 0)
             ontrack = psum.get("on_track_count", 0)
             esc = psum.get("total_cost_escalation_crore", 0)
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"The National Central Sector Infrastructure Portfolio encompasses **{tot:,} active projects** with an aggregate outlay of **₹{tot_b:,.0f} Cr**. Currently, **{delayed:,} projects ({(delayed/tot*100 if tot else 0):.1f}%)** are operating behind schedule with cumulative cost escalation reaching **₹{esc:,.0f} Cr**.\n\n"
                 f"**Key Portfolio Bottlenecks:**\n"
@@ -1135,13 +1157,13 @@ class QwenExplainer:
             add_delay = sched_3m.get("predicted_additional_delay", "N/A")
             tentative_d = sched_3m.get("tentative_completion_date", "N/A")
 
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"**{pname}** is currently under **{meta.get('reported_status', 'DELAYED')}** status with **{ext_mo} of accumulated schedule extension**, achieving **{phys} physical completion**. "
                 f"The predictive model forecasts a **{prob_s3}% probability** of additional timeline delay ({add_delay}) over the next 3 months, shifting tentative delivery to **{tentative_d}**.\n\n"
                 f"**Verified Model Risk Drivers:**\n"
                 + "\n".join(items) + "\n\n"
-                f"**Recommended Action for Officers:**\n"
+                + f"**Recommended Action for Officers:**\n"
                 + _get_grounded_actions()
             )
 
@@ -1171,13 +1193,13 @@ class QwenExplainer:
             pred_cost_obj = cost_3m.get("predicted_final_revised_cost_crore")
             c_final = f"₹{float(pred_cost_obj):,.2f} Cr" if pred_cost_obj is not None else rev_cost
 
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"**{pname}** has undergone budgetary adjustment to **{rev_cost}**, reflecting a **{overrun_pct} cost overrun**. Cumulative expenditure has reached **{exp}**. "
                 f"ML models evaluate a **{c_prob}% probability** of additional cost pressure ({c_delta}) in the next 3 months, taking estimated final cost to **{c_final}**.\n\n"
                 f"**Verified Cost Drivers:**\n"
                 + "\n".join(items) + "\n\n"
-                f"**Recommended Action for Officers:**\n"
+                + f"**Recommended Action for Officers:**\n"
                 + _get_grounded_actions()
             )
 
@@ -1202,14 +1224,14 @@ class QwenExplainer:
             if not items:
                 items.append(f"• Baseline execution continuity in the {sector} sector.")
 
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"While **{pname}** faces timeline pressure, machine-learning attribution identifies specific structural and fiscal factors that help dampen risk and protect execution stability.\n\n"
                 f"**Verified Protective Factors:**\n"
                 + "\n".join(items) + "\n\n"
-                f"**Recommended Action for Officers:**\n"
-                f"1. **Preserve Resource Allocations**: Ensure capital and clearances for well-progressing work packages remain protected.\n"
-                f"2. **Continuous Monitoring**: Track monthly velocity to ensure protective buffers are not depleted."
+                + f"**Recommended Action for Officers:**\n"
+                + "1. **Preserve Resource Allocations**: Ensure capital and clearances for well-progressing work packages remain protected.\n"
+                + "2. **Continuous Monitoring**: Track monthly velocity to ensure protective buffers are not depleted."
             )
 
         # 4. 3-Month Forecast Explanation
@@ -1219,22 +1241,22 @@ class QwenExplainer:
             d3 = sched_3m.get("predicted_additional_delay", "N/A")
             target_3m = sched_3m.get("tentative_completion_date", "N/A")
 
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"The 3-Month predictive forecast for **{pname}** indicates: Schedule delay risk is **{t3}% ({d3}, tentative completion: {target_3m})**, while cost escalation risk is **{c3}%**.\n\n"
                 f"**Key Operational Takeaway:**\n"
-                f"• **3-Month Horizon**: Focuses on immediate milestone friction, contractor pace, and critical path execution over the upcoming quarter.\n\n"
-                f"**Recommended Action for Officers:**\n"
-                f"1. **Intervene in 30-Day Window**: Resolve near-term critical path bottlenecks now to prevent compounding delays.\n"
-                f"2. **Quarterly Milestone Audit**: Review contractor delivery commitments against the 3-month milestone forecast."
+                f"\u2022 **3-Month Horizon**: Focuses on immediate milestone friction, contractor pace, and critical path execution over the upcoming quarter.\n\n"
+                + f"**Recommended Action for Officers:**\n"
+                + "1. **Intervene in 30-Day Window**: Resolve near-term critical path bottlenecks now to prevent compounding delays.\n"
+                + "2. **Quarterly Milestone Audit**: Review contractor delivery commitments against the 3-month milestone forecast."
             )
 
         # 5. Recommendations
         elif any(k in q_lower for k in ["action", "recommend", "fix", "do", "interven", "solution"]):
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"Actionable governance directives for **{pname}** are derived directly from verified model risk scores, milestone delays, and expenditure patterns.\n\n"
-                f"**Prioritized Action Plan for Government Officers:**\n"
+                + f"**Prioritized Action Plan for Government Officers:**\n"
                 + _get_grounded_actions()
             )
 
@@ -1245,14 +1267,14 @@ class QwenExplainer:
             tentative_d = sched_3m.get("tentative_completion_date", "N/A")
             lead_driver = sched_3m.get("top_risk_drivers", [{}])[0].get("label", "Project baseline") if sched_3m.get("top_risk_drivers") else "Project baseline"
 
-            return (
+            return _wrap_hindi(
                 f"**Executive Issue Summary:**\n"
                 f"**{pname}** under **{meta.get('ministry', 'Ministry')}** ({sector}) is monitored under ID **{meta.get('project_id', 'N/A')}**. The project is operating under **{meta.get('reported_status', 'DELAYED')}** status with **{phys} physical completion** and **{ext_mo} of schedule extension**.\n\n"
                 f"**Verified Model Status:**\n"
-                f"• **3-Month Schedule Risk**: Evaluated at **{prob_s3}%** with **{add_delay}** additional delay expected (tentative completion: **{tentative_d}**).\n"
-                f"• **Financial Position**: Outlay stands at **{exp}** against revised ceiling of **{rev_cost}** ({overrun_pct} overrun).\n"
-                f"• **Primary Contributor**: {lead_driver}.\n\n"
-                f"**Recommended Action for Officers:**\n"
+                f"\u2022 **3-Month Schedule Risk**: Evaluated at **{prob_s3}%** with **{add_delay}** additional delay expected (tentative completion: **{tentative_d}**).\n"
+                f"\u2022 **Financial Position**: Outlay stands at **{exp}** against revised ceiling of **{rev_cost}** ({overrun_pct} overrun).\n"
+                f"\u2022 **Primary Contributor**: {lead_driver}.\n\n"
+                + f"**Recommended Action for Officers:**\n"
                 + _get_grounded_actions()
             )
 

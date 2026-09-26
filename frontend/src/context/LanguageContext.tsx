@@ -249,6 +249,34 @@ const translations: Record<string, Record<Language, string>> = {
   'extracted_fields': { en: 'Extracted Fields', hi: 'निकाले गए फ़ील्ड' },
 
   // ═══════════════════════════════════════════════════════════
+  //  AI SECTIONS SIDEBAR
+  // ═══════════════════════════════════════════════════════════
+  'ai_engine_bar': { en: 'AI Engine Bar', hi: 'AI इंजन बार' },
+  'ai_modules': { en: 'AI MODULES', hi: 'AI मॉड्यूल' },
+  'ai_modules_count': { en: '4 Modules', hi: '4 मॉड्यूल' },
+  'click_to_open': { en: 'Click module to open & inspect', hi: 'खोलने के लिए मॉड्यूल पर क्लिक करें' },
+  'expand_all': { en: 'Expand All', hi: 'सभी खोलें' },
+  'collapse_all': { en: 'Collapse All', hi: 'सभी बंद करें' },
+  'back_to_top': { en: 'Back to Top', hi: 'शीर्ष पर वापस जाएं' },
+  'ai_copilot': { en: 'AI Copilot', hi: 'AI सहायक' },
+  'sec_forecast': { en: 'AI Cost & Schedule Forecast', hi: 'AI लागत एवं अनुसूची पूर्वानुमान' },
+  'sec_forecast_sub': { en: 'PAIMANA Calibrated 3M ML predictions', hi: 'PAIMANA कैलिब्रेटेड 3M ML पूर्वानुमान' },
+  'sec_shap': { en: 'Explainable AI Analysis', hi: 'व्याख्यात्मक AI विश्लेषण' },
+  'sec_shap_sub': { en: 'TreeSHAP feature attributions & drivers', hi: 'TreeSHAP विशेषता विश्लेषण' },
+  'sec_nlp': { en: 'AI Natural Language Explanation', hi: 'AI प्राकृतिक भाषा व्याख्या' },
+  'sec_nlp_sub': { en: 'Model-specific reasoning & delay dynamics', hi: 'मॉडल-विशिष्ट तर्क एवं विलंब गतिशीलता' },
+  'sec_early_warnings': { en: 'Early Warnings & Recommendations', hi: 'प्रारंभिक चेतावनी एवं सिफारिशें' },
+  'sec_early_warnings_sub': { en: 'Telemetry anomaly flags & mitigation matrix', hi: 'टेलीमेट्री विसंगति चिह्न एवं शमन मैट्रिक्स' },
+  'section_open': { en: 'Open', hi: 'खुला' },
+  'section_collapsed': { en: 'Collapsed', hi: 'बंद' },
+  'section_fold': { en: 'Fold', hi: 'बंद करें' },
+  'ai_chat_title': { en: 'Project AI Intelligence Assistant', hi: 'परियोजना AI बुद्धिमत्ता सहायक' },
+  'ai_model_intelligence': { en: 'AI MODEL INTELLIGENCE', hi: 'AI मॉडल बुद्धिमत्ता' },
+  'analyzing_telemetry': { en: 'Analyzing telemetry...', hi: 'टेलीमेट्री विश्लेषण हो रहा है...' },
+  'ask_ai_placeholder': { en: 'Ask AI about this project...', hi: 'इस परियोजना के बारे में AI से पूछें...' },
+  'active_warnings_badge': { en: 'Active Warnings', hi: 'सक्रिय चेतावनियां' },
+
+  // ═══════════════════════════════════════════════════════════
   //  INDIA MAP
   // ═══════════════════════════════════════════════════════════
   'map_title': { en: 'National Infrastructure Map', hi: 'राष्ट्रीय बुनियादी ढांचा मानचित्र' },
@@ -309,6 +337,123 @@ const translations: Record<string, Record<Language, string>> = {
   'no': { en: 'No', hi: 'नहीं' },
   'of': { en: 'of', hi: 'का' },
   'and': { en: 'and', hi: 'और' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  ALERTS & FILTER HELPERS
+  // ═══════════════════════════════════════════════════════════
+  'search_by_name': { en: 'By Project Name', hi: 'परियोजना नाम से' },
+  'search_by_id': { en: 'By Project ID', hi: 'परियोजना ID से' },
+  'search_warnings': { en: 'Filter early warnings by project name, ID, sector, or ministry...', hi: 'परियोजना नाम, ID, क्षेत्र या मंत्रालय से फ़िल्टर करें...' },
+  'filter_all_sectors': { en: 'All Infrastructure Sectors', hi: 'सभी बुनियादी ढांचा क्षेत्र' },
+  'filter_all_ministries': { en: 'All Ministries', hi: 'सभी मंत्रालय' },
+  'filter_all_states': { en: 'All States / UTs', hi: 'सभी राज्य / केंद्र शासित प्रदेश' },
+  'filter_all_risk': { en: 'All Risk Levels', hi: 'सभी जोखिम स्तर' },
+  'filter_active': { en: 'Active Filters', hi: 'सक्रिय फ़िल्टर' },
+  'no_results': { en: 'No results found', hi: 'कोई परिणाम नहीं मिला' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  PRIORITY INTERVENTIONS EXTRA
+  // ═══════════════════════════════════════════════════════════
+  'top10_national': { en: 'Top 10 highest-risk national infrastructure assets flagged by Predictive AI', hi: 'पूर्वानुमान AI द्वारा चिह्नित शीर्ष 10 उच्च-जोखिम राष्ट्रीय बुनियादी ढांचा संपत्तियां' },
+  'top10_ministry': { en: 'Top 10 highest-risk assets under', hi: 'शीर्ष 10 उच्च-जोखिम संपत्तियां' },
+  'show_top5': { en: 'Show Top 5', hi: 'शीर्ष 5 दिखाएं' },
+  'view_all': { en: 'View All', hi: 'सभी देखें' },
+  'this_selection': { en: 'this selection', hi: 'इस चयन' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  TABLE COLUMNS EXTRA
+  // ═══════════════════════════════════════════════════════════
+  'col_project_id': { en: 'PROJECT ID', hi: 'परियोजना ID' },
+  'col_agency': { en: 'AGENCY', hi: 'एजेंसी' },
+  'col_location': { en: 'STATE', hi: 'राज्य' },
+  'col_cost_overrun': { en: 'OVERRUN', hi: 'अतिव्यय' },
+  'col_action': { en: 'ACTION', hi: 'कार्रवाई' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  PDF EXTRACTOR EXTRA
+  // ═══════════════════════════════════════════════════════════
+  'drop_pdf_text': { en: 'Drag & drop your official government PDF report here, or click to browse', hi: 'अपनी आधिकारिक सरकारी PDF रिपोर्ट यहां खींचें और छोड़ें, या ब्राउज़ करने के लिए क्लिक करें' },
+  'choose_pdf': { en: 'Choose PDF File', hi: 'PDF फ़ाइल चुनें' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  SCROLL HERO / LANDING EXTRA
+  // ═══════════════════════════════════════════════════════════
+  'hero_cta_dashboard': { en: 'Explore Dashboard', hi: 'डैशबोर्ड देखें' },
+  'hero_cta_projects': { en: 'Browse Projects', hi: 'परियोजनाएं देखें' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  ACTION CENTER EXTRA
+  // ═══════════════════════════════════════════════════════════
+  'action_center_title': { en: 'Action Center', hi: 'कार्रवाई केंद्र' },
+  'action_center_subtitle': { en: 'Issue, track and manage administrative directives for high-risk projects', hi: 'उच्च-जोखिम परियोजनाओं के लिए प्रशासनिक निर्देश जारी करें, ट्रैक करें और प्रबंधित करें' },
+  'routed_to': { en: 'Routed to', hi: 'भेजा गया' },
+  'action_title': { en: 'Action', hi: 'कार्रवाई' },
+  'ministry_label': { en: 'Ministry', hi: 'मंत्रालय' },
+  'no_ongoing_projects': { en: 'No ongoing infrastructure projects found matching the criteria.', hi: 'मानदंड से मेल खाने वाली कोई सक्रिय बुनियादी ढांचा परियोजना नहीं मिली।' },
+  'no_inactive_projects': { en: 'No inactive infrastructure projects found matching the criteria.', hi: 'मानदंड से मेल खाने वाली कोई निष्क्रिय परियोजना नहीं मिली।' },
+  'no_completed_projects': { en: 'No completed infrastructure projects found matching the criteria.', hi: 'मानदंड से मेल खाने वाली कोई पूर्ण परियोजना नहीं मिली।' },
+  'search_placeholder_id': { en: 'Search by Project ID or OCMS Code...', hi: 'परियोजना ID या OCMS कोड से खोजें...' },
+  'search_placeholder_name': { en: 'Search by Project Name...', hi: 'परियोजना नाम से खोजें...' },
+  'search_placeholder_all': { en: 'Search projects by name, ID, agency or location...', hi: 'नाम, ID, एजेंसी या स्थान से खोजें...' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  INDIA MAP & STATE DISTRIBUTION
+  // ═══════════════════════════════════════════════════════════
+  'state_wise_distribution': { en: 'State-wise Project Distribution', hi: 'राज्यवार परियोजना वितरण' },
+  'state_wise_distribution_sub': { en: 'Real-time geographic dataset & approved financial outlay across India', hi: 'भारत भर में वास्तविक समय भौगोलिक डेटासेट एवं स्वीकृत वित्तीय परिव्यय' },
+  'project_count_no': { en: 'Project Count (No.)', hi: 'परियोजना गणना (संख्या)' },
+  'original_cost_cr': { en: 'Original Cost (in Cr.)', hi: 'मूल लागत (करोड़ में)' },
+  'latest_revised_cost_cr': { en: 'Latest Revised Cost (in Cr.)', hi: 'नवीनतम संशोधित लागत (करोड़ में)' },
+  'expenditure_cumm_cr': { en: 'Expenditure(Cumm.) (in Cr.)', hi: 'व्यय (संचयी) (करोड़ में)' },
+  'interactive_gis_map': { en: 'Interactive GIS India Infrastructure Map', hi: 'इंटरएक्टिव जीआईएस भारत बुनियादी ढांचा मानचित्र' },
+  'interactive_gis_map_summary': { en: 'Click on any state on the map to instantly view its detailed telemetry statistics and filter the global projects dataset to projects executing within that state.', hi: 'किसी भी राज्य के विस्तृत आंकड़े देखने और उस राज्य में चल रही परियोजनाओं को फ़िल्टर करने के लिए मानचित्र पर उस राज्य पर क्लिक करें।' },
+  'map_selection_filter': { en: 'Map Selection Filter', hi: 'मानचित्र चयन फ़िल्टर' },
+  'map_selection_filter_desc': { en: 'Clicking any state auto-routes to Projects filtered by state', hi: 'किसी भी राज्य पर क्लिक करने से राज्य अनुसार फ़िल्टर की गई परियोजनाएं खुलती हैं' },
+  'heatmap_density': { en: 'Heatmap Density', hi: 'हीटमैप घनत्व' },
+  'heatmap_density_desc': { en: 'Darker red shades indicate higher concentration of active infrastructure outlay', hi: 'गहरे लाल रंग सक्रिय बुनियादी ढांचा परिव्यय की उच्च सांद्रता दर्शाते हैं' },
+  'map_insight': { en: 'Geographic distribution highlights regional capital outlay concentration and helps track state-level execution velocity.', hi: 'भौगोलिक वितरण क्षेत्रीय पूंजी परिव्यय एकाग्रता को उजागर करता है और राज्य स्तरीय कार्यान्वयन गति को ट्रैक करने में मदद करता है।' },
+
+  // ═══════════════════════════════════════════════════════════
+  //  INDIAN STATES & UNION TERRITORIES
+  // ═══════════════════════════════════════════════════════════
+  'Andaman & Nicobar': { en: 'Andaman & Nicobar', hi: 'अंडमान और निकोबार' },
+  'Andhra Pradesh': { en: 'Andhra Pradesh', hi: 'आंध्र प्रदेश' },
+  'Arunachal Pradesh': { en: 'Arunachal Pradesh', hi: 'अरुणाचल प्रदेश' },
+  'Assam': { en: 'Assam', hi: 'असम' },
+  'Bihar': { en: 'Bihar', hi: 'बिहार' },
+  'Chandigarh': { en: 'Chandigarh', hi: 'चंडीगढ़' },
+  'Chhattisgarh': { en: 'Chhattisgarh', hi: 'छत्तीसगढ़' },
+  'Dadra & Nagar Haveli': { en: 'Dadra & Nagar Haveli', hi: 'दादरा और नगर हवेली' },
+  'Daman & Diu': { en: 'Daman & Diu', hi: 'दमन और दीव' },
+  'Delhi': { en: 'Delhi', hi: 'दिल्ली' },
+  'Goa': { en: 'Goa', hi: 'गोवा' },
+  'Gujarat': { en: 'Gujarat', hi: 'गुजरात' },
+  'Haryana': { en: 'Haryana', hi: 'हरियाणा' },
+  'Himachal Pradesh': { en: 'Himachal Pradesh', hi: 'हिमाचल प्रदेश' },
+  'Jammu & Kashmir': { en: 'Jammu & Kashmir', hi: 'जम्मू और कश्मीर' },
+  'Jharkhand': { en: 'Jharkhand', hi: 'झारखंड' },
+  'Karnataka': { en: 'Karnataka', hi: 'कर्नाटक' },
+  'Kerala': { en: 'Kerala', hi: 'केरल' },
+  'Ladakh': { en: 'Ladakh', hi: 'लद्दाख' },
+  'Lakshadweep': { en: 'Lakshadweep', hi: 'लक्षद्वीप' },
+  'Madhya Pradesh': { en: 'Madhya Pradesh', hi: 'मध्य प्रदेश' },
+  'Maharashtra': { en: 'Maharashtra', hi: 'महाराष्ट्र' },
+  'Manipur': { en: 'Manipur', hi: 'मणिपुर' },
+  'Meghalaya': { en: 'Meghalaya', hi: 'मेघालय' },
+  'Mizoram': { en: 'Mizoram', hi: 'मिजोरम' },
+  'Nagaland': { en: 'Nagaland', hi: 'नागालैंड' },
+  'Odisha': { en: 'Odisha', hi: 'ओडिशा' },
+  'Puducherry': { en: 'Puducherry', hi: 'पुदुचेरी' },
+  'Punjab': { en: 'Punjab', hi: 'पंजाब' },
+  'Rajasthan': { en: 'Rajasthan', hi: 'राजस्थान' },
+  'Sikkim': { en: 'Sikkim', hi: 'सिक्किम' },
+  'Tamil Nadu': { en: 'Tamil Nadu', hi: 'तमिलनाडु' },
+  'Telangana': { en: 'Telangana', hi: 'तेलंगाना' },
+  'Tripura': { en: 'Tripura', hi: 'त्रिपुरा' },
+  'Uttar Pradesh': { en: 'Uttar Pradesh', hi: 'उत्तर प्रदेश' },
+  'Uttarakhand': { en: 'Uttarakhand', hi: 'उत्तराखंड' },
+  'West Bengal': { en: 'West Bengal', hi: 'पश्चिम बंगाल' },
+  'Multi-State': { en: 'Multi-State', hi: 'बहु-राज्य' },
 };
 
 const LanguageContext = createContext<LanguageContextType | null>(null);

@@ -2475,12 +2475,12 @@ export const api = {
   /**
    * Interactive Grounded AI Project Assistant
    */
-  async askProjectAssistant(projectId: string, question: string, history: Array<{ role: string; content: string }> = []): Promise<ChatResponse> {
+  async askProjectAssistant(projectId: string, question: string, history: Array<{ role: string; content: string }> = [], language: string = 'en'): Promise<ChatResponse> {
     try {
       const res = await apiFetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, history }),
+        body: JSON.stringify({ question, history, language }),
       });
       if (res.ok) return await res.json();
     } catch (e) {

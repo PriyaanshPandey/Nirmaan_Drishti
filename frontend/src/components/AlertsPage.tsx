@@ -24,6 +24,7 @@ import { StatusIndicator } from './StatusIndicator';
 import { getProjectRiskCategory } from '../utils/projectStatus';
 import { generateTicketPDF, type TicketData } from '../utils/pdfGenerator';
 import './AlertsPage.css';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AlertsPageProps {
   onSelectProject: (projectId: string) => void;
@@ -42,6 +43,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
   targetMinistry,
   targetAgency
 }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'warnings' | 'tickets'>('warnings');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'name' | 'id' | 'sector'>('all');
@@ -173,9 +175,9 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
             <ShieldAlert size={26} color="#4338CA" />
           </div>
           <div>
-            <h1 className="alerts-main-title">Early Warning Signals & Action Tickets</h1>
+            <h1 className="alerts-main-title">{t('early_warnings', 'Early Warning Signals')} &amp; {t('tickets', 'Action Tickets')}</h1>
             <p className="alerts-main-subtitle">
-              PAIMANA Infrastructure Risk Surveillance & Automated Directive Management Framework
+              PAIMANA Infrastructure Risk Surveillance &amp; Automated Directive Management Framework
             </p>
           </div>
         </div>
@@ -183,8 +185,8 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
         <div className="alerts-header-actions">
           <span className="alerts-total-badge">
             {activeTab === 'warnings' 
-              ? `${allEarlyWarningProjects.length.toLocaleString()} Warning Signals` 
-              : `${filteredTickets.length.toLocaleString()} Officer Tickets`}
+              ? `${allEarlyWarningProjects.length.toLocaleString()} ${t('warning_signals', 'Warning Signals')}` 
+              : `${filteredTickets.length.toLocaleString()} ${t('tickets', 'Officer Tickets')}`}
           </span>
 
           {activeTab === 'warnings' ? (
@@ -260,10 +262,10 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                   onChange={(e) => { setSearchType(e.target.value as any); setPage(1); }}
                   className="alerts-search-type-select"
                 >
-                  <option value="all">All Fields</option>
-                  <option value="name">By Project Name</option>
-                  <option value="id">By Project ID</option>
-                  <option value="sector">By Sector</option>
+                  <option value="all">{t('filter_all', 'All Fields')}</option>
+                  <option value="name">{t('search_by_name', 'By Project Name')}</option>
+                  <option value="id">{t('search_by_id', 'By Project ID')}</option>
+                  <option value="sector">{t('filter_sector', 'By Sector')}</option>
                 </select>
                 <ChevronDown size={14} className="search-type-chevron" />
               </div>
@@ -272,7 +274,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                 <Search size={16} className="search-icon" />
                 <input
                   type="text"
-                  placeholder="Filter early warnings by project name, ID, sector, or ministry..."
+                  placeholder={t('search_warnings', 'Filter early warnings by project name, ID, sector, or ministry...')}
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                   className="alerts-search-input"
@@ -299,7 +301,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                 >
                   {sectors.map((sec, idx) => (
                     <option key={idx} value={sec}>
-                      {sec === 'All' ? 'All Infrastructure Sectors' : sec}
+                      {sec === 'All' ? t('filter_all_sectors', 'All Infrastructure Sectors') : sec}
                     </option>
                   ))}
                 </select>
@@ -314,7 +316,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                 >
                   {ministries.map((min, idx) => (
                     <option key={idx} value={min}>
-                      {min === 'All' ? 'All Ministries' : min}
+                      {min === 'All' ? t('filter_all_ministries', 'All Ministries') : min}
                     </option>
                   ))}
                 </select>
@@ -329,7 +331,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                 >
                   {states.map((st, idx) => (
                     <option key={idx} value={st}>
-                      {st === 'All' ? 'All States / UTs' : st}
+                      {st === 'All' ? t('filter_all_states', 'All States / UTs') : st}
                     </option>
                   ))}
                 </select>
@@ -341,9 +343,9 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                   onChange={(e) => { setSelectedRiskFilter(e.target.value); setPage(1); }}
                   className="alerts-filter-select"
                 >
-                  <option value="All">All Risk Levels</option>
-                  <option value="Critical">🔴 Critical Risk — Score ≥ 75</option>
-                  <option value="High">🟠 High Risk — Score 60–74</option>
+                  <option value="All">{t('filter_all_risk', 'All Risk Levels')}</option>
+                  <option value="Critical">🔴 {t('status_critical', 'Critical')} {t('risk_score', 'Risk')} — Score ≥ 75</option>
+                  <option value="High">🟠 {t('status_high_risk', 'High Risk')} — Score 60–74</option>
                 </select>
               </div>
             </div>
@@ -351,7 +353,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
             {/* Active Filters Row */}
             {isFiltered && (
               <div className="alerts-active-filters-row">
-                <span className="active-filters-label">Active Filters:</span>
+                <span className="active-filters-label">{t('filter_active', 'Active Filters')}:</span>
                 {searchQuery && (
                   <span className="filter-chip">
                     {searchType === 'id' ? 'ID: ' : searchType === 'name' ? 'Name: ' : 'Search: '} "{searchQuery}"

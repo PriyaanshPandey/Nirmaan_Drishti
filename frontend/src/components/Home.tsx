@@ -8,7 +8,7 @@ import { IndiaMap } from './IndiaMap';
 import { AnimatedCounter } from './AnimatedCounter';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import heroIllustration from '../assets/hero_illustration.png';
-
+import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
 
 interface HomeProps {
@@ -24,6 +24,7 @@ const initialProjectsCount = 1981;
 const initialLakhCrores = 42.78;
 
 export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterState, onOpenLoginModal, homeClickNonce: _homeClickNonce, isPublic: _isPublic }) => {
+  const { t } = useLanguage();
   const [totalProjects, setTotalProjects] = useState<number>(initialProjectsCount);
   const [portfolioCostLakhCr, setPortfolioCostLakhCr] = useState<number>(initialLakhCrores);
 
@@ -51,30 +52,30 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
   const modules = [
     {
       tab: 'dashboard',
-      tag: 'Executive Overview',
-      title: 'Dashboard',
-      desc: 'National health index, budget overruns, and priority interventions.',
+      tag: t('module_dashboard_title', 'Real-Time Dashboard'),
+      title: t('nav_dashboard', 'Dashboard'),
+      desc: t('module_dashboard_desc', 'Live national risk telemetry with AI-powered forecasts and trend analysis'),
       color: 'blue'
     },
     {
       tab: 'projects',
-      tag: 'Master Portfolio',
-      title: 'Projects',
-      desc: 'Telemetry, risk diagnostics, and milestone tracking across 1,981 central sector projects.',
+      tag: t('module_projects_title', 'Project Intelligence'),
+      title: t('nav_projects', 'Projects'),
+      desc: t('module_projects_desc', 'Deep-dive into individual project health, SHAP attributions, and ML forecasts'),
       color: 'green'
     },
     {
       tab: 'distribution',
-      tag: 'Resource Allocation',
-      title: 'Distribution',
-      desc: 'Cross-ministry expenditure and state-level infrastructure spread.',
+      tag: t('module_benchmark_title', 'Benchmark Analytics'),
+      title: t('nav_benchmark', 'Distribution'),
+      desc: t('module_benchmark_desc', 'Ministry-wise and sector-wise distribution, risk comparison matrix'),
       color: 'teal'
     },
     {
       tab: 'action-centre',
-      tag: 'Intervention Matrix',
-      title: 'Action Center',
-      desc: 'Bottleneck escalations, contractor accountability, and resolution alerts.',
+      tag: t('module_alerts_title', 'Early Warnings & Alerts'),
+      title: t('nav_actions', 'Action Center'),
+      desc: t('module_alerts_desc', 'Real-time early warning signals for cost and schedule overruns'),
       color: 'red'
     }
   ];
@@ -100,10 +101,10 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
             </div>
             <div className="hero-text-col">
               <h1 className="hero-title-main">
-                Nirmaan<br />Drishti
+                {t('nirmaan_drishti', 'Nirmaan Drishti')}
               </h1>
               <p className="hero-subtitle-main">
-                Predictive Intelligence &amp; Early Warning System for India's Central Infrastructure Projects
+                {t('hero_subtitle', 'Real-time telemetry tracking 1,981 central infrastructure projects across 28 states')}
               </p>
               <div className="hero-actions-row">
                 <button
@@ -111,16 +112,16 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
                   className="hero-btn-launch"
                   onClick={() => onNavigateTab('dashboard')}
                 >
-                  <span>Launch Dashboard</span>
+                  <span>{t('explore_dashboard', 'Launch Dashboard')}</span>
                   <ArrowRight size={16} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   className="hero-btn-replay-intro"
                   onClick={() => onNavigateTab('projects')}
-                  title="Browse All Projects"
+                  title={t('view_projects', 'Browse All Projects')}
                 >
-                  <span>Browse Projects</span>
+                  <span>{t('view_projects', 'Browse Projects')}</span>
                 </button>
               </div>
             </div>
@@ -145,7 +146,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
             <span className="strip-val">
               <AnimatedCounter value={totalProjects} duration={1000} resetKey={activeTab} />
             </span>
-            <span className="strip-lbl">Ongoing Projects Monitored</span>
+            <span className="strip-lbl">{t('status_ongoing', 'Ongoing Projects Monitored')}</span>
           </div>
         </div>
 
@@ -153,9 +154,9 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
           <div className="strip-icon"><TrendingUp size={20} color="#059669" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val">
-              ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> L Cr
+              ₹<AnimatedCounter value={portfolioCostLakhCr} duration={1000} resetKey={activeTab} formatter={(v) => v.toFixed(2)} /> {t('lakh_crore', 'L Cr')}
             </span>
-            <span className="strip-lbl">Revised Portfolio Outlay</span>
+            <span className="strip-lbl">{t('total_cost_revised', 'Revised Portfolio Outlay')}</span>
           </div>
         </div>
 
@@ -164,10 +165,10 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
           <div className="strip-info">
             <span className="strip-val" style={{ color: '#ef4444' }}>+15.2% Cr</span>
             <span className="strip-lbl">
-              Cost Overrun Forecast
+              {t('cost_overrun_forecast', 'Cost Overrun Forecast')}
               <span style={{ marginLeft: '6px', verticalAlign: 'middle', display: 'inline-flex' }}>
                 <InfoButton 
-                  title="Cost Overrun Forecast" 
+                  title={t('cost_overrun_forecast', 'Cost Overrun Forecast')}
                   summary="AI-driven aggregate forecast of anticipated cost escalations across the portfolio if current execution trends continue." 
                   size="sm" 
                 />
@@ -181,10 +182,10 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
           <div className="strip-info">
             <span className="strip-val" style={{ color: '#f59e0b' }}>+18.4 Mos</span>
             <span className="strip-lbl">
-              Schedule Overrun Forecast
+              {t('schedule_overrun_forecast', 'Schedule Overrun Forecast')}
               <span style={{ marginLeft: '6px', verticalAlign: 'middle', display: 'inline-flex' }}>
                 <InfoButton 
-                  title="Schedule Overrun Forecast" 
+                  title={t('schedule_overrun_forecast', 'Schedule Overrun Forecast')}
                   summary="Anticipated average schedule slippage based on predictive milestone trajectory models." 
                   size="sm" 
                 />
@@ -203,14 +204,14 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
       <section className="home-modules">
         <div className="modules-header-row">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <h2 className="modules-title">Platform Modules</h2>
+            <h2 className="modules-title">{t('platform_modules', 'Platform Modules')}</h2>
             <InfoButton
-              title="Platform Intelligence Modules"
+              title={t('platform_modules', 'Platform Intelligence Modules')}
               summary="Navigate between core analytical engines: Dashboard for executive metrics, Projects for master portfolio telemetry, Distribution for resource allocation, and Action Center for generating policy directives."
               size="sm"
             />
           </div>
-          <span className="modules-subtitle">Core analytical engines &amp; intelligence layers</span>
+          <span className="modules-subtitle">{t('module_dashboard_desc', 'Core analytical engines & intelligence layers')}</span>
         </div>
         <div className="modules-grid">
           {modules.map((m, i) => (
@@ -248,10 +249,10 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '1.2rem' }}>🏛️</span>
-              <h3 style={{ margin: 0, color: '#0F172A', fontSize: '1.25rem', fontWeight: 'bold' }}>MoSPI &amp; Executing Agency Officer Access</h3>
+              <h3 style={{ margin: 0, color: '#0F172A', fontSize: '1.25rem', fontWeight: 'bold' }}>{t('officer_sign_in', 'MoSPI & Executing Agency Officer Access')}</h3>
             </div>
             <p style={{ margin: 0, color: '#475569', fontSize: '0.88rem', maxWidth: '650px' }}>
-              Authorized officials from MoSPI, Ministry of Road Transport, Railways, Power, and Executing Agencies (NHAI) can sign in to access full predictive PDP telemetry, counterfactual simulators, automated ticket routing, and PDF Memorandum generators.
+              {t('login_subtitle', 'Authorized officials from MoSPI, Ministry of Road Transport, Railways, Power, and Executing Agencies (NHAI) can sign in to access full predictive PDP telemetry, counterfactual simulators, automated ticket routing, and PDF Memorandum generators.')}
             </p>
           </div>
           <button
@@ -259,7 +260,7 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
             className="officer-auth-btn"
             onClick={onOpenLoginModal}
           >
-            <span>Officer Authentication</span>
+            <span>{t('officer_sign_in', 'Officer Authentication')}</span>
             <ArrowRight size={16} />
           </button>
         </section>

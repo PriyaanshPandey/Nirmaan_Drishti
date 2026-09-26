@@ -12,6 +12,7 @@ import './PdfExtractor.css';
 import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 import { projectsData, type Project } from '../data/projectsData';
 import { InfoButton } from './ExplainabilityInfo';
+import { useLanguage } from '../context/LanguageContext';
 
 
 export interface PdfExtractorProps {
@@ -325,6 +326,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
   onNavigateTab,
   onSelectProject
 }) => {
+  const { t } = useLanguage();
   const [isDragging, setIsDragging] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [activeFileName, setActiveFileName] = useState('');
@@ -870,7 +872,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
             <div className="extractor-brand-divider"></div>
             <div className="extractor-brand-titles">
               <div className="extractor-title-row">
-                <span className="extractor-app-title">MoSPI FLASH REPORT EXTRACTOR</span>
+                <span className="extractor-app-title">{t('extractor_title', 'MoSPI FLASH REPORT EXTRACTOR')}</span>
                 <span className="extractor-version-pill">v2.1 STANDALONE</span>
                 <span className="extractor-theme-badge">NIRMAAN-DRISHTI SUITE</span>
               </div>
@@ -896,7 +898,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
               onClick={() => onNavigateTab?.('dashboard')}
             >
               <ArrowLeft size={14} />
-              <span>Portal Dashboard</span>
+              <span>{t('nav_dashboard', 'Portal Dashboard')}</span>
             </button>
 
             <button
@@ -906,7 +908,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
               onClick={() => onNavigateTab?.('projects')}
             >
               <Database size={14} />
-              <span>Projects Database</span>
+              <span>{t('nav_projects', 'Projects Database')}</span>
             </button>
           </div>
         </div>
@@ -937,17 +939,17 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
               <UploadCloud size={38} />
             </div>
             <h3 className="drop-heading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              Upload MoSPI Monthly Flash Report PDF
+              {t('upload_pdf', 'Upload MoSPI Monthly Flash Report PDF')}
               <InfoButton title="PDF Upload Module" summary="Drag and drop the official MoSPI Flash Report PDF. The extraction engine uses a combination of PyMuPDF stream parsing and heuristic anchor scanning to extract the core infrastructure table." size="sm" theme="light" />
             </h3>
-            <p className="drop-text">Drag &amp; drop your official government PDF report here, or click to browse</p>
+            <p className="drop-text">{t('drop_pdf_text', 'Drag & drop your official government PDF report here, or click to browse')}</p>
             <button
               type="button"
               className="action-browse-btn"
               onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
             >
               <FileText size={16} />
-              <span>Choose PDF File</span>
+              <span>{t('choose_pdf', 'Choose PDF File')}</span>
             </button>
             <div className="upload-specs-row">
               <span className="spec-item">✓ Supports 400+ page Flash Reports</span>
@@ -986,7 +988,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
                     <div className="sample-footer">
                       <span className="sample-period-text">{s.month} {s.year}</span>
                       <span className="extract-link">
-                        <span>Launch Extraction</span>
+                        <span>{t('extract_data', 'Launch Extraction')}</span>
                         <ArrowRight size={13} />
                       </span>
                     </div>
@@ -1001,7 +1003,7 @@ export const PdfExtractor: React.FC<PdfExtractorProps> = ({
         {errorMsg && (
           <div className="sync-success-banner" style={{ background: '#FEF2F2', borderColor: '#FCA5A5' }}>
             <div className="sync-success-content">
-              <h4 style={{ color: '#DC2626' }}>Extraction Error</h4>
+              <h4 style={{ color: '#DC2626' }}>{t('error', 'Extraction Error')}</h4>
               <p style={{ color: '#991B1B' }}>{errorMsg}</p>
             </div>
             <button className="sync-close-btn" onClick={() => setErrorMsg(null)}>

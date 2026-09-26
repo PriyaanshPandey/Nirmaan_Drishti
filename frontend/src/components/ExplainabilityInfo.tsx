@@ -38,8 +38,8 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
   const updatePosition = () => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const popoverWidth = 320;
-    const padding = 12;
+    const popoverWidth = 350;
+    const padding = 14;
 
     // Calculate left, keeping within viewport
     let left = rect.left + rect.width / 2 - popoverWidth / 2;
@@ -136,10 +136,10 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
               <div className="info-popover-data-summary" aria-label="Current chart data">
                 <h5 className="info-popover-section-title">Current Data</h5>
                 <ul className="info-popover-data-list">
-                  {dataSummary.items.map((item) => (
-                    <li key={`${item.label}-${item.value}`}>
-                      <span>{item.label}</span>
-                      <strong>{item.value}</strong>
+                  {dataSummary.items.map((item, idx) => (
+                    <li key={`${item.label}-${idx}`} className="info-popover-data-item">
+                      <span className="info-popover-item-label">{item.label}</span>
+                      <span className="info-popover-item-value">{item.value}</span>
                     </li>
                   ))}
                 </ul>

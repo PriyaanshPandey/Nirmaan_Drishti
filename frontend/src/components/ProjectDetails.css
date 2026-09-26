@@ -2444,7 +2444,7 @@
   font-size: 15px;
   font-weight: 850;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 8px 24px rgba(3, 4, 94, 0.3);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   flex-shrink: 0;
@@ -2453,7 +2453,7 @@
 .take-action-cta-btn:hover {
   background: #B91C1C;
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(220, 38, 38, 0.55);
+  box-shadow: 0 12px 30px rgba(3, 4, 94, 0.45);
 }
 
 

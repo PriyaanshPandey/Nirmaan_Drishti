@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import './ScrollHero.css';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ScrollHeroProps {
   activeTab?: string;
@@ -14,6 +15,7 @@ const getFramePath = (index: number): string => {
 };
 
 export const ScrollHero: React.FC<ScrollHeroProps> = ({ activeTab }) => {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hintRef = useRef<HTMLDivElement | null>(null);
@@ -243,7 +245,7 @@ export const ScrollHero: React.FC<ScrollHeroProps> = ({ activeTab }) => {
           role="img"
           aria-labelledby="scroll-hero-title scroll-hero-description"
         />
-        <h2 id="scroll-hero-title" className="sr-only">Infrastructure overview animation</h2>
+        <h2 id="scroll-hero-title" className="sr-only">{t('scroll_hero_title', 'Infrastructure overview animation')}</h2>
         <p id="scroll-hero-description" className="sr-only">
           A 101-frame visual sequence showing national infrastructure projects. Scrolling advances through the sequence before the project overview begins. The animation remains on its first frame when reduced motion is enabled.
         </p>
@@ -259,7 +261,7 @@ export const ScrollHero: React.FC<ScrollHeroProps> = ({ activeTab }) => {
           <div className="scroll-mouse-icon">
             <div className="scroll-mouse-wheel" />
           </div>
-          <span>Scroll down to play</span>
+          <span>{t('scroll_down', 'Scroll down to play')}</span>
         </div>
       </div>
     </section>

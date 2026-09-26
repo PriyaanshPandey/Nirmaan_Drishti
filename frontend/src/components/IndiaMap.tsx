@@ -7,6 +7,7 @@ import { projectsData, type Project } from '../data/projectsData';
 import indiaMapData from '@svg-maps/india';
 import { AnimatedCounter } from './AnimatedCounter';
 import { InfoButton } from './ExplainabilityInfo';
+import { useLanguage } from '../context/LanguageContext';
 
 interface StateSummary {
   stateName: string;
@@ -105,6 +106,7 @@ interface IndiaMapProps {
 }
 
 export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelectStateFilter }) => {
+  const { t } = useLanguage();
   const [selectedStateId, setSelectedStateId] = useState<string>('up');
   const [hoveredStateId, setHoveredStateId] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; name: string }>({
@@ -121,7 +123,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
       visible: true,
       x: e.clientX,
       y: e.clientY,
-      name: label
+      name: t(label, label)
     });
   };
 
@@ -304,22 +306,26 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
       <div className="map-section-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h2 id="india-map-title" className="map-section-title">State-wise Project Distribution</h2>
+            <h2 id="india-map-title" className="map-section-title">
+              {t('state_wise_distribution', 'State-wise Project Distribution')}
+            </h2>
             <InfoButton
-              title="Interactive GIS India Infrastructure Map"
-              summary="Click on any state on the map to instantly view its detailed telemetry statistics and filter the global projects dataset to projects executing within that state."
+              title={t('interactive_gis_map', 'Interactive GIS India Infrastructure Map')}
+              summary={t('interactive_gis_map_summary', 'Click on any state on the map to instantly view its detailed telemetry statistics and filter the global projects dataset to projects executing within that state.')}
               dataSummary={{
                 items: [
-                  { label: 'Map Selection Filter', value: 'Clicking any state auto-routes to Projects filtered by state' },
-                  { label: 'Heatmap Density', value: 'Darker red shades indicate higher concentration of active infrastructure outlay' }
+                  { label: t('map_selection_filter', 'Map Selection Filter'), value: t('map_selection_filter_desc', 'Clicking any state auto-routes to Projects filtered by state') },
+                  { label: t('heatmap_density', 'Heatmap Density'), value: t('heatmap_density_desc', 'Darker red shades indicate higher concentration of active infrastructure outlay') }
                 ],
-                insight: 'Geographic distribution highlights regional capital outlay concentration and helps track state-level execution velocity.'
+                insight: t('map_insight', 'Geographic distribution highlights regional capital outlay concentration and helps track state-level execution velocity.')
               }}
               theme="light"
               size="sm"
             />
           </div>
-          <p className="map-section-subtitle">Real-time geographic dataset &amp; approved financial outlay across India</p>
+          <p className="map-section-subtitle">
+            {t('state_wise_distribution_sub', 'Real-time geographic dataset & approved financial outlay across India')}
+          </p>
         </div>
       </div>
 
@@ -327,7 +333,9 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
         {/* Left Side: PAIMANA State Metrics Card */}
         <div className="state-metrics-card">
           <div className="state-card-header">
-            <span className="state-header-title">{ID_TO_LABEL[displayedStateId] || selectedStateName}</span>
+            <span className="state-header-title">
+              {t(ID_TO_LABEL[displayedStateId] || selectedStateName, ID_TO_LABEL[displayedStateId] || selectedStateName)}
+            </span>
           </div>
 
           <div className="state-metrics-grid">
@@ -336,7 +344,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
                 <Building2 size={20} color="#2563EB" />
               </div>
               <div className="metric-info">
-                <span className="metric-lbl">Project Count (No.)</span>
+                <span className="metric-lbl">{t('project_count_no', 'Project Count (No.)')}</span>
                 <span className="metric-val">
                   <AnimatedCounter value={currentStateSummary.projectCount} duration={800} resetKey={activeResetTrigger} />
                 </span>
@@ -348,7 +356,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
                 <Coins size={20} color="#059669" />
               </div>
               <div className="metric-info">
-                <span className="metric-lbl">Original Cost (in Cr.)</span>
+                <span className="metric-lbl">{t('original_cost_cr', 'Original Cost (in Cr.)')}</span>
                 <span className="metric-val">
                   ₹ <AnimatedCounter value={Math.round(currentStateSummary.originalCostCrore)} duration={800} resetKey={activeResetTrigger} />
                 </span>
@@ -360,7 +368,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
                 <TrendingUp size={20} color="#DC2626" />
               </div>
               <div className="metric-info">
-                <span className="metric-lbl">Latest Revised Cost (in Cr.)</span>
+                <span className="metric-lbl">{t('latest_revised_cost_cr', 'Latest Revised Cost (in Cr.)')}</span>
                 <span className="metric-val">
                   ₹ <AnimatedCounter value={Math.round(currentStateSummary.revisedCostCrore)} duration={800} resetKey={activeResetTrigger} />
                 </span>
@@ -372,7 +380,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
                 <Clock size={20} color="#D97706" />
               </div>
               <div className="metric-info">
-                <span className="metric-lbl">Expenditure(Cumm.) (in Cr.)</span>
+                <span className="metric-lbl">{t('expenditure_cumm_cr', 'Expenditure(Cumm.) (in Cr.)')}</span>
                 <span className="metric-val">
                   ₹ <AnimatedCounter value={Math.round(currentStateSummary.expenditureCrore)} duration={800} resetKey={activeResetTrigger} />
                 </span>
@@ -439,7 +447,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({ activeTab, resetKey, onSelec
                   }}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${ID_TO_LABEL[loc.id] || loc.name}: ${stateDataMap.get(ID_TO_STATE[loc.id] || '')?.projectCount || 0} projects`}
+                  aria-label={`${t(ID_TO_LABEL[loc.id] || loc.name, ID_TO_LABEL[loc.id] || loc.name)}: ${stateDataMap.get(ID_TO_STATE[loc.id] || '')?.projectCount || 0} ${t('projects', 'projects')}`}
                   aria-pressed={isSelected}
                 />
               );
