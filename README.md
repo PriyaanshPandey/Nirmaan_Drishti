@@ -22,17 +22,19 @@
 
 ---
 
-## 🌟 What is Nirmaan Dristi?
+## 🌟 What is Nirmaan Drishti?
 
-**Nirmaan Dristi** (meaning *"Vision of Construction"*) is an end-to-end **AI-powered infrastructure project intelligence platform** built for the Government of India's Project Monitoring Group (PMG). It monitors **3,361 national infrastructure projects** across **17 ministries** and **22 sectors**, providing:
+**Nirmaan Drishti** (meaning *"Vision of Construction"*) is an end-to-end **AI-powered infrastructure project intelligence platform** built for the Government of India's Project Monitoring Group (PMG). It monitors national infrastructure projects across **17 ministries** and **22 sectors**, providing:
 
-- 📈 **Incremental ML Forecasting** — Predicts *additional* cost escalation and schedule delays over a 3-month horizon using XGBoost models trained on the PAIMANA monthly dataset
-- 🧠 **Explainable AI (TreeSHAP)** — Identifies which specific project attributes are driving risk, making every prediction fully auditable
-- 🤖 **Qwen3-8B Natural Language Engine** — Converts complex ML outputs into plain-English executive summaries and answers natural language questions about any project
-- 📊 **Real-time Risk Scoring** — Continuously scores every project on cost, schedule, and implementation risk dimensions
-- 🚨 **Early Warning Alerts** — Flags at-risk projects before deadlines are missed, enabling proactive PMG intervention
+- 🎯 **Next-Period ($T+1$) ML Classification** — Predicts whether an infrastructure project will experience schedule delay or budget overrun at the next operational observation ($T+1$) using state-of-the-art XGBoost classifiers trained with zero temporal leakage.
+- ⚖️ **Imbalance-Aware Prediction** — Employs class-weighted gradient boosting to reliably detect cost overruns despite severe class imbalance.
+- 🔍 **Unsupervised Anomaly Detection** — Isolation Forest anomaly detector flags abnormal reporting patterns and unexpected trajectory deviations.
+- 🧠 **Explainable AI (TreeSHAP)** — Identifies which specific project features drive risk or serve as protective factors, making every prediction fully auditable.
+- 🤖 **Qwen3-8B Natural Language Engine** — Converts complex ML outputs into plain-English executive summaries and answers natural language queries.
+- 📊 **Real-time Risk Scoring** — Continuously computes composite risk indices $[0, 100]$ across cost, schedule, and trajectory health dimensions.
+- 🚨 **Early Warning Alerts** — Flags at-risk projects before deadlines slip, enabling proactive PMG intervention.
 
-> The platform processes the **PAIMANA (Project Appraisal and Implementation Monitoring ANAlysis)** master dataset — 14,979 monthly project snapshots — to power its predictions.
+> **Note on Strategy**: The ML pipeline operates strictly on a **Single Next-Period ($T \to T+1$) Prediction Strategy** combining calibrated risk classification (XGBoost) with scale-invariant continuous regression (Stacking Regressor for Schedule Delay, HistGradientBoosting for Cost Multiplier $\to$ Future Cost). All models are trained with zero temporal leakage across 212,024 chronological transitions.
 
 ---
 

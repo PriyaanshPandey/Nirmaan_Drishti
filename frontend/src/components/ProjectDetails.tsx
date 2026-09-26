@@ -211,6 +211,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   onFilterState,
   onFilterAgency
 }) => {
+  const { language, t } = useLanguage();
   const [project, setProject] = useState<Project | null>(null);
   const [loadingProject, setLoadingProject] = useState(true);
   const [projectError, setProjectError] = useState(false);

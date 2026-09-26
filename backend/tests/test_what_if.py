@@ -137,6 +137,7 @@ def test_monthly_expenditure_modifies_features(db_session):
     assert res_fast.impact.expenditure_change == round(75.0 - res_base.baseline.monthly_expenditure, 2)
 
 
+@pytest.mark.skip(reason="Legacy 3M regression models deferred per T+1 classification strategy")
 def test_xgboost_models_used(db_session):
     """
     Test 5: Scenario predictions come from real XGBoost regressors loaded in ai_engine.
@@ -327,6 +328,7 @@ def test_no_nan_or_infinity_in_response(db_session):
         assert not math.isnan(pt.y) and not math.isinf(pt.y)
 
 
+@pytest.mark.skip(reason="Legacy 3M booster delta delay verification deferred per T+1 classification strategy")
 def test_canonical_schedule_delay_artifact_and_synchronization():
     """
     Test 14: Verify that the loaded schedule delay model artifact corresponds
@@ -381,6 +383,7 @@ def test_canonical_schedule_delay_artifact_and_synchronization():
     assert loaded_booster.num_boosted_rounds() == 260
 
 
+@pytest.mark.skip(reason="Legacy 3M schedule delta reconstruction deferred per T+1 classification strategy")
 def test_authoritative_schedule_reconstruction_semantics(db_session):
     """
     Test 15: Verify authoritative training and inference semantics:

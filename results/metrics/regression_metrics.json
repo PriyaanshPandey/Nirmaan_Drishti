@@ -1,0 +1,134 @@
+{
+  "timestamp": "2026-09-22 14:42:41 UTC",
+  "schedule_regression": {
+    "winning_formulation": "Direct T+1",
+    "winning_model": "Stacking Regressor",
+    "validation_metrics": {
+      "R2": 0.8191,
+      "MAE": 4.1231,
+      "RMSE": 12.455,
+      "MedAE": 0.5172,
+      "P50": 0.5172,
+      "P75": 1.8646,
+      "P90": 10.0242,
+      "P95": 24.0,
+      "P99": 59.8734,
+      "Mean_Bias": 1.1907,
+      "Explained_Variance": 0.8207
+    },
+    "holdout_test_metrics": {
+      "R2": 0.87,
+      "MAE": 5.2578,
+      "RMSE": 15.8953,
+      "MedAE": 0.8945,
+      "P50": 0.8945,
+      "P75": 3.173,
+      "P90": 12.1229,
+      "P95": 24.5276,
+      "P99": 74.0,
+      "Mean_Bias": -2.5466,
+      "Explained_Variance": 0.8734
+    },
+    "historical_benchmark_comparison": {
+      "benchmark_holdout_r2": 0.9331,
+      "benchmark_holdout_mae_months": 3.97,
+      "benchmark_holdout_rmse_months": 11.6,
+      "achieved_holdout_r2": 0.87,
+      "achieved_holdout_mae_months": 5.2578,
+      "achieved_holdout_rmse_months": 15.8953,
+      "achieved_holdout_medae_months": 0.8945,
+      "achieved_holdout_p90_months": 12.1229,
+      "achieved_holdout_p95_months": 24.5276
+    }
+  },
+  "cost_regression": {
+    "unified_architecture": "T+1 Cost Multiplier -> Future Cost",
+    "winning_model": "HistGradientBoosting",
+    "multiplier_val_metrics": {
+      "R2": 0.4002,
+      "MAE": 0.1284,
+      "RMSE": 0.678,
+      "MedAE": 0.0056,
+      "P50": 0.0056,
+      "P75": 0.0443,
+      "P90": 0.364,
+      "P95": 0.69,
+      "P99": 1.3721,
+      "Mean_Bias": 0.0153,
+      "Explained_Variance": 0.4006
+    },
+    "multiplier_test_metrics": {
+      "R2": 0.7229,
+      "MAE": 0.152,
+      "RMSE": 0.3442,
+      "MedAE": 0.0182,
+      "P50": 0.0182,
+      "P75": 0.2131,
+      "P90": 0.5145,
+      "P95": 0.5954,
+      "P99": 0.9908,
+      "Mean_Bias": 0.1116,
+      "Explained_Variance": 0.7521
+    },
+    "derived_future_cost_val_metrics": {
+      "R2": 0.933,
+      "MAE": 166.0692,
+      "RMSE": 1276.724,
+      "MedAE": 5.4143,
+      "P50": 5.4143,
+      "P75": 38.7554,
+      "P90": 242.561,
+      "P95": 618.2061,
+      "P99": 2560.2441,
+      "Mean_Bias": 47.7924,
+      "Explained_Variance": 0.9331
+    },
+    "derived_future_cost_test_metrics": {
+      "R2": 0.9302,
+      "MAE": 282.0548,
+      "RMSE": 1425.7005,
+      "MedAE": 15.7495,
+      "P50": 15.7495,
+      "P75": 139.2948,
+      "P90": 511.7542,
+      "P95": 1048.2135,
+      "P99": 4401.6795,
+      "Mean_Bias": 224.5899,
+      "Explained_Variance": 0.9319
+    },
+    "historical_benchmark_comparison": {
+      "benchmark_holdout_r2": 0.8862,
+      "benchmark_holdout_mae_cr": 424.55,
+      "benchmark_holdout_rmse_cr": 1891.13,
+      "achieved_holdout_r2": 0.9302,
+      "achieved_holdout_mae_cr": 282.0548,
+      "achieved_holdout_rmse_cr": 1425.7005,
+      "achieved_holdout_medae_cr": 15.7495,
+      "achieved_holdout_p90_cr": 511.7542,
+      "achieved_holdout_p95_cr": 1048.2135
+    }
+  },
+  "transition_gap_analysis": {
+    "total_transitions": 212024,
+    "exact_1m_count": 207079,
+    "exact_1m_pct": 97.67,
+    "multi_month_count": 4945,
+    "multi_month_pct": 2.33,
+    "gap_2_3m_count": 3953,
+    "gap_2_3m_pct": 1.86,
+    "gap_4_6m_count": 610,
+    "gap_4_6m_pct": 0.29,
+    "gap_7_12m_count": 286,
+    "gap_7_12m_pct": 0.13,
+    "gap_gt_12m_count": 96,
+    "gap_gt_12m_pct": 0.05
+  },
+  "dataset_counts": {
+    "total_usable_rows": 212024,
+    "train_rows": 156878,
+    "val_rows": 27890,
+    "test_rows": 27256,
+    "inference_rows": 0,
+    "unique_projects": 4988
+  }
+}

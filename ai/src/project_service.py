@@ -1,8 +1,8 @@
 """
-Project service layer for PAIMANA ML.
+Project service layer for PAIMANA ML / Nirmaan Drishti.
 
 Provides API-ready functions for project lookup, prediction, timeline calculations,
-completed project summary, and SHAP explanations. Does NOT depend on Streamlit.
+completed project summary, and SHAP explanations.
 All date and timeline arithmetic is handled in this application service layer.
 """
 
@@ -13,10 +13,13 @@ from dateutil.relativedelta import relativedelta
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
-from src.feature_selection import get_available_feature_split, get_feature_columns, is_cold_start
-from src.predict import predict_cost, predict_time, load_all_models
+from src.t1_pipeline import (
+    get_t1_feature_definitions,
+    add_t1_dynamic_physics_features,
+    get_preprocessor_feature_names
+)
+from src.predict import predict_t1, predict_cost, predict_time, load_all_models
 from src.explain import get_shap_explanation
-from src.preprocessing import get_feature_names
 
 
 def add_months_to_date(base_date, months_float: float):
@@ -42,24 +45,7 @@ def add_months_to_date(base_date, months_float: float):
 
 
 def format_calendar_duration(d1, d2, is_remaining: bool = False) -> str:
-    """
-    Format calendar difference between two dates as e.g. '3 years 7 months'.
-    Uses exact date arithmetic via relativedelta, handling different month lengths and leap years.
-
-    Parameters
-    ----------
-    d1 : datetime or Timestamp or date
-        Start date.
-    d2 : datetime or Timestamp or date
-        End date.
-    is_remaining : bool
-        Whether this is a time remaining query (handles overdue prefix).
-
-    Returns
-    -------
-    str
-        Formatted string like '3 years 7 months' or 'Overdue by 1 month'.
-    """
+    """Format calendar difference between two dates as e.g. '3 years 7 months'."""
     if d1 is None or d2 is None or pd.isna(d1) or pd.isna(d2):
         return "N/A"
 
@@ -105,7 +91,16 @@ def format_calendar_duration(d1, d2, is_remaining: bool = False) -> str:
 
 def load_project_history(project_id: str, df: pd.DataFrame) -> pd.DataFrame:
     """Retrieve all historical rows for a project, sorted chronologically."""
-    mask = df["project_id"].astype(str) == str(project_id)
+    clean_id = str(project_id).strip()
+    if clean_id.endswith(".0"):
+        clean_id = clean_id[:-2]
+
+    mask = df["project_id"].astype(str) == clean_id
+    if not mask.any() and "legacy_ocms_code" in df.columns:
+        mask = df["legacy_ocms_code"].astype(str) == clean_id
+    if not mask.any() and "effective_project_key" in df.columns:
+        mask = df["effective_project_key"].astype(str) == clean_id
+
     history = df[mask].sort_values("report_month").reset_index(drop=True)
 
     if len(history) == 0:
@@ -123,11 +118,41 @@ def get_latest_snapshot(project_id: str, df: pd.DataFrame) -> pd.Series:
 def prepare_prediction_features(project_id: str, df: pd.DataFrame) -> pd.DataFrame:
     """Build the model-ready feature dataframe from the latest snapshot."""
     latest = get_latest_snapshot(project_id, df)
-    feature_split = get_available_feature_split(df)
-    feature_cols = feature_split["categorical"] + feature_split["numeric"]
+    cat_cols, num_cols = get_t1_feature_definitions()
+    all_feature_cols = cat_cols + num_cols
 
-    features = pd.DataFrame([latest[feature_cols]])
-    return features
+    row_df = pd.DataFrame([latest])
+    row_df = add_t1_dynamic_physics_features(row_df)
+
+    # Reconcile aliases and fill missing columns safely
+    for col in num_cols:
+        if col not in row_df.columns or row_df[col].isna().all():
+            if col == "original_cost_cr" and "original_cost_crore" in row_df.columns:
+                row_df[col] = row_df["original_cost_crore"]
+            elif col == "revised_cost_cr" and "revised_cost_crore" in row_df.columns:
+                row_df[col] = row_df["revised_cost_crore"]
+            elif col == "anticipated_cost_cr" and "anticipated_cost_crore" in row_df.columns:
+                row_df[col] = row_df["anticipated_cost_crore"]
+            elif col == "cumulative_expenditure_cr" and "cumulative_expenditure_crore" in row_df.columns:
+                row_df[col] = row_df["cumulative_expenditure_crore"]
+            elif col not in row_df.columns:
+                row_df[col] = 0.0
+
+    for col in cat_cols:
+        if col not in row_df.columns:
+            row_df[col] = "UNKNOWN"
+
+    # Set crore aliases if missing for downstream simulation service
+    if "original_cost_crore" not in row_df.columns and "original_cost_cr" in row_df.columns:
+        row_df["original_cost_crore"] = row_df["original_cost_cr"]
+    if "revised_cost_crore" not in row_df.columns and "revised_cost_cr" in row_df.columns:
+        row_df["revised_cost_crore"] = row_df["revised_cost_cr"]
+    if "cumulative_expenditure_crore" not in row_df.columns and "cumulative_expenditure_cr" in row_df.columns:
+        row_df["cumulative_expenditure_crore"] = row_df["cumulative_expenditure_cr"]
+    if "expenditure_velocity_crore_month" not in row_df.columns:
+        row_df["expenditure_velocity_crore_month"] = row_df.get("expenditure_velocity", 0.0)
+
+    return row_df
 
 
 def get_current_status(project_id: str, df: pd.DataFrame) -> Dict[str, Any]:
@@ -137,18 +162,18 @@ def get_current_status(project_id: str, df: pd.DataFrame) -> Dict[str, Any]:
     status = {
         "physical_progress_pct": _safe_val(latest, "physical_progress_pct"),
         "cost_overrun_pct": _safe_val(latest, "cost_overrun_pct"),
-        "original_cost_crore": _safe_val(latest, "original_cost_crore"),
-        "revised_cost_crore": _safe_val(latest, "revised_cost_crore"),
+        "original_cost_crore": _safe_val(latest, "original_cost_crore") or _safe_val(latest, "original_cost_cr"),
+        "revised_cost_crore": _safe_val(latest, "revised_cost_crore") or _safe_val(latest, "revised_cost_cr"),
         "cost_escalation_crore": _safe_val(latest, "cost_escalation_crore"),
-        "cumulative_expenditure_crore": _safe_val(latest, "cumulative_expenditure_crore"),
+        "cumulative_expenditure_crore": _safe_val(latest, "cumulative_expenditure_crore") or _safe_val(latest, "cumulative_expenditure_cr"),
         "expenditure_ratio_pct": _safe_val(latest, "expenditure_ratio_pct"),
         "schedule_status": _safe_str(latest, "schedule_status"),
         "schedule_extension_months": _safe_val(latest, "schedule_extension_months"),
         "remaining_work_pct": _safe_val(latest, "remaining_work_pct"),
-        "remaining_budget_crore": _safe_val(latest, "remaining_budget_crore"),
+        "remaining_budget_crore": _safe_val(latest, "remaining_budget_crore") or _safe_val(latest, "remaining_budget_headroom"),
         "project_age_months": _safe_val(latest, "project_age_months"),
         "overdue_days": _safe_val(latest, "overdue_days"),
-        "is_completed": str(latest.get("schedule_status", "")).upper() == "COMPLETED" or _safe_val(latest, "physical_progress_pct") == 100.0,
+        "is_completed": str(latest.get("schedule_status", "")).upper() == "COMPLETED" or str(latest.get("operational_status", "")).upper() == "COMPLETED" or _safe_val(latest, "physical_progress_pct") == 100.0,
     }
 
     return status
@@ -160,82 +185,49 @@ def get_project_info(project_id: str, df: pd.DataFrame) -> Dict[str, Any]:
 
     return {
         "project_id": str(project_id),
-        "project_name": _safe_str(latest, "project_name"),
+        "project_name": _safe_str(latest, "project_name") or f"Project {project_id}",
         "agency": _safe_str(latest, "agency"),
+        "ministry_department": _safe_str(latest, "ministry_department"),
         "sector": _safe_str(latest, "sector"),
         "state": _safe_str(latest, "state"),
-        "ministry_department": _safe_str(latest, "ministry_department"),
-        "latest_report_month": str(latest["report_month"].date()) if pd.notna(latest["report_month"]) else None,
-        "original_target_doc": str(latest["original_target_doc"].date()) if pd.notna(latest.get("original_target_doc")) else None,
-        "revised_doc": str(latest["revised_doc"].date()) if pd.notna(latest.get("revised_doc")) else None,
-        "total_snapshots": len(load_project_history(project_id, df)),
+        "latest_report_month": str(latest["report_month"].date()) if pd.notna(latest.get("report_month")) else "N/A",
     }
 
 
 def get_project_timeline(project_id: str, df: pd.DataFrame) -> Dict[str, Any]:
-    """
-    Calculate project timeline metrics using exact date arithmetic.
-    Robust against missing dates by using available timeline/remaining duration fields.
-    """
+    """Calculate timeline metadata."""
     latest = get_latest_snapshot(project_id, df)
 
-    start_date = latest.get("approval_start")
+    start_date = latest.get("approval_date") or latest.get("approval_start")
     as_of_date = latest.get("report_month")
-    orig_doc = latest.get("original_target_doc")
-    rev_doc = latest.get("revised_doc")
+    planned_doc = latest.get("anticipated_doc") or latest.get("revised_doc") or latest.get("original_doc") or latest.get("original_target_doc")
 
-    # Planned DOC resolution with fallbacks
-    planned_doc = None
-    if pd.notna(rev_doc):
-        planned_doc = rev_doc
-    elif pd.notna(orig_doc):
-        planned_doc = orig_doc
-    else:
-        # Fallback using remaining months if explicit date columns are not populated
-        rem_mo = latest.get("revised_remaining_months") or latest.get("planned_remaining_months")
-        if pd.notna(rem_mo) and pd.notna(as_of_date):
-            planned_doc = add_months_to_date(as_of_date, float(rem_mo))
-        elif pd.notna(as_of_date):
-            planned_doc = as_of_date
-
-    # 1. Time Elapsed Till Now
     time_elapsed_str = format_calendar_duration(start_date, as_of_date) if pd.notna(start_date) and pd.notna(as_of_date) else "N/A"
-
-    # 2. Time Remaining for Planned Completion
-    if pd.notna(planned_doc) and pd.notna(as_of_date):
-        time_remaining_str = format_calendar_duration(as_of_date, planned_doc, is_remaining=True)
-    else:
-        time_remaining_str = "N/A"
+    time_remaining_str = format_calendar_duration(as_of_date, planned_doc, is_remaining=True) if pd.notna(planned_doc) and pd.notna(as_of_date) else "N/A"
 
     return {
-        "start_date": str(start_date.date()) if pd.notna(start_date) else "N/A",
-        "as_of_date": str(as_of_date.date()) if pd.notna(as_of_date) else "N/A",
-        "planned_completion_date": str(planned_doc.date()) if pd.notna(planned_doc) else "N/A",
+        "start_date": str(start_date.date()) if pd.notna(start_date) and hasattr(start_date, "date") else str(start_date) if pd.notna(start_date) else "N/A",
+        "as_of_date": str(as_of_date.date()) if pd.notna(as_of_date) and hasattr(as_of_date, "date") else str(as_of_date) if pd.notna(as_of_date) else "N/A",
+        "planned_completion_date": str(planned_doc.date()) if pd.notna(planned_doc) and hasattr(planned_doc, "date") else str(planned_doc) if pd.notna(planned_doc) else "N/A",
         "time_elapsed_till_now": time_elapsed_str,
         "time_remaining_planned_completion": time_remaining_str,
     }
 
 
 def get_completed_project_summary(project_id: str, df: pd.DataFrame) -> Dict[str, Any]:
-    """
-    Generate final outcome summary for completed projects.
-    Used instead of future forecasts.
-    """
+    """Generate final outcome summary for completed projects."""
     latest = get_latest_snapshot(project_id, df)
 
     return {
         "is_completed": True,
         "final_physical_progress_pct": _safe_val(latest, "physical_progress_pct"),
-        "actual_completion_date": str(latest["report_month"].date()) if pd.notna(latest["report_month"]) else None,
-        "original_target_doc": str(latest["original_target_doc"].date()) if pd.notna(latest.get("original_target_doc")) else None,
-        "revised_doc": str(latest["revised_doc"].date()) if pd.notna(latest.get("revised_doc")) else None,
+        "actual_completion_date": str(latest["report_month"].date()) if pd.notna(latest.get("report_month")) else None,
         "actual_schedule_extension_months": _safe_val(latest, "schedule_extension_months"),
-        "original_cost_crore": _safe_val(latest, "original_cost_crore"),
-        "final_revised_cost_crore": _safe_val(latest, "revised_cost_crore"),
-        "final_expenditure_crore": _safe_val(latest, "cumulative_expenditure_crore"),
+        "original_cost_crore": _safe_val(latest, "original_cost_crore") or _safe_val(latest, "original_cost_cr"),
+        "final_revised_cost_crore": _safe_val(latest, "revised_cost_crore") or _safe_val(latest, "revised_cost_cr"),
+        "final_expenditure_crore": _safe_val(latest, "cumulative_expenditure_crore") or _safe_val(latest, "cumulative_expenditure_cr"),
         "actual_cost_overrun_pct": _safe_val(latest, "cost_overrun_pct"),
         "actual_cost_escalation_crore": _safe_val(latest, "cost_escalation_crore"),
-        "source_report": _safe_str(latest, "source_report"),
     }
 
 
@@ -243,20 +235,16 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
                         models: Dict[str, Any],
                         horizons: list = None) -> Dict[str, Any]:
     """
-    Generate complete prediction output for a project.
-    Combines ML predictions with application-level timeline/date forecasts.
-
-    Main API endpoint function.
+    Generate complete T+1 prediction output for a project.
+    Combines T+1 schedule delay and cost overrun ML models, anomaly detection,
+    risk score computation, and fresh SHAP explanations.
     """
-    if horizons is None:
-        horizons = [3]
-
     info = get_project_info(project_id, df)
     current = get_current_status(project_id, df)
     timeline = get_project_timeline(project_id, df)
     latest = get_latest_snapshot(project_id, df)
 
-    # If project is completed, return final outcomes summary
+    # Completed project handling
     if current.get("is_completed", False):
         completed_summary = get_completed_project_summary(project_id, df)
         return {
@@ -267,98 +255,69 @@ def get_full_prediction(project_id: str, df: pd.DataFrame,
             "completed_summary": completed_summary,
             "current_status": current,
             "timeline": timeline,
+            "t1_prediction": {},
             "cost_prediction": {},
             "time_prediction": {},
             "explanations": {},
             "project_info": info,
         }
 
-    # For active projects, prepare features and check cold-start vs mature status
+    # Active project: prepare features
     features_df = prepare_prediction_features(project_id, df)
-    cold_flag = is_cold_start(features_df).iloc[0] if len(features_df) > 0 else False
 
-    cost_pred = predict_cost(features_df, models, current, [3], is_cold=cold_flag)
-    time_pred = predict_time(features_df, models, current, [3], is_cold=cold_flag)
+    # Run T+1 core prediction
+    t1_res = predict_t1(features_df, models, current)
 
-    confidence_level = "LIMITED HISTORICAL DATA" if cold_flag else "HIGH CONFIDENCE"
+    # Backwards compatibility dictionaries
+    cost_pred = predict_cost(features_df, models, current)
+    time_pred = predict_time(features_df, models, current)
 
-    # Resolve dates for timeline forecasting
-    as_of = latest.get("report_month")
-    if isinstance(as_of, (pd.Timestamp, datetime)):
-        as_of = as_of.date()
-    elif isinstance(as_of, str):
-        try:
-            as_of = pd.to_datetime(as_of).date()
-        except Exception:
-            as_of = None
-
-    rev_doc = latest.get("revised_doc")
-    orig_doc = latest.get("original_target_doc")
-    planned_doc = None
-    if pd.notna(rev_doc):
-        planned_doc = rev_doc.date() if isinstance(rev_doc, (pd.Timestamp, datetime)) else pd.to_datetime(rev_doc).date()
-    elif pd.notna(orig_doc):
-        planned_doc = orig_doc.date() if isinstance(orig_doc, (pd.Timestamp, datetime)) else pd.to_datetime(orig_doc).date()
-    else:
-        rem_mo = latest.get("revised_remaining_months") or latest.get("planned_remaining_months")
-        if pd.notna(rem_mo) and as_of is not None:
-            planned_doc = add_months_to_date(as_of, float(rem_mo))
-        elif as_of is not None:
-            planned_doc = as_of
-
-    # Enrich time_prediction with application-level completion forecast fields (3-Month Only)
-    h_key = "3_month"
-    if h_key in time_pred:
-        pred_h = time_pred[h_key]
-        delay_months = pred_h.get("predicted_additional_delay_months")
-        delay_val = float(delay_months) if delay_months is not None else 0.0
-
-        # 1. Predicted Additional Delay formatted
-        pred_h["predicted_additional_delay"] = f"{delay_val:+.2f} months"
-
-        # 2. Tentative Completion Date
-        if planned_doc and as_of:
-            base_date = max(planned_doc, as_of)
-            tentative_doc = add_months_to_date(base_date, delay_val)
-        elif as_of:
-            tentative_doc = add_months_to_date(as_of, delay_val)
-        else:
-            tentative_doc = None
-
-        if tentative_doc:
-            pred_h["tentative_completion_date"] = tentative_doc.strftime("%d %B %Y")
-            pred_h["tentative_completion_date_iso"] = tentative_doc.strftime("%Y-%m-%d")
-        else:
-            pred_h["tentative_completion_date"] = "N/A"
-
-        # 3. Estimated Time Needed for Completion (from latest report/current date to tentative completion date)
-        if as_of and tentative_doc:
-            pred_h["estimated_time_needed_completion"] = format_calendar_duration(as_of, tentative_doc)
-        else:
-            pred_h["estimated_time_needed_completion"] = "N/A"
-
-    # Generate SHAP explanations for 3-Month models only
+    # Generate SHAP explanations using new production models
     explanations = {}
-    for model_type in ["cost", "time"]:
-        cls_key = f"{model_type}_classifier_3m"
-        prep_key = f"{model_type}_cls_3m_preprocessor"
-        if cls_key in models and prep_key in models:
-            X = models[prep_key].transform(features_df)
-            feature_names = get_feature_names(models[prep_key])
-            explanation = get_shap_explanation(
-                models[cls_key], X, feature_names
-            )
-            explanations[f"{model_type}_3m"] = explanation
+    cat_cols, num_cols = get_t1_feature_definitions()
+
+    # 1. Schedule delay SHAP
+    sched_model = models.get("schedule_delay_model")
+    sched_prep = models.get("schedule_delay_preprocessor")
+    if sched_model is not None and sched_prep is not None:
+        try:
+            X_sched = sched_prep.transform(features_df)
+            feat_names = models.get("transformed_feature_names") or get_preprocessor_feature_names(sched_prep, cat_cols, num_cols)
+            exp_sched = get_shap_explanation(sched_model, X_sched, feat_names)
+            explanations["schedule_delay"] = exp_sched
+            explanations["time_3m"] = exp_sched  # Alias for existing downstream UI/LLM consumption
+        except Exception as e:
+            print(f"[WARNING] Schedule delay SHAP error: {e}")
+
+    # 2. Cost overrun SHAP
+    cost_model = models.get("cost_overrun_model")
+    cost_prep = models.get("cost_overrun_preprocessor")
+    if cost_model is not None and cost_prep is not None:
+        try:
+            X_cost = cost_prep.transform(features_df)
+            feat_names = models.get("transformed_feature_names") or get_preprocessor_feature_names(cost_prep, cat_cols, num_cols)
+            exp_cost = get_shap_explanation(cost_model, X_cost, feat_names)
+            explanations["cost_overrun"] = exp_cost
+            explanations["cost_3m"] = exp_cost  # Alias for existing downstream UI/LLM consumption
+        except Exception as e:
+            print(f"[WARNING] Cost overrun SHAP error: {e}")
 
     return {
         "project_id": str(project_id),
         "project_name": info["project_name"],
         "as_of_month": info["latest_report_month"],
         "is_completed": False,
-        "is_cold_start": bool(cold_flag),
-        "confidence_level": confidence_level,
         "current_status": current,
         "timeline": timeline,
+        "t1_prediction": t1_res,
+        "schedule_delay_probability": t1_res["schedule_delay_probability"],
+        "cost_overrun_probability": t1_res["cost_overrun_probability"],
+        "schedule_delay_flag": t1_res["schedule_delay_flag"],
+        "cost_overrun_flag": t1_res["cost_overrun_flag"],
+        "is_anomaly": t1_res["is_anomaly"],
+        "anomaly_score": t1_res["anomaly_score"],
+        "risk_score": t1_res["risk_score"],
+        "risk_level": t1_res["risk_level"],
         "cost_prediction": cost_pred,
         "time_prediction": time_pred,
         "explanations": explanations,
@@ -385,7 +344,10 @@ def _safe_val(series, col):
     """Safely extract a numeric value."""
     val = series.get(col, None)
     if val is not None and pd.notna(val):
-        return round(float(val), 2)
+        try:
+            return round(float(val), 2)
+        except Exception:
+            return None
     return None
 
 
@@ -393,5 +355,5 @@ def _safe_str(series, col):
     """Safely extract a string value."""
     val = series.get(col, None)
     if val is not None and pd.notna(val):
-        return str(val)
+        return str(val).strip()
     return None

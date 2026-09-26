@@ -1,12 +1,12 @@
 """
-PAIMANA ML Prediction CLI.
+PAIMANA / Nirmaan Drishti ML Prediction CLI.
 
-Runs incremental and final predictions for a selected project using saved models.
+Runs next-period (T+1) predictions for a selected project using newly trained production models.
 
 Usage:
-    python predict.py --project_id 400005
-    python predict.py --project_id 619075
-    python predict.py --project_id 400259
+    python ai/predict.py --project_id 400005
+    python ai/predict.py --project_id 619075
+    python ai/predict.py --project_id 400259
 """
 
 import sys
@@ -20,6 +20,9 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.data_loader import load_master_csv, load_config
@@ -28,7 +31,7 @@ from src.project_service import get_full_prediction, load_project_history
 
 
 def main():
-    parser = argparse.ArgumentParser(description="PAIMANA ML Incremental Prediction")
+    parser = argparse.ArgumentParser(description="Nirmaan Drishti T+1 Next-Period Prediction")
     parser.add_argument("--project_id", type=str, required=True,
                         help="Project ID to predict for")
     parser.add_argument("--csv_path", type=str, default=None,
@@ -44,15 +47,15 @@ def main():
     config = load_config()
     df = load_master_csv(args.csv_path, config)
 
-    models_dir = args.models_dir or str(Path(__file__).parent / config["output"]["models_dir"])
+    models_dir = args.models_dir or str(Path(__file__).parent / "models")
     models = load_all_models(models_dir)
 
-    if not models:
-        print("[ERROR] No trained models found. Run train.py first.")
+    if not models or "schedule_delay_model" not in models:
+        print("[ERROR] No trained production T+1 models found. Run ai/train_t1_models.py first.")
         sys.exit(1)
 
     print(f"\n{'=' * 70}")
-    print(f"PREDICTION FOR PROJECT: {args.project_id}")
+    print(f"NEXT-PERIOD (T+1) PREDICTION FOR PROJECT: {args.project_id}")
     print(f"{'=' * 70}")
 
     try:
@@ -69,11 +72,11 @@ def main():
         print(f"\n--- [COMPLETED PROJECT SUMMARY] ---")
         for k, v in result["completed_summary"].items():
             print(f"  {k:<35}: {v}")
-        print("\nNote: Future 3M/6M predictions are not applicable to completed projects.")
+        print("\nNote: Future predictions are not applicable to completed projects.")
         return result
 
     # Active Project handling
-    print(f"\n--- [1. CURRENT REPORTED STATUS] ---")
+    print(f"\n--- [1. CURRENT REPORTED STATUS AT TIME T] ---")
     curr = result["current_status"]
     print(f"  Physical Progress           : {curr.get('physical_progress_pct')}%")
     print(f"  Current Cost Overrun        : {curr.get('cost_overrun_pct')}% (₹{curr.get('cost_escalation_crore')} Cr)")
@@ -85,33 +88,36 @@ def main():
     print(f"  Schedule Extension          : {curr.get('schedule_extension_months')} months")
     print(f"  Overdue Days                : {curr.get('overdue_days')} days")
 
-    print(f"\n--- [2. COST OVERRUN FORECAST] ---")
-    for horizon, pred in result["cost_prediction"].items():
-        print(f"\n  [{horizon.replace('_', ' ').upper()}]")
-        print(f"    Additional Escalation Risk : {pred.get('additional_escalation_probability', 0) * 100:.1f}%")
-        print(f"    Predicted Additional Overrun: {pred.get('predicted_additional_overrun_pct'):+.2f}% (+₹{pred.get('predicted_additional_cost_crore'):.2f} Cr)")
-        print(f"    Predicted Final Overrun     : {pred.get('predicted_final_cost_overrun_pct'):.2f}% (₹{pred.get('predicted_final_cost_escalation_crore'):.2f} Cr)")
-        print(f"    Predicted Final Revised Cost: ₹{pred.get('predicted_final_revised_cost_crore'):.2f} Cr")
+    print(f"\n--- [2. NEXT-PERIOD (T+1) RISK PREDICTIONS] ---")
+    t1 = result.get("t1_prediction", {})
+    sched_prob = t1.get("schedule_delay_probability", result.get("schedule_delay_probability", 0.0))
+    cost_prob = t1.get("cost_overrun_probability", result.get("cost_overrun_probability", 0.0))
+    sched_tier = t1.get("schedule_risk_tier", "HIGH" if sched_prob >= 0.5 else "LOW")
+    cost_tier = t1.get("cost_risk_tier", "HIGH" if cost_prob >= 0.5 else "LOW")
 
-    print(f"\n--- [3. SCHEDULE DELAY FORECAST] ---")
+    print(f"  T+1 Schedule Delay Risk     : {sched_prob * 100:.1f}% ({sched_tier})")
+    print(f"  T+1 Cost Overrun Risk       : {cost_prob * 100:.1f}% ({cost_tier})")
+    print(f"  Calibrated Risk Score       : {result.get('risk_score', 0.0)}/100 ({result.get('risk_level', 'Unknown')})")
+    anom_status = "ANOMALY SIGNAL DETECTED" if result.get("is_anomaly") else "Normal Telemetry Pattern"
+    print(f"  Telemetry Anomaly Monitor   : {anom_status} (Anomaly Score: {result.get('anomaly_score', 0.0)})")
+
     timeline = result.get("timeline", {})
     if timeline:
+        print(f"\n--- [3. PROJECT TIMELINE METRICS] ---")
         print(f"  Time Elapsed Till Now               : {timeline.get('time_elapsed_till_now', 'N/A')}")
         print(f"  Time Remaining for Planned Completion: {timeline.get('time_remaining_planned_completion', 'N/A')}")
 
-    for horizon, pred in result["time_prediction"].items():
-        print(f"\n  [{horizon.replace('_', ' ').upper()}]")
-        print(f"    Additional Delay Risk                : {pred.get('additional_delay_probability', 0) * 100:.1f}%")
-        print(f"    Predicted Additional Delay           : {pred.get('predicted_additional_delay', 'N/A')}")
-        print(f"    Estimated Time Needed for Completion : {pred.get('estimated_time_needed_completion', 'N/A')}")
-        print(f"    Tentative Completion Date            : {pred.get('tentative_completion_date', 'N/A')}")
-        print(f"    Forecasted Total Schedule Extension  : {pred.get('predicted_total_schedule_extension_months'):.2f} months")
-
-    print(f"\n--- [4. TOP RISK DRIVERS (SHAP)] ---")
+    print(f"\n--- [4. TOP RISK DRIVERS (SHAP TREEEXPLAINER)] ---")
     for model_name, explanation in result.get("explanations", {}).items():
-        print(f"\n  {model_name}:")
-        for driver in explanation.get("top_risk_drivers", [])[:5]:
-            print(f"    {driver['feature']:<35}: {driver['shap_value']:+.4f}")
+        if model_name in ["time_3m", "cost_3m"]:
+            continue  # Skip backwards-compatibility duplicates in CLI output
+        print(f"\n  Target: {model_name.replace('_', ' ').title()}:")
+        drivers = explanation.get("top_risk_drivers", [])[:5]
+        if drivers:
+            for driver in drivers:
+                print(f"    • {driver['feature']:<35}: {driver['shap_value']:+.4f}")
+        else:
+            print("    • No positive risk drivers identified.")
 
     if args.explain:
         from src.qwen_service import QwenExplainer, build_explanation_payload
@@ -123,9 +129,9 @@ def main():
         
         try:
             summary_res = explainer.generate_project_narrative_summary(args.project_id, df, result)
-            print(f"\nStage Assessment: {summary_res['stage_case']}")
+            print(f"\nStage Assessment: {summary_res.get('stage_case', 'Active Monitoring')}")
             print(f"\nExecutive Brief:")
-            print(f"  {summary_res['summary']}")
+            print(f"  {summary_res.get('summary', '')}")
             
             alerts = summary_res.get("key_alerts", [])
             alerts_title = summary_res.get("alerts_title", "Key Early Alerts")
@@ -138,30 +144,8 @@ def main():
         except Exception as e:
             print(f"  Could not generate AI project summary: {e}")
 
-        print(f"\n----------------------------------------------------------------------")
-        print(f"AI NATURAL LANGUAGE HORIZON EXPLANATIONS")
-        print(f"----------------------------------------------------------------------")
-        
-        for ftype in ["schedule", "cost"]:
-            for h in ["3_month"]:
-                try:
-                    payload = build_explanation_payload(args.project_id, df, result, ftype, h)
-                    exp = explainer.generate_explanation(payload)
-                    print(f"\n--- [{h.replace('_', ' ').upper()} {ftype.upper()} FORECAST EXPLANATION] ---")
-                    print(f"Summary:")
-                    print(f"  {exp.get('summary')}")
-                    print(f"\nPrimary Contributing Reasons:")
-                    for r in exp.get("primary_reasons", []):
-                        print(f"  • {r}")
-                    if exp.get("risk_reducing_factors"):
-                        print(f"\nRisk-Reducing Factors:")
-                        for rr in exp.get("risk_reducing_factors", []):
-                            print(f"  • {rr}")
-                except Exception as e:
-                    pass
-
     if args.output:
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, default=str)
         print(f"\nPrediction saved to: {args.output}")
 

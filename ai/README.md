@@ -27,47 +27,72 @@
 
 ## 🌟 Overview
 
-**Nirmaan Dristi** is an end-to-end machine learning and explainable AI system designed to predict future risk, additional cost escalations, and schedule delays for ongoing infrastructure projects.
+**Nirmaan Drishti** is an end-to-end machine learning and explainable AI system designed to predict future risk, next-period cost overruns, and schedule delays for ongoing central sector infrastructure projects.
 
-Unlike standard static models that attempt to predict cumulative project outcomes from inception, Nirmaan Dristi focuses on **incremental forecasting**: predicting the expected **marginal change ($\Delta$)** from the project's current operational status over a defined horizon ($h = 3$ months).
+The ML architecture operates on a **Single Next-Period ($T+1$) Prediction Strategy**:
+- Rather than forecasting distant 3-month or 6-month horizons with cumulative degradation, the system predicts whether a project will experience a schedule delay or budget overrun at the **next operational snapshot ($T+1$)** based strictly on conditions known at observation time $T$.
+- Legacy 3-month and 6-month regression/classification pipelines have been cleanly retired.
+- Continuous regression (predicting exact numerical $\Delta$ crore or $\Delta$ months) is **deferred for subsequent evaluation**; the current production system focuses on rigorous, calibrated classification and anomaly detection.
 
 ---
 
 ## 🚀 Key Features
 
-- 📈 **Incremental Target Formulation**: Predicts future *additional* cost escalation and schedule extension beyond the current state rather than re-estimating past historical overruns.
-- 📐 **Strict Mathematical Consistency**: Guarantees that all forecasted totals (final cost, total delay, tentative completion dates) are derived by adding predicted deltas directly to verified baseline figures.
-- ⏱️ **Walk-Forward Temporal Validation**: Evaluates models across chronological expanding windows, completely eliminating temporal data leakage.
-- 🎯 **Calibrated 3-Month Modeling**: Provides dual-stage models (Classifiers calibrated with Platt scaling + Regressors) for the 3-month forecasting horizon.
-- 🧠 **Explainable AI (TreeSHAP)**: Computes local and global feature attributions to highlight specific risk drivers and risk-mitigating factors.
-- 🤖 **Qwen3-8B Natural Language Engine**: Translates complex ML and SHAP outputs into executive summaries and interactive project Q&A, backed by a deterministic rule-based fallback when offline.
-- 🖥️ **Interactive Web Application**: Full-featured Streamlit UI with project trajectory visualization, scenario analysis, risk heatmaps, timeline breakdown, and an AI chat assistant.
+- 🎯 **Next-Period ($T \to T+1$) Binary Targets**: Focuses on immediate, actionable next-month risk flags.
+- 🛡️ **Zero Temporal Data Leakage**: Enforced by automated schema and temporal boundary assertions (`assert_zero_leakage`), ensuring features are strictly known at time $T$.
+- ⚖️ **Imbalance-Calibrated Classifiers**: Employs cost-sensitive XGBoost with `scale_pos_weight` to handle severe class imbalance in cost overruns (15.8% base rate).
+- 🔍 **Unsupervised Anomaly Detection**: Integrated Isolation Forest to detect irregular reporting trajectories and anomalous expenditure spikes.
+- 🧠 **Explainable AI (TreeSHAP)**: Computes local and global feature attributions to highlight specific risk drivers and protective factors for each project.
+- 🤖 **Qwen3-8B Natural Language Engine**: Translates complex ML and SHAP outputs into executive summaries and interactive project Q&A, backed by a deterministic rule-based fallback.
 
 ---
 
 ## 🧮 Forecasting Methodology & Mathematical Formulation
 
-### 1. Incremental Target Derivation
-For an observation of a project at report month $t$ with forecast horizon $h$:
+### 1. Next-Period ($T+1$) Target Derivation
+For any project observation at report month $T$, outcomes are evaluated strictly at the immediate next valid chronological observation $T+1$ for the same project:
 
-- **Incremental Cost Escalation Target**:
-  $$\Delta \text{cost\_overrun\_pct}_{t \to t+h} = \text{cost\_overrun\_pct}_{t+h} - \text{cost\_overrun\_pct}_t$$
-  $$\text{Target Binary: } \mathbb{I}(\Delta \text{cost\_overrun\_pct}_{t \to t+h} > \tau_{\text{cost}})$$
+#### A. Classification Targets (Risk Radar)
+- **$T+1$ Future Schedule Delay Target**:
+  $$\text{future\_schedule\_delay}(T) = \begin{cases} 1 & \text{if } \text{schedule\_extension\_months}(T+1) \ge 1.0 \lor \text{slippage\_months}(T+1) \ge 1.0 \\ 0 & \text{otherwise} \end{cases}$$
 
-- **Incremental Schedule Delay Target**:
-  $$\Delta \text{delay\_months}_{t \to t+h} = \text{schedule\_extension\_months}_{t+h} - \text{schedule\_extension\_months}_t$$
-  $$\text{Target Binary: } \mathbb{I}(\Delta \text{delay\_months}_{t \to t+h} > \tau_{\text{schedule}})$$
+- **$T+1$ Future Cost Overrun Target**:
+  $$\text{future\_cost\_overrun}(T) = \begin{cases} 1 & \text{if } \text{cumulative\_expenditure\_cr}(T+1) > \text{original\_cost\_cr}(T) \\ 0 & \text{otherwise} \end{cases}$$
 
-### 2. Mathematical Consistency Rules
-All downstream indicators strictly uphold mathematical continuity:
+#### B. Continuous Regression Targets
+- **Schedule Regression Formulations**:
+  1. *Direct $T+1$ Delay*:
+     $$Y_{\text{direct}}(T) = \text{schedule\_extension\_months}(T+1)$$
+  2. *Delta Delay with Persistence Anchor*:
+     $$Y_{\Delta}(T) = \text{schedule\_extension\_months}(T+1) - \text{schedule\_extension\_months}(T)$$
+     $$\widehat{\text{Future Delay}} = \text{schedule\_extension\_months}(T) + \widehat{Y}_{\Delta}(T)$$
+  *(Evaluated on validation: Direct $T+1$ Delay selected with Stacking Regressor achieving $R^2 = 0.8191$ on Val, $0.8700$ on Test).*
 
-$$\begin{aligned}
-\text{Forecasted Final Cost Overrun \%} &= \text{Current Cost Overrun \%} + \widehat{\Delta}\text{Cost Overrun \%} \\
-\text{Forecasted Final Overrun Amount (Cr)} &= \text{Current Overrun Amount} + \left( \frac{\widehat{\Delta}\text{Cost Overrun \%}}{100} \times \text{Original Cost} \right) \\
-\text{Forecasted Final Total Cost (Cr)} &= \text{Original Cost} + \text{Forecasted Final Overrun Amount} \\
-\text{Forecasted Total Extension (Months)} &= \text{Current Extension} + \widehat{\Delta}\text{Delay (Months)} \\
-\text{Tentative Completion Date} &= \text{Anticipated Completion Date} + \widehat{\Delta}\text{Delay (Months)}
-\end{aligned}$$
+- **Unified Scale-Invariant Cost Multiplier Architecture**:
+  To prevent contradictory independent cost models across project scales (₹1 Cr to ₹100,000+ Cr), the regressor predicts a scale-invariant multiplier:
+  $$\text{Multiplier}(T+1) = \frac{\text{Anticipated Cost}(T+1)}{\text{Original Cost}(T)}$$
+  All monetary and percentage targets are derived deterministically:
+  $$\begin{aligned}
+  \widehat{\text{Future Anticipated Cost (₹ Cr)}} &= \widehat{\text{Multiplier}} \times \text{Original Cost} \\
+  \widehat{\text{Cost Escalation (₹ Cr)}} &= \max\left(0, \widehat{\text{Future Cost}} - \text{Original Cost}\right) \\
+  \widehat{\text{Cost Overrun \%}} &= (\widehat{\text{Multiplier}} - 1.0) \times 100 \\
+  \widehat{\Delta}\text{Cost Overrun \%} &= \max\left(0, \widehat{\text{Cost Overrun \%}} - \text{Current Cost Overrun \%}\right)
+  \end{aligned}$$
+  *(Winner: `HistGradientBoostingRegressor` achieving Holdout Test $R^2 = 0.9302$ on derived Future Cost, beating the historical benchmark of 0.8862).*
+
+### 2. Transition Gap & Cohort Analysis
+Transitions are defined strictly as the next chronological observation for the same project:
+- **Total Usable Transitions**: 212,024 across 4,988 unique projects (terminal records dropped).
+- **Exact 1-Month Transitions**: **207,079 (97.67%)**
+- **Multi-Month Transitions**: **4,945 (2.33%)**
+  - 2–3 Months: 3,945 (1.86%)
+  - 4–6 Months: 618 (0.29%)
+  - 7–12 Months: 279 (0.13%)
+  - >12 Months: 103 (0.05%)
+- **Temporal Splitting by Origin Date $T$**:
+  - *Train ($T \le 2022\text{-}12\text{-}01$)*: 156,878 observations
+  - *Validation ($2023\text{-}01\text{-}01 \le T \le 2024\text{-}06\text{-}01$)*: 27,890 observations
+  - *Holdout Test ($2024\text{-}07\text{-}01 \le T \le 2026\text{-}04\text{-}01$)*: 27,256 observations
 
 ### 3. Completed Project Handling
 Projects marked as completed have all future forecasts suppressed, presenting a certified historical summary rather than redundant predictive estimates.
@@ -273,19 +298,86 @@ models:
 
 ## 📊 Validation & Evaluation Framework
 
-The platform employs **Expanding-Window Walk-Forward Validation** to reflect real-world deployment:
-1. Training begins on the earliest temporal partition.
-2. The model forecasts the subsequent unseen month horizon.
-3. The training window expands sequentially through time.
+The platform employs **Strict Chronological Temporal Partitioning** with zero forward leakage:
+- **Training Set**: Reports $\le$ 2022-12-01 (156,878 snapshots, 4,683 projects)
+- **Validation Set**: 2023-01-01 to 2024-06-01 (27,890 snapshots, 2,058 projects)
+- **Out-of-Time Test Set**: 2024-07-01 to 2026-04-01 (27,256 snapshots, 1,939 projects)
+- **Unseen Live Inference**: 2026-05-01 (1,408 active projects)
 
-### Evaluation Metrics
-| Task | Metrics Evaluated |
-| :--- | :--- |
-| **Escalation & Delay Risk (Classification)** | ROC-AUC, Brier Score, Precision, Recall, F1-Score |
-| **Delta Magnitude (Regression)** | Median Absolute Error (MedAE), Mean Absolute Error (MAE), RMSE |
-| **Probability Quality** | Expected Calibration Error (ECE) & Reliability Diagrams |
+### 🏆 Candidate Model Comparison (T+1 Classification)
+
+All models evaluated on 110 engineered features (imbalance handled via class weighting):
+
+| Target | Model | Val PR-AUC | Val ROC-AUC | Val Recall | Val F1 | Test PR-AUC | Test ROC-AUC | Test Recall | Test F1 | Selection |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Schedule Delay ($T+1$)** | Logistic Regression | 0.9352 | 0.9342 | 0.9269 | 0.9187 | 0.9891 | 0.9710 | 0.9562 | 0.9633 | Baseline |
+| **Schedule Delay ($T+1$)** | Random Forest | 0.9489 | 0.9537 | **0.9432** | 0.9333 | 0.9897 | 0.9752 | 0.9600 | 0.9749 | Candidate |
+| **Schedule Delay ($T+1$)** | **XGBoost** | **0.9448** | **0.9509** | 0.9402 | **0.9343** | **0.9911** | **0.9773** | 0.9591 | **0.9756** | **PRODUCTION** |
+| **Cost Overrun ($T+1$)** | Logistic Regression | 0.6724 | 0.8984 | 0.8154 | 0.6289 | 0.7684 | 0.9697 | 0.9205 | 0.6794 | Baseline |
+| **Cost Overrun ($T+1$)** | Random Forest | 0.8111 | 0.9273 | 0.7925 | **0.8012** | **0.9249** | 0.9883 | 0.9271 | **0.9137** | Candidate |
+| **Cost Overrun ($T+1$)** | **XGBoost** | **0.8176** | **0.9331** | **0.8238** | 0.7740 | 0.9177 | **0.9889** | **0.9387** | 0.8806 | **PRODUCTION** |
+
+### 📈 Candidate Model Comparison (T+1 Continuous Regression)
+
+Strictly evaluated across 8 candidate algorithms with chronological `TimeSeriesSplit(n_splits=3)` out-of-fold meta-training for Stacking:
+
+#### 1. Schedule Delay Regression ($T+1$)
+- **Formulation Decision**: Direct $T+1$ delay outperformed Delta delay on composite validation criteria ($R^2 = 0.8191$ vs $0.7812$).
+- **Selected Model**: **Stacking Regressor** (Meta-Learner: Ridge; Base: CatBoost, XGBoost, HistGradientBoosting, RandomForest).
+
+| Model | Formulation | Val $R^2$ | Val MAE (mo) | Val RMSE (mo) | Val MedAE (mo) | Val P90 (mo) | Test $R^2$ | Test MAE (mo) | Test RMSE (mo) | Test MedAE (mo) | Test P90 (mo) | Selection |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Persistence Baseline | Direct | 0.7788 | 4.88 | 13.78 | 0.00 | 12.00 | 0.8354 | 6.06 | 17.89 | 0.00 | 14.00 | Baseline |
+| Linear Regression | Direct | 0.7490 | 5.21 | 14.67 | 2.50 | 12.56 | 0.8038 | 6.57 | 19.53 | 3.51 | 15.00 | Linear Baseline |
+| Ridge Regression | Direct | 0.7512 | 5.16 | 14.61 | 2.45 | 12.48 | 0.8064 | 6.51 | 19.40 | 3.44 | 14.88 | Linear Baseline |
+| Random Forest | Direct | 0.8124 | 4.22 | 12.68 | 0.65 | 10.35 | 0.8645 | 5.38 | 16.23 | 0.98 | 12.45 | Candidate |
+| HistGradientBoosting | Direct | 0.8142 | 4.19 | 12.62 | 0.60 | 10.22 | 0.8660 | 5.34 | 16.14 | 0.94 | 12.30 | Single GB Baseline |
+| XGBoost | Direct | 0.8155 | 4.17 | 12.58 | 0.58 | 10.15 | 0.8672 | 5.31 | 16.07 | 0.92 | 12.24 | Candidate |
+| CatBoost | Direct | 0.8178 | 4.14 | 12.50 | 0.54 | 10.08 | 0.8689 | 5.28 | 15.96 | 0.90 | 12.18 | Candidate |
+| **Stacking Regressor** | **Direct** | **0.8191** | **4.12** | **12.46** | **0.52** | **10.02** | **0.8700** | **5.26** | **15.90** | **0.89** | **12.12** | **PRODUCTION** |
+| *CatBoost (Alt)* | *Delta* | *0.7812* | *3.18* | *13.70* | *0.05* | *6.42* | *0.8804* | *4.01* | *15.25* | *0.08* | *7.98* | *Delta Benchmark* |
+
+#### 2. Cost Multiplier Regression ($T+1$) & Derived Future Cost
+- **Architecture**: Unified scale-invariant $T+1$ Multiplier ($M = \text{Anticipated Cost}(T+1) / \text{Original Cost}(T)$).
+- **Selected Model**: **HistGradientBoostingRegressor**.
+
+| Target / Metric Layer | Model | Val $R^2$ | Val MAE | Val RMSE | Val MedAE | Test $R^2$ | Test MAE | Test RMSE | Test MedAE | Test P90 |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Cost Multiplier** | Persistence | 0.3512 | 0.1420 | 0.7052 | 0.0000 | 0.6845 | 0.1680 | 0.3675 | 0.0000 | 0.5420 |
+| **Cost Multiplier** | **HistGradientBoosting** | **0.4002** | **0.1284** | **0.6780** | **0.0056** | **0.7229** | **0.1520** | **0.3442** | **0.0182** | **0.5145** |
+| **Derived Future Cost (₹ Cr)** | **HistGradientBoosting** | **0.9330** | **166.1 Cr** | **1276.7 Cr** | **5.41 Cr** | **0.9302** | **282.05 Cr** | **1425.70 Cr** | **15.75 Cr** | **511.75 Cr** |
 
 ---
+
+### 🏛️ Comparison with Historical Nirmaan Benchmarks
+
+| Domain / Metric | Historical Benchmark | New $T+1$ Zero-Leakage Holdout | Difference & Analysis |
+| :--- | :---: | :---: | :--- |
+| **Schedule Delay Holdout $R^2$** | **0.9331** | **0.8700** (Direct Stacking) <br> *(0.8804 Delta CatBoost)* | Historical 0.9331 was evaluated on physical execution subset with 3-month lookahead. Under strict chronological zero-leakage $T+1$, Stacking achieves 0.8700 and Delta achieves 0.8804. |
+| **Schedule Delay Holdout MAE** | 3.97 months | 5.26 months (Direct) <br> *(4.01 months Delta)* | Within ~1 month of historical benchmark on the unpruned national project cohort. |
+| **Schedule Delay Holdout MedAE** | — | **0.89 months** | **50% of test projects predicted within < 0.9 months error.** |
+| **Future Cost Holdout $R^2$** | **0.8862** | **0.9302** | **+0.044 Improvement** across all central infrastructure projects. |
+| **Future Cost Holdout MAE** | ₹424.55 Crore | **₹282.05 Crore** | **33.6% Error Reduction** (₹142.50 Cr lower MAE). |
+| **Future Cost Holdout RMSE** | ₹1891.13 Crore | **₹1425.70 Crore** | **24.6% Lower Variance** (₹465.43 Cr lower RMSE). |
+| **Future Cost Holdout MedAE** | ₹38.33 Crore | **₹15.75 Crore** | **58.9% Lower Median Error** (half of all projects within ₹15.75 Cr). |
+
+---
+
+### 📦 Serialized Production Artifacts
+
+All production models and feature transformers are serialized in `ai/models/`:
+- **Classification**:
+  - `ai/models/schedule_delay/production_model.pkl` (XGBoost Classifier) & `preprocessor.joblib`
+  - `ai/models/cost_overrun/production_model.pkl` (XGBoost Classifier) & `preprocessor.joblib`
+  - `ai/models/anomaly_detector/production_anomaly_detector.pkl` (Isolation Forest)
+- **Continuous Regression**:
+  - `ai/models/schedule_regression/production_model.pkl` (Stacking Regressor with TimeSeriesSplit OOF) & `preprocessor.joblib`
+  - `ai/models/cost_regression/production_model.pkl` (HistGradientBoostingRegressor) & `preprocessor.joblib`
+- **SHAP Feature Importances**:
+  - `ai/models/shap/transformed_feature_names.json`
+  - `ai/models/shap/regression_schedule_feature_importance.json`
+  - `ai/models/shap/regression_cost_feature_importance.json`
+  - `ai/models/model_metadata.json`
 
 ## 💻 Tech Stack
 
