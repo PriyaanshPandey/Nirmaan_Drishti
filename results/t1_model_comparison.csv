@@ -1,0 +1,7 @@
+target,model,features,val_f1,val_recall,val_precision,val_roc_auc,val_pr_auc,test_f1,test_recall,test_precision,test_roc_auc,test_pr_auc,fit_time_s
+Future Schedule Delay (T+1),Logistic Regression,110,0.9187,0.9269,0.9107,0.9342,0.9352,0.9633,0.9562,0.9706,0.971,0.9891,8.45
+Future Schedule Delay (T+1),Random Forest,110,0.9333,0.9432,0.9236,0.9537,0.9489,0.9749,0.96,0.9903,0.9752,0.9897,8.74
+Future Schedule Delay (T+1),XGBoost,110,0.9343,0.9402,0.9283,0.9509,0.9448,0.9756,0.9591,0.9927,0.9773,0.9911,21.64
+Future Cost Overrun (T+1),Logistic Regression,110,0.6289,0.8154,0.5118,0.8984,0.6724,0.6794,0.9205,0.5384,0.9697,0.7684,28.49
+Future Cost Overrun (T+1),Random Forest,110,0.8012,0.7925,0.8101,0.9273,0.8111,0.9137,0.9271,0.9008,0.9883,0.9249,6.8
+Future Cost Overrun (T+1),XGBoost,110,0.774,0.8238,0.7299,0.9331,0.8176,0.8806,0.9387,0.8293,0.9889,0.9177,6.52

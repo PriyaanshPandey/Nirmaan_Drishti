@@ -31,6 +31,14 @@ class TimeHorizonPrediction(BaseModel):
 
 
 class ModelRiskMetrics(BaseModel):
+    schedule_delay_probability: Optional[float] = None
+    cost_overrun_probability: Optional[float] = None
+    schedule_delay_flag: Optional[int] = None
+    cost_overrun_flag: Optional[int] = None
+    is_anomaly: Optional[bool] = False
+    anomaly_score: Optional[float] = 0.0
+    risk_score: Optional[float] = None
+    risk_level: Optional[str] = None
     cost_escalation_risk_3m_pct: Optional[float] = None
     schedule_delay_risk_3m_pct: Optional[float] = None
     cost_risk_tier_3m: Optional[str] = None
@@ -45,6 +53,15 @@ class FullProjectPredictionResponse(BaseModel):
     completed_summary: Optional[Dict[str, Any]] = None
     current_status: Dict[str, Any]
     timeline: Dict[str, Any]
+    t1_prediction: Optional[Dict[str, Any]] = None
+    schedule_delay_probability: Optional[float] = None
+    cost_overrun_probability: Optional[float] = None
+    schedule_delay_flag: Optional[int] = None
+    cost_overrun_flag: Optional[int] = None
+    is_anomaly: Optional[bool] = False
+    anomaly_score: Optional[float] = 0.0
+    risk_score: Optional[float] = None
+    risk_level: Optional[str] = None
     cost_prediction: Dict[str, CostHorizonPrediction]
     time_prediction: Dict[str, TimeHorizonPrediction]
     risk_metrics: ModelRiskMetrics

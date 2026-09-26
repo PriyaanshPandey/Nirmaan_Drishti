@@ -659,14 +659,32 @@ def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_d
             risk_tier=_calculate_risk_tier(prob) if prob is not None else None
         )
 
-    c3m_prob = cost_pred_dict.get("3_month", CostHorizonPrediction()).additional_escalation_probability
-    t3m_prob = time_pred_dict.get("3_month", TimeHorizonPrediction()).additional_delay_probability
+    t3m_prob = time_pred_dict.get("3_month").additional_delay_probability if "3_month" in time_pred_dict else None
+    c3m_prob = cost_pred_dict.get("3_month").additional_escalation_probability if "3_month" in cost_pred_dict else None
+
+    sched_prob = raw_pred.get("schedule_delay_probability")
+    if sched_prob is None:
+        sched_prob = t3m_prob
+    cost_prob = raw_pred.get("cost_overrun_probability")
+    if cost_prob is None:
+        cost_prob = c3m_prob
+    t1_dict = raw_pred.get("t1_prediction", {})
+    r_score = raw_pred.get("risk_score")
+    r_level = raw_pred.get("risk_level")
 
     risk_metrics = ModelRiskMetrics(
-        cost_escalation_risk_3m_pct=round(c3m_prob * 100, 1) if c3m_prob is not None else None,
-        schedule_delay_risk_3m_pct=round(t3m_prob * 100, 1) if t3m_prob is not None else None,
-        cost_risk_tier_3m=_calculate_risk_tier(c3m_prob) if c3m_prob is not None else None,
-        delay_risk_tier_3m=_calculate_risk_tier(t3m_prob) if t3m_prob is not None else None,
+        schedule_delay_probability=sched_prob,
+        cost_overrun_probability=cost_prob,
+        schedule_delay_flag=raw_pred.get("schedule_delay_flag", int(sched_prob >= 0.5) if sched_prob is not None else 0),
+        cost_overrun_flag=raw_pred.get("cost_overrun_flag", int(cost_prob >= 0.5) if cost_prob is not None else 0),
+        is_anomaly=raw_pred.get("is_anomaly", False),
+        anomaly_score=raw_pred.get("anomaly_score", 0.0),
+        risk_score=r_score,
+        risk_level=r_level,
+        cost_escalation_risk_3m_pct=round(cost_prob * 100, 1) if cost_prob is not None else None,
+        schedule_delay_risk_3m_pct=round(sched_prob * 100, 1) if sched_prob is not None else None,
+        cost_risk_tier_3m=_calculate_risk_tier(cost_prob) if cost_prob is not None else None,
+        delay_risk_tier_3m=_calculate_risk_tier(sched_prob) if sched_prob is not None else None,
     )
 
     return FullProjectPredictionResponse(
@@ -677,6 +695,15 @@ def get_project_prediction_endpoint(project_id: str, db: Session = Depends(get_d
         completed_summary=raw_pred.get("completed_summary"),
         current_status=raw_pred.get("current_status", {}),
         timeline=raw_pred.get("timeline", {}),
+        t1_prediction=t1_dict,
+        schedule_delay_probability=sched_prob,
+        cost_overrun_probability=cost_prob,
+        schedule_delay_flag=raw_pred.get("schedule_delay_flag"),
+        cost_overrun_flag=raw_pred.get("cost_overrun_flag"),
+        is_anomaly=raw_pred.get("is_anomaly", False),
+        anomaly_score=raw_pred.get("anomaly_score", 0.0),
+        risk_score=r_score,
+        risk_level=r_level,
         cost_prediction=cost_pred_dict,
         time_prediction=time_pred_dict,
         risk_metrics=risk_metrics,
