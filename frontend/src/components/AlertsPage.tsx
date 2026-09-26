@@ -222,30 +222,30 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
       </div>
 
       {/* Lifecycle / View Segregation Tabs */}
-      <div className="alerts-lifecycle-segregation-bar">
-        <div className="alerts-lifecycle-tabs" role="tablist" aria-label="Alerts View Segregation">
+      <div className="section-nav-bar" style={{ marginBottom: '24px' }}>
+        <div role="tablist" aria-label="Alerts View Segregation" style={{ display: 'flex', gap: '2px' }}>
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'warnings'}
-            className={`alerts-lifecycle-tab-btn ${activeTab === 'warnings' ? 'active-tab tab-warnings' : ''}`}
+            className={`section-nav-tab ${activeTab === 'warnings' ? 'active' : ''}`}
             onClick={() => { setActiveTab('warnings'); setPage(1); }}
           >
-            <AlertTriangle size={16} className="tab-icon" />
-            <span>Early Warnings List</span>
-            <span className="tab-badge">{totalWarningsCount.toLocaleString()}</span>
+            <AlertTriangle size={16} />
+            <span>{t('early_warnings', 'Early Warnings List')}</span>
+            <span style={{ marginLeft: '4px', background: activeTab === 'warnings' ? 'rgba(79,142,247,0.25)' : 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '20px', fontSize: '11px', fontWeight: 800 }}>{totalWarningsCount.toLocaleString()}</span>
           </button>
 
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'tickets'}
-            className={`alerts-lifecycle-tab-btn ${activeTab === 'tickets' ? 'active-tab tab-tickets' : ''}`}
+            className={`section-nav-tab ${activeTab === 'tickets' ? 'active' : ''}`}
             onClick={() => { setActiveTab('tickets'); setPage(1); }}
           >
-            <Ticket size={16} className="tab-icon" />
-            <span>Action Tickets Board</span>
-            <span className="tab-badge">{ticketsList.length}</span>
+            <Ticket size={16} />
+            <span>{t('tickets', 'Action Tickets Board')}</span>
+            <span style={{ marginLeft: '4px', background: activeTab === 'tickets' ? 'rgba(79,142,247,0.25)' : 'rgba(255,255,255,0.1)', padding: '2px 7px', borderRadius: '20px', fontSize: '11px', fontWeight: 800 }}>{ticketsList.length}</span>
           </button>
         </div>
       </div>

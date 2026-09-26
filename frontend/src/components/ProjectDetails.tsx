@@ -850,30 +850,51 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
 
       {/* ─── Main layout ─── */}
       <div className="pd-layout-wrapper">
-        <div className="pd-horizontal-nav">
-          <div className="pd-nav-tabs-group" role="tablist" aria-label="Project Details Sections">
-            {[
-              { id: 'basic', label: 'Basic Information', icon: LayoutDashboard },
-              { id: 'forecasts', label: 'Forecasts', icon: TrendingUp },
-              { id: 'escalation', label: 'Escalation Drivers', icon: Flame },
-              { id: 'warnings', label: 'Early Warnings', icon: ShieldAlert }
-            ].map(sec => (
-              <button 
-                key={sec.id}
-                role="tab"
-                aria-selected={sidebarSection === sec.id}
-                className={`pd-nav-tab ${sidebarSection === sec.id ? 'active' : ''}`}
-                onClick={() => scrollToSection(sec.id as SidebarSection)}
-              >
-                <sec.icon size={15} />
-                <span>{sec.label}</span>
-              </button>
-            ))}
-          </div>
-
+        <div className="pd-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center' }}>
+          {[
+            { id: 'basic', label: 'Basic Information', icon: LayoutDashboard },
+            { id: 'forecasts', label: 'Forecasts', icon: TrendingUp },
+            { id: 'escalation', label: 'Escalation Drivers', icon: Flame },
+            { id: 'warnings', label: 'Early Warnings', icon: ShieldAlert }
+          ].map(sec => (
+            <button 
+              key={sec.id}
+              className={`pd-nav-tab ${sidebarSection === sec.id ? 'active' : ''}`}
+              onClick={() => scrollToSection(sec.id as SidebarSection)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                border: '1px solid',
+                borderColor: sidebarSection === sec.id ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
+                background: sidebarSection === sec.id ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: sidebarSection === sec.id ? '#38bdf8' : '#94a3b8',
+                fontWeight: sidebarSection === sec.id ? 700 : 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: sidebarSection === sec.id ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (sidebarSection !== sec.id) {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.color = '#f8fafc';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (sidebarSection !== sec.id) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#94a3b8';
+                }
+              }}
+            >
+              <sec.icon size={16} />
+              <span>{sec.label}</span>
+            </button>
+          ))}
+          <div style={{ flex: 1 }} />
           <button 
-            type="button"
-            className="pd-nav-ai-btn"
             onClick={() => setAiAssistantOpen(true)}
           >
             <Bot size={16} />

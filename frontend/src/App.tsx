@@ -427,17 +427,10 @@ function MainApp() {
 
       {/* Officer Sign-In Modal Overlay */}
       {showLoginModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(0,0,0,0.85)' }}>
-          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10000 }}>
-            <button
-              onClick={() => setShowLoginModal(false)}
-              style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              ✕ Close Modal
-            </button>
-          </div>
-          <LoginPage onSuccess={() => setShowLoginModal(false)} />
-        </div>
+        <LoginPage
+          onSuccess={() => setShowLoginModal(false)}
+          onClose={() => setShowLoginModal(false)}
+        />
       )}
     </div>
   );

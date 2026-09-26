@@ -123,8 +123,96 @@ body {
 .projects-content {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
+
+/* ══════════════════════════════════════════════════════
+   SHARED SECTION NAVIGATION BAR — used across all pages
+   Matches the dark pill/underline style
+   ══════════════════════════════════════════════════════ */
+.section-nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #0d1117;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.section-nav-tab {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #8b9cb6;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.18s ease, background 0.18s ease;
+  white-space: nowrap;
+}
+
+.section-nav-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: #4f8ef7;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.section-nav-tab:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.section-nav-tab.active {
+  color: #ffffff;
+  font-weight: 700;
+  background: rgba(79, 142, 247, 0.12);
+}
+
+.section-nav-tab.active::after {
+  transform: scaleX(1);
+}
+
+.section-nav-spacer {
+  flex: 1;
+}
+
+.section-nav-action-btn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.section-nav-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.4);
+}
+
 
 @media (max-width: 1200px) {
   .app-main-content {
