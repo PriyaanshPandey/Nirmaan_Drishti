@@ -295,17 +295,17 @@
 
 .ac-section-header.header-red {
   border-left-color: #DC2626;
-  background: linear-gradient(90deg, #FEF2F2 0%, #FFFFFF 100%);
+  background: #FEF2F2;
 }
 
 .ac-section-header.header-blue {
   border-left-color: #2563EB;
-  background: linear-gradient(90deg, #EFF6FF 0%, #FFFFFF 100%);
+  background: #EFF6FF;
 }
 
 .ac-section-header.header-purple {
   border-left-color: #7C3AED;
-  background: linear-gradient(90deg, #F5F3FF 0%, #FFFFFF 100%);
+  background: #F5F3FF;
 }
 
 .ac-section-tag {
@@ -408,18 +408,20 @@
   gap: 8px;
   padding: 8px 16px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  background: #090D3A;
   color: #FFFFFF;
   font-size: 13px;
   font-weight: 750;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 12px rgba(9, 13, 58, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .ac-why-actions-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 6px 18px rgba(9, 13, 58, 0.3);
+  background: #101654;
 }
 
 /* Section 1: Recommended Actions Grid */
@@ -1067,5 +1069,110 @@
   .ac-target-stats-row {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   HORIZONTAL SUB-NAVBAR (Sticky In-Page Navigation)
+   Matches the signature touch of the main .nirmaan-navy-nav:
+   Solid #090D3A, 2.5px #1E40AF bottom border, rectangular
+   flush tabs with #38BDF8 active bottom indicator line.
+   ═══════════════════════════════════════════════════ */
+.ac-horizontal-nav {
+  position: sticky;
+  top: 10px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #090D3A;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 3px solid #1E40AF;
+  box-shadow: 0 4px 16px rgba(9, 13, 58, 0.28);
+  padding: 0 20px;
+  height: 48px;
+  min-height: 48px;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.ac-nav-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.ac-nav-tab {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 100%;
+  padding: 0 18px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, sans-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.18s ease, background-color 0.18s ease;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.ac-nav-tab:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ac-nav-tab.active {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.ac-nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  background: #38BDF8;
+  border-radius: 3px 3px 0 0;
+}
+
+.ac-nav-tab svg {
+  opacity: 0.85;
+  transition: opacity 0.18s ease;
+}
+
+.ac-nav-tab:hover svg,
+.ac-nav-tab.active svg {
+  opacity: 1;
+}
+
+.ac-nav-tab.active svg {
+  color: #38BDF8 !important;
+}
+
+@media (max-width: 900px) {
+  .ac-horizontal-nav {
+    padding: 0 16px;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ac-horizontal-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .ac-nav-tabs-group {
+    flex-shrink: 0;
   }
 }

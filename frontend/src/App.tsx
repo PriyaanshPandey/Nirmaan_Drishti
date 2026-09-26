@@ -34,6 +34,12 @@ function MainApp() {
   const [riskFilterNonce, setRiskFilterNonce] = useState<number>(0);
   const [stateFilter, setStateFilter] = useState<string>('All');
   const [stateFilterNonce, setStateFilterNonce] = useState<number>(0);
+  const [projectSectorFilter, setProjectSectorFilter] = useState<string>('All');
+  const [sectorFilterNonce, setSectorFilterNonce] = useState<number>(0);
+  const [projectMinistryFilter, setProjectMinistryFilter] = useState<string>('All');
+  const [ministryFilterNonce, setMinistryFilterNonce] = useState<number>(0);
+  const [projectSearchFilter, setProjectSearchFilter] = useState<string>('');
+  const [searchFilterNonce, setSearchFilterNonce] = useState<number>(0);
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
 
   const isPublic = !user || user.role === 'public';
@@ -115,6 +121,11 @@ function MainApp() {
     if (tab === 'home') {
       setHomeClickNonce(prev => prev + 1);
     }
+    if (tab === 'projects' && selectedProjectId) {
+      setSelectedProjectId(null);
+      updateHistory({ tab: 'projects', projectId: null });
+      return;
+    }
     if (tab === activeTab && tab !== 'home') return;
     setSelectedProjectId(null);
     setActiveTab(tab);
@@ -158,6 +169,9 @@ function MainApp() {
     setProjectStatusFilter(status);
     setProjectRiskFilter('All');
     setStateFilter('All');
+    setProjectSectorFilter('All');
+    setProjectMinistryFilter('All');
+    setProjectSearchFilter('');
     setStatusFilterNonce(prev => prev + 1);
     setSelectedProjectId(null);
     setActiveTab('projects');
@@ -174,6 +188,9 @@ function MainApp() {
     setProjectRiskFilter(mappedRisk);
     setProjectStatusFilter('All');
     setStateFilter('All');
+    setProjectSectorFilter('All');
+    setProjectMinistryFilter('All');
+    setProjectSearchFilter('');
     setRiskFilterNonce(prev => prev + 1);
     setSelectedProjectId(null);
     setActiveTab('projects');
@@ -184,7 +201,49 @@ function MainApp() {
     setStateFilter(stateName);
     setProjectStatusFilter('All');
     setProjectRiskFilter('All');
+    setProjectSectorFilter('All');
+    setProjectMinistryFilter('All');
+    setProjectSearchFilter('');
     setStateFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: null });
+  };
+
+  const handleFilterSector = (sector: string) => {
+    setProjectSectorFilter(sector);
+    setProjectMinistryFilter('All');
+    setStateFilter('All');
+    setProjectStatusFilter('All');
+    setProjectRiskFilter('All');
+    setProjectSearchFilter('');
+    setSectorFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: null });
+  };
+
+  const handleFilterMinistry = (ministry: string) => {
+    setProjectMinistryFilter(ministry);
+    setProjectSectorFilter('All');
+    setStateFilter('All');
+    setProjectStatusFilter('All');
+    setProjectRiskFilter('All');
+    setProjectSearchFilter('');
+    setMinistryFilterNonce(prev => prev + 1);
+    setSelectedProjectId(null);
+    setActiveTab('projects');
+    updateHistory({ tab: 'projects', projectId: null });
+  };
+
+  const handleFilterAgency = (agency: string) => {
+    setProjectSearchFilter(agency);
+    setProjectMinistryFilter('All');
+    setProjectSectorFilter('All');
+    setStateFilter('All');
+    setProjectStatusFilter('All');
+    setProjectRiskFilter('All');
+    setSearchFilterNonce(prev => prev + 1);
     setSelectedProjectId(null);
     setActiveTab('projects');
     updateHistory({ tab: 'projects', projectId: null });
@@ -278,6 +337,10 @@ function MainApp() {
                 projectId={selectedProjectId}
                 onBack={handleBack}
                 onTakeAction={handleTakeAction}
+                onFilterSector={handleFilterSector}
+                onFilterMinistry={handleFilterMinistry}
+                onFilterState={handleFilterState}
+                onFilterAgency={handleFilterAgency}
               />
             ) : (
               <ProjectPortfolio
@@ -289,6 +352,12 @@ function MainApp() {
                 riskFilterNonce={riskFilterNonce}
                 initialState={stateFilter}
                 stateFilterNonce={stateFilterNonce}
+                initialSector={projectSectorFilter}
+                sectorFilterNonce={sectorFilterNonce}
+                initialMinistry={projectMinistryFilter}
+                ministryFilterNonce={ministryFilterNonce}
+                initialSearch={projectSearchFilter}
+                searchFilterNonce={searchFilterNonce}
                 targetMinistry={targetMinistry}
                 targetAgency={targetAgency}
                 isPublic={isPublic}

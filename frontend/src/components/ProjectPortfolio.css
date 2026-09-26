@@ -75,16 +75,16 @@
 }
 
 .btn-add-project {
-  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-light) 100%);
-  border: none;
+  background: #090D3A;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(9, 11, 46, 0.15);
+  box-shadow: 0 4px 14px rgba(9, 13, 58, 0.2);
 }
 
 .btn-add-project:hover {
-  background: var(--navy-dark);
+  background: #101654;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(9, 11, 46, 0.25);
+  box-shadow: 0 6px 20px rgba(9, 13, 58, 0.3);
 }
 
 /* ── Lifecycle Segregation Top Bar ── */
@@ -151,17 +151,17 @@
 }
 
 .lifecycle-tab-btn.active-tab.tab-ongoing {
-  background-color: #03045E;
-  box-shadow: 0 4px 14px rgba(3, 4, 94, 0.3);
+  background: #090D3A;
+  box-shadow: 0 4px 14px rgba(9, 13, 58, 0.3);
 }
 
 .lifecycle-tab-btn.active-tab.tab-completed {
-  background-color: #065F46;
-  box-shadow: 0 4px 14px rgba(6, 95, 70, 0.3);
+  background: #059669;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
 }
 
 .lifecycle-tab-btn.active-tab.tab-inactive {
-  background-color: #334155;
+  background: #334155;
   box-shadow: 0 4px 14px rgba(51, 65, 85, 0.3);
 }
 

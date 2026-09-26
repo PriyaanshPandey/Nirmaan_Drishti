@@ -19,6 +19,12 @@ interface ProjectPortfolioProps {
   riskFilterNonce?: number;
   initialState?: string;
   stateFilterNonce?: number;
+  initialSector?: string;
+  sectorFilterNonce?: number;
+  initialMinistry?: string;
+  ministryFilterNonce?: number;
+  initialSearch?: string;
+  searchFilterNonce?: number;
   targetMinistry?: string;
   targetAgency?: string;
   isPublic?: boolean;
@@ -33,6 +39,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   riskFilterNonce,
   initialState,
   stateFilterNonce,
+  initialSector,
+  sectorFilterNonce,
+  initialMinistry,
+  ministryFilterNonce,
+  initialSearch,
+  searchFilterNonce,
   targetMinistry,
   targetAgency,
   isPublic: _isPublic
@@ -53,10 +65,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [searchType, setSearchType] = useState<'all' | 'name' | 'id'>('all');
-  const [selectedMinistry, setSelectedMinistry] = useState('All');
-  const [selectedSector, setSelectedSector] = useState('All');
+  const [selectedMinistry, setSelectedMinistry] = useState(initialMinistry || 'All');
+  const [selectedSector, setSelectedSector] = useState(initialSector || 'All');
   const [selectedState, setSelectedState] = useState(initialState || 'All');
   const [selectedStatus, setSelectedStatus] = useState(initialStatus || 'All');
   const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
@@ -172,6 +184,27 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
       setPage(1);
     }
   }, [initialState, stateFilterNonce]);
+
+  useEffect(() => {
+    if (initialSector !== undefined) {
+      setSelectedSector(initialSector || 'All');
+      setPage(1);
+    }
+  }, [initialSector, sectorFilterNonce]);
+
+  useEffect(() => {
+    if (initialMinistry !== undefined) {
+      setSelectedMinistry(initialMinistry || 'All');
+      setPage(1);
+    }
+  }, [initialMinistry, ministryFilterNonce]);
+
+  useEffect(() => {
+    if (initialSearch !== undefined) {
+      setSearchQuery(initialSearch || '');
+      setPage(1);
+    }
+  }, [initialSearch, searchFilterNonce]);
 
   const [ministries, setMinistries] = useState<string[]>(['All']);
   const [sectors, setSectors] = useState<string[]>(['All']);

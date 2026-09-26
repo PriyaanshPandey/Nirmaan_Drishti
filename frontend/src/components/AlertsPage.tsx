@@ -222,76 +222,32 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
       </div>
 
       {/* Lifecycle / View Segregation Tabs */}
-      <div className="alerts-lifecycle-segregation-bar" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center', marginBottom: '24px' }}>
-        <button
-          type="button"
-          className={`alerts-lifecycle-tab-btn ${activeTab === 'warnings' ? 'active-tab' : ''}`}
-          onClick={() => { setActiveTab('warnings'); setPage(1); }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 16px',
-            borderRadius: '8px',
-            border: '1px solid',
-            borderColor: activeTab === 'warnings' ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
-            background: activeTab === 'warnings' ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-            color: activeTab === 'warnings' ? '#38bdf8' : '#cbd5e1',
-            fontSize: '14px',
-            fontWeight: activeTab === 'warnings' ? 700 : 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== 'warnings') {
-              e.currentTarget.style.color = '#ffffff';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== 'warnings') {
-              e.currentTarget.style.color = '#cbd5e1';
-            }
-          }}
-        >
-          <AlertTriangle size={16} className="tab-icon" />
-          <span>{t('early_warnings', 'Early Warnings List')}</span>
-          <span style={{ marginLeft: '8px', background: activeTab === 'warnings' ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>{totalWarningsCount.toLocaleString()}</span>
-        </button>
+      <div className="alerts-lifecycle-segregation-bar">
+        <div className="alerts-lifecycle-tabs" role="tablist" aria-label="Alerts View Segregation">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'warnings'}
+            className={`alerts-lifecycle-tab-btn ${activeTab === 'warnings' ? 'active-tab tab-warnings' : ''}`}
+            onClick={() => { setActiveTab('warnings'); setPage(1); }}
+          >
+            <AlertTriangle size={16} className="tab-icon" />
+            <span>Early Warnings List</span>
+            <span className="tab-badge">{totalWarningsCount.toLocaleString()}</span>
+          </button>
 
-        <button
-          type="button"
-          className={`alerts-lifecycle-tab-btn ${activeTab === 'tickets' ? 'active-tab' : ''}`}
-          onClick={() => { setActiveTab('tickets'); setPage(1); }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 16px',
-            borderRadius: '8px',
-            border: '1px solid',
-            borderColor: activeTab === 'tickets' ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
-            background: activeTab === 'tickets' ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-            color: activeTab === 'tickets' ? '#38bdf8' : '#cbd5e1',
-            fontSize: '14px',
-            fontWeight: activeTab === 'tickets' ? 700 : 500,
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            if (activeTab !== 'tickets') {
-              e.currentTarget.style.color = '#ffffff';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeTab !== 'tickets') {
-              e.currentTarget.style.color = '#cbd5e1';
-            }
-          }}
-        >
-          <Ticket size={16} className="tab-icon" />
-          <span>{t('tickets', 'Action Tickets Board')}</span>
-          <span style={{ marginLeft: '8px', background: activeTab === 'tickets' ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 800 }}>{ticketsList.length}</span>
-        </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'tickets'}
+            className={`alerts-lifecycle-tab-btn ${activeTab === 'tickets' ? 'active-tab tab-tickets' : ''}`}
+            onClick={() => { setActiveTab('tickets'); setPage(1); }}
+          >
+            <Ticket size={16} className="tab-icon" />
+            <span>Action Tickets Board</span>
+            <span className="tab-badge">{ticketsList.length}</span>
+          </button>
+        </div>
       </div>
 
       {/* Tab 1: Early Warnings List */}

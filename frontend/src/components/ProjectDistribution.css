@@ -903,3 +903,108 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.08);
 }
+
+/* ═══════════════════════════════════════════════════
+   HORIZONTAL SUB-NAVBAR (Sticky In-Page Navigation)
+   Matches the signature touch of the main .nirmaan-navy-nav:
+   Solid #090D3A, 2.5px #1E40AF bottom border, rectangular
+   flush tabs with #38BDF8 active bottom indicator line.
+   ═══════════════════════════════════════════════════ */
+.dist-horizontal-nav {
+  position: sticky;
+  top: 10px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #090D3A;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 3px solid #1E40AF;
+  box-shadow: 0 4px 16px rgba(9, 13, 58, 0.28);
+  padding: 0 20px;
+  height: 48px;
+  min-height: 48px;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.dist-nav-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+}
+
+.dist-nav-tab {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 100%;
+  padding: 0 18px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-sans, 'Plus Jakarta Sans', -apple-system, sans-serif);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.18s ease, background-color 0.18s ease;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.dist-nav-tab:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dist-nav-tab.active {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dist-nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  background: #38BDF8;
+  border-radius: 3px 3px 0 0;
+}
+
+.dist-nav-tab svg {
+  opacity: 0.85;
+  transition: opacity 0.18s ease;
+}
+
+.dist-nav-tab:hover svg,
+.dist-nav-tab.active svg {
+  opacity: 1;
+}
+
+.dist-nav-tab.active svg {
+  color: #38BDF8 !important;
+}
+
+@media (max-width: 900px) {
+  .dist-horizontal-nav {
+    padding: 0 16px;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .dist-horizontal-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .dist-nav-tabs-group {
+    flex-shrink: 0;
+  }
+}
