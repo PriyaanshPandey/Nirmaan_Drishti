@@ -393,8 +393,8 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
           </div>
 
           {/* ── Horizontal Navigation Bar ── */}
-          <div className="ac-horizontal-nav">
-            <div className="ac-nav-tabs-group" role="tablist" aria-label="Action Center Sections">
+          <div className="section-nav-bar" style={{ marginBottom: '24px' }}>
+            <div role="tablist" aria-label="Action Center Sections" style={{ display: 'flex', gap: '2px' }}>
               {[
                 { id: 'actions' as ActionSidebarSection, label: 'Recommended Actions', icon: ShieldAlert },
                 { id: 'simulator' as ActionSidebarSection, label: 'What-If Simulator', icon: Sliders },
@@ -407,7 +407,7 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
                     key={sec.id}
                     role="tab"
                     aria-selected={isActive}
-                    className={`ac-nav-tab ${isActive ? 'active' : ''}`}
+                    className={`section-nav-tab ${isActive ? 'active' : ''}`}
                     onClick={() => scrollToSection(sec.id)}
                   >
                     <Icon size={15} />

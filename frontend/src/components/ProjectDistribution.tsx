@@ -415,8 +415,8 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       </div>
 
       {/* ── Horizontal Navigation Bar ── */}
-      <div className="dist-horizontal-nav">
-        <div className="dist-nav-tabs-group" role="tablist" aria-label="Distribution Views">
+      <div className="section-nav-bar" style={{ marginBottom: '24px' }}>
+        <div role="tablist" aria-label="Distribution Views" style={{ display: 'flex', gap: '2px' }}>
           {SIDEBAR_SECTIONS.map((sec) => {
             const isActive = activeSection === sec.id;
             const Icon = sec.icon;
@@ -425,7 +425,7 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
                 key={sec.id}
                 role="tab"
                 aria-selected={isActive}
-                className={`dist-nav-tab ${isActive ? 'active' : ''}`}
+                className={`section-nav-tab ${isActive ? 'active' : ''}`}
                 onClick={() => scrollToSection(sec.id)}
               >
                 <Icon size={15} />
@@ -518,11 +518,13 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             {/* ── Donut 1: Health Index Breakdown ── */}
             <div className="dist-donut-card">
               <div className="dist-card-header-row">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Activity size={18} color="#2563EB" />
-                  <h3 className="dist-card-heading">Portfolio Health Index Breakdown</h3>
+                <div>
+                  <h3 className="dist-card-heading">Project Health Index</h3>
+                  <p className="dist-card-subheading">By project execution status &amp; risk rating</p>
                 </div>
-                <span className="dist-count-chip">{sec1Metrics.total > 5000 ? '6,568' : sec1Metrics.total.toLocaleString()} Projects</span>
+                <span className="dist-count-chip dist-info-btn" title="Health index shows project execution quality distribution">
+                  <Activity size={14} color="#2563EB" />
+                </span>
               </div>
 
               <div className="donut-visualization-block">
@@ -644,11 +646,13 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
             {/* ── Donut 2: Risk Index Breakdown ── */}
             <div className="dist-donut-card">
               <div className="dist-card-header-row">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <ShieldAlert size={18} color="#DC2626" />
-                  <h3 className="dist-card-heading">ML Composite Risk Index Breakdown</h3>
+                <div>
+                  <h3 className="dist-card-heading">ML Composite Risk Index</h3>
+                  <p className="dist-card-subheading">AI-computed risk scores across all monitored projects</p>
                 </div>
-                <span className="dist-count-chip count-red">Avg Risk: {sec1Metrics.avgRisk}/100</span>
+                <span className="dist-count-chip count-red" title="Average composite risk score">
+                  Avg Risk: {sec1Metrics.avgRisk}/100
+                </span>
               </div>
 
               <div className="donut-visualization-block">

@@ -1,12 +1,8 @@
-/**
- * LoginPage — Nirmaan Drishti authentication screen.
- *
- * Displayed after the intro animation completes, before any app content.
- * Matches the existing design language exactly (dark gov theme, amber accents).
- * On successful login, calls onSuccess() which unmounts this page and shows the app.
- */
 import React, { useState, useRef, useEffect } from 'react';
-import { AlertCircle, LogIn, Shield } from 'lucide-react';
+import {
+  AlertCircle, Lock, User, LogIn, Eye, EyeOff,
+  ShieldCheck, Shield, BarChart3, Network, Cpu, X
+} from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import './LoginPage.css';
@@ -14,24 +10,47 @@ import nirmaanEmblem from '../assets/nirmaan_emblem.png';
 
 interface LoginPageProps {
   onSuccess: () => void;
+  onClose?: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
   const { login } = useAuth();
   const { t } = useLanguage();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const usernameRef = useRef<HTMLInputElement>(null);
 
+  // Lock scrolling on mounting
   useEffect(() => {
-    // Auto-focus username field when page appears
-    const timer = setTimeout(() => usernameRef.current?.focus(), 100);
-    return () => clearTimeout(timer);
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    const timer = setTimeout(() => usernameRef.current?.focus(), 150);
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      clearTimeout(timer);
+    };
   }, []);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +60,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
     const trimmedPassword = password.trim();
 
     if (!trimmedUsername || !trimmedPassword) {
-      setError(t('error', 'Please enter both username and password.'));
+      setError(t('error_empty', 'Please enter both username and password.'));
       return;
     }
 
@@ -50,156 +69,321 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
       await login({ username: trimmedUsername, password: trimmedPassword });
       onSuccess();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'An error occurred. Please try again.';
+      const msg = err instanceof Error ? err.message : 'Invalid credentials. Please verify and try again.';
       setError(msg);
-    }
- finally {
+    } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="login-overlay" role="main" aria-label="Nirmaan Drishti Login">
-      {/* Decorative background elements */}
-      <div className="login-bg-grid" aria-hidden="true" />
-      <div className="login-glow-1" aria-hidden="true" />
-      <div className="login-glow-2" aria-hidden="true" />
+  const fillCreds = (u: string, p: string) => {
+    setUsername(u);
+    setPassword(p);
+    setError(null);
+  };
 
-      <div className="login-card" role="region" aria-label="Sign in to Nirmaan Drishti">
-        {/* Header */}
-        <div className="login-header">
-          <div className="login-emblem-wrap">
+  return (
+    <div className="gov-login-viewport" role="main" aria-label="Nirmaan Drishti Officer Portal Login">
+      {/* ── 1. Top Government Header (Centralized & Elegant) ───────────────── */}
+      <header className="gov-top-header">
+        {/* Left: Ashoka Emblem & Titles */}
+        <div className="gov-header-left">
+          <div className="gov-emblem-seal">
             <img
-              src={nirmaanEmblem}
-              alt="Nirmaan Drishti"
-              className="login-emblem"
+              src="/mospi_clean.png"
+              alt="State Emblem of India"
+              className="gov-emblem-img"
             />
           </div>
-          <h1 className="login-title" style={{ fontSize: '24px' }}>{t('officer_sign_in', 'MoSPI & Executing Agency Officer Access')}</h1>
-          <p className="login-subtitle">{t('portal_title', 'Nirmaan Drishti')} — {t('portal_subtitle', 'National Infrastructure Intelligence Portal')}</p>
-          <div className="login-divider" aria-hidden="true" />
+          <div className="gov-header-titles">
+            <span className="gov-hindi-title">सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय</span>
+            <span className="gov-eng-title">Ministry of Statistics &amp; Programme Implementation</span>
+            <span className="gov-sub-title">Government of India</span>
+          </div>
         </div>
 
-        {/* Login Form */}
-        <form className="login-form" onSubmit={handleSubmit} noValidate>
-          {/* Username */}
-          <div className="login-field">
-            <label htmlFor="login-username" className="login-label">
-              {t('username', 'Username')}
-            </label>
-            <div className="login-input-wrap">
-              <input
-                id="login-username"
-                ref={usernameRef}
-                type="text"
-                className="login-input"
-                placeholder={t('username', 'Enter your username')}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-                autoCapitalize="none"
-                spellCheck={false}
-                disabled={isLoading}
-                aria-required="true"
-                aria-describedby={error ? 'login-error-msg' : undefined}
-              />
-            </div>
+        {/* Center: Absolutely Centralized Brand Title */}
+        <div className="gov-header-center">
+          <div className="gov-brand-name">NIRMAAN DRISHTI</div>
+          <div className="gov-portal-tag">National Infrastructure Intelligence Portal</div>
+          <div className="gov-tricolor-pill" aria-hidden="true">
+            <span className="tri-saffron" />
+            <span className="tri-white" />
+            <span className="tri-green" />
           </div>
+        </div>
 
-          {/* Password */}
-          <div className="login-field">
-            <label htmlFor="login-password" className="login-label">
-              {t('password', 'Password')}
-            </label>
-            <div className="login-input-wrap">
-              <input
-                id="login-password"
-                type="password"
-                className="login-input"
-                placeholder={t('password', 'Enter your password')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                disabled={isLoading}
-                aria-required="true"
-                aria-describedby={error ? 'login-error-msg' : undefined}
-              />
-            </div>
-          </div>
-
-          {/* Error message */}
-          {error && (
-            <div
-              id="login-error-msg"
-              className="login-error"
-              role="alert"
-              aria-live="assertive"
-            >
-              <AlertCircle size={15} className="login-error-icon" aria-hidden="true" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* Submit */}
+        {/* Right: Subtle Close Button */}
+        {onClose && (
           <button
-            id="login-submit-btn"
-            type="submit"
-            className="login-btn"
-            disabled={isLoading}
-            aria-label={isLoading ? t('loading', 'Signing in…') : t('sign_in', 'Sign in')}
+            type="button"
+            className="gov-header-subtle-close"
+            onClick={onClose}
+            title="Close login modal"
+            aria-label="Close"
           >
-            <span className="login-btn-inner">
-              {isLoading ? (
-                <>
-                  <span className="login-spinner" aria-hidden="true" />
-                  <span>{t('loading', 'Authenticating…')}</span>
-                </>
-              ) : (
-                <>
-                  <LogIn size={16} aria-hidden="true" />
-                  <span>{t('sign_in', 'Sign In')}</span>
-                </>
-              )}
-            </span>
+            <X size={18} />
           </button>
-        </form>
+        )}
+      </header>
 
-        {/* Footer */}
-        <footer className="login-footer">
-          {/* Demo Credentials Box */}
-          <div style={{
-            marginBottom: '16px',
-            padding: '12px 14px',
-            borderRadius: '8px',
-            backgroundColor: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.25)',
-            fontSize: '0.75rem',
-            color: '#cbd5e1',
-            textAlign: 'left',
-            lineHeight: '1.6'
-          }}>
-            <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Shield size={14} /> AUTHORISED OFFICER CREDENTIALS:
-            </div>
-            <div>
-              • <strong>MoSPI Superadmin:</strong> <code style={{ color: '#38bdf8' }}>mospi001</code> / <code style={{ color: '#38bdf8' }}>mospi123</code> (Full Access)
-            </div>
-            <div>
-              • <strong>Agency Officer:</strong> <code style={{ color: '#38bdf8' }}>agn001</code> / <code style={{ color: '#38bdf8' }}>agn123</code> (NHAI Focused View)
-            </div>
-            <div>
-              • <strong>Ministry Officer:</strong> <code style={{ color: '#38bdf8' }}>min001</code> / <code style={{ color: '#38bdf8' }}>min123</code> (MoRTH Focused View)
+      {/* ── 2. Main Body with Background & Content ───────────────────────── */}
+      <main className="gov-main-stage">
+        <div className="gov-backdrop-illustration" aria-hidden="true" />
+        <div className="gov-backdrop-glow" aria-hidden="true" />
+
+        <div className="gov-layout-grid">
+          {/* Left Column */}
+          <div className="gov-hero-col">
+            <h1 className="gov-hero-headline">
+              Data–Driven Decisions<br />
+              for a <span className="gov-gradient-text">Viksit Bharat</span>
+            </h1>
+
+            <p className="gov-hero-desc">
+              Nirmaan Drishti empowers government officers with AI-driven insights
+              to plan, monitor and accelerate India's infrastructure development.
+            </p>
+
+            {/* 4 Feature Badges */}
+            <div className="gov-features-row">
+              <div className="gov-feature-card">
+                <div className="gov-feature-icon-box bg-blue">
+                  <BarChart3 size={22} className="text-blue" />
+                </div>
+                <div className="gov-feature-label">
+                  Real-time<br />Project Insights
+                </div>
+              </div>
+
+              {/* Updated icon color/badge to soft cyan/teal for better aesthetic */}
+              <div className="gov-feature-card">
+                <div className="gov-feature-icon-box bg-teal">
+                  <ShieldCheck size={22} className="text-teal" />
+                </div>
+                <div className="gov-feature-label">
+                  Secure &amp;<br />Compliant
+                </div>
+              </div>
+
+              <div className="gov-feature-card">
+                <div className="gov-feature-icon-box bg-amber">
+                  <Network size={22} className="text-amber" />
+                </div>
+                <div className="gov-feature-label">
+                  Multi-Ministry<br />Collaboration
+                </div>
+              </div>
+
+              <div className="gov-feature-card">
+                <div className="gov-feature-icon-box bg-purple">
+                  <Cpu size={22} className="text-purple" />
+                </div>
+                <div className="gov-feature-label">
+                  AI-Powered<br />Decision Support
+                </div>
+              </div>
             </div>
           </div>
 
-          <p className="login-footer-text" style={{ marginBottom: '12px' }}>
-            {t('mospi_title', 'Ministry of Statistics & Programme Implementation (MoSPI)')}
-            <br />
-            {t('goi_title', 'Government of India')}
-          </p>
-        </footer>
+          {/* Right Column: Sign-In Card */}
+          <div className="gov-card-col">
+            <div className="gov-login-card">
+              {/* Card Header Logo */}
+              <div className="gov-card-brand">
+                <img
+                  src={nirmaanEmblem}
+                  alt="Nirmaan Drishti Logo"
+                  className="gov-card-logo"
+                />
+                <div className="gov-card-brand-text">
+                  <div className="gov-card-portal-title">NIRMAAN DRISHTI</div>
+                  <div className="gov-card-portal-sub">MoSPI – National Infrastructure Intelligence Portal</div>
+                </div>
+              </div>
 
-      </div>
+              <div className="gov-card-heading-group">
+                <h2 className="gov-card-title">Sign in with Government Account</h2>
+                <p className="gov-card-subtitle">Access for authorised government officers only</p>
+              </div>
+
+              {/* Form */}
+              <form className="gov-form" onSubmit={handleSubmit} noValidate>
+                {/* Username Field */}
+                <div className="gov-form-group">
+                  <label htmlFor="gov-username" className="gov-field-label">
+                    Username / Official Email
+                  </label>
+                  <div className="gov-input-wrap">
+                    <User size={18} className="gov-input-icon" />
+                    <input
+                      id="gov-username"
+                      ref={usernameRef}
+                      type="text"
+                      className="gov-input-element"
+                      placeholder="Enter your government email or username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      autoComplete="username"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      disabled={isLoading}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field (without Forgot Password link) */}
+                <div className="gov-form-group">
+                  <div className="gov-label-row">
+                    <label htmlFor="gov-password" className="gov-field-label">
+                      Password
+                    </label>
+                  </div>
+                  <div className="gov-input-wrap">
+                    <Lock size={18} className="gov-input-icon" />
+                    <input
+                      id="gov-password"
+                      type={showPassword ? 'text' : 'password'}
+                      className="gov-input-element"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-password"
+                      disabled={isLoading}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="gov-eye-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error Banner */}
+                {error && (
+                  <div className="gov-error-box" role="alert">
+                    <AlertCircle size={16} className="gov-error-icon" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {/* Sign In Button */}
+                <button
+                  type="submit"
+                  className="gov-submit-btn"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="gov-btn-spinner" />
+                      <span>Authenticating…</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn size={18} />
+                      <span>Sign In</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Security Audit Box */}
+              <div className="gov-audit-box">
+                <ShieldCheck size={20} className="gov-audit-icon" />
+                <div className="gov-audit-text">
+                  This system is for authorised government use only. All activities are monitored and audited.
+                </div>
+              </div>
+
+              {/* Authorised Officer Demo Credentials Box directly under the Audit box */}
+              <div className="gov-officer-credentials-box">
+                <div className="gov-officer-cred-header">
+                  <Shield size={14} className="gov-officer-cred-shield" />
+                  <span>AUTHORISED OFFICER CREDENTIALS:</span>
+                </div>
+                <div
+                  className="gov-officer-cred-item"
+                  onClick={() => fillCreds('mospi001', 'mospi123')}
+                  title="Click to fill MoSPI Superadmin credentials"
+                >
+                  <span className="gov-bullet">•</span>
+                  <strong>MoSPI Superadmin:</strong>{' '}
+                  <code className="gov-cred-code">mospi001</code> / <code className="gov-cred-code">mospi123</code>{' '}
+                  <span className="gov-cred-desc">(Full Access)</span>
+                </div>
+                <div
+                  className="gov-officer-cred-item"
+                  onClick={() => fillCreds('agn001', 'agn123')}
+                  title="Click to fill Agency Officer credentials"
+                >
+                  <span className="gov-bullet">•</span>
+                  <strong>Agency Officer:</strong>{' '}
+                  <code className="gov-cred-code">agn001</code> / <code className="gov-cred-code">agn123</code>{' '}
+                  <span className="gov-cred-desc">(NHAI Focused View)</span>
+                </div>
+                <div
+                  className="gov-officer-cred-item"
+                  onClick={() => fillCreds('min001', 'min123')}
+                  title="Click to fill Ministry Officer credentials"
+                >
+                  <span className="gov-bullet">•</span>
+                  <strong>Ministry Officer:</strong>{' '}
+                  <code className="gov-cred-code">min001</code> / <code className="gov-cred-code">min123</code>{' '}
+                  <span className="gov-cred-desc">(MoRTH Focused View)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* ── 3. Bottom Government NIC Footer (without Indian map/flag icon) ──── */}
+      <footer className="gov-bottom-footer">
+        <div className="gov-footer-inner">
+          {/* NIC Brand */}
+          <div className="gov-footer-nic">
+            <div className="nic-logo-text">NIC</div>
+            <div className="nic-sub-text">
+              National<br />Informatics<br />Centre
+            </div>
+          </div>
+
+          {/* Links */}
+          <div className="gov-footer-links">
+            <a href="#about" onClick={(e) => e.preventDefault()}>About</a>
+            <span className="gov-footer-sep">|</span>
+            <a href="#help" onClick={(e) => e.preventDefault()}>Help</a>
+            <span className="gov-footer-sep">|</span>
+            <a href="#privacy" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+            <span className="gov-footer-sep">|</span>
+            <a href="#terms" onClick={(e) => e.preventDefault()}>Terms of Use</a>
+            <span className="gov-footer-sep">|</span>
+            <a href="#accessibility" onClick={(e) => e.preventDefault()}>Accessibility</a>
+            <span className="gov-footer-sep">|</span>
+            <a href="#contact" onClick={(e) => e.preventDefault()}>Contact Us</a>
+          </div>
+
+          {/* Government of India Emblem (Map icon removed as requested) */}
+          <div className="gov-footer-goi">
+            <img
+              src="/mospi_clean.png"
+              alt="Government of India"
+              className="gov-footer-emblem"
+            />
+            <div className="gov-footer-goi-text">
+              <span className="goi-hindi">भारत सरकार</span>
+              <span className="goi-eng">Government of India</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
