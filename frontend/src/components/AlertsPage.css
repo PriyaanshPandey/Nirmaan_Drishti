@@ -132,13 +132,13 @@
 }
 
 .alerts-lifecycle-tab-btn.active-tab.tab-warnings {
-  background: linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%);
-  box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+  background: #090D3A;
+  box-shadow: 0 4px 14px rgba(9, 13, 58, 0.3);
 }
 
 .alerts-lifecycle-tab-btn.active-tab.tab-tickets {
-  background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%);
-  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.3);
+  background: #090D3A;
+  box-shadow: 0 4px 14px rgba(9, 13, 58, 0.3);
 }
 
 .alerts-lifecycle-tab-btn.active-tab .tab-icon {
@@ -621,21 +621,21 @@
   gap: 4px;
   padding: 6px 11px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-  border: none;
+  background: #090D3A;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
   font-family: inherit;
   font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 6px rgba(9, 13, 58, 0.2);
 }
 
 .action-btn-take-action:hover {
-  background: linear-gradient(135deg, #172554 0%, #1D4ED8 100%);
+  background: #101654;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 10px rgba(9, 13, 58, 0.3);
 }
 
 /* ── Pagination Bar ── */

@@ -415,46 +415,25 @@ export const ProjectDistribution: React.FC<ProjectDistributionProps> = ({
       </div>
 
       {/* ── Horizontal Navigation Bar ── */}
-      <div className="dist-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center', marginBottom: '24px' }}>
-        {SIDEBAR_SECTIONS.map((sec) => {
-          const isActive = activeSection === sec.id;
-          const Icon = sec.icon;
-          return (
-            <button 
-              key={sec.id}
-              className={`dist-nav-tab ${isActive ? 'active' : ''}`}
-              onClick={() => scrollToSection(sec.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                borderRadius: '8px',
-                border: '1px solid',
-                borderColor: isActive ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
-                background: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                color: isActive ? '#38bdf8' : '#cbd5e1',
-                fontSize: '14px',
-                fontWeight: isActive ? 700 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.color = '#ffffff';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) {
-                  e.currentTarget.style.color = '#cbd5e1';
-                }
-              }}
-            >
-              <Icon size={16} />
-              <span>{sec.label}</span>
-            </button>
-          );
-        })}
+      <div className="dist-horizontal-nav">
+        <div className="dist-nav-tabs-group" role="tablist" aria-label="Distribution Views">
+          {SIDEBAR_SECTIONS.map((sec) => {
+            const isActive = activeSection === sec.id;
+            const Icon = sec.icon;
+            return (
+              <button 
+                key={sec.id}
+                role="tab"
+                aria-selected={isActive}
+                className={`dist-nav-tab ${isActive ? 'active' : ''}`}
+                onClick={() => scrollToSection(sec.id)}
+              >
+                <Icon size={15} />
+                <span>{sec.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ════════════════════════════════════════════════════════════════

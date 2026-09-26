@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft, ArrowRight, ChevronDown, ShieldAlert, Award,
-  AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X, LayoutDashboard, Flame
+  AlertTriangle, Sparkles, Cpu, Send, Bot, DollarSign, Clock, TrendingUp, Zap, CheckCircle2, X, LayoutDashboard, Flame,
+  Check, Search, ExternalLink
 } from 'lucide-react';
 import type { Project } from '../data/projectsData';
 import { getProjectDisplayStatus } from '../utils/projectStatus';
 import {
   api,
+  getLocalProjects,
   type RiskPredictionData,
   type FullProjectPredictionResponse,
   type ShapExplanationResponse,
@@ -26,7 +28,19 @@ interface ProjectDetailsProps {
   projectId: string;
   onBack: () => void;
   onTakeAction?: (projectId: string) => void;
+  onFilterSector?: (sector: string) => void;
+  onFilterMinistry?: (ministry: string) => void;
+  onFilterState?: (state: string) => void;
+  onFilterAgency?: (agency: string) => void;
 }
+
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu & Kashmir',
+  'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim',
+  'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+];
 
 interface AnimatedCounterProps {
   value: number;
@@ -187,10 +201,73 @@ const formatChatMessageText = (text: string) => {
   );
 };
 
-export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBack, onTakeAction }) => {
+export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
+  projectId,
+  onBack,
+  onTakeAction,
+  onFilterSector,
+  onFilterMinistry,
+  onFilterState,
+  onFilterAgency
+}) => {
   const [project, setProject] = useState<Project | null>(null);
   const [loadingProject, setLoadingProject] = useState(true);
   const [projectError, setProjectError] = useState(false);
+
+  // Taxonomy Filter Dropdowns state
+  const [openDropdown, setOpenDropdown] = useState<'sector' | 'ministry' | 'agency' | 'location' | null>(null);
+  const [filterSearch, setFilterSearch] = useState('');
+  const [sectorsList, setSectorsList] = useState<string[]>([]);
+  const [ministriesList, setMinistriesList] = useState<string[]>([]);
+  const [agenciesList, setAgenciesList] = useState<string[]>([]);
+  const taxChipsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.getSectors().then(res => {
+      if (isMounted && res) {
+        setSectorsList(res.map(s => s.name));
+      }
+    }).catch(() => {});
+
+    api.getMinistries().then(res => {
+      if (isMounted && res) {
+        setMinistriesList(res.map(m => m.name));
+      }
+    }).catch(() => {});
+
+    getLocalProjects().then((projects: Project[]) => {
+      if (isMounted && projects) {
+        const uniqueAgencies = Array.from(new Set(projects.map((p: Project) => p.agency).filter(Boolean))).sort() as string[];
+        setAgenciesList(uniqueAgencies);
+      }
+    }).catch(() => {});
+
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (taxChipsRef.current && !taxChipsRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+        setFilterSearch('');
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null);
+        setFilterSearch('');
+      }
+    };
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openDropdown]);
 
   // Real ML Prediction & SHAP Explainability state
   const [mlPrediction, setMlPrediction] = useState<RiskPredictionData | null>(null);
@@ -429,107 +506,375 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
     );
   }
 
+  const stateMatch = INDIAN_STATES.find(s => project.location.toLowerCase().includes(s.toLowerCase()));
+  const locationDisplay = stateMatch || project.location.split(',')[0].trim();
+
+  const filteredSectors = (sectorsList.length > 0 ? sectorsList : [
+    'ATOMIC ENERGY', 'CIVIL AVIATION', 'COAL', 'DEFENCE', 'FERTILIZERS',
+    'MINES', 'PETROLEUM', 'POWER', 'RAILWAYS', 'ROAD TRANSPORT AND HIGHWAYS',
+    'SHIPPING AND WATERWAYS', 'STEEL', 'TELECOMMUNICATIONS'
+  ]).filter(s => s.toLowerCase().includes(filterSearch.toLowerCase()));
+
+  const filteredMinistries = (ministriesList.length > 0 ? ministriesList : [
+    'DEPARTMENT OF ATOMIC ENERGY',
+    'MINISTRY OF CIVIL AVIATION',
+    'MINISTRY OF COAL',
+    'MINISTRY OF DEFENCE',
+    'MINISTRY OF PETROLEUM AND NATURAL GAS',
+    'MINISTRY OF POWER',
+    'MINISTRY OF RAILWAYS',
+    'MINISTRY OF ROAD TRANSPORT AND HIGHWAYS'
+  ]).filter(m => m.toLowerCase().includes(filterSearch.toLowerCase()));
+
+  const filteredAgencies = (agenciesList.length > 0 ? agenciesList : [
+    project.agency, 'BHAVNI', 'NHAI', 'RVNL', 'NTPC', 'PGCIL', 'ONGC', 'IOCL', 'GAIL', 'SAIL', 'CIL'
+  ]).filter(a => a.toLowerCase().includes(filterSearch.toLowerCase()));
+
+  const filteredStates = INDIAN_STATES.filter(st => st.toLowerCase().includes(filterSearch.toLowerCase()));
+
   return (
     <div className="details-container animation-fade-in">
       {/* Top Filter Buttons bar & Date info */}
       <div className="details-filters-bar">
-        <div className="filters-left">
+        <div className="details-top-nav-row">
           <button className="back-nav-btn" onClick={onBack}>
-            <ArrowLeft size={16} />
+            <ArrowLeft size={15} />
             <span>Portfolio</span>
           </button>
-          
-          <div className="filter-pill-dropdown">
-            <span className="pill-label">Sector:</span>
-            <span className="pill-val">{project.sector || 'Infrastructure'}</span>
-            <ChevronDown size={12} className="pill-chevron" />
-          </div>
-          
-          <div className="filter-pill-dropdown">
-            <span className="pill-label">Ministry:</span>
-            <span className="pill-val">{project.ministry}</span>
-            <ChevronDown size={12} className="pill-chevron" />
-          </div>
 
-          <div className="filter-pill-dropdown">
-            <span className="pill-label">Implementing Agency:</span>
-            <span className="pill-val">{project.agency}</span>
-            <ChevronDown size={12} className="pill-chevron" />
-          </div>
-
-          <div className="filter-pill-dropdown">
-            <span className="pill-label">Location:</span>
-            <span className="pill-val">{project.location.split(',')[0]}</span>
-            <ChevronDown size={12} className="pill-chevron" />
+          <div className="filters-right">
+            <span className="as-of-date">
+              {project.isCompleted || project.projectStatus === 'COMPLETED' ? 'Completed: ' : 'Target Completion: '}
+              <span className="date-strong">{project.actualCompletion || project.expectedCompletion || 'Ongoing'}</span>
+            </span>
+            <div className="insight-badge active-pulsing">
+              <span className="badge-dot-glowing"></span>
+              <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
+            </div>
           </div>
         </div>
 
-        <div className="filters-right">
-          <span className="as-of-date">
-            {project.isCompleted || project.projectStatus === 'COMPLETED' ? 'Completed: ' : 'Target Completion: '}
-            <span className="date-strong">{project.actualCompletion || project.expectedCompletion || 'Ongoing'}</span>
-          </span>
-          <div className="insight-badge active-pulsing">
-            <span className="badge-dot-glowing"></span>
-            <span className="badge-txt">AI Intelligence Active — Real-time telemetry monitoring.</span>
+        <div className="details-tax-chips-row" ref={taxChipsRef}>
+          {/* Sector Chip */}
+          <div className="tax-chip-wrapper">
+            <button
+              type="button"
+              className={`filter-pill-dropdown ${openDropdown === 'sector' ? 'open' : ''}`}
+              onClick={() => {
+                setOpenDropdown(prev => prev === 'sector' ? null : 'sector');
+                setFilterSearch('');
+              }}
+              title={`View ${project.sector || 'Infrastructure'} projects or choose another sector`}
+              aria-expanded={openDropdown === 'sector'}
+              aria-haspopup="listbox"
+            >
+              <span className="pill-label">Sector:</span>
+              <span className="pill-val">{project.sector || 'Infrastructure'}</span>
+              <ChevronDown size={12} className="pill-chevron" />
+            </button>
+            {openDropdown === 'sector' && (
+              <div className="tax-dropdown-menu" role="listbox">
+                <button
+                  type="button"
+                  className="tax-dropdown-primary-action"
+                  onClick={() => {
+                    onFilterSector?.(project.sector || 'Infrastructure');
+                    setOpenDropdown(null);
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ExternalLink size={13} />
+                    <span>View all {project.sector || 'Infrastructure'} projects</span>
+                  </span>
+                  <ArrowRight size={13} />
+                </button>
+                <div className="tax-dropdown-search-box">
+                  <Search size={13} className="tax-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search sectors..."
+                    value={filterSearch}
+                    onChange={(e) => setFilterSearch(e.target.value)}
+                    className="tax-dropdown-search-input"
+                    autoFocus
+                  />
+                  {filterSearch && (
+                    <button type="button" onClick={() => setFilterSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      <X size={12} color="#94A3B8" />
+                    </button>
+                  )}
+                </div>
+                <div className="tax-dropdown-list">
+                  {filteredSectors.map((s, idx) => {
+                    const isSelected = s.toLowerCase() === (project.sector || '').toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`tax-dropdown-item ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          onFilterSector?.(s);
+                          setOpenDropdown(null);
+                        }}
+                      >
+                        <span>{s}</span>
+                        {isSelected && <Check size={13} className="tax-item-check" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Ministry Chip */}
+          <div className="tax-chip-wrapper">
+            <button
+              type="button"
+              className={`filter-pill-dropdown ${openDropdown === 'ministry' ? 'open' : ''}`}
+              onClick={() => {
+                setOpenDropdown(prev => prev === 'ministry' ? null : 'ministry');
+                setFilterSearch('');
+              }}
+              title={`View ${project.ministry} projects or choose another ministry`}
+              aria-expanded={openDropdown === 'ministry'}
+              aria-haspopup="listbox"
+            >
+              <span className="pill-label">Ministry:</span>
+              <span className="pill-val">{project.ministry}</span>
+              <ChevronDown size={12} className="pill-chevron" />
+            </button>
+            {openDropdown === 'ministry' && (
+              <div className="tax-dropdown-menu" role="listbox">
+                <button
+                  type="button"
+                  className="tax-dropdown-primary-action"
+                  onClick={() => {
+                    onFilterMinistry?.(project.ministry);
+                    setOpenDropdown(null);
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ExternalLink size={13} />
+                    <span>View all {project.ministry} projects</span>
+                  </span>
+                  <ArrowRight size={13} />
+                </button>
+                <div className="tax-dropdown-search-box">
+                  <Search size={13} className="tax-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search ministries..."
+                    value={filterSearch}
+                    onChange={(e) => setFilterSearch(e.target.value)}
+                    className="tax-dropdown-search-input"
+                    autoFocus
+                  />
+                  {filterSearch && (
+                    <button type="button" onClick={() => setFilterSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      <X size={12} color="#94A3B8" />
+                    </button>
+                  )}
+                </div>
+                <div className="tax-dropdown-list">
+                  {filteredMinistries.map((m, idx) => {
+                    const isSelected = m.toLowerCase() === project.ministry.toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`tax-dropdown-item ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          onFilterMinistry?.(m);
+                          setOpenDropdown(null);
+                        }}
+                      >
+                        <span>{m}</span>
+                        {isSelected && <Check size={13} className="tax-item-check" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Implementing Agency Chip */}
+          <div className="tax-chip-wrapper">
+            <button
+              type="button"
+              className={`filter-pill-dropdown ${openDropdown === 'agency' ? 'open' : ''}`}
+              onClick={() => {
+                setOpenDropdown(prev => prev === 'agency' ? null : 'agency');
+                setFilterSearch('');
+              }}
+              title={`View ${project.agency} projects or choose another agency`}
+              aria-expanded={openDropdown === 'agency'}
+              aria-haspopup="listbox"
+            >
+              <span className="pill-label">Implementing Agency:</span>
+              <span className="pill-val">{project.agency}</span>
+              <ChevronDown size={12} className="pill-chevron" />
+            </button>
+            {openDropdown === 'agency' && (
+              <div className="tax-dropdown-menu" role="listbox">
+                <button
+                  type="button"
+                  className="tax-dropdown-primary-action"
+                  onClick={() => {
+                    onFilterAgency?.(project.agency);
+                    setOpenDropdown(null);
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ExternalLink size={13} />
+                    <span>View all {project.agency} projects</span>
+                  </span>
+                  <ArrowRight size={13} />
+                </button>
+                <div className="tax-dropdown-search-box">
+                  <Search size={13} className="tax-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search agencies..."
+                    value={filterSearch}
+                    onChange={(e) => setFilterSearch(e.target.value)}
+                    className="tax-dropdown-search-input"
+                    autoFocus
+                  />
+                  {filterSearch && (
+                    <button type="button" onClick={() => setFilterSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      <X size={12} color="#94A3B8" />
+                    </button>
+                  )}
+                </div>
+                <div className="tax-dropdown-list">
+                  {filteredAgencies.map((a, idx) => {
+                    const isSelected = a.toLowerCase() === project.agency.toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`tax-dropdown-item ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          onFilterAgency?.(a);
+                          setOpenDropdown(null);
+                        }}
+                      >
+                        <span>{a}</span>
+                        {isSelected && <Check size={13} className="tax-item-check" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Location Chip */}
+          <div className="tax-chip-wrapper">
+            <button
+              type="button"
+              className={`filter-pill-dropdown ${openDropdown === 'location' ? 'open' : ''}`}
+              onClick={() => {
+                setOpenDropdown(prev => prev === 'location' ? null : 'location');
+                setFilterSearch('');
+              }}
+              title={`View ${locationDisplay} projects or choose another state`}
+              aria-expanded={openDropdown === 'location'}
+              aria-haspopup="listbox"
+            >
+              <span className="pill-label">Location:</span>
+              <span className="pill-val">{locationDisplay}</span>
+              <ChevronDown size={12} className="pill-chevron" />
+            </button>
+            {openDropdown === 'location' && (
+              <div className="tax-dropdown-menu" role="listbox">
+                <button
+                  type="button"
+                  className="tax-dropdown-primary-action"
+                  onClick={() => {
+                    onFilterState?.(locationDisplay);
+                    setOpenDropdown(null);
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ExternalLink size={13} />
+                    <span>View all {locationDisplay} projects</span>
+                  </span>
+                  <ArrowRight size={13} />
+                </button>
+                <div className="tax-dropdown-search-box">
+                  <Search size={13} className="tax-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search states..."
+                    value={filterSearch}
+                    onChange={(e) => setFilterSearch(e.target.value)}
+                    className="tax-dropdown-search-input"
+                    autoFocus
+                  />
+                  {filterSearch && (
+                    <button type="button" onClick={() => setFilterSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                      <X size={12} color="#94A3B8" />
+                    </button>
+                  )}
+                </div>
+                <div className="tax-dropdown-list">
+                  {filteredStates.map((st, idx) => {
+                    const isSelected = st.toLowerCase() === locationDisplay.toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`tax-dropdown-item ${isSelected ? 'active' : ''}`}
+                        onClick={() => {
+                          onFilterState?.(st);
+                          setOpenDropdown(null);
+                        }}
+                      >
+                        <span>{st}</span>
+                        {isSelected && <Check size={13} className="tax-item-check" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* ─── Main layout ─── */}
       <div className="pd-layout-wrapper">
-        <div className="pd-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center' }}>
-          {[
-            { id: 'basic', label: 'Basic Information', icon: LayoutDashboard },
-            { id: 'forecasts', label: 'Forecasts', icon: TrendingUp },
-            { id: 'escalation', label: 'Escalation Drivers', icon: Flame },
-            { id: 'warnings', label: 'Early Warnings', icon: ShieldAlert }
-          ].map(sec => (
-            <button 
-              key={sec.id}
-              className={`pd-nav-tab ${sidebarSection === sec.id ? 'active' : ''}`}
-              onClick={() => scrollToSection(sec.id as SidebarSection)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                borderRadius: '8px',
-                border: '1px solid',
-                borderColor: sidebarSection === sec.id ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
-                background: sidebarSection === sec.id ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                color: sidebarSection === sec.id ? '#38bdf8' : '#94a3b8',
-                fontWeight: sidebarSection === sec.id ? 700 : 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: sidebarSection === sec.id ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (sidebarSection !== sec.id) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.color = '#f8fafc';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (sidebarSection !== sec.id) {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#94a3b8';
-                }
-              }}
-            >
-              <sec.icon size={16} />
-              <span>{sec.label}</span>
-            </button>
-          ))}
-          <div style={{ flex: 1 }} />
+        <div className="pd-horizontal-nav">
+          <div className="pd-nav-tabs-group" role="tablist" aria-label="Project Details Sections">
+            {[
+              { id: 'basic', label: 'Basic Information', icon: LayoutDashboard },
+              { id: 'forecasts', label: 'Forecasts', icon: TrendingUp },
+              { id: 'escalation', label: 'Escalation Drivers', icon: Flame },
+              { id: 'warnings', label: 'Early Warnings', icon: ShieldAlert }
+            ].map(sec => (
+              <button 
+                key={sec.id}
+                role="tab"
+                aria-selected={sidebarSection === sec.id}
+                className={`pd-nav-tab ${sidebarSection === sec.id ? 'active' : ''}`}
+                onClick={() => scrollToSection(sec.id as SidebarSection)}
+              >
+                <sec.icon size={15} />
+                <span>{sec.label}</span>
+              </button>
+            ))}
+          </div>
+
           <button 
+            type="button"
+            className="pd-nav-ai-btn"
             onClick={() => setAiAssistantOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%)', color: '#FFF', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(29,78,216,0.25)', transition: 'transform 0.2s' }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
           >
-            <Bot size={18} />
-            AI Copilot
+            <Bot size={16} />
+            <span>AI Copilot</span>
           </button>
         </div>
 
@@ -538,13 +883,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       {/* ─── SECTION: Basic Information ─── */}
       <div id="pd-section-basic" className="pd-section-anchor">
-      <div className="pd-section-header pd-section-header--basic">
-        <span className="pd-section-tag">01</span>
-        <span className="pd-section-name">Basic Information</span>
-      </div>
 
       {/* Project Title & Status */}
-      <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+      <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
         {(() => {
           const displayStatus = getProjectDisplayStatus(project);
@@ -560,7 +901,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       </div>
 
       {/* Identifier Subheader: Official Project ID & Legacy OCMS Code */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '-6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: 0, marginBottom: '22px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
           <span style={{ color: '#64748B', fontWeight: 500 }}>Project ID:</span>
           <span style={{ fontFamily: 'monospace', background: '#F1F5F9', padding: '2px 8px', borderRadius: '4px', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700 }}>
@@ -576,7 +917,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       </div>
 
       {/* Row 1: Dashboard Metrics (Moved Above) */}
-      <div className="details-metrics-row" style={{ marginBottom: '14px' }}>
+      <div className="details-metrics-row" style={{ marginBottom: '20px' }}>
         <div className="metric-box light-box">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <h3 className="metric-box-title" style={{ margin: 0 }}>APPROVED COST</h3>
@@ -682,7 +1023,7 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
       </div>
 
       {/* Row 2: Project Metadata Table (Enlarged for High Visibility) */}
-      <div className="card" style={{ padding: '18px 24px', borderRadius: '14px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '20px', marginBottom: '16px' }}>
+      <div className="card" style={{ padding: '16px 24px', borderRadius: '12px', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
         <div style={{ borderRight: '1px solid #F1F5F9', paddingRight: '12px' }}>
           <div style={{ fontSize: '11.5px', color: '#5A738E', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>Project Type</div>
           <div style={{ fontSize: '15px', color: '#0A0F1D', fontWeight: 850, lineHeight: '1.35' }}>{project.type}</div>
@@ -760,31 +1101,29 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
         return (
           <div className="card" style={{
-            padding: '20px 24px',
-            borderRadius: '16px',
-            border: '1px solid #C7D2FE',
-            marginTop: '6px',
-            marginBottom: '6px',
-            position: 'relative',
-            overflow: 'hidden'
+            padding: '24px 26px',
+            borderRadius: '14px',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.02)',
+            marginTop: '0',
+            marginBottom: '28px',
+            position: 'relative'
           }}>
-            {/* Glowing side accent bar */}
-            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '5px', background: '#4F46E5' }} />
-
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-              <div style={{ padding: '8px', backgroundColor: '#EEF2FF', color: '#4338CA', borderRadius: '10px', flexShrink: 0, marginTop: '2px' }}>
-                <Sparkles size={20} color="#4338CA" />
+              <div style={{ padding: '8px', backgroundColor: '#EFF6FF', color: '#1E40AF', borderRadius: '8px', flexShrink: 0, marginTop: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sparkles size={18} color="#1E40AF" />
               </div>
 
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 850, color: '#3730A3', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 850, color: '#090D3A', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Project Recap
                     </span>
                   </div>
 
-                  <span style={{ fontSize: '11px', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,255,255,0.85)', padding: '2px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#1E40AF', display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#EFF6FF', padding: '3px 8px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
                     <InfoButton
                       title="Project Recap"
                       summary="Plain English project recap generated from project telemetry, expenditure pacing, and physical milestone progress."
@@ -796,30 +1135,30 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
                 {loadingBriefing ? (
                   <div style={{ padding: '8px 0', color: '#64748B', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '16px', height: '16px', border: '2px solid #E2E8F0', borderTop: '2px solid #03045E', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                    <div style={{ width: '16px', height: '16px', border: '2px solid #E2E8F0', borderTop: '2px solid #090D3A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                     <span>Generating executive analytical briefing from trained XGBoost & TreeSHAP models...</span>
                   </div>
                 ) : (
                   <>
-                    <p style={{ fontSize: '13.5px', lineHeight: '1.75', color: '#1E293B', margin: 0, textAlign: 'justify' }}>
+                    <p style={{ fontSize: '13.5px', lineHeight: '1.7', color: '#334155', margin: 0, textAlign: 'justify' }}>
                       {activeSummaryText}
                     </p>
                     {aiSummary?.key_alerts && aiSummary.key_alerts.length > 0 && (
-                      <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #E0E7FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#3730A3', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #F1F5F9', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: '#1E40AF', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           {aiSummary.alerts_title || 'Key Telemetry Anomaly Signals'}
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px' }}>
                           {aiSummary.key_alerts.map((alert, idx) => (
-                            <div key={idx} style={{ background: '#F8FAFC', padding: '10px 12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                            <div key={idx} style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
                               <div style={{ fontSize: '12.5px', fontWeight: 750, color: '#0F172A', marginBottom: '4px' }}>
                                 {alert.issue}
                               </div>
-                              <div style={{ fontSize: '11.5px', color: '#475569', marginBottom: '4px' }}>
-                                <strong>Evidence:</strong> {alert.evidence}
+                              <div style={{ fontSize: '11.5px', color: '#475569', marginBottom: '3px' }}>
+                                <strong style={{ color: '#334155' }}>Evidence:</strong> {alert.evidence}
                               </div>
                               <div style={{ fontSize: '11.5px', color: '#64748B' }}>
-                                <strong>Why it matters:</strong> {alert.why_it_matters}
+                                <strong style={{ color: '#334155' }}>Why it matters:</strong> {alert.why_it_matters}
                               </div>
                             </div>
                           ))}
@@ -841,10 +1180,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       {/* ─── SECTION: Forecasts ─── */}
       <div id="pd-section-forecasts" className="pd-section-anchor">
-      <div className="pd-section-header pd-section-header--forecasts">
-        <span className="pd-section-tag">02</span>
-        <span className="pd-section-name">Forecasts</span>
-      </div>
 
       {/* AI ML Multi-Horizon Forecast Engine Section */}
       {(() => {
@@ -1128,10 +1463,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       {/* ─── SECTION: Escalation Drivers ─── */}
       <div id="pd-section-escalation" className="pd-section-anchor">
-      <div className="pd-section-header pd-section-header--escalation">
-        <span className="pd-section-tag">03</span>
-        <span className="pd-section-name">Escalation Drivers</span>
-      </div>
 
       {/* Explainable AI Analysis Section (TreeSHAP Feature Attributions) */}
       {(() => {
@@ -1570,10 +1901,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
 
       {/* ─── SECTION: Early Warnings ─── */}
       <div id="pd-section-warnings" className="pd-section-anchor">
-      <div className="pd-section-header pd-section-header--warnings">
-        <span className="pd-section-tag">04</span>
-        <span className="pd-section-name">Early Warnings</span>
-      </div>
 
       {/* Early Warnings & Recommendations Section */}
       {(() => {
@@ -1845,22 +2172,22 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ projectId, onBac
               gap: '10px',
               padding: '14px 40px',
               borderRadius: '100px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: '#090D3A',
               color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '16px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: '0 8px 20px rgba(29, 78, 216, 0.3)',
+              boxShadow: '0 8px 20px rgba(9, 13, 58, 0.3)',
             }}
             onClick={() => {
               if (onTakeAction) {
                 onTakeAction(project.id);
               }
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#101654'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = '#090D3A'; }}
           >
             <span>Take Action</span>
             <ArrowRight size={18} />

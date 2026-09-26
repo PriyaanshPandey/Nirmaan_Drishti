@@ -393,59 +393,38 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
           </div>
 
           {/* ── Horizontal Navigation Bar ── */}
-          <div className="ac-horizontal-nav" style={{ display: 'flex', gap: '8px', background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)', padding: '12px 24px', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 50, alignItems: 'center', marginBottom: '24px' }}>
-            {[
-              { id: 'actions' as ActionSidebarSection, label: 'Recommended Actions', icon: ShieldAlert },
-              { id: 'simulator' as ActionSidebarSection, label: 'What-If Simulator', icon: Sliders },
-              { id: 'routing' as ActionSidebarSection, label: 'Authority Routing', icon: Landmark }
-            ].map((sec) => {
-              const isActive = activeSection === sec.id;
-              const Icon = sec.icon;
-              return (
-                <button 
-                  key={sec.id}
-                  className={`ac-nav-tab ${isActive ? 'active' : ''}`}
-                  onClick={() => scrollToSection(sec.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    border: '1px solid',
-                    borderColor: isActive ? 'rgba(56, 189, 248, 0.4)' : 'transparent',
-                    background: isActive ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                    color: isActive ? '#38bdf8' : '#cbd5e1',
-                    fontSize: '14px',
-                    fontWeight: isActive ? 700 : 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = '#ffffff';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.color = '#cbd5e1';
-                    }
-                  }}
-                >
-                  <Icon size={16} />
-                  <span>{sec.label}</span>
-                </button>
-              );
-            })}
+          <div className="ac-horizontal-nav">
+            <div className="ac-nav-tabs-group" role="tablist" aria-label="Action Center Sections">
+              {[
+                { id: 'actions' as ActionSidebarSection, label: 'Recommended Actions', icon: ShieldAlert },
+                { id: 'simulator' as ActionSidebarSection, label: 'What-If Simulator', icon: Sliders },
+                { id: 'routing' as ActionSidebarSection, label: 'Authority Routing', icon: Landmark }
+              ].map((sec) => {
+                const isActive = activeSection === sec.id;
+                const Icon = sec.icon;
+                return (
+                  <button 
+                    key={sec.id}
+                    role="tab"
+                    aria-selected={isActive}
+                    className={`ac-nav-tab ${isActive ? 'active' : ''}`}
+                    onClick={() => scrollToSection(sec.id)}
+                  >
+                    <Icon size={15} />
+                    <span>{sec.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* ════════════════════════════════════════════════════════════════
              SECTION 1: RECOMMENDED ACTIONS FOR SELECTED ASSET
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-actions" className="ac-section">
-            <div className="pd-section-header pd-section-header--escalation" style={{ marginTop: '24px' }}>
-              <span className="pd-section-tag">01</span>
-              <span className="pd-section-name">Recommended Interventions &amp; Fast-Track Actions</span>
+            <div className="ac-section-header header-red" style={{ marginTop: '24px' }}>
+              <span className="ac-section-tag tag-red">01</span>
+              <span className="ac-section-name">Recommended Interventions &amp; Fast-Track Actions</span>
               <InfoButton title="Recommended Interventions" summary="AI-generated operational actions tailored to halt cost escalation and schedule slippage based on identified root causes." size="sm" theme="light" />
             </div>
             <div className="ac-panel-card">
@@ -551,9 +530,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
              SECTION 2: IMPACT SECTION (REAL ML-DRIVEN WHAT-IF SIMULATOR)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-simulator" className="ac-section">
-            <div className="pd-section-header pd-section-header--forecasts" style={{ marginTop: '32px' }}>
-              <span className="pd-section-tag">02</span>
-              <span className="pd-section-name">What-If Counterfactual Policy Simulator</span>
+            <div className="ac-section-header header-blue" style={{ marginTop: '32px' }}>
+              <span className="ac-section-tag tag-blue">02</span>
+              <span className="ac-section-name">What-If Counterfactual Policy Simulator</span>
               <InfoButton title="What-If Simulator" summary="Predictive policy simulator testing counterfactual scenarios via ML to understand the resulting impact on project risk, time, and cost." size="sm" theme="light" />
             </div>
             <div className="ac-panel-card">
@@ -1102,9 +1081,9 @@ export const ActionCenter: React.FC<ActionCenterProps> = ({
              SECTION 3: POLICY-AWARE AUTHORITY ROUTING (OFFICIAL GOVT FRAMEWORK)
              ════════════════════════════════════════════════════════════════ */}
           <section id="ac-sec-routing" className="ac-section">
-            <div className="pd-section-header pd-section-header--warnings" style={{ marginTop: '32px' }}>
-              <span className="pd-section-tag">03</span>
-              <span className="pd-section-name">Policy-Aware Authority Routing Matrix</span>
+            <div className="ac-section-header header-purple" style={{ marginTop: '32px' }}>
+              <span className="ac-section-tag tag-purple">03</span>
+              <span className="ac-section-name">Policy-Aware Authority Routing Matrix</span>
               <InfoButton title="Authority Routing Matrix" summary="Official Government Infrastructure Framework (MoSPI, PAIMANA, PIB/EFC & CCEA Guidelines)." size="sm" theme="light" />
             </div>
             <div className="ac-panel-card">

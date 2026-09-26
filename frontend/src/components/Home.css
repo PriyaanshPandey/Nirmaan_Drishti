@@ -32,10 +32,10 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(217, 226, 236, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.90);
   padding: 5px 14px;
   border-radius: 100px;
   font-size: 11.5px;
@@ -43,7 +43,7 @@
   color: #334155;
   margin-bottom: 16px;
   letter-spacing: 0.02em;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), inset 0 1px 0.5px #FFFFFF;
 }
 
 .hero-live-dot {
@@ -119,36 +119,36 @@
   position: relative;
   width: 100%;
   margin: 14px 0 0 0;
-  background-color: rgba(230, 235, 242, 0.88);
+  background-color: rgba(220, 226, 235, 0.72);
   background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 50%),
-    radial-gradient(circle at 92% 14%, rgba(37, 99, 235, 0.05) 0%, transparent 55%),
-    radial-gradient(circle at 6% 88%, rgba(9, 11, 46, 0.03) 0%, transparent 45%),
-    radial-gradient(rgba(148, 163, 184, 0.42) 1.25px, transparent 1.25px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+    radial-gradient(rgba(85, 105, 130, 0.28) 1.2px, transparent 1.2px),
+    radial-gradient(ellipse at 88% 12%, rgba(255, 255, 255, 0.45) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(242, 245, 249, 0.65) 0%, rgba(228, 233, 241, 0.52) 45%, rgba(214, 221, 232, 0.70) 100%);
+  background-size: 24px 24px, 100% 100%, 100% 100%;
+  backdrop-filter: blur(28px) saturate(145%);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
   border-radius: 24px;
   min-height: 390px;
   display: flex;
   align-items: center;
   padding: 38px 48px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(200, 210, 224, 0.75);
   box-shadow:
-    0 20px 40px -12px rgba(15, 23, 42, 0.1),
-    0 6px 16px -4px rgba(15, 23, 42, 0.04),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.85);
+    0 24px 48px -12px rgba(15, 23, 42, 0.12),
+    0 8px 20px -4px rgba(15, 23, 42, 0.06),
+    0 2px 6px -1px rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   overflow: hidden;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
 }
 
-
 .home-hero:hover {
-  border-color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(176, 190, 208, 0.85);
   box-shadow:
-    0 26px 52px -12px rgba(15, 23, 42, 0.14),
-    0 10px 24px -4px rgba(15, 23, 42, 0.06),
-    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.95);
+    0 30px 58px -12px rgba(15, 23, 42, 0.15),
+    0 12px 26px -4px rgba(15, 23, 42, 0.08),
+    0 4px 10px -2px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .home-hero:active {
@@ -171,15 +171,25 @@
 /* Right-side Infrastructure Illustration Stage with Interactive Dots */
 .hero-infra-stage {
   position: absolute;
-  right: 18px;
+  right: 20px;
   bottom: 0;
-  height: 87%;
+  height: 94%;
   aspect-ratio: 2308 / 2064;
-  max-width: 46%;
+  max-width: 48%;
   z-index: 1;
   user-select: none;
-  cursor: pointer;
   outline: none;
+}
+
+/* Luminous soft stage backdrop to give the line-art illustration solid white backing & punch */
+.hero-infra-stage::before {
+  content: '';
+  position: absolute;
+  inset: -6% -8% -4% -14%;
+  background: radial-gradient(ellipse 68% 62% at 58% 58%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.70) 45%, rgba(255, 255, 255, 0) 76%);
+  filter: blur(14px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .hero-infra-img,
@@ -191,18 +201,16 @@
   object-fit: contain;
   object-position: right bottom;
   pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
-.hero-infra-img {
-  z-index: 1;
-  filter: blur(0px) brightness(1);
-  transform-origin: center center;
 }
 
 .hero-infra-img-original {
   z-index: 2;
   opacity: 1;
+  filter:
+    drop-shadow(0 16px 30px rgba(15, 23, 42, 0.14))
+    drop-shadow(0 4px 10px rgba(37, 99, 235, 0.08))
+    contrast(1.12)
+    saturate(1.22);
 }
 
 /* When animating: original image hides, base image blurs */
@@ -323,17 +331,23 @@
   position: absolute;
   width: 2.6%;
   aspect-ratio: 1 / 1;
-  min-width: 13px;
-  min-height: 13px;
-  max-width: 20px;
-  max-height: 20px;
+  min-width: 14px;
+  min-height: 14px;
+  max-width: 22px;
+  max-height: 22px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   z-index: 4;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-dot:hover {
+  transform: translate(-50%, -50%) scale(1.3);
 }
 
 .hero-dot-core {
@@ -342,49 +356,56 @@
   border-radius: 50%;
   position: relative;
   z-index: 2;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
   transition: transform 0.25s ease;
 }
 
 .hero-dot-glow {
   position: absolute;
-  inset: -3px;
+  inset: -4px;
   border-radius: 50%;
-  opacity: 0;
+  opacity: 0.50;
   z-index: 1;
   pointer-events: none;
+  animation: heroDotIdleGlow 3s ease-in-out infinite alternate;
 }
 
 .hero-dot-ping {
   position: absolute;
-  inset: -5px;
+  inset: -6px;
   border-radius: 50%;
-  opacity: 0;
   pointer-events: none;
   z-index: 0;
-  border-width: 1px;
+  border-width: 1.5px;
   border-style: solid;
+  animation: heroDotIdlePing 3.2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* Subtle hover effect on stage when idle */
-.hero-infra-stage:not(.is-animating):hover .hero-dot .hero-dot-core {
-  transform: scale(1.08);
+.hero-dot-blue .hero-dot-ping { animation-delay: 0s; }
+.hero-dot-green .hero-dot-ping { animation-delay: 0.8s; }
+.hero-dot-yellow .hero-dot-ping { animation-delay: 1.6s; }
+.hero-dot-red .hero-dot-ping { animation-delay: 2.4s; }
+
+@keyframes heroDotIdlePing {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.90;
+  }
+  60%, 100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
 }
 
-.hero-infra-stage:not(.is-animating):hover .hero-dot-blue .hero-dot-glow {
-  opacity: 0.35;
-}
-
-.hero-infra-stage:not(.is-animating):hover .hero-dot-green .hero-dot-glow {
-  opacity: 0.35;
-}
-
-.hero-infra-stage:not(.is-animating):hover .hero-dot-yellow .hero-dot-glow {
-  opacity: 0.35;
-}
-
-.hero-infra-stage:not(.is-animating):hover .hero-dot-red .hero-dot-glow {
-  opacity: 0.35;
+@keyframes heroDotIdleGlow {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0.75;
+  }
 }
 
 /* Specific dot colors and coordinates */
@@ -761,7 +782,7 @@
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  background: #090B2E;
+  background: #090D3A;
   color: #FFFFFF;
   padding: 10px 22px;
   border-radius: 100px;
@@ -769,14 +790,14 @@
   font-weight: 750;
   border: 1px solid rgba(255, 255, 255, 0.16);
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(9, 11, 46, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 18px rgba(9, 13, 58, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hero-btn-launch:hover {
-  background: #111545;
+  background: #101654;
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(9, 11, 46, 0.32);
+  box-shadow: 0 8px 22px rgba(9, 13, 58, 0.35);
   border-color: rgba(56, 189, 248, 0.35);
 }
 
@@ -1109,13 +1130,13 @@
 .officer-auth-btn {
   padding: 12px 24px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #03045E 0%, #0077B6 100%);
+  background: #090D3A;
   color: #FFFFFF;
   font-weight: 700;
   font-size: 0.92rem;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(3, 4, 94, 0.2);
+  box-shadow: 0 4px 14px rgba(9, 13, 58, 0.25);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1126,11 +1147,11 @@
 
 .officer-auth-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(3, 4, 94, 0.35);
-  background: linear-gradient(135deg, #010256 0%, #03045E 100%);
+  box-shadow: 0 8px 24px rgba(9, 13, 58, 0.35);
+  background: #101654;
 }
 
 .officer-auth-btn:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 8px rgba(3, 4, 94, 0.2);
+  box-shadow: 0 2px 8px rgba(9, 11, 46, 0.2);
 }
