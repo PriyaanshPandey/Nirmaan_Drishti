@@ -102,18 +102,18 @@
 
 /* ── Simulator Section ───────────────────────── */
 .simulator-section {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+  background: #090D3A;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 28px 32px;
+  box-shadow: 0 8px 32px rgba(9, 13, 58, 0.25);
 }
 
 .section-title-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  margin-bottom: 28px;
 }
 
 .title-left-group {
@@ -123,11 +123,15 @@
 }
 
 .title-left-group h2 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
-  color: #0f172a;
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
+
+.text-blue { color: #60a5fa; }
+.text-teal { color: #2dd4bf; }
 
 .simulator-grid {
   display: grid;
@@ -136,56 +140,127 @@
   margin-bottom: 20px;
 }
 
-.sim-controls-card, .sim-results-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 20px;
+.sim-controls-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 24px;
+  backdrop-filter: blur(4px);
 }
 
-.sim-controls-card h3, .sim-results-card h3 {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #475569;
+.sim-results-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sim-controls-card h3 {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.45);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 16px;
+  letter-spacing: 0.1em;
+  margin: 0 0 22px;
 }
 
+.sim-results-card h3 {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 22px;
+}
+
+/* ── Slider control group ── */
 .control-group {
-  margin-bottom: 18px;
+  margin-bottom: 22px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
 }
 
 .control-group label {
-  display: block;
-  font-size: 0.85rem;
-  color: #475569;
-  margin-bottom: 8px;
-  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .control-group label strong {
-  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #60a5fa;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
+/* Custom range slider — dark theme */
 .control-group input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  accent-color: #090D3A;
-  height: 4px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
+.control-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 3px solid #090D3A;
+  box-shadow: 0 0 0 2px #3b82f6, 0 4px 12px rgba(59,130,246,0.5);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.control-group input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 3px #3b82f6, 0 4px 16px rgba(59,130,246,0.7);
+}
+
+.control-group input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 3px solid #090D3A;
+  box-shadow: 0 0 0 2px #3b82f6;
+  cursor: pointer;
+}
+
+/* ── VDF Score Box ── */
 .vdf-score-box {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 20px;
-  border-radius: 12px;
+  padding: 24px 20px;
+  border-radius: 14px;
   border: 2px solid;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  background: rgba(255,255,255,0.04) !important;
 }
 
 .vdf-score-value {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 900;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -194,27 +269,29 @@
 
 .vdf-badge-label {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 999px;
   color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 .vdf-score-desc {
   font-size: 0.82rem;
-  color: #475569;
-  line-height: 1.5;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.55;
   margin: 0;
 }
 
+/* ── Chart Card on dark ── */
 .sim-chart-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 20px 24px;
 }
 
 .chart-header-row {
@@ -227,7 +304,7 @@
 .chart-header-row h4 {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #475569;
+  color: rgba(255,255,255,0.7);
   margin: 0;
 }
 

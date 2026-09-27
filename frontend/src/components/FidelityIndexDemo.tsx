@@ -225,7 +225,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                 ],
                 insight: 'Try setting Months Left to 1 with 80% remaining work to observe an extreme inconsistency scenario.'
               }}
-              theme="light"
+              theme="dark"
             />
           </div>
         </div>
@@ -271,7 +271,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                 ],
                 insight: 'When both lines are identical up to Month T (Now) and then the red line jumps sharply, the agency is claiming a sudden acceleration that has no historical basis.'
               }}
-              theme="light"
+              theme="dark"
               size="sm"
             />
           </div>
