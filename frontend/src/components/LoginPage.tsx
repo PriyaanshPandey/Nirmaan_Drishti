@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   AlertCircle, Lock, User, LogIn, Eye, EyeOff,
   ShieldCheck, Shield, X,
-  TrendingUp, AlertTriangle, Building2, Sparkles
+  TrendingUp, AlertTriangle, Building2
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -34,7 +34,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
   const headlinePhrases = [
     "AI–Driven Predictive Intelligence",
     "Real-Time Infrastructure Insights",
-    "12-Month PAIMANA Forecasting",
     "Automated Risk Detection Engine"
   ];
 
@@ -172,13 +171,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
         <div className="gov-layout-grid">
           {/* Left Column */}
           <div className="gov-hero-col">
-            {/* Live Status Badge */}
-            <div className="gov-hero-live-badge">
-              <span className="live-dot" />
-              <span className="live-badge-text">SANKET AI CORE • PREDICTIVE ENGINE ACTIVE</span>
-              <Sparkles size={13} className="live-sparkle-icon" />
-            </div>
-
             <h1 className="gov-hero-headline">
               <span className="gov-typewriter-text">{typedText}</span>
               <span className="gov-typing-cursor">|</span>
