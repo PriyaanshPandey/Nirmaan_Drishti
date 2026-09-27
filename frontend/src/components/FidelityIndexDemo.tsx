@@ -464,7 +464,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                 id: `RFI-${Date.now().toString().slice(-6)}`,
                 projectName: p.name,
                 projectId: p.id,
-                actionTitle: 'Reporting Fidelity Inconsistency â€” Velocity Disconnect Factor Alert',
+                actionTitle: 'Reporting Fidelity Inconsistency — Velocity Disconnect Factor Alert',
                 routedOfficer: `Nodal Officer, ${p.ministry}`,
                 status: 'OPEN',
                 priority: 'Critical',
@@ -556,7 +556,8 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
               Show {Math.min(20, filteredProjects.length - showTop)} more ({filteredProjects.length - showTop} remaining)
             </button>
           </div>
-        )}\n      </div>{/* end audit-table-section */}
+        )}
+      </div>{/* end audit-table-section */}
       </div>{/* end fi-section-audit */}
     </div>
   );
