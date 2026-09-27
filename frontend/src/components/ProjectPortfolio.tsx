@@ -74,10 +74,10 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
   const [selectedRisk, setSelectedRisk] = useState(initialRisk || 'All');
   const [activeCategory, setActiveCategory] = useState<ProjectCategoryTab>('ONGOING');
   const [statusCounts, setStatusCounts] = useState<{ ongoing: number; inactive: number; completed: number; total: number }>({
-    ongoing: 1981,
+    ongoing: 1379,
     inactive: 2328,
     completed: 1442,
-    total: 5751
+    total: 5149
   });
 
   // Fetch status counts on mount
@@ -416,11 +416,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={() => handleCategoryChange('ONGOING')}
             >
               <Activity size={16} className="tab-icon" />
-              <span className="tab-text">{t('status_ongoing', 'Ongoing Projects')}</span>
+              <span className="tab-text">{t('status_ongoing', 'Ongoing Active')}</span>
+              <span className="tab-badge">{statusCounts.ongoing.toLocaleString()}</span>
             </button>
             <InfoButton
-              title="Ongoing Projects"
-              summary="Currently active projects under execution and monitoring."
+              title="Ongoing Active Projects"
+              summary="Currently active infrastructure projects under ongoing execution and monthly PAIMANA monitoring."
               theme="light"
               size="sm"
             />
@@ -435,11 +436,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={() => handleCategoryChange('INACTIVE')}
             >
               <PauseCircle size={16} className="tab-icon" />
-              <span className="tab-text">{t('status_inactive', 'Inactive Projects')}</span>
+              <span className="tab-text">{t('status_inactive', 'Ongoing Inactive')}</span>
+              <span className="tab-badge">{statusCounts.inactive.toLocaleString()}</span>
             </button>
             <InfoButton
-              title="Inactive & Historical Projects Role in AI Accuracy"
-              summary="Inactive, stalled, or dropped historical projects are retained in the database to train machine learning models on historical failure modes. Including these past projects prevents survival bias and ensures highly accurate risk predictions."
+              title="Ongoing Inactive Projects"
+              summary="Inactive, stalled, shelved, or non-active projects monitored under PAIMANA. Retained in the database to train machine learning models on failure modes and prevent survival bias."
               theme="light"
               size="sm"
             />
@@ -454,11 +456,12 @@ export const ProjectPortfolio: React.FC<ProjectPortfolioProps> = ({
               onClick={() => handleCategoryChange('COMPLETED')}
             >
               <CheckCircle2 size={16} className="tab-icon" />
-              <span className="tab-text">{t('status_completed', 'Completed Projects')}</span>
+              <span className="tab-text">{t('status_completed', 'Completed')}</span>
+              <span className="tab-badge">{statusCounts.completed.toLocaleString()}</span>
             </button>
             <InfoButton
               title="Completed Projects"
-              summary="Historical infrastructure projects that have been officially commissioned. Used as baseline for AI training."
+              summary="Infrastructure projects that have achieved full commissioning and completion."
               theme="light"
               size="sm"
             />

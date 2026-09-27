@@ -99,7 +99,8 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         ~high_risk_condition
     )
 
-    # Execute single high-performance aggregation across all projects
+    # Execute single high-performance aggregation across all active segregated projects (5,149)
+    active_status_filter = Project.project_status.in_(['ONGOING', 'ACTIVE', 'COMPLETED', 'INACTIVE', 'STOPPED'])
     stats = db.query(
         func.count(Project.id).label("total_projects"),
         func.sum(Project.original_cost).label("tot_orig"),
@@ -112,7 +113,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
         func.count(case((monitoring_condition, 1))).label("monitoring"),
         func.count(case((high_risk_condition, 1))).label("delayed"),
         func.count(case((crit_condition, 1))).label("critical")
-    ).first()
+    ).filter(active_status_filter).first()
 
     total_projects = stats.total_projects or 0
     tot_orig = float(stats.tot_orig or 0.0)
@@ -154,7 +155,7 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
     ]
 
     # ── Top 10 Critical Projects ──────────────────────────────────────────────
-    raw_top = db.query(Project).order_by(desc(Project.risk_score), desc(Project.cost_overrun_pct)).limit(10).all()
+    raw_top = db.query(Project).filter(active_status_filter).order_by(desc(Project.risk_score), desc(Project.cost_overrun_pct)).limit(10).all()
 
     concerns_map = [
         "Land Acquisition & Forest Clearance",
