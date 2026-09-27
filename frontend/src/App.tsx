@@ -106,6 +106,12 @@ function MainApp() {
   }, []);
 
   useEffect(() => {
+    if (isPublic && activeTab === 'fidelity') {
+      setActiveTab('home');
+    }
+  }, [isPublic, activeTab]);
+
+  useEffect(() => {
     const titles: Record<string, string> = {
       home: 'Home',
       dashboard: 'Dashboard',

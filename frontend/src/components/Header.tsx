@@ -122,7 +122,6 @@ export const Header: React.FC<HeaderProps> = ({
       return [
         { id: 'home', label: t('nav_home', 'Home'), icon: <Home size={15} /> },
         { id: 'projects', label: t('nav_projects', 'Projects'), icon: <Database size={15} /> },
-        { id: 'fidelity', label: 'Fidelity Index', icon: <Gauge size={15} /> },
       ];
     }
     return allNavItems.filter(item => !item.impdOnly || isIMPD);
