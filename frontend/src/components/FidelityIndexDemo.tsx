@@ -328,49 +328,56 @@ export const FidelityIndexDemo: React.FC = () => {
           {visibleProjects.map((p, idx) => {
             const isInconsistent = p.fidelityStatus === 'improbable';
             const isStress = p.fidelityStatus === 'stress';
-            const rankColor = isInconsistent ? '#dc2626' : isStress ? '#d97706' : '#16a34a';
             return (
-              <div key={p.id} className={`audit-row ${isInconsistent ? 'row-flag-red' : isStress ? 'row-flag-amber' : 'row-flag-green'}`}>
-                <div className="audit-rank" style={{ borderColor: rankColor, color: rankColor }}>#{idx + 1}</div>
-                <div className="audit-row-identity">
-                  <div className="audit-row-sector-badge">{p.sector} · {p.ministry}</div>
-                  <div className="audit-row-name">{p.name}</div>
-                  <div className="audit-row-meta">ID: {p.id} &nbsp;·&nbsp; <span className="audit-agency-tag">{p.agency}</span></div>
+              <div key={p.id} className="img3-intervention-row fi-audit-row">
+                {/* Rank badge — alternating dark / blue like dashboard */}
+                <span className={`img3-rank-badge ${idx % 2 === 1 ? 'rank-blue' : 'rank-dark'}`}>
+                  #{String(idx + 1).padStart(2, '0')}
+                </span>
+
+                {/* Project identity */}
+                <div className="img3-info-col">
+                  <div className="img3-meta-top">
+                    <span className="img3-id-tag">ID: {p.id}</span>
+                    <span className="img3-meta-dot">•</span>
+                    <span className="img3-sector-tag">{p.sector}</span>
+                    <span className="img3-meta-dot">•</span>
+                    <span className="img3-ministry-tag">{p.ministry}</span>
+                  </div>
+                  <h3 className="img3-project-title">{p.name}</h3>
+                  <div className="fi-agency-row">
+                    <span className="audit-agency-tag">{p.agency}</span>
+                  </div>
                 </div>
-                <div className="audit-row-metrics">
-                  <div className="audit-metric-item">
-                    <span className="audit-metric-label">Physical Progress</span>
-                    <span className="audit-metric-value">{p.progressPhysical}%</span>
-                    <div className="mini-progress-bar">
-                      <div className="mini-progress-fill" style={{ width: `${p.progressPhysical}%`, backgroundColor: rankColor }} />
+
+                {/* Metrics group */}
+                <div className="img3-metrics-group fi-metrics-group">
+                  <div className="img3-metric-item">
+                    <span className="img3-metric-lbl">PROGRESS</span>
+                    <div className="img3-metric-val-row" style={{ color: '#0f172a' }}>
+                      <span className="img3-val-bold">{p.progressPhysical}%</span>
+                      <span className="img3-val-sub" style={{ color: p.progressPhysical < p.progressTarget ? '#dc2626' : '#16a34a' }}>
+                        / {p.progressTarget}% target
+                      </span>
                     </div>
                   </div>
-                  <div className="audit-metric-item">
-                    <span className="audit-metric-label">Target</span>
-                    <span className="audit-metric-value" style={{ color: p.progressPhysical < p.progressTarget ? '#dc2626' : '#16a34a' }}>{p.progressTarget}%</span>
+
+                  <div className="img3-metric-item">
+                    <span className="img3-metric-lbl">VDF SCORE</span>
+                    <div className={`img3-metric-val-row ${isInconsistent ? 'text-red' : isStress ? 'text-amber' : ''}`}>
+                      <TrendingUp size={13} />
+                      <span className="img3-val-bold">{p.vdf}x</span>
+                    </div>
                   </div>
-                  <div className="audit-metric-item">
-                    <span className="audit-metric-label">Remaining</span>
-                    <span className="audit-metric-value">{p.remainingWork}%</span>
+
+                  <div className="img3-metric-item">
+                    <span className="img3-metric-lbl">REPORTING STATUS</span>
+                    <div className="img3-metric-val-row">
+                      {isInconsistent && <span className="status-inconsistent">⛔ INCONSISTENT</span>}
+                      {isStress && <span className="status-stress">⚠️ PACING STRESS</span>}
+                      {!isInconsistent && !isStress && <span className="status-consistent">✅ CONSISTENT</span>}
+                    </div>
                   </div>
-                  <div className="audit-metric-item">
-                    <span className="audit-metric-label">Months Left</span>
-                    <span className="audit-metric-value">{p.monthsLeft} mo</span>
-                  </div>
-                  <div className="audit-metric-item">
-                    <span className="audit-metric-label">Hist. Speed</span>
-                    <span className="audit-metric-value">{p.histSpeed}%/mo</span>
-                  </div>
-                </div>
-                <div className="audit-row-right">
-                  <div className="audit-vdf-block" style={{ color: rankColor, borderColor: rankColor + '44', background: rankColor + '11' }}>
-                    <TrendingUp size={13} />
-                    <span className="audit-vdf-num">{p.vdf}x VDF</span>
-                  </div>
-                  {isInconsistent && <span className="status-inconsistent">\u26D4 INCONSISTENT</span>}
-                  {isStress && <span className="status-stress">\u26A0\uFE0F PACING STRESS</span>}
-                  {!isInconsistent && !isStress && <span className="status-consistent">\u2705 CONSISTENT</span>}
-                  {p.riskScore >= 75 && <span className="risk-badge-high">Risk {p.riskScore}/100</span>}
                 </div>
               </div>
             );

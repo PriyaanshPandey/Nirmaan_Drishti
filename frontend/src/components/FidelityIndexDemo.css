@@ -1,4 +1,4 @@
-﻿/* =============================================
+/* =============================================
    FIDELITY INDEX - Premium Dashboard CSS
    ============================================= */
 
@@ -589,18 +589,55 @@
 .text-blue { color: #0284c7; }
 .text-teal { color: #0d9488; }
 
+/* ── Fidelity Audit Row overrides (extends img3-* dashboard styles) ── */
+
+/* Give the audit list the same gap as priority interventions */
+.audit-rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Override the border-radius on rows to match dashboard flat look */
+.fi-audit-row {
+  border-radius: 12px;
+  cursor: default;
+}
+
+/* Agency tag below the title */
+.fi-agency-row {
+  margin-top: 4px;
+}
+
+/* Tighten metrics group for 3-column layout */
+.fi-metrics-group {
+  gap: 32px;
+}
+
+/* Value styling inside metrics */
+.img3-val-bold {
+  font-size: 14px;
+  font-weight: 800;
+  color: inherit;
+}
+
+.img3-val-sub {
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
 /* Responsive */
 @media (max-width: 1100px) {
-  .audit-row {
-    grid-template-columns: 40px 1fr;
-  }
-  .audit-row-metrics, .audit-row-right {
-    grid-column: 2;
-  }
   .fidelity-stats-row {
     grid-template-columns: repeat(2, 1fr);
   }
   .simulator-grid {
     grid-template-columns: 1fr;
   }
+  .fi-metrics-group {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 }
+
