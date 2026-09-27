@@ -20,7 +20,7 @@ interface HomeProps {
   isPublic?: boolean;
 }
 
-const initialProjectsCount = 1981;
+const initialProjectsCount = 5149;
 const initialLakhCrores = 42.78;
 
 export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterState, onOpenLoginModal, homeClickNonce: _homeClickNonce, isPublic: _isPublic }) => {

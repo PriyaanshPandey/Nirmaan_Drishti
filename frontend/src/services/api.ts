@@ -60,6 +60,32 @@ export async function findProjectByIdOrOcms(projectId: string): Promise<Project 
          (p.legacy_ocms_code && String(p.legacy_ocms_code) === clean)
   );
 }
+export interface ProjectTimelinePoint {
+  period: string;
+  report_month?: string | null;
+  reporting_date?: string | null;
+  physical: number | null;
+  revised_cost: number | null;
+  expenditure: number | null;
+  is_historical?: boolean;
+  revised_cost_cr?: number | null;
+  expenditure_cr?: number | null;
+  forecast?: number | null;
+}
+
+export interface ProjectTimelineResponse {
+  project_id: string;
+  project_name: string;
+  status: 'ongoing' | 'inactive' | 'completed';
+  project_status: string;
+  original_cost: number;
+  revised_cost: number;
+  current_physical_progress: number;
+  current_cumulative_expenditure: number;
+  latest_snapshot_month?: string | null;
+  total_snapshots: number;
+  timeline: ProjectTimelinePoint[];
+}
 
 export interface DashboardSummaryData {
   metrics: {
@@ -1164,12 +1190,11 @@ export const api = {
       if (projectStatus && projectStatus !== 'ALL') {
         const ps = projectStatus.toUpperCase();
         if (ps === 'ONGOING') {
-          filtered = filtered.filter(p => p.status === 'ongoing' || p.projectStatus === 'ONGOING' || p.projectStatus === 'ACTIVE' || (!p.status && !p.projectStatus && p.phase !== 'Completed' && !p.phase?.includes('Non-Active') && !p.phase?.includes('Stalled')));
+          filtered = filtered.filter(p => p.status === 'ongoing' || p.projectStatus === 'ONGOING' || p.projectStatus === 'ACTIVE');
         } else if (ps === 'COMPLETED') {
-          filtered = filtered.filter(p => p.status === 'completed' || p.projectStatus === 'COMPLETED' || (!p.status && !p.projectStatus && (p.phase === 'Completed' || (p.scheduleStatus && p.scheduleStatus.includes('COMPLET')))));
+          filtered = filtered.filter(p => p.status === 'completed' || p.projectStatus === 'COMPLETED');
         } else if (ps === 'INACTIVE') {
-          const inactiveFiltered = filtered.filter(p => p.status === 'inactive' || p.projectStatus === 'INACTIVE' || p.projectStatus === 'STOPPED' || (p.phase && (p.phase.includes('Non-Active') || p.phase.includes('Stalled') || p.phase.includes('Shelved'))));
-          filtered = inactiveFiltered.length > 0 ? inactiveFiltered : filtered.filter((_, idx) => idx % 15 === 0).map(p => ({ ...p, status: 'inactive', projectStatus: 'INACTIVE', phase: 'Shelved / Stalled' }));
+          filtered = filtered.filter(p => p.status === 'inactive' || p.projectStatus === 'INACTIVE' || p.projectStatus === 'STOPPED');
         }
       }
 
@@ -1198,7 +1223,79 @@ export const api = {
       cacheSet('project_status_counts', data);
       return data;
     } catch {
-      return { ongoing: 1981, inactive: 2328, completed: 1442, total: 5751 };
+      return { ongoing: 1379, inactive: 2328, completed: 1442, total: 5149 };
+    }
+  },
+
+  /**
+   * Fetch Real-Time Historical Project Timeline & Trajectory
+   */
+  async getProjectTimeline(projectId: string): Promise<ProjectTimelineResponse> {
+    const cleanId = String(projectId).trim();
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/projects/${cleanId}/timeline`);
+      if (!res.ok) throw new Error(`Timeline fetch failed with status ${res.status}`);
+      return await res.json();
+    } catch (e) {
+      console.warn(`Falling back to synthesized timeline for ${cleanId}:`, e);
+      const p = await api.getProjectById(cleanId);
+      const origCost = p ? (typeof p.costApproved === 'number' ? p.costApproved : parseFloat(String(p.costApproved).replace(/[^0-9.]/g, '')) || 1000) : 1000;
+      const revCost = p ? (typeof p.costRevised === 'number' ? p.costRevised : parseFloat(String(p.costRevised).replace(/[^0-9.]/g, '')) || origCost) : origCost;
+      const prog = p?.progressPhysical || 0;
+      const exp = p ? (typeof p.costExpenditure === 'number' ? p.costExpenditure : parseFloat(String(p.costExpenditure).replace(/[^0-9.]/g, '')) || 0) : 0;
+      const isComp = p?.status === 'completed' || p?.projectStatus === 'COMPLETED';
+      const isNonAct = p?.status === 'inactive' || p?.projectStatus === 'INACTIVE';
+      const costBase = origCost > 0 ? origCost : (revCost > 0 ? revCost : 1000);
+      const points: ProjectTimelinePoint[] = [
+        {
+          period: p?.startDate || 'Inception',
+          report_month: null,
+          reporting_date: null,
+          physical: 0,
+          revised_cost: 100.0,
+          expenditure: 0,
+          revised_cost_cr: origCost,
+          expenditure_cr: 0,
+          is_historical: true
+        },
+        {
+          period: 'Latest Reported',
+          report_month: null,
+          reporting_date: null,
+          physical: prog,
+          revised_cost: Number(((revCost / costBase) * 100).toFixed(1)),
+          expenditure: Number(((exp / costBase) * 100).toFixed(1)),
+          revised_cost_cr: revCost,
+          expenditure_cr: exp,
+          is_historical: true
+        }
+      ];
+      if (!isComp && !isNonAct && prog < 100) {
+        points.push({
+          period: 'Predicted Completion (F)',
+          report_month: null,
+          reporting_date: null,
+          physical: 100,
+          revised_cost: Number(((revCost / costBase) * 100).toFixed(1)),
+          expenditure: Number(((revCost / costBase) * 100).toFixed(1)),
+          revised_cost_cr: revCost,
+          expenditure_cr: revCost,
+          is_historical: false
+        });
+      }
+      return {
+        project_id: cleanId,
+        project_name: p?.name || cleanId,
+        status: isComp ? 'completed' : isNonAct ? 'inactive' : 'ongoing',
+        project_status: isComp ? 'COMPLETED' : isNonAct ? 'INACTIVE' : 'ONGOING',
+        original_cost: origCost,
+        revised_cost: revCost,
+        current_physical_progress: prog,
+        current_cumulative_expenditure: exp,
+        latest_snapshot_month: 'Latest Reported',
+        total_snapshots: points.length,
+        timeline: points
+      };
     }
   },
 

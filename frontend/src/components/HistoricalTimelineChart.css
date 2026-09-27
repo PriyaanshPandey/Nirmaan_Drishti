@@ -70,6 +70,56 @@
   border-color: #CBD5E1;
 }
 
+.view-snapshots-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  color: #0284C7;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.view-snapshots-btn:hover {
+  background: #E0F2FE;
+  border-color: #7DD3FC;
+  color: #0369A1;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
+}
+
+.timeline-range-selector {
+  display: flex;
+  align-items: center;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 8px;
+  gap: 2px;
+}
+
+.range-pill {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.range-pill:hover {
+  color: #0F172A;
+}
+.range-pill.active {
+  background: #FFFFFF;
+  color: #0284C7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .timeline-charts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

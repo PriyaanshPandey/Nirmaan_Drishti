@@ -910,27 +910,49 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
       <div id="pd-section-basic" className="pd-section-anchor">
 
       {/* Project Title & Status */}
-      <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+      <div className="project-title-row" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', gap: '16px', flexWrap: 'wrap' }}>
         <h1 className="detail-project-name" style={{ margin: 0 }}>{project.name}</h1>
-        {(() => {
-          const displayStatus = getProjectDisplayStatus(project);
-          const kind = displayStatus === 'CRITICAL' ? 'critical' : displayStatus === 'DELAYED' ? 'delayed' : displayStatus === 'IN REVIEW' ? 'medium' : 'on-track';
-          return (
-            <StatusIndicator
-              kind={kind}
-              label={displayStatus === 'CRITICAL' ? 'CRITICAL PROJECT' : displayStatus}
-              className={`status-tag-badge status-${displayStatus.toLowerCase().replace(/\s+/g, '-')}`}
-            />
-          );
-        })()}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Authoritative Category Badge */}
+          {project.isCompleted || project.status === 'completed' || project.projectStatus === 'COMPLETED' ? (
+            <span style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #86EFAC', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
+              COMPLETED
+            </span>
+          ) : project.status === 'inactive' || project.projectStatus === 'INACTIVE' || project.projectStatus === 'STOPPED' ? (
+            <span style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
+              ONGOING INACTIVE
+            </span>
+          ) : (
+            <span style={{ background: '#E0F2FE', color: '#0369A1', border: '1px solid #7DD3FC', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.04em' }}>
+              ONGOING ACTIVE
+            </span>
+          )}
+          {(() => {
+            const displayStatus = getProjectDisplayStatus(project);
+            const kind = displayStatus === 'CRITICAL' ? 'critical' : displayStatus === 'DELAYED' ? 'delayed' : displayStatus === 'IN REVIEW' ? 'medium' : 'on-track';
+            return (
+              <StatusIndicator
+                kind={kind}
+                label={displayStatus === 'CRITICAL' ? 'CRITICAL PROJECT' : displayStatus}
+                className={`status-tag-badge status-${displayStatus.toLowerCase().replace(/\s+/g, '-')}`}
+              />
+            );
+          })()}
+        </div>
       </div>
 
-      {/* Identifier Subheader: Official Project ID & Legacy OCMS Code */}
+      {/* Identifier Subheader: Official Project ID, Sector, Ministry & Latest Snapshot */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: 0, marginBottom: '22px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
           <span style={{ color: '#64748B', fontWeight: 500 }}>Project ID:</span>
           <span style={{ fontFamily: 'monospace', background: '#F1F5F9', padding: '2px 8px', borderRadius: '4px', border: '1px solid #CBD5E1', color: '#0F172A', fontWeight: 700 }}>
             {project.id}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+          <span style={{ color: '#64748B', fontWeight: 500 }}>Latest Snapshot:</span>
+          <span style={{ background: '#F8FAFC', padding: '2px 8px', borderRadius: '4px', border: '1px solid #E2E8F0', color: '#0284C7', fontWeight: 600 }}>
+            {project.asOfDate || (project.isCompleted || project.status === 'completed' ? (project.actualCompletion || 'Commissioned') : 'May 2026')}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#64748B' }}>

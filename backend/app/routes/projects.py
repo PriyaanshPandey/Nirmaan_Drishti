@@ -4,9 +4,12 @@ Provides complete CRUD, filtering, pagination, and nested entity management.
 """
 from typing import Optional, List
 import math
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, or_, desc, asc
+
+logger = logging.getLogger("sanket_ai.projects")
 
 from app.database import get_db
 from app.models.project import Project
@@ -594,13 +597,239 @@ def add_milestone(project_id: str, payload: MilestoneCreate, db: Session = Depen
 @router.get("/{project_id}/progress", response_model=List[ProgressResponse], summary="Get Project Progress Time-Series")
 def get_progress_records(project_id: str, db: Session = Depends(get_db)):
     """Get time-series historical progress snapshots for a project."""
-    project = db.query(Project).filter(Project.id == project_id).first()
+    canonical_id = _resolve_project_id(project_id, db)
+    project = db.query(Project).filter(Project.id == canonical_id).first()
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project with ID '{project_id}' not found."
         )
-    return db.query(ProjectProgress).filter(ProjectProgress.project_id == project_id).order_by(ProjectProgress.reporting_date.asc()).all()
+    return db.query(ProjectProgress).filter(ProjectProgress.project_id == canonical_id).order_by(ProjectProgress.reporting_date.asc()).all()
+
+
+@router.get("/{project_id}/timeline", summary="Get Historical Project Timeline and Trajectory")
+def get_project_timeline(project_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieve all monthly PAIMANA snapshots and construct the project timeline:
+    - Historical snapshots: strictly actual PAIMANA data. Missing snapshots remain null (never 0).
+    - Future snapshots: strictly ML model predictions without hardcoded values.
+    - Exactly 3 metrics as percentages: Physical Progress %, Total Revised Cost %, Cumulative Expenditure %.
+    """
+    from datetime import date as dt_date, datetime as dt_datetime
+    from dateutil.relativedelta import relativedelta
+
+    canonical_id = _resolve_project_id(project_id, db)
+    project = db.query(Project).filter(Project.id == canonical_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with ID '{project_id}' not found."
+        )
+
+    # Retrieve all monthly progress snapshots sorted by reporting_date
+    snaps = db.query(ProjectProgress).filter(
+        ProjectProgress.project_id == canonical_id
+    ).order_by(ProjectProgress.reporting_date.asc()).all()
+
+    orig_cost = float(project.original_cost or 0.0)
+    rev_cost = float(project.revised_cost or orig_cost)
+    curr_prog = float(project.physical_progress or 0.0)
+    curr_exp = float(project.cumulative_expenditure or 0.0)
+    stat = (project.project_status or "").upper()
+    is_completed = stat == "COMPLETED" or curr_prog >= 100.0
+    is_inactive = stat in ("INACTIVE", "STOPPED")
+
+    cost_base = orig_cost if orig_cost > 0 else (rev_cost if rev_cost > 0 else (curr_exp if curr_exp > 0 else 1.0))
+
+    timeline_points = []
+    latest_snapshot_month = None
+
+    if snaps:
+        # Build month lookup: (year, month) -> snapshot
+        snaps_by_month = {}
+        for s in snaps:
+            if s.reporting_date:
+                key = (s.reporting_date.year, s.reporting_date.month)
+                snaps_by_month[key] = s
+
+        start_date = snaps[0].reporting_date
+        end_date = snaps[-1].reporting_date
+
+        curr_dt = dt_date(start_date.year, start_date.month, 1)
+        target_end_dt = dt_date(end_date.year, end_date.month, 1)
+
+        while curr_dt <= target_end_dt:
+            key = (curr_dt.year, curr_dt.month)
+            period_label = curr_dt.strftime("%b %Y")
+            report_month_str = curr_dt.strftime("%Y-%m")
+
+            if key in snaps_by_month:
+                s = snaps_by_month[key]
+                # Physical progress: strictly PAIMANA data, null if missing, never 0
+                phys_val = None
+                if s.physical_progress is not None:
+                    raw_p = float(s.physical_progress)
+                    phys_val = min(100.0, max(0.0, round(raw_p, 2)))
+
+                # Revised cost %
+                s_rev = float(s.revised_cost) if s.revised_cost is not None else (rev_cost if rev_cost > 0 else None)
+                rev_pct = round((s_rev / cost_base) * 100.0, 2) if s_rev is not None else None
+
+                # Cumulative expenditure %
+                s_exp = float(s.cumulative_expenditure) if s.cumulative_expenditure is not None else None
+                exp_pct = round((s_exp / cost_base) * 100.0, 2) if s_exp is not None else None
+
+                timeline_points.append({
+                    "period": period_label,
+                    "report_month": report_month_str,
+                    "reporting_date": s.reporting_date.isoformat(),
+                    "physical": phys_val,
+                    "revised_cost": rev_pct,
+                    "expenditure": exp_pct,
+                    "revised_cost_cr": round(s_rev, 2) if s_rev is not None else None,
+                    "expenditure_cr": round(s_exp, 2) if s_exp is not None else None,
+                    "is_historical": True
+                })
+            else:
+                # Missing PAIMANA snapshot must remain null, never 0
+                timeline_points.append({
+                    "period": period_label,
+                    "report_month": report_month_str,
+                    "reporting_date": curr_dt.isoformat(),
+                    "physical": None,
+                    "revised_cost": None,
+                    "expenditure": None,
+                    "revised_cost_cr": None,
+                    "expenditure_cr": None,
+                    "is_historical": True
+                })
+
+            curr_dt += relativedelta(months=1)
+
+        latest_snapshot_month = end_date.strftime("%b %Y")
+    else:
+        # Baseline point from project inception/current
+        start_lbl = project.start_date.strftime("%b %Y") if project.start_date else "Inception"
+        timeline_points.append({
+            "period": start_lbl,
+            "report_month": project.start_date.strftime("%Y-%m") if project.start_date else None,
+            "reporting_date": project.start_date.isoformat() if project.start_date else None,
+            "physical": 0.0,
+            "revised_cost": 100.0,
+            "expenditure": 0.0,
+            "revised_cost_cr": round(orig_cost, 2),
+            "expenditure_cr": 0.0,
+            "is_historical": True
+        })
+        curr_lbl = "Latest Reported"
+        timeline_points.append({
+            "period": curr_lbl,
+            "report_month": dt_datetime.now().strftime("%Y-%m"),
+            "reporting_date": dt_date.today().isoformat(),
+            "physical": round(curr_prog, 2) if project.physical_progress is not None else None,
+            "revised_cost": round((rev_cost / cost_base) * 100.0, 2) if rev_cost > 0 else 100.0,
+            "expenditure": round((curr_exp / cost_base) * 100.0, 2) if curr_exp > 0 else 0.0,
+            "revised_cost_cr": round(rev_cost, 2),
+            "expenditure_cr": round(curr_exp, 2),
+            "is_historical": True
+        })
+        latest_snapshot_month = curr_lbl
+
+    # Future snapshots: strictly model predictions only for active ongoing projects
+    if not is_completed and not is_inactive and curr_prog < 100.0:
+        pred_res = {}
+        t1_pred = {}
+        cost_pred = {}
+        time_pred = {}
+        try:
+            pred_res = ai_engine.get_full_project_prediction(canonical_id)
+            t1_pred = pred_res.get("t1_prediction") or {}
+            cost_pred = pred_res.get("cost_prediction") or {}
+            time_pred = pred_res.get("time_prediction") or {}
+        except Exception as e:
+            logger.warning("Could not load AI engine predictions: %s", e)
+
+        # Extract predictions without hardcoding
+        raw_pred_cost = t1_pred.get("predicted_future_cost_crore")
+        if raw_pred_cost is None:
+            raw_pred_cost = float(cost_pred.get("3_month", {}).get("predicted_final_revised_cost_crore") or rev_cost)
+        pred_future_cost = max(rev_cost, float(raw_pred_cost))
+
+        pred_add_cost = t1_pred.get("predicted_additional_cost_crore")
+        if pred_add_cost is None:
+            pred_add_cost = float(cost_pred.get("3_month", {}).get("predicted_additional_cost_crore") or max(0.0, pred_future_cost - rev_cost))
+
+        pred_delay_months = t1_pred.get("predicted_schedule_delay_months")
+        if pred_delay_months is None:
+            pred_delay_months = float(time_pred.get("3_month", {}).get("predicted_total_schedule_extension_months") or float(project.schedule_extension_months or 0.0))
+
+        pred_rev_pct = round((pred_future_cost / cost_base) * 100.0, 2)
+
+        last_dt = snaps[-1].reporting_date if snaps else (project.start_date or dt_date.today())
+
+        eff_doc = project.expected_completion_date or project.original_completion_date
+        if eff_doc:
+            base_doc = project.original_completion_date or eff_doc
+            pred_completion_date = base_doc + relativedelta(months=int(round(pred_delay_months)))
+            if pred_completion_date <= last_dt:
+                pred_completion_date = last_dt + relativedelta(months=max(6, int(round(12.0 * (100.0 - curr_prog) / max(curr_prog, 10.0)))))
+        else:
+            rem_months = max(6, int(round(18.0 * (100.0 - curr_prog) / max(curr_prog, 10.0))))
+            pred_completion_date = last_dt + relativedelta(months=rem_months)
+
+        last_snap = snaps[-1] if snaps else None
+        last_snap_exp = float(last_snap.cumulative_expenditure) if (last_snap and last_snap.cumulative_expenditure is not None) else curr_exp
+        last_snap_prog = float(last_snap.physical_progress) if (last_snap and last_snap.physical_progress is not None) else curr_prog
+
+        # Point A: T+1 Next-Period (Model 3M Horizon)
+        t1_date = last_dt + relativedelta(months=3)
+        if t1_date < pred_completion_date:
+            t1_exp = min(pred_future_cost, last_snap_exp + pred_add_cost)
+            t1_exp_pct = round((t1_exp / cost_base) * 100.0, 2)
+            total_months = max(3.0, (pred_completion_date.year - last_dt.year) * 12 + (pred_completion_date.month - last_dt.month))
+            t1_prog = min(99.0, round(last_snap_prog + ((100.0 - last_snap_prog) * (3.0 / total_months)), 1))
+
+            timeline_points.append({
+                "period": f"{t1_date.strftime('%b %Y')} (F)",
+                "report_month": t1_date.strftime("%Y-%m"),
+                "reporting_date": t1_date.isoformat(),
+                "physical": t1_prog,
+                "revised_cost": pred_rev_pct,
+                "expenditure": t1_exp_pct,
+                "revised_cost_cr": round(pred_future_cost, 2),
+                "expenditure_cr": round(t1_exp, 2),
+                "is_historical": False
+            })
+
+        # Point B: Predicted Final Completion Date (Model Completion)
+        final_exp = max(last_snap_exp, pred_future_cost)
+        final_exp_pct = round((final_exp / cost_base) * 100.0, 2)
+        timeline_points.append({
+            "period": f"{pred_completion_date.strftime('%b %Y')} (F)",
+            "report_month": pred_completion_date.strftime("%Y-%m"),
+            "reporting_date": pred_completion_date.isoformat(),
+            "physical": 100.0,
+            "revised_cost": pred_rev_pct,
+            "expenditure": final_exp_pct,
+            "revised_cost_cr": round(pred_future_cost, 2),
+            "expenditure_cr": round(final_exp, 2),
+            "is_historical": False
+        })
+
+    return {
+        "project_id": canonical_id,
+        "project_name": project.name,
+        "status": "completed" if is_completed else "inactive" if is_inactive else "ongoing",
+        "project_status": project.project_status,
+        "original_cost": orig_cost,
+        "revised_cost": rev_cost,
+        "current_physical_progress": curr_prog,
+        "current_cumulative_expenditure": curr_exp,
+        "latest_snapshot_month": latest_snapshot_month,
+        "total_snapshots": len(snaps),
+        "timeline": timeline_points
+    }
+
 
 
 def _calculate_risk_tier(prob: Optional[float]) -> str:

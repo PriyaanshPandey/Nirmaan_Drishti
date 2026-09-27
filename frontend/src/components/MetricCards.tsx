@@ -5,8 +5,8 @@ import { api, type DashboardSummaryData } from '../services/api';
 import { InfoButton } from './ExplainabilityInfo';
 
 const DEFAULT_METRICS: DashboardSummaryData['metrics'] = {
-  total_projects: 1981,
-  total_projects_subtext: 'Ongoing Infrastructure Projects',
+  total_projects: 5149,
+  total_projects_subtext: 'Segregated Infrastructure Assets',
   total_original_cost: 3713000,
   total_original_cost_formatted: '₹37.13 L Cr',
   total_revised_cost: 4278000,
@@ -29,7 +29,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
       if (res && res.metrics && res.metrics.total_projects > 0) {
         setMetrics({
           ...res.metrics,
-          total_projects_subtext: 'Ongoing Infrastructure Projects'
+          total_projects_subtext: 'Segregated Infrastructure Assets'
         });
       }
     }).catch(() => {
@@ -44,7 +44,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ activeTab }) => {
   const origCostCr = metrics.total_original_cost || 3713000;
   const revCostCr = metrics.total_revised_cost || 4278000;
   const overrunPct = metrics.cost_overrun_percentage ?? 15.2;
-  const totalProjects = metrics.total_projects || 1981;
+  const totalProjects = metrics.total_projects || 5149;
 
   return (
     <div className="metrics-column">
