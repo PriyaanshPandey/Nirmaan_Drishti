@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Sliders, Activity, ShieldAlert, CheckCircle2,
   Filter, Search, AlertTriangle,
@@ -183,24 +183,25 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
             <BadgeAlert size={22} className="fidelity-header-icon" />
             <h1 className="fidelity-page-title">Reporting Fidelity Index</h1>
             <InfoButton
-              title="What is Reporting Fidelity Index?"
-              summary="The Reporting Fidelity Index (RFI) detects statistical inconsistencies between what agencies claim in project reports versus what their historical execution velocity can realistically deliver."
+              title="What is Reporting Fidelity Index & VDF?"
+              summary="The Reporting Fidelity Index (RFI) uses the Velocity Disconnect Factor (VDF) to detect statistical inconsistencies between what agencies claim in project reports versus what their historical execution velocity can realistically deliver."
               dataSummary={{
                 items: [
+                  { label: 'VDF Full Form', value: 'Velocity Disconnect Factor' },
                   { label: 'Core Formula', value: 'VDF = Required Speed ÷ Historical Speed' },
-                  { label: 'Required Speed', value: 'Remaining Work (%) ÷ Months to Deadline' },
-                  { label: 'Historical Speed', value: '3-month execution velocity (%/month)' },
-                  { label: 'Inconsistency Threshold', value: 'VDF > 2.5x â€” trajectory deemed improbable without added resources' },
-                  { label: 'Pacing Stress Zone', value: 'VDF 1.2xâ€“2.5x â€” acceleration required, monitor closely' },
-                  { label: 'Data Coverage', value: 'PAIMANA dataset: 6,568 projects (2011â€“2026)' },
+                  { label: 'Required Speed', value: 'Remaining Work (%) ÷ Months to Target Deadline' },
+                  { label: 'Historical Speed', value: 'Realized 3-month execution velocity (%/month)' },
+                  { label: 'Inconsistency Threshold', value: 'VDF > 2.5x — trajectory deemed improbable without added resources' },
+                  { label: 'Pacing Stress Zone', value: 'VDF 1.2x–2.5x — acceleration required, monitor closely' },
+                  { label: 'Data Coverage', value: 'PAIMANA dataset: 6,568 projects (2011–2026)' },
                 ],
-                insight: 'A VDF above 2.5x means an agency must multiply execution speed by 2.5x or more to meet its own deadlineâ€”without any documented resource increase. This constitutes a statistically improbable reporting trajectory and is flagged for inaccuracy review.'
+                insight: 'A VDF (Velocity Disconnect Factor) above 2.5x means an agency must multiply execution speed by 2.5x or more to meet its own deadline—without any documented resource increase. This constitutes a statistically improbable reporting trajectory and is flagged for inaccuracy review.'
               }}
               theme="light"
             />
           </div>
           <p className="fidelity-page-subtitle">
-            AI-driven inconsistency detection across {FIDELITY_STATS.total.toLocaleString()} active PAIMANA projects Â· Velocity Disconnect Factor (VDF) analysis
+            AI-driven inconsistency detection across {FIDELITY_STATS.total.toLocaleString()} active PAIMANA projects · Velocity Disconnect Factor (VDF) analysis
           </p>
         </div>
       </div>
@@ -284,18 +285,19 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
             <Sliders size={18} className="text-blue" />
             <h2>VDF Simulator — Adjust Project Parameters</h2>
             <InfoButton
-              title="VDF Simulator"
-              summary="Use sliders to interactively simulate how reporting inconsistency is measured. Adjust remaining work, months left, and historical speed to see VDF change."
+              title="VDF (Velocity Disconnect Factor) Simulator"
+              summary="Use sliders to interactively simulate how Velocity Disconnect Factor (VDF) measures reporting inconsistency. Adjust remaining work, months left, and historical speed to see VDF change."
               dataSummary={{
                 items: [
+                  { label: 'VDF Full Form', value: 'Velocity Disconnect Factor' },
                   { label: 'Remaining Work', value: `${remainingWork}%` },
                   { label: 'Months to Target', value: `${monthsLeft} months` },
                   { label: 'Required Speed', value: `${remainingWork}% ÷ ${monthsLeft}m = ${requiredSpeed}%/month` },
                   { label: 'Historical Speed', value: `${historicalSpeed}%/month` },
-                  { label: 'VDF', value: `${requiredSpeed} ÷ ${historicalSpeed} = ${vdf}x` },
+                  { label: 'VDF Calculation', value: `${requiredSpeed} ÷ ${historicalSpeed} = ${vdf}x Velocity Disconnect` },
                   { label: 'Current Assessment', value: vdfStatus.label },
                 ],
-                insight: 'Try setting Months Left to 1 with 80% remaining work to observe an extreme inconsistency scenario.'
+                insight: 'VDF stands for Velocity Disconnect Factor. Try setting Months Left to 1 with 80% remaining work to observe an extreme inconsistency scenario.'
               }}
               theme="light"
             />
@@ -319,6 +321,9 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
           </div>
           <div className="sim-results-card">
             <h3>Calculated Reporting Fidelity Index</h3>
+            <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, marginTop: '2px', marginBottom: '8px' }}>
+              Velocity Disconnect Factor (VDF)
+            </div>
             <div className="vdf-score-box" style={{ backgroundColor: vdfStatus.bg, borderColor: vdfStatus.color }}>
               <div className="vdf-score-value" style={{ color: vdfStatus.color }}>{vdf}x</div>
               <div className="vdf-score-meta">
@@ -332,14 +337,15 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
           <div className="chart-header-row">
             <h4>Reported Completion Trajectory vs Realized Historical Pacing</h4>
             <InfoButton
-              title="Reading the Trajectory Chart"
-              summary="This chart shows the gap between what the agency must achieve (red dashed) vs what they have historically delivered (blue solid)."
+              title="Reading the Trajectory Chart (VDF)"
+              summary="This chart shows the gap between what the agency must achieve (red dashed) vs what they have historically delivered (blue solid) to compute Velocity Disconnect Factor (VDF)."
               dataSummary={{
                 items: [
+                  { label: 'VDF Full Form', value: 'Velocity Disconnect Factor' },
                   { label: 'Blue Line (Solid)', value: 'Historical Realized Speed — actual execution velocity averaged over past 3 months' },
                   { label: 'Red Line (Dashed)', value: 'Required Speed — velocity needed from today to meet the reported target date' },
                   { label: 'Gap = Inconsistency', value: 'A large gap between red and blue from Month T onward signals a statistically improbable reporting trajectory' },
-                  { label: 'VDF', value: 'Red ÷ Blue = Velocity Disconnect Factor. VDF > 2.5x is flagged as Inconsistent' },
+                  { label: 'VDF Formula', value: 'Red ÷ Blue = Velocity Disconnect Factor (VDF). VDF > 2.5x is flagged as Inconsistent' },
                 ],
                 insight: 'When both lines are identical up to Month T (Now) and then the red line jumps sharply, the agency is claiming a sudden acceleration that has no historical basis.'
               }}
@@ -374,10 +380,11 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
                 <h2>PAIMANA Projects Live Reporting Fidelity Audit</h2>
                 <InfoButton
-                  title="About the Live Audit List"
+                  title="About the Live Audit List (VDF)"
                   summary="This list shows all active PAIMANA projects ranked by their Velocity Disconnect Factor (VDF) — highest reporting inconsistency first."
                   dataSummary={{
                     items: [
+                      { label: 'VDF Full Form', value: 'Velocity Disconnect Factor' },
                       { label: 'Inconsistent (Red)', value: 'VDF > 2.5x — agency trajectory requires an implausible speed acceleration. Flagged for review.' },
                       { label: 'Pacing Stress (Amber)', value: 'VDF 1.2x–2.5x — above-average execution needed. Warrants monitoring.' },
                       { label: 'Consistent (Green)', value: 'VDF ≤ 1.2x — reported trajectory matches historical capability.' },
