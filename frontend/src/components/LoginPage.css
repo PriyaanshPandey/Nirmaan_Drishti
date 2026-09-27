@@ -247,35 +247,76 @@
   padding-bottom: 8px;
 }
 
+/* ── Live Status Badge ── */
+.gov-hero-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  border-radius: 999px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+  width: fit-content;
+  backdrop-filter: blur(8px);
+  animation: badgeFloat 5s ease-in-out infinite;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: livePulse 2s infinite;
+}
+
+.live-badge-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #0284c7;
+  text-transform: uppercase;
+}
+
+.live-sparkle-icon {
+  color: #3b82f6;
+  animation: sparkleRotate 4s ease-in-out infinite;
+}
+
 .gov-hero-headline {
   font-family: 'Montserrat', sans-serif;
   font-size: 2.85rem;
   font-weight: 800;
   color: #0b2545;
-  line-height: 1.15;
+  line-height: 1.16;
   letter-spacing: -0.025em;
   margin: 0 0 16px 0;
+  animation: heroTextEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .gov-gradient-text {
-  color: #0284c7;
-  background: linear-gradient(135deg, #0284c7 0%, #0070f3 100%);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 35%, #7c3aed 70%, #0284c7 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  animation: gradientShimmer 6s linear infinite;
 }
 
 .gov-hero-desc {
-  font-size: 1rem;
-  line-height: 1.58;
+  font-size: 0.98rem;
+  line-height: 1.6;
   color: #475569;
-  max-width: 480px;
+  max-width: 510px;
   margin: 0 0 32px 0;
+  animation: heroTextEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* 4 Feature Badges in a Row */
+/* 4 Feature Badges in a Row with Staggered Floating Animations */
 .gov-features-row {
   display: flex;
-  gap: 22px;
+  gap: 18px;
   align-items: flex-start;
 }
 
@@ -285,26 +326,39 @@
   align-items: center;
   text-align: center;
   gap: 9px;
-  width: 92px;
+  width: 104px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.float-badge-1 { animation: floatSlow 6s ease-in-out infinite 0s; }
+.float-badge-2 { animation: floatSlow 6s ease-in-out infinite 1.5s; }
+.float-badge-3 { animation: floatSlow 6s ease-in-out infinite 3s; }
+.float-badge-4 { animation: floatSlow 6s ease-in-out infinite 4.5s; }
+
+.gov-feature-card:hover {
+  transform: translateY(-6px) scale(1.05) !important;
 }
 
 .gov-feature-icon-box {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
 }
 
 .gov-feature-card:hover .gov-feature-icon-box {
-  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2, 132, 199, 0.2);
 }
 
 .bg-blue { background-color: #e0f2fe; }
 .text-blue { color: #0284c7; }
+
+.bg-teal { background-color: #ccfbf1; }
+.text-teal { color: #0d9488; }
 
 .bg-green { background-color: #dcfce7; }
 .text-green { color: #16a34a; }
@@ -320,6 +374,47 @@
   font-weight: 600;
   color: #334155;
   line-height: 1.35;
+}
+
+/* ── Moving Animations & Keyframe Definitions ───────────────── */
+@keyframes livePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes gradientShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes sparkleRotate {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+}
+
+@keyframes heroTextEntrance {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Right Column: Frosted Government Sign-in Card ────── */

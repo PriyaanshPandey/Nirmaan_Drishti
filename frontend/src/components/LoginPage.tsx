@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   AlertCircle, Lock, User, LogIn, Eye, EyeOff,
-  ShieldCheck, Shield, BarChart3, Network, Cpu, X
+  ShieldCheck, Shield, X,
+  TrendingUp, FileText, AlertTriangle, Building2, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -135,52 +136,57 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
         <div className="gov-layout-grid">
           {/* Left Column */}
           <div className="gov-hero-col">
+            {/* Live Status Badge */}
+            <div className="gov-hero-live-badge">
+              <span className="live-dot" />
+              <span className="live-badge-text">SANKET AI CORE • PREDICTIVE ENGINE ACTIVE</span>
+              <Sparkles size={13} className="live-sparkle-icon" />
+            </div>
+
             <h1 className="gov-hero-headline">
-              Data–Driven Decisions<br />
+              AI–Driven Predictive Intelligence<br />
               for a <span className="gov-gradient-text">Viksit Bharat</span>
             </h1>
 
             <p className="gov-hero-desc">
-              Nirmaan Drishti empowers government officers with AI-driven insights
-              to plan, monitor and accelerate India's infrastructure development.
+              Sanket-AI &amp; Nirmaan Drishti empower government officers with 12-month PAIMANA predictive forecasting, automated PDF report extraction, and cost/schedule overrun risk matrix to accelerate India's mega infrastructure projects.
             </p>
 
-            {/* 4 Feature Badges */}
+            {/* 4 Feature Badges with Staggered Floating Micro-Animations */}
             <div className="gov-features-row">
-              <div className="gov-feature-card">
+              <div className="gov-feature-card float-badge-1">
                 <div className="gov-feature-icon-box bg-blue">
-                  <BarChart3 size={22} className="text-blue" />
+                  <TrendingUp size={22} className="text-blue" />
                 </div>
                 <div className="gov-feature-label">
-                  Real-time<br />Project Insights
+                  PAIMANA 12-Month<br />Predictive Horizon
                 </div>
               </div>
 
-              {/* Updated icon color/badge to soft cyan/teal for better aesthetic */}
-              <div className="gov-feature-card">
+              <div className="gov-feature-card float-badge-2">
                 <div className="gov-feature-icon-box bg-teal">
-                  <ShieldCheck size={22} className="text-teal" />
+                  <FileText size={22} className="text-teal" />
                 </div>
                 <div className="gov-feature-label">
-                  Secure &amp;<br />Compliant
+                  Automated PDF<br />Report Extraction
                 </div>
               </div>
 
-              <div className="gov-feature-card">
+              <div className="gov-feature-card float-badge-3">
                 <div className="gov-feature-icon-box bg-amber">
-                  <Network size={22} className="text-amber" />
+                  <AlertTriangle size={22} className="text-amber" />
                 </div>
                 <div className="gov-feature-label">
-                  Multi-Ministry<br />Collaboration
+                  Cost &amp; Delay<br />Overrun Matrix
                 </div>
               </div>
 
-              <div className="gov-feature-card">
+              <div className="gov-feature-card float-badge-4">
                 <div className="gov-feature-icon-box bg-purple">
-                  <Cpu size={22} className="text-purple" />
+                  <Building2 size={22} className="text-purple" />
                 </div>
                 <div className="gov-feature-label">
-                  AI-Powered<br />Decision Support
+                  Multi-Ministry<br />Project Intelligence
                 </div>
               </div>
             </div>
