@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+﻿import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Sliders, Activity, ShieldAlert, CheckCircle2,
   Filter, Search, AlertTriangle,
@@ -187,8 +187,8 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
               summary="The Reporting Fidelity Index (RFI) detects statistical inconsistencies between what agencies claim in project reports versus what their historical execution velocity can realistically deliver."
               dataSummary={{
                 items: [
-                  { label: 'Core Formula', value: 'VDF = Required Speed Ã· Historical Speed' },
-                  { label: 'Required Speed', value: 'Remaining Work (%) Ã· Months to Deadline' },
+                  { label: 'Core Formula', value: 'VDF = Required Speed ÷ Historical Speed' },
+                  { label: 'Required Speed', value: 'Remaining Work (%) ÷ Months to Deadline' },
                   { label: 'Historical Speed', value: '3-month execution velocity (%/month)' },
                   { label: 'Inconsistency Threshold', value: 'VDF > 2.5x â€” trajectory deemed improbable without added resources' },
                   { label: 'Pacing Stress Zone', value: 'VDF 1.2xâ€“2.5x â€” acceleration required, monitor closely' },
@@ -282,7 +282,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
         <div className="section-title-box">
           <div className="title-left-group">
             <Sliders size={18} className="text-blue" />
-            <h2>VDF Simulator â€” Adjust Project Parameters</h2>
+            <h2>VDF Simulator — Adjust Project Parameters</h2>
             <InfoButton
               title="VDF Simulator"
               summary="Use sliders to interactively simulate how reporting inconsistency is measured. Adjust remaining work, months left, and historical speed to see VDF change."
@@ -290,14 +290,14 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                 items: [
                   { label: 'Remaining Work', value: `${remainingWork}%` },
                   { label: 'Months to Target', value: `${monthsLeft} months` },
-                  { label: 'Required Speed', value: `${remainingWork}% Ã· ${monthsLeft}m = ${requiredSpeed}%/month` },
+                  { label: 'Required Speed', value: `${remainingWork}% ÷ ${monthsLeft}m = ${requiredSpeed}%/month` },
                   { label: 'Historical Speed', value: `${historicalSpeed}%/month` },
-                  { label: 'VDF', value: `${requiredSpeed} Ã· ${historicalSpeed} = ${vdf}x` },
+                  { label: 'VDF', value: `${requiredSpeed} ÷ ${historicalSpeed} = ${vdf}x` },
                   { label: 'Current Assessment', value: vdfStatus.label },
                 ],
                 insight: 'Try setting Months Left to 1 with 80% remaining work to observe an extreme inconsistency scenario.'
               }}
-              theme="dark"
+              theme="light"
             />
           </div>
         </div>
@@ -343,7 +343,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                 ],
                 insight: 'When both lines are identical up to Month T (Now) and then the red line jumps sharply, the agency is claiming a sudden acceleration that has no historical basis.'
               }}
-              theme="dark"
+              theme="light"
               size="sm"
             />
           </div>
@@ -485,9 +485,9 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                 <div className="img3-info-col">
                   <div className="img3-meta-top">
                     <span className="img3-id-tag">ID: {p.id}</span>
-                    <span className="img3-meta-dot">â€¢</span>
+                    <span className="img3-meta-dot">·</span>
                     <span className="img3-sector-tag">{p.sector}</span>
-                    <span className="img3-meta-dot">â€¢</span>
+                    <span className="img3-meta-dot">·</span>
                     <span className="img3-ministry-tag">{p.ministry}</span>
                   </div>
                   <h3 className="img3-project-title">{p.name}</h3>
