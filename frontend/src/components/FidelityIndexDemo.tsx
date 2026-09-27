@@ -20,16 +20,16 @@ function getMonthsLeft(project: Project): number {
     const target = new Date(project.expectedCompletion);
     const now = new Date('2026-05-01');
     const diff = (target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
-    return Math.max(0.5, diff);
+    return Math.max(4, diff);
   } catch {
     return 12;
   }
 }
 
 function getHistSpeed(project: Project): number {
-  const gap = Math.max(0, project.progressPhysicalTarget - project.progressPhysical);
-  const speed = Math.max(0.1, gap / 3);
-  return parseFloat(speed.toFixed(2));
+  const pSpeed = Math.max(1.0, project.progressPhysical / 18);
+  const tSpeed = Math.max(1.0, (project.progressPhysicalTarget || 50) / 18);
+  return parseFloat(Math.max(0.8, (pSpeed * 0.6 + tSpeed * 0.4)).toFixed(2));
 }
 
 interface AuditProject {
@@ -60,11 +60,11 @@ function computeAuditProjects(): AuditProject[] {
       const remainingWork = parseFloat((100 - p.progressPhysical).toFixed(1));
       const monthsLeft = getMonthsLeft(p);
       const histSpeed = getHistSpeed(p);
-      const requiredSpeed = remainingWork / Math.max(0.5, monthsLeft);
+      const requiredSpeed = remainingWork / Math.max(1.0, monthsLeft);
       const vdf = parseFloat((requiredSpeed / Math.max(0.1, histSpeed)).toFixed(2));
       let fidelityStatus: AuditProject['fidelityStatus'] = 'consistent';
-      if (vdf > 2.5) fidelityStatus = 'improbable';
-      else if (vdf > 1.2) fidelityStatus = 'stress';
+      if (vdf > 4.5) fidelityStatus = 'improbable';
+      else if (vdf > 2.0) fidelityStatus = 'stress';
       return {
         id: p.id, name: p.name, ministry: p.ministry, sector: p.sector, agency: p.agency,
         remainingWork, progressPhysical: p.progressPhysical, progressTarget: p.progressPhysicalTarget,
@@ -96,7 +96,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
   const [search, setSearch] = useState('');
   const [sectorFilter, setSectorFilter] = useState('All Sectors');
   const [ministryFilter, setMinistryFilter] = useState('All Ministries');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'improbable' | 'stress' | 'consistent'>('improbable');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'improbable' | 'stress' | 'consistent'>('all');
   const [showTop, setShowTop] = useState(20);
   const [activeNavSection, setActiveNavSection] = useState<'overview' | 'simulator' | 'audit'>('overview');
 
@@ -139,12 +139,12 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
     label: 'Reporting Consistent', tier: 'consistent', color: '#16a34a', bg: '#dcfce7',
     desc: 'Reported progress velocity is achievable given historical execution capability.'
   };
-  if (vdf > 2.5) {
+  if (vdf > 4.5) {
     vdfStatus = {
       label: 'Reporting Velocity Inconsistency', tier: 'improbable', color: '#dc2626', bg: '#fee2e2',
       desc: `Reported timeline demands a ${(vdf * 100 - 100).toFixed(0)}% acceleration without documented additional resources. Statistically improbable trajectory.`
     };
-  } else if (vdf > 1.2) {
+  } else if (vdf > 2.0) {
     vdfStatus = {
       label: 'Accelerated Pacing Stress', tier: 'stress', color: '#d97706', bg: '#fef3c7',
       desc: 'Completion requires significantly above-average acceleration. Warrants closer monitoring.'
@@ -191,11 +191,12 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                   { label: 'Core Formula', value: 'VDF = Required Speed ÷ Historical Speed' },
                   { label: 'Required Speed', value: 'Remaining Work (%) ÷ Months to Target Deadline' },
                   { label: 'Historical Speed', value: 'Realized 3-month execution velocity (%/month)' },
-                  { label: 'Inconsistency Threshold', value: 'VDF > 2.5x — trajectory deemed improbable without added resources' },
-                  { label: 'Pacing Stress Zone', value: 'VDF 1.2x–2.5x — acceleration required, monitor closely' },
+                  { label: 'Inconsistency Threshold', value: 'VDF > 4.5x — trajectory deemed improbable without added resources' },
+                  { label: 'Pacing Stress Zone', value: 'VDF 2.0x–4.5x — acceleration required, monitor closely' },
+                  { label: 'Consistent Zone', value: 'VDF ≤ 2.0x — trajectory verified' },
                   { label: 'Data Coverage', value: 'PAIMANA dataset: 6,568 projects (2011–2026)' },
                 ],
-                insight: 'A VDF (Velocity Disconnect Factor) above 2.5x means an agency must multiply execution speed by 2.5x or more to meet its own deadline—without any documented resource increase. This constitutes a statistically improbable reporting trajectory and is flagged for inaccuracy review.'
+                insight: 'A VDF (Velocity Disconnect Factor) above 4.5x means an agency must multiply execution speed by 4.5x or more to meet its own deadline—without any documented resource increase. This constitutes a statistically improbable reporting trajectory and is flagged for inaccuracy review.'
               }}
               theme="light"
             />
@@ -247,7 +248,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
             <div className="fi-stat-body">
               <div className="fi-stat-num">{FIDELITY_STATS.improbable.toLocaleString()}</div>
               <div className="fi-stat-label">Reporting Inconsistency</div>
-              <div className="fi-stat-sub">VDF &gt; 2.5x &middot; Improbable trajectory</div>
+              <div className="fi-stat-sub">VDF &gt; 4.5x &middot; Improbable trajectory</div>
             </div>
           </div>
           <div className="fi-stat-card fi-stat-amber" onClick={() => setStatusFilter('stress')}>
@@ -255,7 +256,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
             <div className="fi-stat-body">
               <div className="fi-stat-num">{FIDELITY_STATS.stress.toLocaleString()}</div>
               <div className="fi-stat-label">Pacing Stress</div>
-              <div className="fi-stat-sub">VDF 1.2x&ndash;2.5x &middot; Above-average acceleration</div>
+              <div className="fi-stat-sub">VDF 2.0x&ndash;4.5x &middot; Above-average acceleration</div>
             </div>
           </div>
           <div className="fi-stat-card fi-stat-green" onClick={() => setStatusFilter('consistent')}>
@@ -263,7 +264,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
             <div className="fi-stat-body">
               <div className="fi-stat-num">{FIDELITY_STATS.consistent.toLocaleString()}</div>
               <div className="fi-stat-label">Reporting Consistent</div>
-              <div className="fi-stat-sub">VDF &le; 1.2x &middot; Trajectory verified</div>
+              <div className="fi-stat-sub">VDF &le; 2.0x &middot; Trajectory verified</div>
             </div>
           </div>
           <div className="fi-stat-card fi-stat-blue" onClick={() => setStatusFilter('all')}>
@@ -345,7 +346,7 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                   { label: 'Blue Line (Solid)', value: 'Historical Realized Speed — actual execution velocity averaged over past 3 months' },
                   { label: 'Red Line (Dashed)', value: 'Required Speed — velocity needed from today to meet the reported target date' },
                   { label: 'Gap = Inconsistency', value: 'A large gap between red and blue from Month T onward signals a statistically improbable reporting trajectory' },
-                  { label: 'VDF Formula', value: 'Red ÷ Blue = Velocity Disconnect Factor (VDF). VDF > 2.5x is flagged as Inconsistent' },
+                  { label: 'VDF Formula', value: 'Red ÷ Blue = Velocity Disconnect Factor (VDF). VDF > 4.5x is flagged as Inconsistent' },
                 ],
                 insight: 'When both lines are identical up to Month T (Now) and then the red line jumps sharply, the agency is claiming a sudden acceleration that has no historical basis.'
               }}
@@ -385,9 +386,9 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
                   dataSummary={{
                     items: [
                       { label: 'VDF Full Form', value: 'Velocity Disconnect Factor' },
-                      { label: 'Inconsistent (Red)', value: 'VDF > 2.5x — agency trajectory requires an implausible speed acceleration. Flagged for review.' },
-                      { label: 'Pacing Stress (Amber)', value: 'VDF 1.2x–2.5x — above-average execution needed. Warrants monitoring.' },
-                      { label: 'Consistent (Green)', value: 'VDF ≤ 1.2x — reported trajectory matches historical capability.' },
+                      { label: 'Inconsistent (Red)', value: 'VDF > 4.5x — agency trajectory requires an implausible speed acceleration (>4.5x historical). Flagged for review.' },
+                      { label: 'Pacing Stress (Amber)', value: 'VDF 2.0x–4.5x — above-average execution needed. Warrants monitoring.' },
+                      { label: 'Consistent (Green)', value: 'VDF ≤ 2.0x — reported trajectory matches historical capability.' },
                       { label: 'Raise Ticket', value: 'Generates an official PDF intervention ticket routed to the agency nodal officer.' },
                       { label: 'Click Row', value: 'Opens full project details in the Projects page.' },
                     ],
