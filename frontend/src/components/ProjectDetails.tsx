@@ -1019,9 +1019,6 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({
             />
           </div>
           <div className="metric-box-val">{formatPercentClean(project.progressPhysical)}</div>
-          <div className="metric-box-sub text-muted">
-            Revised Target: {formatPercentClean(project.progressPhysicalTarget ?? project.progressPhysical)}
-          </div>
         </div>
 
         {project.isCompleted || project.projectStatus === 'COMPLETED' || project.actualCompletion ? (
