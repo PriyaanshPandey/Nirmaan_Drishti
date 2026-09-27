@@ -3,6 +3,7 @@
  * Generates authentic, official formatted MoSPI documents with GoI crest headers,
  * reference codes, structured metadata, and direct download/print-to-PDF triggers.
  */
+import { MOSPI_LOGO_B64, GOV_HEADER_CSS } from './govHeader';
 
 export interface TicketData {
   id: string;
@@ -38,10 +39,7 @@ export function generateTicketPDF(ticket: TicketData) {
       <title>MoSPI Official Action Ticket - ${ticket.id}</title>
       <style>
         body { font-family: 'Times New Roman', Times, serif; margin: 40px; color: #111; line-height: 1.5; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 24px; }
-        .emblem { font-size: 24px; font-weight: bold; letter-spacing: 1px; }
-        .goi-text { font-size: 16px; font-weight: bold; text-transform: uppercase; margin-top: 4px; }
-        .dept-text { font-size: 14px; font-weight: bold; color: #333; }
+        ${GOV_HEADER_CSS}
         .ref-box { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; font-weight: bold; }
         .title { text-align: center; font-size: 18px; font-weight: bold; text-decoration: underline; margin: 20px 0; text-transform: uppercase; }
         .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -51,18 +49,19 @@ export function generateTicketPDF(ticket: TicketData) {
         .signature-block { float: right; width: 250px; text-align: center; margin-top: 50px; }
         .sig-line { border-top: 1px solid #000; margin-top: 40px; padding-top: 4px; font-weight: bold; }
         .footer { position: fixed; bottom: 30px; left: 40px; right: 40px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ccc; padding-top: 6px; }
-        @media print {
-          body { margin: 20px; }
-        }
+        @media print { body { margin: 20px; } }
       </style>
     </head>
     <body>
-      <div class="header">
-        <div class="emblem">🇮🇳 सत्यमेव जयते</div>
-        <div class="goi-text">Government of India</div>
-        <div class="dept-text">Ministry of Statistics & Programme Implementation (MoSPI)</div>
-        <div class="dept-text">Infrastructure & Project Monitoring Division (IPMD)</div>
-        <div style="font-size: 11px; color: #555; margin-top: 4px;">PAIMANA National Infrastructure Monitoring Portal</div>
+      <div class="gov-header">
+        <div class="gov-header-inner">
+          <img src="${MOSPI_LOGO_B64}" alt="Government of India - MoSPI" class="gov-emblem-img" />
+          <div class="gov-header-text">
+            <div class="gov-title-line">Government of India</div>
+            <div class="gov-ministry-line">Ministry of Statistics &amp; Programme Implementation</div>
+            <div class="gov-dept-line">Infrastructure &amp; Project Monitoring Division (IPMD) &nbsp;|&nbsp; PAIMANA National Monitoring Portal</div>
+          </div>
+        </div>
       </div>
 
       <div class="ref-box">
@@ -123,8 +122,7 @@ export function generateMemoPDF(projectName: string, projectId: string, actionTi
       <title>MoSPI Office Memorandum - ${projectId}</title>
       <style>
         body { font-family: 'Times New Roman', Times, serif; margin: 45px; color: #000; line-height: 1.6; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .emblem { font-size: 24px; font-weight: bold; }
+        ${GOV_HEADER_CSS}
         .title-box { text-align: center; font-size: 16px; font-weight: bold; margin: 24px 0; text-transform: uppercase; text-decoration: underline; }
         .memo-ref { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 20px; }
         .para { text-indent: 40px; margin-bottom: 16px; font-size: 14px; text-align: justify; }
@@ -134,12 +132,15 @@ export function generateMemoPDF(projectName: string, projectId: string, actionTi
       </style>
     </head>
     <body>
-      <div class="header">
-        <div class="emblem">🇮🇳</div>
-        <div style="font-size: 16px; font-weight: bold;">GOVERNMENT OF INDIA</div>
-        <div style="font-size: 14px; font-weight: bold;">MINISTRY OF STATISTICS AND PROGRAMME IMPLEMENTATION</div>
-        <div style="font-size: 13px;">INFRASTRUCTURE & PROJECT MONITORING DIVISION</div>
-        <div style="font-size: 11px; margin-top: 4px;">Madan Mohan Malaviya University of Technology, Gorakhpur</div>
+      <div class="gov-header">
+        <div class="gov-header-inner">
+          <img src="${MOSPI_LOGO_B64}" alt="Government of India - MoSPI" class="gov-emblem-img" />
+          <div class="gov-header-text">
+            <div class="gov-title-line">Government of India</div>
+            <div class="gov-ministry-line">Ministry of Statistics &amp; Programme Implementation</div>
+            <div class="gov-dept-line">Infrastructure &amp; Project Monitoring Division (IPMD) &nbsp;|&nbsp; PAIMANA National Monitoring Portal</div>
+          </div>
+        </div>
       </div>
 
       <div class="memo-ref">
