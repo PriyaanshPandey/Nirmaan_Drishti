@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import {
   Sliders, Activity, ShieldAlert, CheckCircle2,
   Filter, Search, AlertTriangle,
-  ChevronDown, BarChart3, TrendingUp, BadgeAlert
+  ChevronDown, BarChart3, TrendingUp, BadgeAlert, FileText
 } from 'lucide-react';
 import {
   ComposedChart, Line, XAxis, YAxis, CartesianGrid,
@@ -11,6 +11,7 @@ import {
 import { InfoButton } from './ExplainabilityInfo';
 import { projectsData } from '../data/projectsData';
 import type { Project } from '../data/projectsData';
+import { generateTicketPDF } from '../utils/pdfGenerator';
 import './FidelityIndexDemo.css';
 
 function getMonthsLeft(project: Project): number {
@@ -83,7 +84,11 @@ const FIDELITY_STATS = {
   consistent: ALL_AUDIT_PROJECTS.filter(p => p.fidelityStatus === 'consistent').length,
 };
 
-export const FidelityIndexDemo: React.FC = () => {
+interface FidelityIndexDemoProps {
+  onSelectProject?: (projectId: string) => void;
+}
+
+export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectProject }) => {
   const [remainingWork, setRemainingWork] = useState<number>(40);
   const [monthsLeft, setMonthsLeft] = useState<number>(2);
   const [historicalSpeed, setHistoricalSpeed] = useState<number>(2.0);
@@ -148,20 +153,20 @@ export const FidelityIndexDemo: React.FC = () => {
               summary="The Reporting Fidelity Index (RFI) detects statistical inconsistencies between what agencies claim in project reports versus what their historical execution velocity can realistically deliver."
               dataSummary={{
                 items: [
-                  { label: 'Core Formula', value: 'VDF = Required Speed ÷ Historical Speed' },
-                  { label: 'Required Speed', value: 'Remaining Work (%) ÷ Months to Deadline' },
+                  { label: 'Core Formula', value: 'VDF = Required Speed Ã· Historical Speed' },
+                  { label: 'Required Speed', value: 'Remaining Work (%) Ã· Months to Deadline' },
                   { label: 'Historical Speed', value: '3-month execution velocity (%/month)' },
-                  { label: 'Inconsistency Threshold', value: 'VDF > 2.5x — trajectory deemed improbable without added resources' },
-                  { label: 'Pacing Stress Zone', value: 'VDF 1.2x–2.5x — acceleration required, monitor closely' },
-                  { label: 'Data Coverage', value: 'PAIMANA dataset: 6,568 projects (2011–2026)' },
+                  { label: 'Inconsistency Threshold', value: 'VDF > 2.5x â€” trajectory deemed improbable without added resources' },
+                  { label: 'Pacing Stress Zone', value: 'VDF 1.2xâ€“2.5x â€” acceleration required, monitor closely' },
+                  { label: 'Data Coverage', value: 'PAIMANA dataset: 6,568 projects (2011â€“2026)' },
                 ],
-                insight: 'A VDF above 2.5x means an agency must multiply execution speed by 2.5x or more to meet its own deadline—without any documented resource increase. This constitutes a statistically improbable reporting trajectory and is flagged for inaccuracy review.'
+                insight: 'A VDF above 2.5x means an agency must multiply execution speed by 2.5x or more to meet its own deadlineâ€”without any documented resource increase. This constitutes a statistically improbable reporting trajectory and is flagged for inaccuracy review.'
               }}
               theme="light"
             />
           </div>
           <p className="fidelity-page-subtitle">
-            AI-driven inconsistency detection across {FIDELITY_STATS.total.toLocaleString()} active PAIMANA projects · Velocity Disconnect Factor (VDF) analysis
+            AI-driven inconsistency detection across {FIDELITY_STATS.total.toLocaleString()} active PAIMANA projects Â· Velocity Disconnect Factor (VDF) analysis
           </p>
         </div>
       </div>
@@ -172,7 +177,7 @@ export const FidelityIndexDemo: React.FC = () => {
           <div className="fi-stat-body">
             <div className="fi-stat-num">{FIDELITY_STATS.improbable.toLocaleString()}</div>
             <div className="fi-stat-label">Reporting Inconsistency</div>
-            <div className="fi-stat-sub">VDF &gt; 2.5x · Improbable trajectory</div>
+            <div className="fi-stat-sub">VDF &gt; 2.5x Â· Improbable trajectory</div>
           </div>
         </div>
         <div className="fi-stat-card fi-stat-amber" onClick={() => setStatusFilter('stress')}>
@@ -180,7 +185,7 @@ export const FidelityIndexDemo: React.FC = () => {
           <div className="fi-stat-body">
             <div className="fi-stat-num">{FIDELITY_STATS.stress.toLocaleString()}</div>
             <div className="fi-stat-label">Pacing Stress</div>
-            <div className="fi-stat-sub">VDF 1.2x–2.5x · Above-average acceleration</div>
+            <div className="fi-stat-sub">VDF 1.2xâ€“2.5x Â· Above-average acceleration</div>
           </div>
         </div>
         <div className="fi-stat-card fi-stat-green" onClick={() => setStatusFilter('consistent')}>
@@ -188,7 +193,7 @@ export const FidelityIndexDemo: React.FC = () => {
           <div className="fi-stat-body">
             <div className="fi-stat-num">{FIDELITY_STATS.consistent.toLocaleString()}</div>
             <div className="fi-stat-label">Reporting Consistent</div>
-            <div className="fi-stat-sub">VDF ≤ 1.2x · Trajectory verified</div>
+            <div className="fi-stat-sub">VDF â‰¤ 1.2x Â· Trajectory verified</div>
           </div>
         </div>
         <div className="fi-stat-card fi-stat-blue" onClick={() => setStatusFilter('all')}>
@@ -205,7 +210,7 @@ export const FidelityIndexDemo: React.FC = () => {
         <div className="section-title-box">
           <div className="title-left-group">
             <Sliders size={18} className="text-blue" />
-            <h2>VDF Simulator — Adjust Project Parameters</h2>
+            <h2>VDF Simulator â€” Adjust Project Parameters</h2>
             <InfoButton
               title="VDF Simulator"
               summary="Use sliders to interactively simulate how reporting inconsistency is measured. Adjust remaining work, months left, and historical speed to see VDF change."
@@ -213,9 +218,9 @@ export const FidelityIndexDemo: React.FC = () => {
                 items: [
                   { label: 'Remaining Work', value: `${remainingWork}%` },
                   { label: 'Months to Target', value: `${monthsLeft} months` },
-                  { label: 'Required Speed', value: `${remainingWork}% ÷ ${monthsLeft}m = ${requiredSpeed}%/month` },
+                  { label: 'Required Speed', value: `${remainingWork}% Ã· ${monthsLeft}m = ${requiredSpeed}%/month` },
                   { label: 'Historical Speed', value: `${historicalSpeed}%/month` },
-                  { label: 'VDF', value: `${requiredSpeed} ÷ ${historicalSpeed} = ${vdf}x` },
+                  { label: 'VDF', value: `${requiredSpeed} Ã· ${historicalSpeed} = ${vdf}x` },
                   { label: 'Current Assessment', value: vdfStatus.label },
                 ],
                 insight: 'Try setting Months Left to 1 with 80% remaining work to observe an extreme inconsistency scenario.'
@@ -276,7 +281,7 @@ export const FidelityIndexDemo: React.FC = () => {
             <div>
               <h2>PAIMANA Projects Live Reporting Fidelity Audit</h2>
               <p className="audit-subtitle">
-                Showing {filteredProjects.length.toLocaleString()} projects · Ranked by VDF (highest inconsistency first)
+                Showing {filteredProjects.length.toLocaleString()} projects Â· Ranked by VDF (highest inconsistency first)
               </p>
             </div>
           </div>
@@ -328,9 +333,37 @@ export const FidelityIndexDemo: React.FC = () => {
           {visibleProjects.map((p, idx) => {
             const isInconsistent = p.fidelityStatus === 'improbable';
             const isStress = p.fidelityStatus === 'stress';
+
+            const handleRowClick = () => {
+              if (onSelectProject) onSelectProject(p.id);
+            };
+
+            const handleRaiseTicket = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              generateTicketPDF({
+                id: `RFI-${Date.now().toString().slice(-6)}`,
+                projectName: p.name,
+                projectId: p.id,
+                actionTitle: 'Reporting Fidelity Inconsistency â€” Velocity Disconnect Factor Alert',
+                routedOfficer: `Nodal Officer, ${p.ministry}`,
+                status: 'OPEN',
+                priority: 'Critical',
+                dateCreated: new Date().toLocaleDateString('en-IN'),
+                ministry: p.ministry,
+                agency: p.agency,
+                description: `VDF Score of ${p.vdf}x detected. Agency-reported completion trajectory requires ${p.vdf}x the historically realized execution speed without documented additional resource allocation. Physical progress is ${p.progressPhysical}% against a target of ${p.progressTarget}%. Flagged for inaccuracy review under PAIMANA Reporting Fidelity Index.`,
+              });
+            };
+
             return (
-              <div key={p.id} className="img3-intervention-row fi-audit-row">
-                {/* Rank badge — alternating dark / blue like dashboard */}
+              <div
+                key={p.id}
+                className={`img3-intervention-row fi-audit-row ${onSelectProject ? 'fi-row-clickable' : ''}`}
+                onClick={handleRowClick}
+                role={onSelectProject ? 'button' : undefined}
+                tabIndex={onSelectProject ? 0 : undefined}
+              >
+                {/* Rank badge â€” alternating dark / blue like dashboard */}
                 <span className={`img3-rank-badge ${idx % 2 === 1 ? 'rank-blue' : 'rank-dark'}`}>
                   #{String(idx + 1).padStart(2, '0')}
                 </span>
@@ -339,9 +372,9 @@ export const FidelityIndexDemo: React.FC = () => {
                 <div className="img3-info-col">
                   <div className="img3-meta-top">
                     <span className="img3-id-tag">ID: {p.id}</span>
-                    <span className="img3-meta-dot">•</span>
+                    <span className="img3-meta-dot">â€¢</span>
                     <span className="img3-sector-tag">{p.sector}</span>
-                    <span className="img3-meta-dot">•</span>
+                    <span className="img3-meta-dot">â€¢</span>
                     <span className="img3-ministry-tag">{p.ministry}</span>
                   </div>
                   <h3 className="img3-project-title">{p.name}</h3>
@@ -371,14 +404,26 @@ export const FidelityIndexDemo: React.FC = () => {
                   </div>
 
                   <div className="img3-metric-item">
-                    <span className="img3-metric-lbl">REPORTING STATUS</span>
+                    <span className="img3-metric-lbl">STATUS</span>
                     <div className="img3-metric-val-row">
-                      {isInconsistent && <span className="status-inconsistent">⛔ INCONSISTENT</span>}
-                      {isStress && <span className="status-stress">⚠️ PACING STRESS</span>}
-                      {!isInconsistent && !isStress && <span className="status-consistent">✅ CONSISTENT</span>}
+                      {isInconsistent && <span className="fi-status-badge fi-status-red">Inconsistent</span>}
+                      {isStress && <span className="fi-status-badge fi-status-amber">Pacing Stress</span>}
+                      {!isInconsistent && !isStress && <span className="fi-status-badge fi-status-green">Consistent</span>}
                     </div>
                   </div>
                 </div>
+
+                {/* Raise Ticket button â€” only on inconsistent rows */}
+                {isInconsistent && (
+                  <button
+                    className="fi-ticket-btn"
+                    onClick={handleRaiseTicket}
+                    title="Raise an official intervention ticket for this agency"
+                  >
+                    <FileText size={13} />
+                    Raise Ticket
+                  </button>
+                )}
               </div>
             );
           })}

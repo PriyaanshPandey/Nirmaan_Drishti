@@ -598,6 +598,56 @@
   gap: 6px;
 }
 
+/* Clean text-only status badges (no emoji) */
+.fi-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.fi-status-red   { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+.fi-status-amber { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.fi-status-green { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+
+/* Clickable row cursor */
+.fi-row-clickable {
+  cursor: pointer;
+}
+
+.fi-row-clickable:hover {
+  border-color: #BFDBFE;
+  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Raise Ticket button */
+.fi-ticket-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #090D3A;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.fi-ticket-btn:hover {
+  background: #1e3a8a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(9, 13, 58, 0.3);
+}
+
 /* Override the border-radius on rows to match dashboard flat look */
 .fi-audit-row {
   border-radius: 12px;

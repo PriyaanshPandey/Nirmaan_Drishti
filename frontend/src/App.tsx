@@ -415,7 +415,7 @@ function MainApp() {
         {/* ── Reporting Fidelity Index (Ghost Progress Audit) ── */}
         <PageSlot id="fidelity" activeTab={activeTab}>
           <main className="fidelity-content">
-            <FidelityIndexDemo />
+            <FidelityIndexDemo onSelectProject={handleSelectProject} />
           </main>
         </PageSlot>
 
