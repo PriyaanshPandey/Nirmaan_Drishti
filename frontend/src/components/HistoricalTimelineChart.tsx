@@ -250,20 +250,21 @@ export const HistoricalTimelineChart: React.FC<HistoricalTimelineChartProps> = (
                 }}
                 itemStyle={{ fontWeight: 500, fontSize: '13px' }}
                 labelStyle={{ color: '#475569', fontWeight: 700, marginBottom: '8px', borderBottom: '1px solid #F1F5F9', paddingBottom: '4px' }}
-                formatter={(value: any, name: string, item: any) => {
+                formatter={(value: any, name: any, item: any) => {
                   if (value === null || value === undefined) {
                     return ['Not Reported / Missing', name];
                   }
                   const valNum = Number(value);
                   let extra = '';
-                  if (name.includes('Revised Cost') && item?.payload?.revised_cost_cr != null) {
+                  const nameStr = name ? String(name) : '';
+                  if (nameStr.includes('Revised Cost') && item?.payload?.revised_cost_cr != null) {
                     extra = ` (₹${Number(item.payload.revised_cost_cr).toLocaleString()} Cr)`;
-                  } else if (name.includes('Expenditure') && item?.payload?.expenditure_cr != null) {
+                  } else if (nameStr.includes('Expenditure') && item?.payload?.expenditure_cr != null) {
                     extra = ` (₹${Number(item.payload.expenditure_cr).toLocaleString()} Cr)`;
                   }
                   return [`${valNum.toFixed(1)}%${extra}`, name];
                 }}
-                labelFormatter={(label: string, items: any[]) => {
+                labelFormatter={(label: any, items: any) => {
                   const payload = items?.[0]?.payload;
                   if (!payload) return label;
                   const isFuture = payload.is_historical === false;

@@ -181,6 +181,7 @@
   background: #101654;
   transform: translateY(-1px);
   box-shadow: 0 6px 28px rgba(9, 13, 58, 0.5);
+}
 
 .gov-header-subtle-close:hover {
   background: #f1f5f9;

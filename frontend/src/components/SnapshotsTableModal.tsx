@@ -249,7 +249,7 @@ export const SnapshotsTableModal: React.FC<SnapshotsTableModalProps> = ({
           <div className="snapshots-kpi-card">
             <div className="kpi-card-label">Physical Progress Trajectory</div>
             <div className="kpi-card-value" style={{ color: '#0284C7' }}>
-              {latestHistorical?.physical != null ? `${latestHistorical.physical}%` : `${project.physical_progress || 0}%`}
+              {latestHistorical?.physical != null ? `${latestHistorical.physical}%` : `${(project as any).physical_progress || project.progressPhysical || 0}%`}
             </div>
             <div className="kpi-card-sub">
               Initial: {initialHistorical?.physical != null ? `${initialHistorical.physical}%` : '0%'}
