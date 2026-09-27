@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   AlertCircle, Lock, User, LogIn, Eye, EyeOff,
   ShieldCheck, Shield, X,
-  TrendingUp, FileText, AlertTriangle, Building2, Sparkles
+  TrendingUp, AlertTriangle, Building2, Sparkles
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -25,6 +25,42 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const usernameRef = useRef<HTMLInputElement>(null);
+
+  // Live Keystrokes / Typewriter effect for headline
+  const [typedText, setTypedText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  const headlinePhrases = [
+    "AI–Driven Predictive Intelligence",
+    "Real-Time Infrastructure Insights",
+    "12-Month PAIMANA Forecasting",
+    "Automated Risk Detection Engine"
+  ];
+
+  useEffect(() => {
+    const currentPhrase = headlinePhrases[phraseIndex % headlinePhrases.length];
+
+    let timer: ReturnType<typeof setTimeout>;
+
+    if (!isDeleting && typedText === currentPhrase) {
+      timer = setTimeout(() => setIsDeleting(true), 2200);
+    } else if (isDeleting && typedText === '') {
+      setIsDeleting(false);
+      setPhraseIndex((prev) => prev + 1);
+    } else {
+      const speed = isDeleting ? 35 : 70;
+      timer = setTimeout(() => {
+        setTypedText(
+          isDeleting
+            ? currentPhrase.substring(0, typedText.length - 1)
+            : currentPhrase.substring(0, typedText.length + 1)
+        );
+      }, speed);
+    }
+
+    return () => clearTimeout(timer);
+  }, [typedText, isDeleting, phraseIndex]);
 
   // Lock scrolling on mounting
   useEffect(() => {
@@ -144,12 +180,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
             </div>
 
             <h1 className="gov-hero-headline">
-              AI–Driven Predictive Intelligence<br />
+              <span className="gov-typewriter-text">{typedText}</span>
+              <span className="gov-typing-cursor">|</span>
+              <br />
               for a <span className="gov-gradient-text">Viksit Bharat</span>
             </h1>
 
             <p className="gov-hero-desc">
-              Sanket-AI &amp; Nirmaan Drishti empower government officers with 12-month PAIMANA predictive forecasting, automated PDF report extraction, and cost/schedule overrun risk matrix to accelerate India's mega infrastructure projects.
+              Intelligence platform built on top of PAIMANA to empower government officers with AI-driven insights to plan, monitor and accelerate India's infrastructure development.
             </p>
 
             {/* 4 Feature Badges with Staggered Floating Micro-Animations */}
@@ -159,16 +197,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess, onClose }) => {
                   <TrendingUp size={22} className="text-blue" />
                 </div>
                 <div className="gov-feature-label">
-                  PAIMANA 12-Month<br />Predictive Horizon
+                  AI-Driven<br />Forecasts
                 </div>
               </div>
 
               <div className="gov-feature-card float-badge-2">
                 <div className="gov-feature-icon-box bg-teal">
-                  <FileText size={22} className="text-teal" />
+                  <ShieldCheck size={22} className="text-teal" />
                 </div>
                 <div className="gov-feature-label">
-                  Automated PDF<br />Report Extraction
+                  Real-Time<br />Early Warnings
                 </div>
               </div>
 
