@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Sliders, Activity, ShieldAlert, CheckCircle2,
   Filter, Search, AlertTriangle,
-  ChevronDown, BarChart3, TrendingUp, BadgeAlert, FileText
+  ChevronDown, BarChart3, TrendingUp, BadgeAlert, FileText,
+  LayoutDashboard, FlaskConical, ClipboardList
 } from 'lucide-react';
 import {
   ComposedChart, Line, XAxis, YAxis, CartesianGrid,
@@ -97,6 +98,39 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
   const [ministryFilter, setMinistryFilter] = useState('All Ministries');
   const [statusFilter, setStatusFilter] = useState<'all' | 'improbable' | 'stress' | 'consistent'>('improbable');
   const [showTop, setShowTop] = useState(20);
+  const [activeNavSection, setActiveNavSection] = useState<'overview' | 'simulator' | 'audit'>('overview');
+
+  // Scroll to section
+  const scrollToSection = useCallback((id: 'overview' | 'simulator' | 'audit') => {
+    setActiveNavSection(id);
+    const el = document.getElementById(`fi-section-${id}`);
+    if (el) {
+      const offset = 88;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }, []);
+
+  // Scroll-spy
+  useEffect(() => {
+    const sections = ['overview', 'simulator', 'audit'] as const;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const id = e.target.id.replace('fi-section-', '') as typeof sections[number];
+            setActiveNavSection(id);
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    );
+    sections.forEach((id) => {
+      const el = document.getElementById(`fi-section-${id}`);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const requiredSpeed = Number((remainingWork / Math.max(0.5, monthsLeft)).toFixed(1));
   const vdf = Number((requiredSpeed / Math.max(0.1, historicalSpeed)).toFixed(2));
@@ -171,41 +205,79 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
         </div>
       </div>
 
-      <div className="fidelity-stats-row">
-        <div className="fi-stat-card fi-stat-red" onClick={() => setStatusFilter('improbable')}>
-          <div className="fi-stat-icon"><ShieldAlert size={18} /></div>
-          <div className="fi-stat-body">
-            <div className="fi-stat-num">{FIDELITY_STATS.improbable.toLocaleString()}</div>
-            <div className="fi-stat-label">Reporting Inconsistency</div>
-            <div className="fi-stat-sub">VDF &gt; 2.5x Â· Improbable trajectory</div>
-          </div>
-        </div>
-        <div className="fi-stat-card fi-stat-amber" onClick={() => setStatusFilter('stress')}>
-          <div className="fi-stat-icon"><AlertTriangle size={18} /></div>
-          <div className="fi-stat-body">
-            <div className="fi-stat-num">{FIDELITY_STATS.stress.toLocaleString()}</div>
-            <div className="fi-stat-label">Pacing Stress</div>
-            <div className="fi-stat-sub">VDF 1.2xâ€“2.5x Â· Above-average acceleration</div>
-          </div>
-        </div>
-        <div className="fi-stat-card fi-stat-green" onClick={() => setStatusFilter('consistent')}>
-          <div className="fi-stat-icon"><CheckCircle2 size={18} /></div>
-          <div className="fi-stat-body">
-            <div className="fi-stat-num">{FIDELITY_STATS.consistent.toLocaleString()}</div>
-            <div className="fi-stat-label">Reporting Consistent</div>
-            <div className="fi-stat-sub">VDF â‰¤ 1.2x Â· Trajectory verified</div>
-          </div>
-        </div>
-        <div className="fi-stat-card fi-stat-blue" onClick={() => setStatusFilter('all')}>
-          <div className="fi-stat-icon"><BarChart3 size={18} /></div>
-          <div className="fi-stat-body">
-            <div className="fi-stat-num">{FIDELITY_STATS.total.toLocaleString()}</div>
-            <div className="fi-stat-label">Total Audited</div>
-            <div className="fi-stat-sub">All active ongoing projects</div>
-          </div>
+      {/* ── Sticky Section Tab Bar ── */}
+      <div className="section-nav-bar">
+        <div role="tablist" style={{ display: 'flex', gap: '2px' }}>
+          <button
+            role="tab"
+            aria-selected={activeNavSection === 'overview'}
+            className={`section-nav-tab ${activeNavSection === 'overview' ? 'active' : ''}`}
+            onClick={() => scrollToSection('overview')}
+          >
+            <LayoutDashboard size={15} />
+            <span>Overview</span>
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeNavSection === 'simulator'}
+            className={`section-nav-tab ${activeNavSection === 'simulator' ? 'active' : ''}`}
+            onClick={() => scrollToSection('simulator')}
+          >
+            <FlaskConical size={15} />
+            <span>VDF Simulator</span>
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeNavSection === 'audit'}
+            className={`section-nav-tab ${activeNavSection === 'audit' ? 'active' : ''}`}
+            onClick={() => scrollToSection('audit')}
+          >
+            <ClipboardList size={15} />
+            <span>Live Audit</span>
+          </button>
         </div>
       </div>
 
+      {/* ── SECTION 1: Overview ── */}
+      <div id="fi-section-overview">
+        <div className="fidelity-stats-row">
+          <div className="fi-stat-card fi-stat-red" onClick={() => setStatusFilter('improbable')}>
+            <div className="fi-stat-icon"><ShieldAlert size={18} /></div>
+            <div className="fi-stat-body">
+              <div className="fi-stat-num">{FIDELITY_STATS.improbable.toLocaleString()}</div>
+              <div className="fi-stat-label">Reporting Inconsistency</div>
+              <div className="fi-stat-sub">VDF &gt; 2.5x &middot; Improbable trajectory</div>
+            </div>
+          </div>
+          <div className="fi-stat-card fi-stat-amber" onClick={() => setStatusFilter('stress')}>
+            <div className="fi-stat-icon"><AlertTriangle size={18} /></div>
+            <div className="fi-stat-body">
+              <div className="fi-stat-num">{FIDELITY_STATS.stress.toLocaleString()}</div>
+              <div className="fi-stat-label">Pacing Stress</div>
+              <div className="fi-stat-sub">VDF 1.2x&ndash;2.5x &middot; Above-average acceleration</div>
+            </div>
+          </div>
+          <div className="fi-stat-card fi-stat-green" onClick={() => setStatusFilter('consistent')}>
+            <div className="fi-stat-icon"><CheckCircle2 size={18} /></div>
+            <div className="fi-stat-body">
+              <div className="fi-stat-num">{FIDELITY_STATS.consistent.toLocaleString()}</div>
+              <div className="fi-stat-label">Reporting Consistent</div>
+              <div className="fi-stat-sub">VDF &le; 1.2x &middot; Trajectory verified</div>
+            </div>
+          </div>
+          <div className="fi-stat-card fi-stat-blue" onClick={() => setStatusFilter('all')}>
+            <div className="fi-stat-icon"><BarChart3 size={18} /></div>
+            <div className="fi-stat-body">
+              <div className="fi-stat-num">{FIDELITY_STATS.total.toLocaleString()}</div>
+              <div className="fi-stat-label">Total Audited</div>
+              <div className="fi-stat-sub">All active ongoing projects</div>
+            </div>
+          </div>
+        </div>
+      </div>{/* end fi-section-overview */}
+
+      {/* ── SECTION 2: VDF Simulator ── */}
+      <div id="fi-section-simulator">
       <div className="simulator-section">
         <div className="section-title-box">
           <div className="title-left-group">
@@ -290,7 +362,10 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
           </div>
         </div>
       </div>
+      </div>{/* end fi-section-simulator */}
 
+      {/* ── SECTION 3: Live Audit ── */}
+      <div id="fi-section-audit">
       <div className="audit-table-section">
         <div className="audit-header-bar">
           <div className="title-left-group">
@@ -474,8 +549,8 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
               Show {Math.min(20, filteredProjects.length - showTop)} more ({filteredProjects.length - showTop} remaining)
             </button>
           </div>
-        )}
-      </div>
+        )}\n      </div>{/* end audit-table-section */}
+      </div>{/* end fi-section-audit */}
     </div>
   );
 };
