@@ -16,6 +16,7 @@ import { PageSlot } from './components/PageTransition';
 import { Home } from './components/Home';
 import { Footer } from './components/Footer';
 import { LoginPage } from './components/LoginPage';
+import { FidelityIndexDemo } from './components/FidelityIndexDemo';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
 // ── Inner app: handles authenticated and public views ─────────────────────────────
@@ -408,6 +409,13 @@ function MainApp() {
               onFilterRisk={handleFilterRisk}
               targetMinistry={targetMinistry}
             />
+          </main>
+        </PageSlot>
+
+        {/* ── Reporting Fidelity Index (Ghost Progress Audit) ── */}
+        <PageSlot id="fidelity" activeTab={activeTab}>
+          <main className="fidelity-content">
+            <FidelityIndexDemo />
           </main>
         </PageSlot>
 

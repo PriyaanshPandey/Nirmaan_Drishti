@@ -4,7 +4,7 @@ import {
   Search, X, ChevronRight, Building2, MapPin, ArrowRight,
   SlidersHorizontal, CornerDownLeft, Home, LayoutDashboard,
   Database, Layers, ShieldAlert, FileSpreadsheet, LogOut,
-  Accessibility, Type, ZoomIn, ZoomOut, Link2, Eye, RotateCcw
+  Accessibility, Type, ZoomIn, ZoomOut, Link2, Eye, RotateCcw, Gauge
 } from 'lucide-react';
 import type { Project } from '../data/projectsData';
 import './Header.css';
@@ -110,6 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'home', label: t('nav_home', 'Home'), icon: <Home size={15} /> },
     { id: 'dashboard', label: t('nav_dashboard', 'Dashboard'), icon: <LayoutDashboard size={15} /> },
     { id: 'projects', label: t('nav_projects', 'Projects'), icon: <Database size={15} /> },
+    { id: 'fidelity', label: 'Fidelity Index', icon: <Gauge size={15} /> },
     { id: 'distribution', label: t('nav_benchmark', 'Benchmark'), icon: <Layers size={15} /> },
     { id: 'alerts', label: t('nav_alerts', 'Alerts'), icon: <ShieldAlert size={15} /> },
     { id: 'action-centre', label: t('nav_actions', 'Action Center'), icon: <ShieldAlert size={15} /> },
@@ -121,6 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
       return [
         { id: 'home', label: t('nav_home', 'Home'), icon: <Home size={15} /> },
         { id: 'projects', label: t('nav_projects', 'Projects'), icon: <Database size={15} /> },
+        { id: 'fidelity', label: 'Fidelity Index', icon: <Gauge size={15} /> },
       ];
     }
     return allNavItems.filter(item => !item.impdOnly || isIMPD);
