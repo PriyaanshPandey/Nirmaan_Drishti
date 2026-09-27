@@ -161,35 +161,37 @@ export const Home: React.FC<HomeProps> = ({ activeTab, onNavigateTab, onFilterSt
         </div>
 
         <div className="metric-strip-card" style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '10px', left: '12px', zIndex: 2 }}>
+            <InfoButton 
+              title={t('cost_overrun_forecast', 'Cost Overrun Forecast')}
+              summary="AI-driven aggregate forecast of anticipated cost escalations across the portfolio if current execution trends continue." 
+              size="sm" 
+              style={{ margin: 0 }}
+            />
+          </div>
           <div className="strip-icon"><Cpu size={20} color="#DC2626" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val" style={{ color: '#ef4444' }}>+15.2% Cr</span>
             <span className="strip-lbl">
               {t('cost_overrun_forecast', 'Cost Overrun Forecast')}
-              <span style={{ marginLeft: '6px', verticalAlign: 'middle', display: 'inline-flex' }}>
-                <InfoButton 
-                  title={t('cost_overrun_forecast', 'Cost Overrun Forecast')}
-                  summary="AI-driven aggregate forecast of anticipated cost escalations across the portfolio if current execution trends continue." 
-                  size="sm" 
-                />
-              </span>
             </span>
           </div>
         </div>
 
         <div className="metric-strip-card" style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '10px', left: '12px', zIndex: 2 }}>
+            <InfoButton 
+              title={t('schedule_overrun_forecast', 'Schedule Overrun Forecast')}
+              summary="Anticipated average schedule slippage based on predictive milestone trajectory models." 
+              size="sm" 
+              style={{ margin: 0 }}
+            />
+          </div>
           <div className="strip-icon"><Globe size={20} color="#D97706" aria-hidden="true" /></div>
           <div className="strip-info">
             <span className="strip-val" style={{ color: '#f59e0b' }}>+18.4 Mos</span>
             <span className="strip-lbl">
               {t('schedule_overrun_forecast', 'Schedule Overrun Forecast')}
-              <span style={{ marginLeft: '6px', verticalAlign: 'middle', display: 'inline-flex' }}>
-                <InfoButton 
-                  title={t('schedule_overrun_forecast', 'Schedule Overrun Forecast')}
-                  summary="Anticipated average schedule slippage based on predictive milestone trajectory models." 
-                  size="sm" 
-                />
-              </span>
             </span>
           </div>
         </div>
