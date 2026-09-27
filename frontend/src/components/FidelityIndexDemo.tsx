@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Sliders, Activity, ShieldAlert, CheckCircle2,
   Filter, Search, AlertTriangle,
@@ -257,7 +257,24 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
           </div>
         </div>
         <div className="sim-chart-card">
-          <h4>Reported Completion Trajectory vs Realized Historical Pacing</h4>
+          <div className="chart-header-row">
+            <h4>Reported Completion Trajectory vs Realized Historical Pacing</h4>
+            <InfoButton
+              title="Reading the Trajectory Chart"
+              summary="This chart shows the gap between what the agency must achieve (red dashed) vs what they have historically delivered (blue solid)."
+              dataSummary={{
+                items: [
+                  { label: 'Blue Line (Solid)', value: 'Historical Realized Speed — actual execution velocity averaged over past 3 months' },
+                  { label: 'Red Line (Dashed)', value: 'Required Speed — velocity needed from today to meet the reported target date' },
+                  { label: 'Gap = Inconsistency', value: 'A large gap between red and blue from Month T onward signals a statistically improbable reporting trajectory' },
+                  { label: 'VDF', value: 'Red ÷ Blue = Velocity Disconnect Factor. VDF > 2.5x is flagged as Inconsistent' },
+                ],
+                insight: 'When both lines are identical up to Month T (Now) and then the red line jumps sharply, the agency is claiming a sudden acceleration that has no historical basis.'
+              }}
+              theme="light"
+              size="sm"
+            />
+          </div>
           <div style={{ width: '100%', height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 8, right: 10, bottom: 8, left: 0 }}>
@@ -279,9 +296,30 @@ export const FidelityIndexDemo: React.FC<FidelityIndexDemoProps> = ({ onSelectPr
           <div className="title-left-group">
             <Activity size={18} className="text-teal" />
             <div>
-              <h2>PAIMANA Projects Live Reporting Fidelity Audit</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                <h2>PAIMANA Projects Live Reporting Fidelity Audit</h2>
+                <InfoButton
+                  title="About the Live Audit List"
+                  summary="This list shows all active PAIMANA projects ranked by their Velocity Disconnect Factor (VDF) — highest reporting inconsistency first."
+                  dataSummary={{
+                    items: [
+                      { label: 'Inconsistent (Red)', value: 'VDF > 2.5x — agency trajectory requires an implausible speed acceleration. Flagged for review.' },
+                      { label: 'Pacing Stress (Amber)', value: 'VDF 1.2x–2.5x — above-average execution needed. Warrants monitoring.' },
+                      { label: 'Consistent (Green)', value: 'VDF ≤ 1.2x — reported trajectory matches historical capability.' },
+                      { label: 'Raise Ticket', value: 'Generates an official PDF intervention ticket routed to the agency nodal officer.' },
+                      { label: 'Click Row', value: 'Opens full project details in the Projects page.' },
+                    ],
+                    insight: 'Data is computed in real-time from the PAIMANA CSV dataset (6,568 projects, 2011–2026). Projects are filtered to active/ongoing only.'
+                  }}
+                  theme="light"
+                  size="sm"
+                />
+              </div>
               <p className="audit-subtitle">
-                Showing {filteredProjects.length.toLocaleString()} projects Â· Ranked by VDF (highest inconsistency first)
+                Showing {filteredProjects.length.toLocaleString()} projects
+                &nbsp;·&nbsp;
+                <span style={{ color: '#dc2626', fontWeight: 700 }}>{FIDELITY_STATS.improbable.toLocaleString()} inconsistent</span>
+                &nbsp;·&nbsp; Ranked by VDF (highest first)
               </p>
             </div>
           </div>

@@ -217,11 +217,18 @@
   padding: 18px 20px;
 }
 
-.sim-chart-card h4 {
-  font-size: 0.85rem;
+.chart-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.chart-header-row h4 {
+  font-size: 0.875rem;
   font-weight: 700;
   color: #475569;
-  margin: 0 0 14px;
+  margin: 0;
 }
 
 /* ── Audit Section ───────────────────────────── */
