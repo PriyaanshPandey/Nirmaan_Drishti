@@ -1,143 +1,9 @@
 .fidelity-page-container {
-  padding: 32px;
+  padding: 24px 32px;
   max-width: 1280px;
   margin: 0 auto;
   font-family: 'Inter', system-ui, sans-serif;
   color: #0f172a;
-}
-
-/* ── Top Header ────────────────────────────────────────────── */
-.fidelity-header {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border-radius: 16px;
-  padding: 32px 36px;
-  color: #ffffff;
-  margin-bottom: 28px;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.fidelity-header-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(56, 189, 248, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 999px;
-  margin-bottom: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.fidelity-title {
-  font-size: 2.1rem;
-  font-weight: 800;
-  margin: 0 0 10px 0;
-  letter-spacing: -0.02em;
-}
-
-.highlight-text {
-  color: #38bdf8;
-}
-
-.fidelity-subtitle {
-  font-size: 1.05rem;
-  color: #94a3b8;
-  margin: 0 0 18px 0;
-  max-width: 750px;
-  line-height: 1.5;
-}
-
-.fidelity-meta {
-  font-size: 0.85rem;
-  color: #cbd5e1;
-  font-weight: 500;
-}
-
-/* ── Beginner Analogy Card ──────────────────────────────────── */
-.analogy-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 24px 28px;
-  margin-bottom: 28px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
-}
-
-.analogy-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.analogy-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #e0f2fe;
-  color: #0284c7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.analogy-header h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0;
-  color: #0f172a;
-}
-
-.analogy-sub {
-  font-size: 0.88rem;
-  color: #64748b;
-  margin: 2px 0 0 0;
-}
-
-.analogy-scenario {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #f8fafc;
-  padding: 18px 24px;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-}
-
-.scenario-item {
-  flex: 1;
-}
-
-.scenario-item .step-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #64748b;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.scenario-item p {
-  margin: 0;
-  font-size: 0.92rem;
-  color: #1e293b;
-}
-
-.scenario-item.danger p {
-  color: #dc2626;
-}
-
-.scenario-arrow {
-  color: #94a3b8;
-  font-size: 1.4rem;
-  font-weight: 700;
 }
 
 /* ── Simulator Section ──────────────────────────────────────── */
@@ -153,34 +19,21 @@
 .section-title-box {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
   margin-bottom: 22px;
 }
 
-.section-title-box h2 {
-  font-size: 1.35rem;
+.title-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-left-group h2 {
+  font-size: 1.3rem;
   font-weight: 700;
   margin: 0;
-}
-
-.live-tag {
-  background: #e0f2fe;
-  color: #0284c7;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-left: auto;
-}
-
-.purple-tag {
-  background: #f3e8ff;
-  color: #9333ea;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-left: auto;
+  color: #0f172a;
 }
 
 .simulator-grid {
@@ -195,6 +48,8 @@
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 22px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sim-controls-card h3, .sim-results-card h3 {
@@ -257,15 +112,15 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 18px 22px;
+  padding: 20px 24px;
   border-radius: 12px;
   border-width: 2px;
   border-style: solid;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .vdf-score-value {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 900;
   line-height: 1;
 }
@@ -276,53 +131,30 @@
 
 .vdf-badge-label {
   color: #ffffff;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
   display: inline-block;
   margin-bottom: 6px;
+  line-height: 1.3;
 }
 
 .vdf-score-desc {
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   color: #334155;
   margin: 0;
-  line-height: 1.4;
-}
-
-/* Formula Box */
-.formula-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 18px;
-  font-size: 0.85rem;
-}
-
-.formula-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  color: #64748b;
-}
-
-.formula-row.highlight {
-  border-top: 1px dashed #cbd5e1;
-  margin-top: 6px;
-  padding-top: 8px;
-  color: #0f172a;
-  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 /* Ghost Alert Card */
 .ghost-alert-card {
   display: flex;
   gap: 14px;
-  padding: 14px 18px;
+  padding: 16px 20px;
   border-radius: 12px;
   align-items: flex-start;
+  margin-top: auto;
 }
 
 .ghost-alert-card.active-ghost {
@@ -343,9 +175,9 @@
 
 .ghost-alert-card p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: #475569;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* Sim Chart Card */
@@ -361,81 +193,6 @@
   font-weight: 700;
   margin: 0 0 16px 0;
   color: #1e293b;
-}
-
-/* ── Hindsight Truth Section ────────────────────────────────── */
-.hindsight-section {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 28px;
-  margin-bottom: 28px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
-}
-
-.hindsight-desc {
-  font-size: 0.95rem;
-  color: #475569;
-  line-height: 1.6;
-  margin: 0 0 24px 0;
-  max-width: 900px;
-}
-
-.pipeline-steps-grid {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.step-card {
-  flex: 1;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px;
-  position: relative;
-}
-
-.step-card.highlight-purple {
-  background: #faf5ff;
-  border-color: #d8b4fe;
-}
-
-.step-num {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #0284c7;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.82rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-
-.step-card.highlight-purple .step-num {
-  background: #9333ea;
-}
-
-.step-card h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 0 0 6px 0;
-  color: #0f172a;
-}
-
-.step-card p {
-  font-size: 0.82rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.45;
-}
-
-.step-arrow {
-  color: #94a3b8;
 }
 
 /* ── Audit Table Section ────────────────────────────────────── */
@@ -474,7 +231,6 @@
 .proj-name-cell strong {
   display: block;
   color: #0f172a;
-
 }
 
 .proj-id {

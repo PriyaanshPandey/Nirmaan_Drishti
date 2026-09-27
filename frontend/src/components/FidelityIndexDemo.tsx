@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import {
-  Activity, CheckCircle2, BrainCircuit,
-  Sliders, ShieldAlert, Car, Sparkles, ArrowRight, Check
+  Sliders, ShieldAlert, CheckCircle2, Check, Activity
 } from 'lucide-react';
 import {
   ComposedChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import { InfoButton } from './ExplainabilityInfo';
 import './FidelityIndexDemo.css';
 
 export const FidelityIndexDemo: React.FC = () => {
-  // ── Simulator Interactive State ──
+  // ── Simulator State ──
   const [remainingWork, setRemainingWork] = useState<number>(40); // %
   const [monthsLeft, setMonthsLeft] = useState<number>(2); // months
   const [historicalSpeed, setHistoricalSpeed] = useState<number>(2.0); // % / month
@@ -22,30 +22,30 @@ export const FidelityIndexDemo: React.FC = () => {
   const vdf = Number((requiredSpeed / Math.max(0.1, historicalSpeed)).toFixed(2));
   const isGhostProgress = threeMonthPhysicalDelta === 0 && expenditureVelocity > 0;
 
-  // VDF Risk Rating
+  // VDF Risk Rating & Assessment
   let vdfStatus: { label: string; tier: 'normal' | 'stress' | 'improbable'; color: string; bg: string; desc: string } = {
     label: 'Normal Pacing',
     tier: 'normal',
     color: '#16a34a',
     bg: '#dcfce7',
-    desc: 'Project speed matches its reported commitments. Low risk of timeline inflation.'
+    desc: 'Reported progress speed matches historical execution velocity. Low risk of reporting disconnect.'
   };
 
   if (vdf > 2.5) {
     vdfStatus = {
-      label: "Statistically Improbable Target ('Hockey Stick' Lie)",
+      label: 'Statistically Improbable Trajectory (Reporting Velocity Inconsistency)',
       tier: 'improbable',
       color: '#dc2626',
       bg: '#fee2e2',
-      desc: `Agency claims a ${(vdf * 100).toFixed(0)}% speed explosion without additional budget or resource allocation. Physically improbable.`
+      desc: `Reported timeline requires a ${(vdf * 100).toFixed(0)}% execution speed explosion without additional budget or resource allocation.`
     };
   } else if (vdf > 1.2) {
     vdfStatus = {
-      label: 'Pacing Stress',
+      label: 'Accelerated Pacing Stress',
       tier: 'stress',
       color: '#d97706',
       bg: '#fef3c7',
-      desc: 'Requires double the manpower, machinery, or budget to achieve on-time completion.'
+      desc: 'Requires double the workforce or financial throughput to achieve on-time completion.'
     };
   }
 
@@ -54,12 +54,12 @@ export const FidelityIndexDemo: React.FC = () => {
     { month: 'Month T-3', actualSpeed: historicalSpeed, claimedSpeed: historicalSpeed },
     { month: 'Month T-2', actualSpeed: historicalSpeed + 0.2, claimedSpeed: historicalSpeed + 0.2 },
     { month: 'Month T-1', actualSpeed: historicalSpeed - 0.1, claimedSpeed: historicalSpeed - 0.1 },
-    { month: 'Month T (Today)', actualSpeed: historicalSpeed, claimedSpeed: historicalSpeed },
-    { month: 'Month T+1 (Claim)', actualSpeed: null, claimedSpeed: requiredSpeed },
+    { month: 'Month T (Current)', actualSpeed: historicalSpeed, claimedSpeed: historicalSpeed },
+    { month: 'Month T+1 (Claimed)', actualSpeed: null, claimedSpeed: requiredSpeed },
     { month: 'Month T+2 (Target)', actualSpeed: null, claimedSpeed: requiredSpeed },
   ];
 
-  // Sample Audit Projects
+  // Sample PAIMANA Audit Projects
   const auditProjects = [
     {
       id: 'NHAI-JK-4402',
@@ -117,61 +117,33 @@ export const FidelityIndexDemo: React.FC = () => {
 
   return (
     <div className="fidelity-page-container">
-      {/* ── 1. Top Header Banner ─────────────────────────────────── */}
-      <div className="fidelity-header">
-        <div className="fidelity-header-badge">
-          <Sparkles size={14} /> SIH 2026 INNOVATION DEMO 1
-        </div>
-        <h1 className="fidelity-title">
-          Reporting Fidelity Index <span className="highlight-text">(Catching Ghost-Progress)</span>
-        </h1>
-        <p className="fidelity-subtitle">
-          Detecting the <strong>"Hockey Stick"</strong> reporting illusion and <strong>Capital Drain without Ground Output</strong> across MoSPI PAIMANA infrastructure datasets.
-        </p>
-        <div className="fidelity-meta">
-          <span>Team NavDrishti (Sanket-AI)</span> • <span>MoSPI PAIMANA Infrastructure Intelligence (SIH26103)</span>
-        </div>
-      </div>
-
-      {/* ── 2. Beginner Analogy Card ─────────────────────────────── */}
-      <div className="analogy-card">
-        <div className="analogy-header">
-          <div className="analogy-icon"><Car size={24} /></div>
-          <div>
-            <h3>The Beginner Analogy: The "100 km/h" Impossibility</h3>
-            <p className="analogy-sub">Understanding Velocity Disconnect in Simple Physical Terms</p>
-          </div>
-        </div>
-        <div className="analogy-body">
-          <div className="analogy-scenario">
-            <div className="scenario-item">
-              <span className="step-label">Current Situation</span>
-              <p>Driving 100 km away. Pacing at <strong>10 km/h</strong> for the last 3 hours.</p>
-            </div>
-            <div className="scenario-arrow">&rarr;</div>
-            <div className="scenario-item">
-              <span className="step-label">Claim with 30 mins left</span>
-              <p>"Don't worry, I will still arrive on time!"</p>
-            </div>
-            <div className="scenario-arrow">&rarr;</div>
-            <div className="scenario-item danger">
-              <span className="step-label">Physical Reality</span>
-              <p>Requires driving at <strong>200 km/h</strong> without a faster car! <strong>(Implausible "Hockey Stick")</strong></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 3. Interactive VDF & Ghost-Progress Live Simulator ──── */}
+      {/* ── Main Simulator Section ─────────────────────────────── */}
       <div className="simulator-section">
         <div className="section-title-box">
-          <Sliders size={20} className="text-blue" />
-          <h2>Live VDF &amp; Ghost-Progress Audit Simulator</h2>
-          <span className="live-tag">Interactive Judge Playground</span>
+          <div className="title-left-group">
+            <Sliders size={20} className="text-blue" />
+            <h2>Reporting Fidelity Index &amp; Ground Output Assessment</h2>
+            
+            {/* Info Button for Math & Internal Calculation Methodology */}
+            <InfoButton
+              title="Velocity Disconnect Factor (VDF) Methodology"
+              summary="VDF measures the statistical ratio between required physical progress rate to meet reported target dates versus actual 3-month historical execution velocity."
+              dataSummary={{
+                items: [
+                  { label: 'Required Completion Rate', value: `${remainingWork}% ÷ ${monthsLeft}m = ${requiredSpeed}%/month` },
+                  { label: 'Historical Speed (3-mo avg)', value: `${historicalSpeed}%/month` },
+                  { label: 'Velocity Disconnect Factor', value: `${requiredSpeed} ÷ ${historicalSpeed} = ${vdf}x` },
+                  { label: 'Evaluation Tier', value: vdfStatus.label }
+                ],
+                insight: 'A VDF > 2.5x flags a statistically improbable pacing curve where claimed completion velocity exceeds 250% of historical capability without additional budget allocation.'
+              }}
+              theme="light"
+            />
+          </div>
         </div>
 
         <div className="simulator-grid">
-          {/* Controls Panel */}
+          {/* Left Column: Input Parameters */}
           <div className="sim-controls-card">
             <h3>Adjust Project Report Parameters</h3>
             
@@ -251,11 +223,11 @@ export const FidelityIndexDemo: React.FC = () => {
             </div>
           </div>
 
-          {/* Real-time Results Output */}
+          {/* Right Column: Calculated Result */}
           <div className="sim-results-card">
             <h3>Calculated Reporting Fidelity Index</h3>
 
-            {/* VDF Score Pill */}
+            {/* VDF Score Box */}
             <div className="vdf-score-box" style={{ backgroundColor: vdfStatus.bg, borderColor: vdfStatus.color }}>
               <div className="vdf-score-value" style={{ color: vdfStatus.color }}>
                 {vdf}x
@@ -265,22 +237,6 @@ export const FidelityIndexDemo: React.FC = () => {
                   {vdfStatus.label}
                 </span>
                 <p className="vdf-score-desc">{vdfStatus.desc}</p>
-              </div>
-            </div>
-
-            {/* Formula Breakdown */}
-            <div className="formula-box">
-              <div className="formula-row">
-                <span>Required Speed to Finish On-Time:</span>
-                <strong>{remainingWork}% ÷ {monthsLeft}m = {requiredSpeed}%/month</strong>
-              </div>
-              <div className="formula-row">
-                <span>Historical Realized Speed (3-mo avg):</span>
-                <strong>{historicalSpeed}%/month</strong>
-              </div>
-              <div className="formula-row highlight">
-                <span>Velocity Disconnect Factor (VDF):</span>
-                <strong>{requiredSpeed} ÷ {historicalSpeed} = {vdf}x</strong>
               </div>
             </div>
 
@@ -295,7 +251,7 @@ export const FidelityIndexDemo: React.FC = () => {
                 </h4>
                 <p>
                   {isGhostProgress
-                    ? `Physical progress is 0% over past 3 months while ₹${expenditureVelocity} Cr/month is being spent! Flagged: Capital Drain without Ground Output.`
+                    ? `Physical progress is 0% over past 3 months while ₹${expenditureVelocity} Cr/month is being spent. Flagged: Capital Outlay without Verified Ground Output.`
                     : 'Financial expenditure aligns with reported physical progress on the ground.'}
                 </p>
               </div>
@@ -303,9 +259,9 @@ export const FidelityIndexDemo: React.FC = () => {
           </div>
         </div>
 
-        {/* Live Chart Comparison */}
+        {/* Chart Comparison */}
         <div className="sim-chart-card">
-          <h4>Visualizing the "Hockey Stick" Claim vs Realized Speed</h4>
+          <h4>Reported Completion Trajectory vs Realized Historical Pacing</h4>
           <div style={{ width: '100%', height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
@@ -315,56 +271,14 @@ export const FidelityIndexDemo: React.FC = () => {
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 13 }} />
                 <Line type="monotone" dataKey="actualSpeed" name="Historical Realized Speed (%/mo)" stroke="#0284C7" strokeWidth={3} dot={{ r: 5 }} />
-                <Line type="monotone" dataKey="claimedSpeed" name="Required Speed to Meet Claim (%/mo)" stroke="#DC2626" strokeWidth={3} strokeDasharray="6 6" dot={{ r: 5 }} />
+                <Line type="monotone" dataKey="claimedSpeed" name="Required Speed for Reported Target (%/mo)" stroke="#DC2626" strokeWidth={3} strokeDasharray="6 6" dot={{ r: 5 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* ── 4. Self-Supervised ML Hindsight Truth Pipeline ───────── */}
-      <div className="hindsight-section">
-        <div className="section-title-box">
-          <BrainCircuit size={20} className="text-purple" />
-          <h2>Hindsight Truth: Self-Supervised AI Learning</h2>
-          <span className="purple-tag">No Manual Human Labels Needed</span>
-        </div>
-
-        <p className="hindsight-desc">
-          Because our historical PAIMANA CSV dataset spans <strong>2011 to 2026</strong>, the system automatically checks reported claims at Month <strong>T</strong> against actual ground outcomes 6 months later at Month <strong>T+6</strong>.
-        </p>
-
-        <div className="pipeline-steps-grid">
-          <div className="step-card">
-            <div className="step-num">1</div>
-            <h4>Month T Claim</h4>
-            <p>Agency files PAIMANA report claiming target completion date and progress velocity.</p>
-          </div>
-          <div className="step-arrow"><ArrowRight size={20} /></div>
-
-          <div className="step-card">
-            <div className="step-num">2</div>
-            <h4>Look-Forward T+6</h4>
-            <p>AI engine inspects the CSV 6 months ahead in time to evaluate actual realized progress.</p>
-          </div>
-          <div className="step-arrow"><ArrowRight size={20} /></div>
-
-          <div className="step-card">
-            <div className="step-num">3</div>
-            <h4>Auto-Labeling</h4>
-            <p>If actual progress &lt; 40% of claimed speed, automatically set <code>Strategic_Underreporting = 1</code>.</p>
-          </div>
-          <div className="step-arrow"><ArrowRight size={20} /></div>
-
-          <div className="step-card highlight-purple">
-            <div className="step-num">4</div>
-            <h4>Model Training</h4>
-            <p>XGBoost/LightGBM learns patterns of habitual underreporting without needing manual human labels!</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 5. Real PAIMANA Sample Audit Table ────────────────────── */}
+      {/* ── PAIMANA Sample Audit Table ────────────────────── */}
       <div className="audit-table-section">
         <div className="section-title-box">
           <Activity size={20} className="text-teal" />
@@ -381,8 +295,8 @@ export const FidelityIndexDemo: React.FC = () => {
                 <th>Time Left</th>
                 <th>Hist Speed</th>
                 <th>Calculated VDF</th>
-                <th>VDF Classification</th>
-                <th>Ghost Progress Audit</th>
+                <th>Fidelity Classification</th>
+                <th>Ground Output Audit</th>
               </tr>
             </thead>
             <tbody>
@@ -405,10 +319,10 @@ export const FidelityIndexDemo: React.FC = () => {
                   </td>
                   <td>
                     {p.status === 'improbable' && (
-                      <span className="badge-danger">🔴 Improbable ('Hockey Stick')</span>
+                      <span className="badge-danger">🔴 Velocity Inconsistency</span>
                     )}
                     {p.status === 'stress' && (
-                      <span className="badge-warning">🟡 Pacing Stress (2x)</span>
+                      <span className="badge-warning">🟡 Pacing Stress</span>
                     )}
                     {p.status === 'normal' && (
                       <span className="badge-success">🟢 Normal Pacing</span>
