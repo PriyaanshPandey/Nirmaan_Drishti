@@ -294,3 +294,53 @@
 .ghost-badge.ok {
   color: #16a34a;
 }
+
+/* Row-level highlighting */
+.row-inconsistent td {
+  background-color: #fff5f5;
+}
+
+.row-consistent td {
+  background-color: #f0fdf4;
+}
+
+/* Reporting Status badges */
+.status-inconsistent {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid #fca5a5;
+  letter-spacing: 0.02em;
+}
+
+.status-consistent {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid #86efac;
+  letter-spacing: 0.02em;
+}
+
+/* Expenditure–Progress Consistency flags */
+.expend-flag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.expend-flag.alert { color: #dc2626; }
+.expend-flag.ok { color: #16a34a; }

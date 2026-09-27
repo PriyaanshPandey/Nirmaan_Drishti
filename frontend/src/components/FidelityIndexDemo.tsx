@@ -240,19 +240,19 @@ export const FidelityIndexDemo: React.FC = () => {
               </div>
             </div>
 
-            {/* Ghost Progress Alert Banner */}
+            {/* Capital Outlay Consistency Alert */}
             <div className={`ghost-alert-card ${isGhostProgress ? 'active-ghost' : 'clear-ghost'}`}>
               <div className="ghost-alert-icon">
                 {isGhostProgress ? <ShieldAlert size={24} color="#dc2626" /> : <CheckCircle2 size={24} color="#16a34a" />}
               </div>
               <div>
                 <h4 style={{ color: isGhostProgress ? '#dc2626' : '#16a34a' }}>
-                  {isGhostProgress ? '⚠️ GHOST-PROGRESS AUDIT ALERT' : '✅ GROUND OUTPUT VERIFIED'}
+                  {isGhostProgress ? '⚠️ EXPENDITURE-PROGRESS INCONSISTENCY FLAGGED' : '✅ EXPENDITURE-PROGRESS CONSISTENT'}
                 </h4>
                 <p>
                   {isGhostProgress
-                    ? `Physical progress is 0% over past 3 months while ₹${expenditureVelocity} Cr/month is being spent. Flagged: Capital Outlay without Verified Ground Output.`
-                    : 'Financial expenditure aligns with reported physical progress on the ground.'}
+                    ? `Zero physical progress reported over past 3 months while ₹${expenditureVelocity} Cr/month is being disbursed. Flagged for inaccuracy review: Capital outlay without verifiable ground output.`
+                    : 'Reported financial disbursement is consistent with physical progress recorded on the ground.'}
                 </p>
               </div>
             </div>
@@ -293,54 +293,65 @@ export const FidelityIndexDemo: React.FC = () => {
                 <th>Agency</th>
                 <th>Work Left</th>
                 <th>Time Left</th>
-                <th>Hist Speed</th>
-                <th>Calculated VDF</th>
-                <th>Fidelity Classification</th>
-                <th>Ground Output Audit</th>
+                <th>Hist. Speed</th>
+                <th>VDF</th>
+                <th>Pacing Assessment</th>
+                <th>Reporting Status</th>
+                <th>Expenditure–Progress Consistency</th>
               </tr>
             </thead>
             <tbody>
-              {auditProjects.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <div className="proj-name-cell">
-                      <strong>{p.name}</strong>
-                      <span className="proj-id">{p.id}</span>
-                    </div>
-                  </td>
-                  <td><span className="agency-badge">{p.agency}</span></td>
-                  <td>{p.remainingWork}%</td>
-                  <td>{p.monthsLeft} mos</td>
-                  <td>{p.histSpeed}%/m</td>
-                  <td>
-                    <strong className="vdf-val-tag" style={{ color: p.vdf > 2.5 ? '#dc2626' : p.vdf > 1.2 ? '#d97706' : '#16a34a' }}>
-                      {p.vdf}x
-                    </strong>
-                  </td>
-                  <td>
-                    {p.status === 'improbable' && (
-                      <span className="badge-danger">🔴 Velocity Inconsistency</span>
-                    )}
-                    {p.status === 'stress' && (
-                      <span className="badge-warning">🟡 Pacing Stress</span>
-                    )}
-                    {p.status === 'normal' && (
-                      <span className="badge-success">🟢 Normal Pacing</span>
-                    )}
-                  </td>
-                  <td>
-                    {p.ghostProgress ? (
-                      <span className="ghost-badge alert">
-                        ⚠️ Ghost Progress (₹{p.expenditureSpent}Cr spent, 0% progress)
-                      </span>
-                    ) : (
-                      <span className="ghost-badge ok">
-                        <Check size={12} /> Verified Output
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {auditProjects.map((p) => {
+                const isInconsistent = p.status === 'improbable' || p.ghostProgress;
+                return (
+                  <tr key={p.id} className={isInconsistent ? 'row-inconsistent' : 'row-consistent'}>
+                    <td>
+                      <div className="proj-name-cell">
+                        <strong>{p.name}</strong>
+                        <span className="proj-id">{p.id}</span>
+                      </div>
+                    </td>
+                    <td><span className="agency-badge">{p.agency}</span></td>
+                    <td>{p.remainingWork}%</td>
+                    <td>{p.monthsLeft} mos</td>
+                    <td>{p.histSpeed}%/m</td>
+                    <td>
+                      <strong className="vdf-val-tag" style={{ color: p.vdf > 2.5 ? '#dc2626' : p.vdf > 1.2 ? '#d97706' : '#16a34a' }}>
+                        {p.vdf}x
+                      </strong>
+                    </td>
+                    <td>
+                      {p.status === 'improbable' && (
+                        <span className="badge-danger">Velocity Inconsistency</span>
+                      )}
+                      {p.status === 'stress' && (
+                        <span className="badge-warning">Accelerated Pacing Stress</span>
+                      )}
+                      {p.status === 'normal' && (
+                        <span className="badge-success">Normal Pacing</span>
+                      )}
+                    </td>
+                    <td>
+                      {isInconsistent ? (
+                        <span className="status-inconsistent">⛔ INCONSISTENT</span>
+                      ) : (
+                        <span className="status-consistent">✅ CONSISTENT</span>
+                      )}
+                    </td>
+                    <td>
+                      {p.ghostProgress ? (
+                        <span className="expend-flag alert">
+                          ⚠️ ₹{p.expenditureSpent}Cr disbursed — 0% physical output
+                        </span>
+                      ) : (
+                        <span className="expend-flag ok">
+                          <Check size={12} /> Expenditure Aligned
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
